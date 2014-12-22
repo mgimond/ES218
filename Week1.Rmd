@@ -1,5 +1,5 @@
 ---
-title: "Week1: Things you will learn in this course"
+title: "Things you will learn in this course"
 output: 
  html_document:
     toc: yes
@@ -7,9 +7,152 @@ output:
 ---
 
 # Exploratory Data Analysis (EDA)
+Traditional approaches to data analysis tend to be linear and unidirectional. It often starts with the acquisition or collection of a data set and ends with the computation of some inferential or confirmatory procedure.
 
-# Working in R
+![Typical workflow](img/week1_fig1.png) 
+
+Unfortunately, such practice can lead to faulty conclusions. The following four completely different datasets generate identical regression analysis results shown in the previous figure. 
+
+```{r anscombe, fig.width=6.5, fig.height=2, echo=FALSE, message=FALSE}
+d1 <- anscombe[,c(4,8)]
+ff <- formula(y ~ x)
+mods <- setNames(as.list(1:4), paste0("lm", 1:4))
+for(i in 1:4) {
+  ff[2:3] <- lapply(paste0(c("y","x"), i), as.name)
+  mods[[i]] <- lmi <- lm(ff, data = anscombe)
+}
+
+op <- par(mfrow = c(1, 4), mar = c(3,3,1,1))
+for(i in 1:4) {
+  ff[2:3] <- lapply(paste0(c("y","x"), i), as.name)
+  plot(ff, data = anscombe, col = "black", pch = 21, bg = "black", cex = 1.2,
+       xlim = c(3, 19), ylim = c(3, 13))
+  abline(mods[[i]], col = "blue")
+}
+par(op)
+```
+
+This is Francis Anscombe’s famous quartet which was used to demonstrate the importance of visualizing the data before proceeding with traditional statistical analysis. Of the four plots, only the first is a sensible candidate for the regression analysis; the second dataset highlights a nonlinear relationship between X and Y; the third and fourth plots demonstrate the disproportionate influence of a single outlier on the regression procedure.
+
+A sound data analysis workflow must involve data visualization and exploration. Exploratory data analysis seeks to extract salient features about the data (that may have otherwise gone unnoticed) and to help formulate hypotheses. Only then should appropriate statistical tests be applied to the data to confirm a hypothesis. 
+
+However, not all EDA workflows result in a statistical test: We may not be seeking a hypothesis or, if a hypothesis is sought we may not have the statistical tools necessary to test the hypothesis. It’s important to realize that most statistical procedures make strong assumptions about the nature of the data and the type of hypothesis being tested; data sets seldom meet those stringent requirements.
+
+<div style="width:500px;height:160px;margin-left:70px;margin-bottom:10px;">
+<img style="float:left;margin-right:10px;" src="img/Tukey.png"> *"Exploratory data analysis is an attitude, a flexibility, and a reliance on display, NOT a bundle of techniques."  
+--John Tukey*
+</div>
+
+John Tukey is credited with having coinded the term exploratory data analysis and with having written the first comprehensive book (Tukey, 1977[^1]) on that subject in 1977. The book is still very much relevant today and several of the techniques highilighted in the book will be covered in this course
+
+## An EDA example: CO2 analysis
+
+Let's start off by plotting the atmospheric CO2 concentrations (in ppm) pulled from [NOAA's website](http://www.esrl.noaa.gov/gmd/ccgg/trends/)
+
+```{r fig.height=1.5, fig.width=6, echo=FALSE, message=FALSE}
+library(reshape2)
+library(lubridate)
+library(dplyr)
+library(ggvis)
+
+d1 <- read.csv("./Data/CO2.csv")
+d1$M <- month.abb[d1$Month] # Add month abbreviation
+d1$Date <- ymd(paste(d1$Year,"/",d1$Month,"/15")) # Create a date object;
+                                                  # center on 15th day of month.
+# Create trimmed down data frame
+d2 <- with(d1, data.frame(Date=Date, CO2=Interpolated, Year=decimal_date(Date)))
+
+# Plot the data
+d2 %>% ggvis(~Date, ~CO2) %>% layer_lines()
+```
+
+We note two patterns of interest: an overall upward trend, and a cyclical trend. Our first EDA task is to model the overall trend. We can attempt to fit a straight line to the data using a standard regression analysis procedure. The fitted line is displayed in red in the following plot.
+
+```{r fig.height=1.5, fig.width=6, echo=FALSE}
+#First, try a  1st order polynomial
+f1 <- formula(CO2 ~ Year) # Define formula
+d2 %>% ggvis(~Year, ~CO2) %>% layer_lines() %>% 
+  compute_model_prediction(f1, model="lm")  %>%
+  layer_paths(~pred_, ~resp_, stroke := "red")
+```
+
+Next, we should subtract the modeled line from the CO2 data and plot the result--this difference is called the residual and can be thought of as what the proposed model does *not* explain about the data.
+
+```{r fig.height=1.5, fig.width=6, echo=FALSE}
+M1 <- lm(f1,d2)
+d2$res1 <- d2$CO2 - predict(M1, d2)
+d2 %>% ggvis(~Year, ~res1) %>% layer_lines() 
+```
+
+An overall trend is still present, dispite having attempted to control for it. This implies that our simple line model does not do a good job in *smoothong* out the overall trend. Given that the trend seems to have a broad dip follows by a small upward dip, we should try to fit the trende using a 3rd order polynomial of the form:
+$$
+CO2_{trend} = a + b(Year) + c(Year^2) + d(Year^3)
+$$
+
+The fitted line looks like this:
+```{r fig.height=1.5, fig.width=6, echo=FALSE, message=FALSE}
+# Second order polynomial
+f2 <- CO2 ~ Year * I(Year^2) * I(Year^3) 
+d2 %>% ggvis(~Year, ~CO2) %>% layer_lines() %>% 
+  compute_model_prediction(f2, model="lm")  %>%
+  layer_paths(~pred_, ~resp_, stroke := "red")
+```
+
+Now let's look at the residuals;
+
+```{r fig.height=1.5, fig.width=6, echo=FALSE}
+# Second order polynomial
+f2 <- CO2 ~ Year * I(Year^2) * I(Year^3) 
+M2 <- lm(f2,d2)
+d2$res2 <- d2$CO2 - predict(M2, d2)
+d2 %>% ggvis(~Year, ~res2) %>% layer_lines()
+```
+
+This is an improvement over the simple line (which is a first order polynomial fit).  So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a `W` shaped trend which could hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth out he overall trend, but at this point, we may opt for a non-parametric fit to the data to smooth out any overall trend so that we can focus on the osciltory nature of the data. Sometimes, this requires that we do away with parametric fits (i.e. mathematical formulae) and turn to non-parametric smoothing techniques that do not impose any structure on the data. An example of smoothing technique is the LOESS curve which is shown in the following figure.
+
+```{r fig.height=1.5, fig.width=6, echo=FALSE}
+f2 <- CO2 ~ Year * I(Year^2) * I(Year^3) 
+d2 %>% ggvis(~Year, ~CO2) %>% layer_lines() %>% layer_smooths(stroke := "red") 
+```
+
+At first glance, this may not look any different from our 3rd order polynomial
+
+```{r fig.height=1.5, fig.width=6, echo=FALSE}
+M3 <- lowess(d2$Year, d2$CO2, iter = 10, delta = 0.5, f = 1/4)
+d2$Residuals <- d2$CO2 - M3$y
+d2 %>% ggvis(~Year, ~Residuals) %>% layer_lines()
+```
+
+This is certainly an improvement over the 3rd order polynomial. Let's now focus on the residual. Note the y axis values: they are three orders of magnitude less that the overall CO2 values. This indicates the oscillating values about tthe overall trend is quite small.
+
+Now, we may be tempted to fit a smooth to the residuals but that may not proove to be fruitfull. Instead let's see if the oscilation folows a 12 month cycle. We'll group all the (residual) values into each month of year. In other words, we will remove the year tag associated with each value and explore those values as a function of month instead.
+
+```{r fig.height=2.0, fig.width=6, echo=FALSE}
+# Aggregate residuals by year
+d2$Month <- month(d2$Date)
+d2 %>% ggvis(~Month, ~Residuals) %>% layer_boxplots(size := 10) %>% layer_points(size := 10, stroke:=rgb(0,0,0,0.9), shape := 20)
+        
+```
+
+# We need a good data analysis environment
+Effective exploratory data analysis requires a flexible data analysis environment that does not constrain one to a limited set of data manipulation procedures or visualization tools. After all, would any good writer limit herself to a set of a hundred pre-built sentences? Of course not--we would be reading the same novels over and over again! So why would we limit ourselves to a limited set of pre-packaged data analysis procedures? EDA requires an arsenal of data analysis building blocks much like a good writer needs an arsenal of words. Such an environment must provide us with a flexible data manipulation environment, a flexible data visualization environment and access to a wide range of statistical procedures. A scripting environment, like R, provides us with such an environment. 
+ 
+The data analysis environment should be, when possible, freely available and its code open to the public. The free access of the software allows anyone with the right set of skills to share in the data analysis, regardless of any budgetary constraints.  The open source nature of the software ensures that any aspect of the code used for a particular task can be examined for errors when additional insight into an analytical/numerical methodology if needed. Deciphering code may not be a skill available to all researchers, however, if the need to understand how a procedure is implemented is important enough, an individual with  the appropriate programming skills can be easy to come by, even if it’s for a small fee. Open source software also ensures that the underlying code used to create the executable application can be ported to different platforms or different operating systems (even though this may require some effort and modest programming skills).
+
+## The workhorse: R
+[R](https://en.wikipedia.org/wiki/R_%28programming_language%29) an open source data analysis and visualization programming environment whose roots go back to the [S programming language](https://en.wikipedia.org/wiki/S_%28programming_language%29) developed at Bell Laboratories back in the 1970's by [John Chambers](https://en.wikipedia.org/wiki/John_Chambers_%28statistician%29). 
+
+
+## The friendly interface: RStudio
+RStudio is an integrated development environment (IDE) to R. An IDE provides a user with a software interface to a programming environment such as a source code editor (with colored syntax). RStudio is not needed to use R (which has its own IDE environment--albeit not as nice as RStudio's), but makes using R far easier. RStudio is also an open source environment, but unlike R, it's maintained by a private entity which also distributes a commercial version of RStudio for businesses or individuals needing customer support.
+
+
+
 ## Data manipulation and visualization
 ## Reproducible analysis
 
 # Creating dynamic documents using RMarkdown
+## RMarkdown
+
+
+[^1]: Tukey, John W. *Exploratory Data Analysis*. 1977. Addison-Wesley.
