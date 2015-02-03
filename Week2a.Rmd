@@ -1,0 +1,297 @@
+---
+title: "Week2: Data Object Type and Structure"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+  word_document: default
+---
+
+# How to represent data in R
+
+An object in R is a placeholder for different **types** of data and functions created or manipulated in R. The following sections focus on data **types** and then on data **objects**.
+
+## Data types
+
+R objects can store values as different data types including numeric, character, logical or date. R variable types are often referred to as **modes** and can be identified using the `mode()` function.
+
+### Numeric
+
+The numerical data type is probably the simplest. It consists of numbers such as integers (e.g. `1 ,-3 ,33 ,0`) or doubles (e.g. `0.3, 12.4, -0.04, 1.0`). For example, to create a numeric (double) vector we can type:
+
+```{r}
+x <- c(1.0, -3.4, 2, 140.1)
+mode(x)
+```
+
+### Character
+
+The character data type consists of letters or words such as `"a", "f", "project", "house value"`.
+
+```{r}
+x <- c("a", "f", "project", "house value")
+mode(x)
+```
+
+Characters can also consist of numbers represented as characters. The distinction between a numeric representation of a number and a numeric one is important. For example, if we have two numeric vector `x` and `y` such as
+
+```{r}
+x <- 3
+y <- 5.3
+```
+
+and we choose to sum the two variables, we get:
+
+```{r}
+x + y
+```
+
+If we repeat these steps but instead choose to represent the numbers `3` and `5.3` as characters we get the following error message:
+
+```{r error=TRUE}
+x <- "3"
+y <- "5.3"
+x + y
+```
+
+Note that if numbers are to be stored as characters, don't forget to wrap them around quotes.
+
+```{r}
+x <- c("1.0", "-3.4", "2", "140.1")
+mode(x)
+```
+
+### Logical
+
+Logical values can take on one of two values: `TRUE` or `FALSE`. These can also be represented as `1` or `0`. For example, to create a logical vector of 4 elements, you can type
+
+```{r}
+x <- c(TRUE, FALSE, FALSE, TRUE)
+```
+
+or
+```{r}
+x <- as.logical(c(1,0,0,1))
+```
+
+Note that in both cases, `mode(x)` returns `r mode(x)`. Also note that the `1`'s and `0`'s are converted to `TRUE`'s and `FALSE`'s.
+
+### Factors
+
+Factors are usually used to group variables into categories having a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data may be loaded into R as a numeric or character data type in which case it needs to be converted to a factor using the `as.factor()` function.
+
+```{r}
+a      <- c("M", "F", "F", "M", "F", "M", "M", "F", "F", "M")
+a.fact <- as.factor(a)
+x      <- c(166, 47, 61, 148, 62, 123, 232, 98, 93, 55)
+dat    <- data.frame(x = x, gender = a.fact)
+```
+
+Many functions recognize factor data types and will allow you to split the output into groups. For example, to create a boxplot of the value `x` split into two groups, `F` and `M`, you can type the following:
+
+```{r fig.width = 4, fig.height=2.5,echo=2}
+OP <- par( mar=c(2,2,0,0))
+boxplot(x ~ gender, dat, horizontal = TRUE)
+par(OP)
+```
+
+### Dates
+
+Date values can be represented in tables as numbers or characters. But to work properly with date representation, it must be converted to an R date object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. The following subsections make use of the `lubridate` package.
+
+## Data structure
+
+### Vectors
+
+Vector objects can be broken down into two types: atomic vector and lists.
+
+### Atomic vectors
+
+The *vector* is the simplest data structure in R which consists of an ordered set of values of the same type (e.g. numeric, character, date, etc...). The last section presented two examples of a vector object (`x <- 3.14` and `x <- runif(30,0,10)`). Another way of creating a vector object is by using the *combine* function `c()` as in
+
+```{r}
+x <- c(674 , 4186 , 5308 , 5083 , 6140 , 6381)
+x
+```
+
+A vector object is an indexable collection of values and can thus allow one to access a specific index number. For example, to access the third element of `x`, type
+
+```{r}
+x[3]
+```
+
+You can also select a subset of elements by index values using the combine function `c()`,
+
+```{r}
+x[c(1,3,4)]
+```
+
+If you are interested in a range of indexed values, use `:`
+
+```{r}
+x[2:4]
+```
+
+You can also assign new values to a specific index. For example, we can replace the second value with 0
+
+```{r}
+x[2] <- 0
+x
+```
+
+Note that a vector can also store characters or strings
+
+```{r}
+x <- c("all", "b", "olive")
+x
+```
+
+### Lists
+
+Like atomic vectors, a list is an ordered set of elements but unlike vectors, elements of a list can be of any type. A list is constructed using the `list()` function.
+
+For example, the following list consists of 3 elements: a three element numeric vector(element `a`), a two element logical vector (element `b`) and a three element character vector (element `c`).
+
+```{r}
+l <- list(a = c(123.1, 3, 87.6), b = c(TRUE, FALSE), c = c("apples", "oranges", "round"))
+```
+
+You can view the contents of a list using the `str()` function.
+
+```{r}
+str(l)
+```
+
+Lists can also be recursive (i.e. a list can contain other lists). For example, the following list `l2` houses two elements: a two-by-two matrix (element `a`) and the list `l` (element `b`).
+
+```{r}
+l2 <- list( a = matrix( c(12.3, 20, 1.2, 18.0) , nrow=2), b = l)
+str(l2)
+```
+
+You'll find that many functions in R return list objects such as the linear model function `lm`. For example, run a regression between two variables and save the output of the regression analysis to an object called `M`:
+
+```{r}
+x <- c(7.3, 29.4, 29.4, 2.9, 12.3, 7.5, 36.0, 4.8, 18.8, 4.2)
+y <- c(5.2, 26.6, 31.2, 2.2, 13.8, 7.8, 35.2, 8.6, 20.3, 1.1)
+M <- lm( y ~ x)
+```
+
+Now use the `typeof` function to view `M`'s data type:
+```{r}
+typeof(M)
+```
+
+The contents of the regression model object `M` consists of `r length(M)` elements which include various diagnostic statistics, regression coefficients, and residuals. 
+```{r}
+str(M)
+```
+
+Elements of a list can be extracted using the `$` symbol. For example, to access the values from `M`'s `residuals` element, type
+
+```{r}
+M$residuals
+```
+
+The element `residual` is a numeric vector. We can also access the contents of a recursive list element such as `qr`:
+
+```{r}
+M$qr
+```
+
+Note that since the element `qr` is a list, `M$qr` returns a list (and not a numeric vector as in the call to `M$residuals`). To extract the element `qraux` from the list `qr` (which is itself an element of `M`), you can use a recursive `$` as in:
+
+```{r}
+M$qr$qraux
+```
+
+Note that in the previous examples, a name was assigned to each element of the list (e.g. `a = matrix( c(12.3, 20, 1.2, 18.0)`) which allows us to access that element using the hash name (e.g. `l2$a`). We can list the element names of a list using the `names()` function:
+
+```{r}
+names(l2)
+```
+
+But lists can also be created without assigning names to an element. For example, list `l2` could be created as follows:
+
+```{r}
+l2.nonames <- list( matrix( c(12.3, 20, 1.2, 18.0) , nrow=2), l)
+```
+
+This last object has no names associated with its elements,
+
+```{r}
+names(l2.nonames)
+```
+
+This makes it impossible to access its elements using the `$` symbol. We must instead use the `[]` symbol to access the ordered elements. For example, to access the first element of `l2.nonames`, type:
+
+```{r}
+l2.nonames[1]
+```
+
+This displays the contents of the matrix, but the output is still a list which means that we cannot operate on the content as though it was a matrix (however, had the element been named as with the object `l2`, then the use of the `$` symbol would have returned a matrix as in `l2$a`).
+
+
+
+### Matrices and arrays
+
+Matrices in R can be thought of as vectors indexed using *two* indices. For example, the following line of code creates a 3 by 3 matrix of randomly generated values. The parameters `nrow` and `ncol` define the matrix 2D dimension and the function `runif()` generates the nine random numbers that populate this matrix.
+
+```{r}
+m <- matrix(runif(9,0,10), nrow = 3, ncol = 3)
+m
+```
+
+If a higher dimension vector is desired, then use the `array()` function to generate the n-dimensional object. A 3x3x3 array can be created as follows:
+
+```{r}
+m <- array(runif(27,0,10), c(3,3,3))
+m
+```
+
+
+Matrices and arrays can store numeric or character data types, but they cannot store both in a same object. This is not to say that you can't have a matrix of the kind
+
+```{r echo=FALSE}
+matrix(c("a","b",2,4), nrow=2)
+```
+
+but the value `2` and `4` are no longer treated as numeric values but as character values instead (as indicated by the quotes surrounding the numbers).
+
+### Data frames
+
+A *data frame* is what comes closest to our perception of a data *table*. It's an extension of the matrix object in that, unlike a matrix, a data frame can *mix* data types (e.g. both numeric and character data can coexist in a data frame). This will be the most frequently used data structure in this course with atomic vectors following closely behind.
+
+
+```{r}
+Name <- c("a1", "a2", "b3")
+Value1 <- c(23, 4, 12)
+Value2 <- c(1,45,5)
+dat    <- data.frame(Name, Value1, Value2)
+dat
+```
+
+Like a vector, elements of a data frame can be accessed by their index (aka subscripts). For example, to list the first two columns,
+
+```{r}
+dat[ , 1:2 ]
+```
+
+or the third row,
+
+```{r}
+dat[ 3 , ]
+```
+
+or the first entry of the data frame,
+
+```{r}
+dat[ 1 , 1 ]
+```
+
+or the values in the column named *Value2*,
+
+```{r}
+dat$Value2
+```
+

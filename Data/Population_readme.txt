@@ -1,0 +1,1 @@
+Downloaded from http://www.gapminder.org/data/ in July of 2014.

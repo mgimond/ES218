@@ -1,0 +1,85 @@
+---
+title: "Week2: Reading and Writing Data Files"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+  word_document: default
+---
+
+# Reading data files into R
+
+Note that files can be loaded from the web (this is the method used in the next subsections), or from a local directory on your desktop or laptop. When loading the file locally, make sure to specify the folder in which the file resides (see the online tutorial [Understanding directory structures](http://personal.colby.edu/personal/m/mgimond/RIntro/01_The_R_environment.html#understanding-directory-structures)).
+
+## Reading from a comma delimitted (CSV) file
+A popular data file format (and one that has withstood the test of time) is the text file format where columns are separated by a *tab*, *space* or *comma*. In the following example, R reads a comma delimited file called *ACS.csv* into a data object called `dat`. 
+
+```{r eval=FALSE, tidy=FALSE, warning=FALSE}
+dat <- read.csv("http://personal.colby.edu/personal/m/mgimond/R/Data/Data/ACS.csv", header=TRUE)
+```
+
+To read other text formats that use different delimiters invoke the command `read.table()` and define the type of delimiter using the `sep=` parameter. For example, to read a tab delimited data file called *ACS.txt*, run the command `read.table("ACS.txt", sep="\t")`.
+
+## Reading from a R data file
+
+R has its own file  format; it's usually saved as a *.rds* file. To read a R data file, invoke the `readRDS()` function.
+
+```{r eval=FALSE, tidy=FALSE, warning=FALSE}
+dat <- readRDS("http://personal.colby.edu/personal/m/mgimond/R/Data/ACS.rds")
+```
+
+## Importing data from proprietary data file formats
+
+It's usually recommended that files be stored as a CSV or tab delimited file format before reading it into R. However, you might find yourself in a situation where you have no option but to try and import a foreign file if access to the proprietary software is not available. This requires the use (and installation) of a package called `Hmisc`. The package will read SAS (XPT format), SPSS (SAV format) and Stata (dta format). You can install the package on your computer as follows:
+
+```{r eval=FALSE}
+install.packages("Hmisc")
+```
+
+In this example, a SAS file of blood pressure from the [CDC](http://www.cdc.gov/nchs/nhanes.htm) will be loaded into an object called `dat` (file documentation can be found [here](http://personal.colby.edu/reload/personal/m/mgimond/R/Data/BPX_G_README.txt)).
+
+```{r eval=FALSE}
+library(Hmisc)
+dat <- sasxport.get("http://personal.colby.edu/personal/m/mgimond/R/Data/BPX_G.xpt")
+```
+
+To import an SPSS file, use the `spss.get()` function. To import a STATA file, use the `stata.get()` function.
+
+# How to save R objects to data files
+
+## Export to a CSV file
+
+To export the data object `dat.sub` as a comma delimited file, run the following:
+
+```{r eval=FALSE, tidy=TRUE, warning=FALSE}
+write.csv(dat.sub, "../Data/ACS_sub.csv")
+```
+
+## Export to a Rds file
+To export the data object `dat.sub` to a _Rds_ file, run the following:
+
+```{r eval=FALSE, tidy=TRUE, warning=FALSE}
+saveRDS(dat.sub, "../Data/ACS_sub.rds")
+```
+
+# Saving an R session
+
+You can save an entire R session (which includes *all* data objects) using the `save` function.
+
+To save *all* objects, set the `list=` parameter to `ls()`:
+```{r eval=FALSE, tidy=TRUE, warning=FALSE}
+save(list=ls(), file = "../Data/ACS_all.Rdata")
+```
+
+
+To save only two R session objects to a file, pass the list of object to the `list=` parameter:
+```{r eval=FALSE, tidy=TRUE, warning=FALSE}
+save(list=c(dat, dat.sub), file = "../Data/ACS_subset.Rdata")
+```
+
+# Loading an R session
+
+To load a previously saved R session type:
+
+```{r eval=FALSE, tidy=TRUE, warning=FALSE}
+load("../Data/ACS_all.Rdata")
