@@ -11,4 +11,4 @@ pollutant_code: The greenhouse gas type code
 pollutant_name: The greenhouse gas type name
 emissions: Emissions in units defined in the uom column
 uom: emission units (should be in Ton/year)
-inventory_year: inventory year
+inventory_year: inventory year 
