@@ -11,6 +11,8 @@ Date values can be represented in tables as numbers or characters. But to work p
 
 # Creating date/time objects
 
+## From complete date strings
+
 You can convert many representations of date and time to date objects. For example, let's create a vector of dates represented as month/day/year character strings,
 
 ```{r}
@@ -49,6 +51,33 @@ x.date
 ```
 
 The characters `_h`, `_hm` or `_hms` can be appended to any of the date functions to accommodate other date/time formats such as `dmy_h` or `ymd_hms`.
+
+## From separate date elements
+
+If your data file splits the date elements into separate vector objects or columns, use the `paste` function to combine the elements into a single date string before passing it to one of the lubridate functions. Let's look at an example:
+
+```{r}
+dat1 <- read.csv("http://mgimond.github.io/ES218/Data/CO2.csv")
+head(dat1)
+```
+
+The CO2 data set has the date split across two elements: `Year` and `Month` (both loaded as integers). You can combine the columns into a character string using the `paste` function. For example, if we want to create a "Year-Month" string as in `1959-10`, we could type:
+
+```{r eval=FALSE}
+paste(dat1$Year,"-",dat1$Month, sep="")
+```
+
+The above example uses four arguments: the three objects that are pasted together (i.e. `Year`, `-` and `Month`) and the `sep=""` parameter which tells R **not** to leave spaces between the three elements (by default, `paste` would have added spaces thus creating strings in the form of `1959 - 10` instead of `1959-10`).
+
+`lubridate` does not have a function like `ym` to convert only year-month strings, this requires that we add an artifical day of the month to the string. We'll choose to add the 15th day of the month as in `paste(dat1$Year,"-",dat1$Month,"-15", sep="")`
+
+To add a new column called `Date` to the `dat` object, simply wrap the paste function with `ymd`:
+
+```{r}
+dat1$Date <- ymd( paste(dat1$Year,"-",dat1$Month, "-15", sep="") )
+head(dat1)
+```
+
 
 # Extracting date information
 

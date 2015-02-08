@@ -21,3 +21,5 @@ File is in a tab delimited format.
 * VIS: 	Station visibility (nautica miles). Note that buoy stations are limited to reports from 0 to 1.6 nmi.
 * PTDY: 	Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa)for a three hour period ending at the time of observation. (not in Historical files)
 * TIDE: 	The water level in feet above or below Mean Lower Low Water (MLLW). 
+
+Missing data are denoted by variable number of 9's depending on the data type (for example: 999.0 99.0).

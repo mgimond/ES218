@@ -67,7 +67,10 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 <div id="TOC">
 <ul>
-<li><a href="#creating-datetime-objects">Creating date/time objects</a></li>
+<li><a href="#creating-datetime-objects">Creating date/time objects</a><ul>
+<li><a href="#from-complete-date-strings">From complete date strings</a></li>
+<li><a href="#from-separate-date-elements">From separate date elements</a></li>
+</ul></li>
 <li><a href="#extracting-date-information">Extracting date information</a></li>
 <li><a href="#operating-on-dates">Operating on dates</a></li>
 <li><a href="#formatting-date-objects">Formatting date objects</a></li>
@@ -77,6 +80,8 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p>Date values can be represented in tables as numbers or characters. But to work properly with date representation, it must be converted to an R date object. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier. The following subsections make use of the <code>lubridate</code> package.</p>
 <div id="creating-datetime-objects" class="section level1">
 <h1>Creating date/time objects</h1>
+<div id="from-complete-date-strings" class="section level2">
+<h2>From complete date strings</h2>
 <p>You can convert many representations of date and time to date objects. For example, let’s create a vector of dates represented as month/day/year character strings,</p>
 <pre class="r"><code>x &lt;- c(&quot;06/23/2013&quot;, &quot;06/30/2013&quot;, &quot;07/12/2014&quot;)</code></pre>
 <p>At this point, R treats the vector <code>x</code> as characters. To force R to interpret these as dates, use <code>lubridate</code>’s <code>mdy</code> function. <code>mdy</code> will convert date strings where the date elements are ordered as month, day and year (for other date element arrangements, see the table shown below).</p>
@@ -118,6 +123,34 @@ x.date</code></pre>
 <pre><code>## [1] &quot;2013-06-23 03:45:23 EST&quot; &quot;2013-07-30 14:23:00 EST&quot;
 ## [3] &quot;2014-08-12 18:01:59 EST&quot;</code></pre>
 <p>The characters <code>_h</code>, <code>_hm</code> or <code>_hms</code> can be appended to any of the date functions to accommodate other date/time formats such as <code>dmy_h</code> or <code>ymd_hms</code>.</p>
+</div>
+<div id="from-separate-date-elements" class="section level2">
+<h2>From separate date elements</h2>
+<p>If your data file splits the date elements into separate vector objects or columns, use the <code>paste</code> function to combine the elements into a single date string before passing it to one of the lubridate functions. Let’s look at an example:</p>
+<pre class="r"><code>dat1 &lt;- read.csv(&quot;http://mgimond.github.io/ES218/Data/CO2.csv&quot;)
+head(dat1)</code></pre>
+<pre><code>##   Year Month Average Interpolated  Trend Daily_mean
+## 1 1959     1  315.62       315.62 315.70         -1
+## 2 1959     2  316.38       316.38 315.88         -1
+## 3 1959     3  316.71       316.71 315.62         -1
+## 4 1959     4  317.72       317.72 315.56         -1
+## 5 1959     5  318.29       318.29 315.50         -1
+## 6 1959     6  318.15       318.15 315.92         -1</code></pre>
+<p>The CO2 data set has the date split across two elements: <code>Year</code> and <code>Month</code> (both loaded as integers). You can combine the columns into a character string using the <code>paste</code> function. For example, if we want to create a “Year-Month” string as in <code>1959-10</code>, we could type:</p>
+<pre class="r"><code>paste(dat1$Year,&quot;-&quot;,dat1$Month, sep=&quot;&quot;)</code></pre>
+<p>The above example uses four arguments: the three objects that are pasted together (i.e. <code>Year</code>, <code>-</code> and <code>Month</code>) and the <code>sep=&quot;&quot;</code> parameter which tells R <strong>not</strong> to leave spaces between the three elements (by default, <code>paste</code> would have added spaces thus creating strings in the form of <code>1959 - 10</code> instead of <code>1959-10</code>).</p>
+<p><code>lubridate</code> does not have a function like <code>ym</code> to convert only year-month strings, this requires that we add an artifical day of the month to the string. We’ll choose to add the 15th day of the month as in <code>paste(dat1$Year,&quot;-&quot;,dat1$Month,&quot;-15&quot;, sep=&quot;&quot;)</code></p>
+<p>To add a new column called <code>Date</code> to the <code>dat</code> object, simply wrap the paste function with <code>ymd</code>:</p>
+<pre class="r"><code>dat1$Date &lt;- ymd( paste(dat1$Year,&quot;-&quot;,dat1$Month, &quot;-15&quot;, sep=&quot;&quot;) )
+head(dat1)</code></pre>
+<pre><code>##   Year Month Average Interpolated  Trend Daily_mean       Date
+## 1 1959     1  315.62       315.62 315.70         -1 1959-01-15
+## 2 1959     2  316.38       316.38 315.88         -1 1959-02-15
+## 3 1959     3  316.71       316.71 315.62         -1 1959-03-15
+## 4 1959     4  317.72       317.72 315.56         -1 1959-04-15
+## 5 1959     5  318.29       318.29 315.50         -1 1959-05-15
+## 6 1959     6  318.15       318.15 315.92         -1 1959-06-15</code></pre>
+</div>
 </div>
 <div id="extracting-date-information" class="section level1">
 <h1>Extracting date information</h1>
