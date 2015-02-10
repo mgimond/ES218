@@ -1,5 +1,5 @@
 ---
-title: "Week2: Cleaning up dataframes"
+title: "Week2: Exploring and cleaning dataframes"
 output:
   html_document:
     toc: yes
@@ -15,12 +15,25 @@ Type the following to load the data file into your current R session (note that 
 ```{r}
 # Load the data (columns are separated by spaces)
 dat <- read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", sep="", header=TRUE)
+```
 
-# Get the data frame's dimensions
+# Exploring a dataframe
+
+First, let's extract the number of rows and columns in our table:
+```{r}
 dim(dat)
 ```
 
-`dat` consists of `r dim(dat)[1]` rows and `r dim(dat)[2]` columns. A brief description of each column follows:
+`dat` consists of `r dim(dat)[1]` rows and `r dim(dat)[2]` columns. 
+
+We can extract the names of each column using the `names` function:
+
+```{r}
+names(dat)
+```
+
+A brief description of each column follows:
+
 
 Field  | Description
 -------|------------
@@ -43,7 +56,27 @@ DEWP|	Dewpoint temperature (Celsius)
 VIS|	visibility (nautical miles)
 TIDE|	Water level in feet above or below Mean Lower Low Water, MLLW (feet)
 
-Let's generate a summary of the table.
+For large datasets, it's sometimes helpful to display just the first few lines of the table to get a sense of the kind of data we are dealing with. We'll use the `head` function to do this and have R return the first five records of the table (`n=5`).
+
+```{r}
+head( dat, n=5)
+```
+
+We can also display the last few lines of the table using the `tail` function.
+
+```{r}
+tail( dat, n =5)
+```
+
+We can usually tell what data types are assoicated with each column by viewing the first few lines. But it's best to check with the `str` function.
+
+```{r}
+str(dat)
+```
+
+All values are stored as numbers with about a third stored as integers, `int`. The `num` description indicates that the data are stored using double precision.
+
+Now let's generate a summary of the table.
 
 ```{r}
 summary(dat)
@@ -128,3 +161,23 @@ summary(dat1)
 ```
 
 Note the `NA`'s in the summary output. We now have a clean dataframe to work with.
+
+# Removing rows with `NA` values
+
+You might need to work with rows that have complete cases (i.e. no missing values). You can use the `na.omit` function to return just the rows that have complete cases. We will create a synthetic example to demonstrate the `na.omit()` function. 
+
+```{r tidy=FALSE}
+d <- data.frame(x = c(1,4,2,5,2,3,NA), 
+                y = c(3,2,5,3,8,1,1), 
+                z = c(NA,NA,4,9,7,8,3))
+d
+```
+
+Note the `NA` values in the dataframe. Now let's create a new dataframe that we'll name `d.complete` that only stores the rows for which we have complete cases (i.e. no `NA` values).
+
+```{r tidy=FALSE}
+d.complete <- na.omit(d)
+d.complete
+```
+
+
