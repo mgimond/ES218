@@ -1,0 +1,387 @@
+---
+title: 'Week4: Base plotting environment'
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+  word_document: default
+---
+
+```{r echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+  dev=c('CairoPNG', 'CairoPDF'),
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8")
+```
+
+> This tutorial will make use of the following R packages:
+>
+> * `dplyr`
+> * `tidyr`
+
+# Data prep work
+
+Data used in this tutorial include grain harvest for north america and income/education census data for the US. 
+
+```{r cache=TRUE}
+dat1 <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=TRUE)
+dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", header=TRUE)
+```
+
+## `dat1` dataset
+
+`dat1` consists of grain yields by north american countries and by year. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014.
+
+A  subset of `dat1` will be used in this tutorial and will be a *wide* table of year vs. crop yields (in Hg/Ha) for the US.
+
+```{r message =FALSE}
+library(dplyr)
+library(tidyr)
+dat1b <- dat1 %>%
+  filter(Information == "Yield (Hg/Ha)", 
+             Country =="United States of America", 
+             Crop == "Oats" | Crop == "Maize" | Crop == "Barley" |
+             Crop == "Buckwheat"| Crop == "Rye")                     %>%
+  select(Year, Crop, Value)                                          %>%
+  spread(key = Crop, value="Value")
+head(dat1b)
+```
+
+## `dat2` dataset
+
+`dat2` consists of county income and educational attainment for both the male and female population. A codebook [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv) provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
+
+```{r}
+dat2 <- na.omit(dat2)
+```
+
+# Packaged plots
+
+## Point and line plots
+
+The most commonly used plot function in R is `plot()` which generates both point and line plots. For example, to plot male population median income (`dat2$B20004007`) vs female population median income (`dat2$B20004013`) for each county, type:
+
+```{r fig.height=3, fig.width=4, echo=2}
+OP <- par(mar=c(4,4,1,1))
+plot(B20004007 ~ B20004013, dat=dat2)
+par(OP)
+```
+
+The above `plot` command takes two arguments: `B20004007 ~ B20004013` which is to be read as "plot variable B20004007 as a function of B20004013" and `dat=dat2` which tells the plot function which data frame to extract the variables from. Another way to call this command is to type:
+
+```{r eval=FALSE}
+plot(dat2$B20004007 ~ dat2$B20004013)
+```
+
+The `plot` function can take on many other parameters to help tweak the default plot options. For example, we may want to change the axis labels to something more descriptive than the table variable name,
+
+```{r fig.height=3, fig.width=4, echo=2}
+OP <- par(mar=c(4,4,1,1))
+plot(B20004007 ~ B20004013, dat=dat2, xlab = "Female median income ($)", 
+     ylab="Male median income ($)")
+par(OP)
+```
+
+There are over 3000 unique values which makes it difficult the see what may be going on in the cloud of points. We can change the symbol type to solid fill (`pch=20`) and set its color to 85% transparent (`col=rgb(0,0,0,0.15)`).
+
+```{r fig.height=3, fig.width=4, echo=2}
+OP <- par(mar=c(4,4,1,1))
+plot(B20004007 ~ B20004013, dat=dat2, xlab = "Female median income ($)", 
+     ylab="Male median income ($)", pch=20, col=rgb(0,0,0,0.15) )
+par(OP)
+```
+
+The plot could use additional tweaking, but it may be best to build the plot from scratch as will be demonstrated a few sections down.
+
+By default, the `plot` command will plot points and not lines. To plot lines, add the `type="l"` parameter to the `plot` function. For example, to plot oats crop yield as a function of year from our `dat1b` dataset, type:
+
+```{r fig.height=3, fig.width=4, echo=2}
+OP <- par(mar=c(4,4,1,1))
+plot(Oats ~ Year, dat=dat1b, type="l", ylab="Oats yield (Hg/Ha)" )
+par(OP)
+```
+
+To plot both points and line, set the `type` parameter to `"b"` (for *both*),
+
+```{r fig.height=3, fig.width=4, echo=2}
+OP <- par(mar=c(4,4,1,1))
+plot(Oats ~ Year, dat=dat1b, type="b", pch=20, ylab="Oats yield (Hg/Ha)" )
+par(OP)
+```
+
+The `plot` command can only graph on variable. If you want to add another variable, you will need to call the `lines` function. We will assign a different line type to this variable (`lty=2`):
+
+```{r fig.height=3, fig.width=4, echo=2:3,results='hold'}
+OP <- par(mar=c(4,4,1,1))
+plot(Oats ~ Year, dat=dat1b, type="l", pch=20, ylab="Oats yield (Hg/Ha)" )
+lines(Barley ~ Year, dat=dat1b, lty=2)
+par(OP)
+```
+
+Note how the plot does not automatically re-scale to accommodate the new line. The plot is a static object meaning that we need to define the axes limits before calling the original plot function. Both axes limits can be set using the `xlim` and `ylim` parameters. We don't need to set the x-axis range since both variable cover the same range of year. We will therefore only focus on the y-axis limits. We can grab both the minimum and maximum values for the variables `Oats` and `Barley` using the `range` function, then pass the range to the `ylim` parameter in the call to `plot`.
+
+```{r fig.height=3, fig.width=4, echo=2:4,results='hold'}
+OP <- par(mar=c(4,4,1,1))
+y.rng <- range( c(dat1b$Oats, dat1b$Barley) )
+plot(Oats ~ Year, dat=dat1b, type="l", ylab="Oats yield (Hg/Ha)", ylim = y.rng)
+lines(Barley ~ Year, dat=dat1b, lty=2)
+par(OP)
+```
+
+Point plots from different variables can also be combined into a single plot using the `points` function in lieu of the `lines` function. In the following example, male vs. female income for population having a high school degree (blue dots) and a Bachelor's degree (red dots) will be overlayed on the same plot.
+
+```{r fig.height=3, fig.width=4, echo=2:12,results='hold'}
+OP <- par(mar=c(4,4,1,1))
+y.rng <- range( c(dat2$B20004009, dat2$B20004011) , na.rm = TRUE) 
+x.rng <- range( c(dat2$B20004015, dat2$B20004017) , na.rm = TRUE) 
+
+# Plot income for HS degree
+plot(B20004009 ~ B20004015, dat=dat2, xlab = "Female median income ($)", ylab="Male median income ($)", 
+     pch=20, col=rgb(0,0,1,0.15), xlim=x.rng, ylim=y.rng)
+
+# Add points for Bachelor's degree
+points(dat2$B20004011 ~ dat2$B20004017, dat=dat2, pch=20, col=rgb(1,0,0,0.15))
+
+# Add legend
+legend("topright", c("HS Degree", "Bachelor's"), pch=20, col= c(rgb(0,0,1,0.15), rgb(1,0,0,0.15) ))
+par(OP)
+```
+
+The `na.rm=TRUE` option is added as a parameter in the `range` function to prevent a `NA` value in the data from returning a `NA` value in the range.
+
+Point symbols are defined by a numeric code. The following figure shows the list of point symbols available in R along with their numeric designation as used with the `pch=` parameter. The symbol's color can be defined using the `col` parameter. For symbols 21 through 25 which have a two-color scheme, `col` applies to the outline color (blue in the following figure) and `bg` parameter applies to the fill color (red in the following figure).
+
+```{r echo=FALSE, fig.height=3, fig.width=4}
+OP <- par(mar=c(0,0,0,2))
+plot(rep(1:5,5), rep(1:5, each = 5), pch=1:25, col="blue", bg="red", 
+     cex=1.5, xlab = NA, ylab = NA, axes = F, xlim=c(0,6), ylim=c(0,6))
+text(rep(1:5,5), rep(1:5, each = 5), as.character(1:25), pos=4)
+par(OP)
+```
+
+You can define the color using the `rgb()` function, or by a color name such as `col="red"` or `col="bisque"`. For a full list of color names, type `colors()` at a command prompt.
+
+Line types can also be customized in the `plot` function using the `lty=` parameter. There are six different line types, each identified by a number:
+
+```{r echo=FALSE, fig.height=2, fig.width=2}
+OP <- par(mar=c(0,3,0,0))
+plot(0,pch='',xlab = NA, ylab = NA, axes = F, xlim=c(0,7), ylim=c(0,7))
+abline(h=1:6, lty=1:6)
+axis(2,at=1:6, as.character(1:6), col="white", las = 2)
+par(OP)
+```
+
+## Boxplots
+
+A boxplot is one of many graphical tools used to summarize the distribution of a data batch. The graphic consists of a "box" that depicts the range covered by 50% of the data (aka the interquartile range, IQR), a horizontal line that displays the median, and "whiskers" that depict 1.5 times the IQR or the largest (for the top half) or smallest (for the bottom half) values.
+
+For example, we can summarize the income range for all individuals as follows:
+
+```{r fig.height=3, fig.width=2, echo=2}
+OP <- par(mar=c(0,2,0,0))
+boxplot(dat2$B20004001, na.rm=TRUE)
+par(OP)
+```
+
+Note that the `boxplot` function has no option to specify the data frame as is the case with the `plot`; we must therefore pass it both the data frame name and the variable as a single argument (i.e. `dat2$B20004001`). 
+
+Several variables can be summarized on the same plot. 
+
+```{r fig.height=3, fig.width=3, echo=2}
+OP <- par(mar=c(2,2,1,2))
+boxplot(dat2$B20004001, dat2$B20004007, dat2$B20004013, 
+        names=c("All", "Male", "Female"), main="Median income ($)")
+par(OP)
+```
+
+The `names` parameter labels the x-axis. 
+
+The outliers can be removed from the plot if desired by setting the `outine` parameter to `FALSE`:
+
+```{r fig.height=3, fig.width=3, echo=2}
+OP <- par(mar=c(2,2,1,2))
+boxplot(dat2$B20004001, dat2$B20004007, dat2$B20004013, names=c("All", "Male", "Female"), 
+        main="Median income ($)", outline=FALSE)
+par(OP)
+```
+
+The boxplot graph can also be plotted horizontally by setting the `horizontal` parameter to `TRUE`:
+
+```{r fig.height=3, fig.width=3, echo=2}
+OP <- par(mar=c(2,2,1,1))
+boxplot(dat2$B20004001, dat2$B20004007, dat2$B20004013, names=c("All", "Male", "Female"),
+        main="Median income ($)", outline=FALSE, horizontal = TRUE)
+par(OP)
+```
+
+One can also order the boxplots based on the median values. In our working example, this could involve simply rearranging the variables in the call to `boxplot` by hand. But this option can be tedious and prone to human error if the number of variables is large. The following generates boxplots for yearly grain yields in North America over a 52 year period:
+
+```{r fig.height=3, fig.width=5, echo=2}
+OP <- par(mar=c(2,2,1,1))
+boxplot(dat1b[,2:5])
+par(OP)
+```
+
+(Note the use of the index `dat1b[, 2:5]` which instructs R to plot columns 2 through 5). The boxplot can be ordered by first computing the median for each column then passing the sorted list of column indices to the boxplot function:
+
+```{r fig.height=3, fig.width=5, echo=2:3}
+OP <- par(mar=c(2,2,1,1))
+crop.med <- apply(dat1b[, 2:5], 2, median)
+boxplot(dat1b[, order(crop.med) + 1])
+par(OP)
+```
+
+The first line of code computes the median values for all but the first column (Year) in `dat1b`. This results in a vector of median crop yield values, `crop.med`, where index 1 is `r names(crop.med[1])` and not `Year` as is the case in the `dat1b` data frame (this is why the object `crop.med` is incremented by `+1` in the call to `boxplot`--to ensure that the `r names(crop.med[1])` column is not treated as the "first" column in `dat1b`).
+
+## Histograms
+
+The histogram is another form of data distribution visualization. It consists of partitioning a batch of values into intervals of equal length then tallying their count in each each interval. The length of the each bar represents these counts. For example, we can plot the histogram of maize yields using the `hist` function as follows:
+
+```{r fig.height=3, fig.width=4, echo=2}
+OP <- par(mar=c(4,4,1,1))
+hist(dat1b$Maize, xlab = "Maize", main=NA)
+par(OP)
+```
+
+## Density plot
+
+Histograms have their pitfalls, one of which that changes in the number of bins can drastically affect the appearance of a batch distribution. One alternative is the density plot which, for a series of points, computes the density of values at each location. This generates a "smoothed" look of the distribution of values.
+
+Unlike the other plotting functions, it does not generate a plot but instead, a list of outputs. But the output of `density` can be wrapped with a `plot` function to generate the plot.
+
+```{r fig.height=3, fig.width=4, echo=2:3}
+OP <- par(mar=c(4,4,1,1))
+dens <- density(dat1b$Maize)
+plot(dens, main = "Density distribution of Maize yields")
+par(OP)
+```
+
+# Customizing plots
+
+So far, you have learned how to customize point and line symbols, but this may not be enough. You might want to modify other graphic elements such as the axes layout and label formats for publication. Let's see how we can further customize a plot of median income  for male and female population having attained a HS degree.
+
+First, we plot the points but omit the axes and axes labels with the parameters `axes = FALSE, xlab = NA, ylab = NA`. We will want both axes to cover the same range of values, so we will use the `range` function to find min and max values for both male and female income.
+
+Next, we draw the x axis using the `axis` function. The first parameter to this function is a number that indicates which axis is to be drawn (i.e. 1=bottom x, 2=left y, 3=top x and 4=right y). We will then use the `mtext` function to place the axis label under the axis line.
+
+```{r customplot, fig.height=4, fig.width=5, echo=c(-1,-12)}
+OP <- par(mar=c(4,4,1,4))
+# Plot the points without the axes
+rng <- range(dat2$B20004009, dat2$B20004015, na.rm=TRUE)
+plot(B20004009 ~ B20004015, dat=dat2, pch=20, col=rgb(0,0,0,0.15), 
+     xlim=rng, ylim=rng, axes = FALSE, xlab = NA, ylab = NA )
+
+# Plot the x-axis
+lab <- c("5,000", "25,000", "45,000", "$65,000")
+axis(1, at=seq(5000,65000, length.out=4),  label=lab)
+
+# Plot x label
+mtext("Female median income (HS degree)", side=1, line=2)
+par(OP)
+```
+
+Next, we will tackle the y-axis. We will rotate both the tic labels and axis label horizontally and place the axis label at the top of the axis. This will involve a different approach to that used for the x-axis. First, we need to identify each plot region's corner coordinate values using the `par` function. Second, we will use the `text` function instead of the `mtext` function to place the axis label.
+
+First, let's plot the y-axis with the custom tic labels.
+
+```{r, fig.height=4, fig.width=5, echo=c(-1:-9,-12)}
+OP <- par(mar=c(4,4,1,4))
+# Plot the points without the axes
+rng <- range(dat2$B20004009, dat2$B20004015, na.rm=TRUE)
+plot(B20004009 ~ B20004015, dat=dat2, pch=20, col=rgb(0,0,0,0.15), 
+     xlim=rng, ylim=rng, axes = FALSE, xlab = NA, ylab = NA )
+# Plot the x-axis
+lab <- c("5,000", "25,000", "45,000", "$65,000")
+axis(1, at=seq(5000,65000, length.out=4),  label=lab)
+# Plot x label
+mtext("Female median income (HS degree)", side=1, line=2)
+# Plot the y-axis
+axis(2, las=1, at=seq(5000,65000, length.out=4), label=lab)
+par(OP)
+```
+
+Now let's extract the plot's corner coordinate values.
+
+```{r, fig.show='hide', echo=c(-1:-4, -7)}
+OP <- par(mar=c(4,4,1,4))
+# Plot the points without the axes
+rng <- range(dat2$B20004009, dat2$B20004015, na.rm=TRUE)
+plot(B20004009 ~ B20004015, dat=dat2, pch=20, col=rgb(0,0,0,0.15), 
+     xlim=rng, ylim=rng, axes = FALSE, xlab = NA, ylab = NA )
+loc <- par("usr")
+loc
+par(OP)
+```
+
+The corner location coordinate values are in the plot's x and y units. We want to place the label in the upper left hand corner whose coordinate values are `loc[1]=` `r loc[1]` and `loc[2]=` `r loc[2]`.
+
+```{r, fig.height=4.4, fig.width=5, echo=12}
+OP <- par(mar=c(4,4,3,4))
+# Plot the points without the axes
+rng <- range(dat2$B20004009, dat2$B20004015, na.rm=TRUE)
+plot(B20004009 ~ B20004015, dat=dat2, pch=20, col=rgb(0,0,0,0.15), 
+     xlim=rng, ylim=rng, axes = FALSE, xlab = NA, ylab = NA )
+# Plot the x-axis
+lab <- c("5,000", "25,000", "45,000", "$65,000")
+axis(1, at=seq(5000,65000, length.out=4),  label=lab)
+# Plot x label
+mtext("Female median income (HS degree)", side=1, line=2)
+# Plot the y-axis
+axis(2, las=1, at=seq(5000,65000, length.out=4), label=lab)
+text(loc[1], loc[4], "Male median\nincome", pos = 3, adj = 1, xpd = TRUE)
+par(OP)
+```
+
+
+The string `\n` in the text `"Median\nIncome"` is interpreted in R as being a carriage return--i.e it forces the text that follows this string to be printed on the next line. The other parameters of interest are `pos` and `adj` that position and adjust the label location (type `?axis` for more information on axis parameters) and the parameter `xpd=TRUE` allows for the `text` function to display text outside of the plot region.
+
+# Exporting plots to image file formats
+
+You might need to export your plots as standalone image files for publications. R will export to many different raster image file formats such as jpg, png, gif and tiff, and several vector file formats such as PostScript and PDF. You can specify the image resolution (in dpi), the image height and width, and the size of the margins.
+
+The following example saves the last plot as an uncompressed tiff file with a 5"x6" dimension and a resolution of 300 dpi. This is accomplished by simply book-ending the plotting routines between the `tiff()` and `dev.off()` functions:
+
+```{r, eval=FALSE}
+tiff(filename = "fig1.tif", width = 5, height = 6, units = "in",
+     compression = "none", res = 300)
+
+# Plot the points without the axes
+rng <- range(dat2$B20004009, dat2$B20004015, na.rm=TRUE)
+plot(B20004009 ~ B20004015, dat=dat2, pch=20, col=rgb(0,0,0,0.15), 
+     xlim=rng, ylim=rng, axes = FALSE, xlab = NA, ylab = NA )
+# Plot the x-axis
+lab <- c("5,000", "25,000", "45,000", "$65,000")
+axis(1, at=seq(5000,65000, length.out=4),  label=lab)
+# Plot x label
+mtext("Female median income (HS degree)", side=1, line=2)
+# Plot the y-axis
+axis(2, las=1, at=seq(5000,65000, length.out=4), label=lab)
+text(loc[1], loc[4], "Male median\nincome", pos = 3, adj = 1, xpd = TRUE)
+
+dev.off()
+```
+
+To save the same plot to a pdf file format, simply substitute `tiff()` with `pdf()` and adjust the parameters as needed:
+
+```{r, eval=FALSE}
+pdf(file = "fig1.pdf", width = 5, height = 6)
+
+# Plot the points without the axes
+rng <- range(dat2$B20004009, dat2$B20004015, na.rm=TRUE)
+plot(B20004009 ~ B20004015, dat=dat2, pch=20, col=rgb(0,0,0,0.15), 
+     xlim=rng, ylim=rng, axes = FALSE, xlab = NA, ylab = NA )
+# Plot the x-axis
+lab <- c("5,000", "25,000", "45,000", "$65,000")
+axis(1, at=seq(5000,65000, length.out=4),  label=lab)
+# Plot x label
+mtext("Female median income (HS degree)", side=1, line=2)
+# Plot the y-axis
+axis(2, las=1, at=seq(5000,65000, length.out=4), label=lab)
+text(loc[1], loc[4], "Male median\nincome", pos = 3, adj = 1, xpd = TRUE)
+
+dev.off()
+```
