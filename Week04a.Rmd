@@ -41,14 +41,14 @@ A  subset of `dat1` will be used in this tutorial and will be a *wide* table of 
 ```{r message =FALSE}
 library(dplyr)
 library(tidyr)
-dat1b <- dat1 %>%
+dat1w <- dat1 %>%
   filter(Information == "Yield (Hg/Ha)", 
              Country =="United States of America", 
              Crop == "Oats" | Crop == "Maize" | Crop == "Barley" |
              Crop == "Buckwheat"| Crop == "Rye")                     %>%
   select(Year, Crop, Value)                                          %>%
   spread(key = Crop, value="Value")
-head(dat1b)
+head(dat1w)
 ```
 
 ## `dat2` dataset
@@ -97,11 +97,11 @@ par(OP)
 
 The plot could use additional tweaking, but it may be best to build the plot from scratch as will be demonstrated a few sections down.
 
-By default, the `plot` command will plot points and not lines. To plot lines, add the `type="l"` parameter to the `plot` function. For example, to plot oats crop yield as a function of year from our `dat1b` dataset, type:
+By default, the `plot` command will plot points and not lines. To plot lines, add the `type="l"` parameter to the `plot` function. For example, to plot oats crop yield as a function of year from our `dat1w` dataset, type:
 
 ```{r fig.height=3, fig.width=4, echo=2}
 OP <- par(mar=c(4,4,1,1))
-plot(Oats ~ Year, dat=dat1b, type="l", ylab="Oats yield (Hg/Ha)" )
+plot(Oats ~ Year, dat=dat1w, type="l", ylab="Oats yield (Hg/Ha)" )
 par(OP)
 ```
 
@@ -109,7 +109,7 @@ To plot both points and line, set the `type` parameter to `"b"` (for *both*),
 
 ```{r fig.height=3, fig.width=4, echo=2}
 OP <- par(mar=c(4,4,1,1))
-plot(Oats ~ Year, dat=dat1b, type="b", pch=20, ylab="Oats yield (Hg/Ha)" )
+plot(Oats ~ Year, dat=dat1w, type="b", pch=20, ylab="Oats yield (Hg/Ha)" )
 par(OP)
 ```
 
@@ -117,8 +117,8 @@ The `plot` command can only graph on variable. If you want to add another variab
 
 ```{r fig.height=3, fig.width=4, echo=2:3,results='hold'}
 OP <- par(mar=c(4,4,1,1))
-plot(Oats ~ Year, dat=dat1b, type="l", pch=20, ylab="Oats yield (Hg/Ha)" )
-lines(Barley ~ Year, dat=dat1b, lty=2)
+plot(Oats ~ Year, dat=dat1w, type="l", pch=20, ylab="Oats yield (Hg/Ha)" )
+lines(Barley ~ Year, dat=dat1w, lty=2)
 par(OP)
 ```
 
@@ -126,9 +126,9 @@ Note how the plot does not automatically re-scale to accommodate the new line. T
 
 ```{r fig.height=3, fig.width=4, echo=2:4,results='hold'}
 OP <- par(mar=c(4,4,1,1))
-y.rng <- range( c(dat1b$Oats, dat1b$Barley) )
-plot(Oats ~ Year, dat=dat1b, type="l", ylab="Oats yield (Hg/Ha)", ylim = y.rng)
-lines(Barley ~ Year, dat=dat1b, lty=2)
+y.rng <- range( c(dat1w$Oats, dat1w$Barley) )
+plot(Oats ~ Year, dat=dat1w, type="l", ylab="Oats yield (Hg/Ha)", ylim = y.rng)
+lines(Barley ~ Year, dat=dat1w, lty=2)
 par(OP)
 ```
 
@@ -222,20 +222,20 @@ One can also order the boxplots based on the median values. In our working examp
 
 ```{r fig.height=3, fig.width=5, echo=2}
 OP <- par(mar=c(2,2,1,1))
-boxplot(dat1b[,2:5])
+boxplot(dat1w[,2:5])
 par(OP)
 ```
 
-(Note the use of the index `dat1b[, 2:5]` which instructs R to plot columns 2 through 5). The boxplot can be ordered by first computing the median for each column then passing the sorted list of column indices to the boxplot function:
+(Note the use of the index `dat1w[, 2:5]` which instructs R to plot columns 2 through 5). The boxplot can be ordered by first computing the median for each column then passing the sorted list of column indices to the boxplot function:
 
 ```{r fig.height=3, fig.width=5, echo=2:3}
 OP <- par(mar=c(2,2,1,1))
-crop.med <- apply(dat1b[, 2:5], 2, median)
-boxplot(dat1b[, order(crop.med) + 1])
+crop.med <- apply(dat1w[, 2:5], 2, median)
+boxplot(dat1w[, order(crop.med) + 1])
 par(OP)
 ```
 
-The first line of code computes the median values for all but the first column (Year) in `dat1b`. This results in a vector of median crop yield values, `crop.med`, where index 1 is `r names(crop.med[1])` and not `Year` as is the case in the `dat1b` data frame (this is why the object `crop.med` is incremented by `+1` in the call to `boxplot`--to ensure that the `r names(crop.med[1])` column is not treated as the "first" column in `dat1b`).
+The first line of code computes the median values for all but the first column (Year) in `dat1w`. This results in a vector of median crop yield values, `crop.med`, where index 1 is `r names(crop.med[1])` and not `Year` as is the case in the `dat1w` data frame (this is why the object `crop.med` is incremented by `+1` in the call to `boxplot`--to ensure that the `r names(crop.med[1])` column is not treated as the "first" column in `dat1w`).
 
 ## Histograms
 
@@ -243,7 +243,7 @@ The histogram is another form of data distribution visualization. It consists of
 
 ```{r fig.height=3, fig.width=4, echo=2}
 OP <- par(mar=c(4,4,1,1))
-hist(dat1b$Maize, xlab = "Maize", main=NA)
+hist(dat1w$Maize, xlab = "Maize", main=NA)
 par(OP)
 ```
 
@@ -255,7 +255,7 @@ Unlike the other plotting functions, it does not generate a plot but instead, a 
 
 ```{r fig.height=3, fig.width=4, echo=2:3}
 OP <- par(mar=c(4,4,1,1))
-dens <- density(dat1b$Maize)
+dens <- density(dat1w$Maize)
 plot(dens, main = "Density distribution of Maize yields")
 par(OP)
 ```

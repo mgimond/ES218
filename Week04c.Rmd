@@ -1,0 +1,391 @@
+---
+title: 'Week4: ggplot2 plotting environment'
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+  word_document: default
+---
+
+```{r echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+  dev=c('CairoPNG', 'CairoPDF'),
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8")
+```
+
+> This tutorial will make use of the following R packages:
+>
+> * `dplyr`
+> * `tidyr`
+> * `ggplot2`
+
+# Data
+
+
+```{r cache=TRUE}
+dat1 <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=TRUE)
+dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", header=TRUE)
+```
+
+## `dat1` dataset
+
+`dat1` consists of grain yields by north american countries and by year. The data set was downloaded from http://faostat3.fao.org/ in June of 2014.
+
+A subset of `dat1` will be used in this tutorial in both a *wide* form and a *long* form. The wide form will be called `dat1w` and will be a table of year vs. crop yields.
+
+```{r message =FALSE}
+library(dplyr)
+library(tidyr)
+dat1w <- dat1 %>%
+  filter(Information == "Yield (Hg/Ha)", 
+             Country =="United States of America", 
+             Crop == "Oats" | Crop == "Maize" | Crop == "Barley" |
+             Crop == "Buckwheat"| Crop == "Rye")                     %>%
+  select(Year, Crop, Value)                                          %>%
+  spread(key = Crop, value="Value")
+head(dat1w)
+```
+
+The *long* form version of the subset will be called `dat1l` and will be a *long* form representation of `dat1w` (yield by crop and year).
+
+```{r message =FALSE}
+dat1l <- gather(dat1w, key = "Crop", value = "Yield", 2:6)
+head(dat1l,10)
+```
+
+Another subset will be used in this exercise and will consist of total yields for each year by crop and country.
+
+```{r tidy = FALSE}
+dat1l2 <- dat1 %>%
+  filter(Information == "Yield (Hg/Ha)", 
+         Crop == "Oats" | Crop == "Maize" | Crop == "Barley" | 
+         Crop == "Buckwheat"| Crop == "Rye")                       %>%
+  select( Year, Crop, Country,  Yield = Value)  # Note that we are renaming the Value field
+
+head(dat1l2,15)
+```
+
+
+## `dat2` dataset
+
+`dat2` consists of county income and educational attainment for both the male and female population. A codebook [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv) provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
+
+```{r}
+dat2 <- na.omit(dat2)
+```
+
+As with `dat1`, we will create long forms of `dat2` for use with `lattice` plotting routines. 
+
+The `dat2` dataset has income data broken down by educational attainment and gender. It would therefore be convenient for subsequent plot operations if two variables, `Gender` and (educational) `Level`, were added to the long table version of `dat2`.
+
+We will first generate five educational category vectors whose values are the census data variable names (see the codebook for census variable name descriptions). These category vectors will then be used in the chain operation's `ifelse` functions. We then generate two category vectors for male and female groups--note the use of the `paste()` function in lieu of the combine function `c()` (which could have been used as well). Also note that `dat2` has income values for *all* sexes and *all* educational attainments. We did not create categories for this since they present the "else" option in the `ifelse` function. In other words, if a variable such as `B20004001` is not in any of the educational category vectors (e.g. `NoHS`, `HS`, etc...), then its `Level` value will be `"All"`. Likewise, if the variable is not in either `Male` or `Female` vectors, then the value `"All"` will be assigned to `Gender`.
+
+```{r message =FALSE}
+# Create list of variable names associated with each level
+# of educational attainment
+NoHS <- c("B20004002", "B20004008", "B20004014")  # Less than High School
+HS   <- c("B20004003", "B20004009", "B20004015")  # High School
+AD   <- c("B20004004", "B20004010", "B20004016")  # Some college or associates degree
+BD   <- c("B20004005", "B20004011", "B20004017")  # Bachelor's degree
+Grad <- c("B20004006", "B20004012", "B20004018")  # Graduate or professional degree
+
+# Create list of variable names associated with each gender
+Male   <- paste("B200040", sprintf("%02i", 7:12), sep = "")
+Female <- paste("B200040", sprintf("%02i", 13:18), sep = "")
+
+# Create a long form of the data, and add 
+# descriptive columns for level attained and gender
+dat2b <- dat2 %>%
+  gather(key = "variable", value = "value", -1:-2)  %>%
+  mutate(Level = ifelse(variable %in% NoHS, "NoHS", 
+                        ifelse(variable %in% HS, "HS",
+                               ifelse(variable %in% AD, "AD",
+                                      ifelse(variable %in% BD, "BD",
+                                             ifelse(variable %in% Grad, "Grad", "All")))))) %>%
+  mutate(Gender = ifelse(variable %in% Male, "M", 
+                         ifelse(variable %in% Female, "F", "All")))                         %>%
+  select(State, County, Level, Gender, value)
+head(dat2b)
+tail(dat2b)
+```
+
+Note that we have eliminated references to variable names such as "B20004001" from `dat2b` making it easier to interpret the variable names/values.
+
+In `dat2b` the genders are treated as values for the `Gender` variable. We may wish to have male and female incomes assigned there own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
+
+```{r}
+dat2c <- spread(dat2b, key = Gender, value = value )
+```
+
+We will also take this opportunity to add a new field to `dat2c` called `Region` which will associated each state with a region. R has a built-in vector called `state.region` that assigns a region to each state. 
+
+```{r}
+state.region
+```
+
+However, you'll note that this vector only has region names but makes no reference to states. It's intended to be used with another built-in data vector called `state.abb` or `state.name`. We will combine `state.abb` with `state.region` to create a data frame "lookup table". We will also need to convert the uppercase state abbreviations to lower case using `tolower` so that they match the `dat2b`'s lowercase state abbreviations.
+
+```{r}
+st.reg <- data.frame(State = tolower(state.abb), Region = state.region)
+```
+
+Our income dataset has data for all 50 states as well as the District of Columbia (D.C.) as shown in the following output:
+
+```{r}
+unique(dat2c$State)
+```
+
+But D.C. is not included in the built-in states dataset, so we will add this record the the `st.reg` table and assign D.C. to the `South` region.
+
+```{r}
+st.reg <- rbind(st.reg , data.frame(State="dc", Region="South") )
+```
+
+Now we'll join this look-up table to the `dat2c` data frame. We'll use `dplyr`s `inner_join` function.
+
+```{r}
+dat2c <- inner_join(dat2c, st.reg, by = "State")
+head(dat2c)
+```
+
+# The `ggplot2` package
+
+The `ggplot2` package is designed around the idea that scientific graphics can be deconstructed into a formal system of rules: grammatical rules. The `ggplot2` learning curve is the steepest of all graphing environments encountered thus far, but once mastered it affords the greatest control over graphical design. For an up-to-date list of `ggplot2` functions, you may want to refer to ggplot2's [website](http://docs.ggplot2.org/current/).
+
+A plot in `ggplot2` consists of different *layering* components:
+
++ The **data frame** that houses the data to be plotted.
++ The **geometric** elements to use in the plot (i.e. points, lines, rectangles, etc...)
++ **Aesthetic mappings** which describe how data are to be mapped to the geometric elements
++ **Statistical** elements such as smoothing, binning or transforming the variable
++ **Facets** for conditional plots
++ **Coordinate systems** for defining the plots shape (i.e. cartesian, polar, spatial map projections, etc...)
+
+To access `ggplot2` functions, you will need to load its library:
+
+```{r}
+library(ggplot2)
+```
+
+From a grammatical perspective, a scientific graph is the conversion of *data* to **aesthetic** attributes and **geometric** objects. This is an important concept to grasp since it underlies the construction of all graphics in `ggplot2`.
+
+For example, if we want to generate line plots of crop yield as a function of year using the `dat1l` data frame, we type:
+
+```{r fig.height=3, fig.width=5}
+ggplot(dat1l) + aes(x=Year, y=Yield, color=Crop) + geom_line()
+```
+
+where the function, `ggplot()`, is passed the data frame name whose content will be mapped; the `aes()` function is given data-to-geometry mapping instructions (which tells us which variables are assigned to the x and y axes, and which variable will be used to color the geometry); and `geom_line()` is the geometry type.
+
+If we want to plot points instead of lines, simply substitute with the `geom_point()` geometry.
+
+```{r fig.height=3, fig.width=5}
+ggplot(dat1l) + aes(x=Year, y=Yield, color=Crop) + geom_point(size=0.8)
+```
+
+# Geometries
+
+Examples of a few available geometric elements follow.
+
+## `geom_line`
+
+`geom_line` generates line geometries. We'll use data from `dat1w` to generate a simple plot of oat yield as a function of year.
+
+```{r fig.height=3, fig.width=5}
+ggplot(dat1w) + aes(x=Year, y=Oats) + geom_line() 
+```
+
+Parameters such as color and linetype can be passed directly to the `geom_line()` function:
+
+```{r fig.height=3, fig.width=5}
+ggplot(dat1w) + aes(x=Year, y=Oats) + geom_line(linetype=2, colour = "blue", size=0.4) 
+```
+
+But be careful, if color or linetype is assigned to a variable in `aes()`, any parameter defined in `geom_line()` will overwrite any of the aesthetic arguments. Using the earlier example, we get:
+
+```{r fig.height=3, fig.width=5}
+ggplot(dat1l) + aes(x=Year, y=Yield, colour=Crop) + geom_line(linetype=2, colour = "blue", size=0.4)
+```
+
+This is not the desired outcome. Since a single color is defined in `geom_line`, ggplot assumes that *all* values in the `Yield` column belong to the same series, despite having instructed otherwise in the call to `aes()`
+
+## `geom_point`
+
+This generates point geometries. This is often used in generating scatterplots. For example, to plot male income (variable `B20004013`) vs female income (variable `B20004007`), type:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) 
+```
+
+We modify the point's transparency by passing the `alpha=0.3` parameter to the `geom_point` function.
+
+## `geom_boxplot`
+
+In the following example, a boxplot of `Yield` is generated for each crop type.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat1l) + aes(x=Crop, y=Yield) + geom_boxplot(fill="bisque") 
+```
+
+If we want to generate a single boxplot (for example for all yields irrespective of crop type) we need to pass a *dummy* variable to `x=`:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat1l) + aes(x="", y=Yield) + geom_boxplot(fill="bisque") + xlab("All crops")
+```
+
+## `geom_histogram`
+
+Histograms can be plotted for single variables only (unless faceting is used) as can be noted by the absence of a `y=` parameter in `aes()`:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat1w) + aes(x=Oats) + geom_histogram(fill="grey50") 
+```
+
+The bin widths can be specified in terms of the value's units. In our example, the unit is yield of oats (in Hg/Ha). So if we want to generate bin widths that cover 1000 Hg/Ha, we can type,
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat1w) + aes(x=Oats) + geom_histogram(fill="grey50", binwidth = 1000) 
+```
+
+## Combining geometries
+
+We've already seen how point and line geometries can be combined in an earlier example. We can also combine other geometries such as a linear model line fit:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) + 
+               geom_smooth(method = "lm")
+```
+
+Or a LOESS line fit:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
+               geom_smooth(method = "loess")
+```
+
+The confidence interval can be removed from the smooth geometry by specifying `fill=NA`.
+
+# Tweaking a ggplot2 graph
+
+## Labels
+
+Labels can be explicitly defined using the `xlab()` and `ylab()` functions.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
+               geom_smooth(method = "lm") +
+               xlab("Female income ($)") + ylab("Male income ($)")
+```
+
+## Axes limits
+
+The axis range can be set using `xlim()` and `ylim()`. 
+
+```{r fig.height=3, fig.width=4, warning=FALSE}
+ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
+               geom_smooth(method = "lm") +
+               xlab("Female income ($)") + ylab("Male income ($)") +
+               xlim( c(10000, 75000)) + ylim( c(10000, 75000)) 
+```
+
+# Faceting
+
+## Faceting by categorical variable
+
+Faceting (or conditioning on a variable) can be implemented in `ggplot2` using the `facet_wrap()` function.
+
+```{r fig.height=4, fig.width=6}
+ggplot(dat1l2) + aes(x=Year, y=Yield, color=Crop) + geom_line() + facet_wrap( ~ Country, nrow=1)
+```
+
+The parameter `  ~ Country` tells ggplot to condition the plots on country. If we wanted the plots to be stacked, we would set `nrow` to `2`.
+
+We can condition the plots on two variables such as crops and countries using the `facet_grid` function instead of `facet_wrap`:
+
+```{r fig.height=4, fig.width=6}
+ggplot(dat1l2) + aes(x=Year, y=Yield) + geom_line() + facet_grid( Crop ~ Country)
+```
+
+## Faceting by continuous variable
+
+In the above example, we are faceting the plots based on a categorical variable: `Country` or `crop`. But what if we want to facet the plots based on a continuous variable? For example,  we might be interested in comparing male and female incomes across different female income ranges. This requires that a new categorical field (a factor) be created assigning to each case (row) an income group. We can use the `cut()` function to accomplish this task (we'll also omit all values greater than 100,000):
+
+```{r }
+dat2c$incrng <- cut(dat2c$F , breaks = c(0, 25000, 50000, 75000, 100000) )
+head(dat2c)
+```
+
+In this chunk of code, we create a new variable, `incrng`, which is assigned an income category group depending on which range `dat2c$F` (female income) falls into. The income interval breaks are defined in `breaks=`. In the output, you will note that the factor `incrng` defines a range of incomes (e.g. `(0 , 2.5e+04]`) where the parenthesis `(` indicates that the left-most value is exclusive and the bracket `]` indicates that the right-most value is inclusive. 
+
+However, because we did not create categories that covered all income values in `dat2c$F` we ended up with a few `NA`'s in the  `incrng` column:
+
+```{r}
+summary(dat2c$incrng)
+```
+
+We will remove all rows associated with missing `incrng` values:
+
+```{r}
+dat2c <- na.omit(dat2c)
+summary(dat2c$incrng)
+```
+
+We can list all unique levels in our newly created factor using the `levels()` function.
+
+```{r}
+levels(dat2c$incrng) 
+```
+
+The intervals are not meaningful displayed as is (particularly when scientific notation is adopted). So we will assign more meaningful names to our factor levels as follows:
+
+```{r}
+levels(dat2c$incrng) <-  c("Under 25k", "25k-50k", "50k-75k", "75k-100k")
+head(dat2c)
+```
+
+Now we can facet male vs. female scatterplots by income ranges. We will also throw in a best fit line to the plots.
+
+```{r fig.height=3, fig.width=8, warning=FALSE}
+ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20) +
+                geom_smooth(method = "lm", col="red") + facet_grid( . ~ incrng) 
+```
+
+One reason we would want to explore our data across different ranges of value is to assess the consistency in relationship between variables. In our example, this plot helps assess whether the relationship between male and female income is consistent across income groups.
+
+To highlight differences in income, we will make a few changes to the plots. First, we will reduce the y-axis range to $0-$150k (this will remove a few points from the data); we will force the x-axis and y-axis units to match (`coord_fix()`) so that a unit of $50k on the x-axis has the same length as that on the y-axis; and we will add a 45° line (`geom_abline(c(0,1))` where 0 is the intercept and 1 is the slope) to help visualize the discrepancy (if a point lies above the 45° line, then male's income is greater, if the point lies below, then female's income is greater); we will also reduce the number of tics and assign shorthand notation to income values (such as "50k" instead of "50000"). All this can be accomplished by adding the `scale_x_continuous()` function to the stack of ggplot elements.
+
+
+```{r fig.height=3, fig.width=8, warning=FALSE}
+ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) + ylim( c(0,150000)) +
+                geom_smooth(method = "lm", col="red") + facet_grid( . ~ incrng) + 
+                coord_fixed() + geom_abline(c(0,1), col="grey50") +
+                scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+  
+```
+
+Now let's look at the same data but this time conditioned on educational attainment. In the call to `ggplot`, we will limit the data to all cases with an educational attainment different from `All` (i.e. we will not want to create a plot for all educational attainment).
+
+```{r fig.height=3, fig.width=10, warning=FALSE}
+# Plot M vs F by educational attainment except for Level == All
+ggplot(dat2c[dat2c$Level != "All", ]) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
+                                        ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
+                                        facet_grid( . ~ Level) +  coord_fixed() + 
+                                        geom_abline(c(0,1), col="grey50") +
+                                        scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+```
+
+We can also condition the plots on two variables: educational attainment and region.
+
+```{r fig.height=8, fig.width=10, warning= FALSE}
+ggplot(dat2c[dat2c$Level != "All", ]) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
+                                        ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
+                                        facet_grid( Region ~ Level) +  coord_fixed() + 
+                                        geom_abline(c(0,1), col="grey50") +
+                                        scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+```                                        
+
