@@ -5,7 +5,7 @@ output: html_document
 
 # Introduction
 
-Let's create two batches of numbers: `a` and `b`:
+Let's create two batches of numbers, `a` and `b`:
 
 ```{r message=FALSE}
 library(ggplot2)
@@ -17,7 +17,7 @@ b <- rep(15, 10)
 df <- data.frame(a,b)
 ```
 
-How to the batches differ?
+How do the batches differ?
 
 ```{r echo = FALSE, message =FALSE}
 library(Gmisc)
@@ -48,10 +48,12 @@ dfl <- gather(df, key=Category, value=Value)
 
 ```
 
+
 ```{r echo = FALSE, message =FALSE}
 library(Gmisc)
 htmlTable(as.matrix(as.matrix(cbind(a,b))))
 ```
+
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dfl) + aes(y = Value, x = Category, col=Category) + 
@@ -67,12 +69,12 @@ dfl %>% group_by(Category) %>% summarize(mean = mean(Value) )
 The center value, or **location** (as Cleveland calls it), is one summary statistic we can use to compare batches, but this may not always be enough. For example, does the **spread** or distribution of the batches differ? It's difficult to tell given that the batches are offset, so we'll **level** the batches by subtracting the means from their respective batches.
 
 ```{r fig.height=3, fig.width=4}
-# SUbtract the mean from each value for both a and b
+# Subtract the mean from each value for both a and b
 dfl2 <- dfl %>% 
   group_by(Category) %>%
   mutate_each( funs(. - mean(.)), Spread= Value) 
 
-# Now plot the levelled batches
+# Now plot the leveled batches
 ggplot(dfl2) + aes(y = Spread, x = Category, col=Category) + 
   geom_jitter(position = position_jitter(height = 0, width=0.1))
 ```
@@ -81,13 +83,13 @@ Removing the *location* (or mean) from each value facilitates the comparison of 
 
 # Histograms
 
-A histogram **bins** the values (usually in equal sized bins) and plots the frequency in a which each *bin* is filled. For example, to create a boxplot of batch `a` where each bin size covers one unit, we type:
+A histogram **bins** the values (usually in equal sized bins) and plots the frequency in which each *bin* is filled. For example, to create a histogram of batch `a` where each bin size covers **one** unit, we type:
 
 ```{r fig.height=2, fig.width=4.5}
 ggplot(df) + aes(x=a) +geom_histogram(breaks = seq(6.5,16.5,by=1), colour="white")
 ```
 
-We have two values that fall in the first bin (bin ranging from 6.5 to 7.5), two more value that fall in the second bin (bin value ranging from 7.5 to 8.5) and so on until the second to last bin where we have 3 values that fall in it (bin covering the range 14.5 to 15.5). Note in the parameter `seq(6.5, 16.5, by=1)` we are defining the last bin as covering a range from 15.5 to 16.5 which ends up not receiving a value, hence to grey bar on the plot at that location.
+We have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on until the second to last bin where we have 3 values that fall in it (bin covering the range 14.5 to 15.5). Note in the parameter `seq(6.5, 16.5, by=1)` we are defining the last bin as covering a range from 15.5 to 16.5 which ends up not receiving a value, hence no grey bar on the plot at that location.
 
 We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:
 
@@ -109,7 +111,7 @@ Note that the `coord_flip()` function flips the boxplot on its side (the boxplot
 
 ![Boxplot explaine](./img/boxplot_intro.png)
 
-The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells where the middle 50% of the values lie along the full range of values (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range. Note that this is only an approximation given that some datasets my not lend themselves well to defining 50% of its central values. In our example, only four data points fall within the interquartile range.
+The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie along the full range of values (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range. Note that this is only an approximation given that some datasets my not lend themselves well to defining exactly 50% of their central values. In our example, only four data points fall within the interquartile range.
 
 The long narrow lines extending beyond the interquartile range are sometimes referred to as **whiskers** and are about 1.5 times the width of the interquartile range or the most extreme value, whichever comes first.
 
@@ -145,17 +147,18 @@ a.o
 The concept of sorting values may seem benign, but it is fundamental to many  EDA procedures that require robust techniques.
 
 With the numbers sorted, we can proceed with the computation of $f$, following Cleveland's formula from page 18:
+
 $$
-f_i = frac{i - 0.5}{n} 
+f_i = \frac{i - 0.5}{n} 
 $$
 
 where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. As noted in the Boxplots section, there are many ways one can compute a quantile, however, the differences may not matter much.
 
-For each value in `a` the $f$ value is thus:
+For each value in `a`, the $f$ value is thus:
 
 ```{r}
-i <- 1 : length(a)
-fi <- (i - 0.5) / length(a)
+i    <- 1 : length(a)
+fi   <- (i - 0.5) / length(a)
 a.fi <- data.frame(a.o , fi)
 ```
 
@@ -166,13 +169,14 @@ library(Gmisc)
 htmlTable(as.matrix(as.matrix(cbind(a.o,fi))))
 ```
 
-It is also desirable to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in `a` associated with a quantile of $0.5$; this is because we have an even number of values in our dataset. The solution is to interpolate (or extrapolate) a values based on a desired quantile. The `quantile()` function does just that:
+
+It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in `a` associated with a quantile of $0.5$; this is because we have an even number of values in our dataset. The solution is to interpolate (or extrapolate) a value based on a desired quantile. The `quantile()` function does just that. For example, to find the value associated with a quantile of $0.5$:
 
 ```{r}
 quantile( a, 0.5)
 ```
 
-If we want to get quantile values for a range of fractions, simply pass the values in a combine function:
+If we want to get quantile values for a range of fractions, simply wrap the values with the `c()` function:
 
 ```{r}
 quantile( a, c(0.25, 0.5, 0.75))
@@ -186,7 +190,7 @@ quantile( a, c(0.25, 0.5, 0.75), type = 5)
 
 ## Creating a quantile plot
 
-A batch's quantile is best viewed as a plot where we plot the data as a function of the $f$-values:
+A batch's quantile is best viewed as a plot where we plot the batch values as a function of the $f$-values:
 
 ```{r fig.height=3, fig.width=3}
 ggplot(a.fi) + aes(x=fi, y=a.o) + geom_point() + xlab("f-value")
@@ -195,7 +199,7 @@ ggplot(a.fi) + aes(x=fi, y=a.o) + geom_point() + xlab("f-value")
 If you did not want to go through the trouble of computing the $f$-values and the dataframe `a.fi`, you could simply call the function `stat_qq()` as in:
 
 ```{r fig.height=3, fig.width=3}
-ggplot() + aes( sample=a) + stat_qq(distribution = qunif) +xlab("f-value")
+ggplot() + aes(sample=a) + stat_qq(distribution = qunif) + xlab("f-value")
 ```
 
 Note the slight change in parameter values to `ggplot()`: we are not passing a dataframe to `ggplot` but simply passing an object, `sample = a` to the `aes()` function.
