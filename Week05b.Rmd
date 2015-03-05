@@ -1,0 +1,74 @@
+---
+title: "Comparing distributions"
+output: html_document
+---
+
+Let's compare singer heights between "Bass 2"" and "Tenor 1" group. We will work off of a subset of Cleveland's `singer` dataset.
+
+```{r message=FALSE}
+library(dplyr)
+library(ggplot2)
+df <- lattice::singer
+df2 <- filter(df, voice.part == "Bass 2" | voice.part=="Tenor 1")
+```
+
+Let's plot both datasets side-by-side. We will jitter the points about their category groups to expose overlapping points.
+
+```{r}
+ggplot(df2) + aes(y=height, x=voice.part, col=voice.part) + 
+             geom_jitter(position = position_jitter(width = .1))
+```
+
+Let's get the count and median values for both batches.
+
+```{r}
+df2 %>% group_by(voice.part) %>% summarize(median = median(height), count = n() )
+```
+
+The basest tend to be slightly taller than the Tenor--this is one way to compare the batches. But how do their distributions differ? We will explore this in the next section.
+
+## Boxplots
+
+We can compare the batches using side-by-side boxplots.
+
+```{r}
+ggplot(df2) + aes(x=voice.part, y=height) + geom_boxplot()
+```
+
+The differences in median values is obvious. What's more, the difference in overall height values is mor e pronounced with the boxplot than it is with a simple point distributions plot shown ealrlier. 
+
+Are the spreads between the batches comparable? It's difficult to tell given that the bacthes are offset by about four inches. So let's level the playing field by subtracting the median values from their respective batches.
+
+```{r}
+df2.med <- df2 %>% group_by(voice.part) %>%
+           mutate_each( funs(. - median(.)), NormHeight= height)  
+ggplot(df2.med) + aes(x=voice.part, y=NormHeight) + geom_boxplot()
+```
+
+Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the `Tenor 1` group has a slighlty wider range of heights than the `Bass 2` group. About 50% of singers in the `Tenor 1` group have heights that range five inches whereas the singers in the `Bass 2` group have heights that range four inches. We also note from the that the `Tenor 1` height distribution tends to be skewed torwards taller singers whereas the `Bass 2` height distribution tends to be a little less skewed torward smaller heights.
+
+## The quantile-quantile (q-q) plot
+
+The boxplot is a  five number summary of the data (median, upper/lower quartiles, and upper/lower adjacent values). The boxplot is special case of the quantile plot. We can compute the $f$-value for both batches.
+
+```{r}
+df.qq <- df2 %>% group_by(voice.part) %>%
+        arrange(voice.part, height)   %>%
+        mutate_each( funs( (1:length(.) - 0.5) / n()), f.val=length(height))
+
+```
+
+```{r}
+ggplot(df.qq) + aes(x=f.val, y = height) + geom_line(col="grey") + geom_point()  + facet_grid( voice.part ~ .) 
+```
+
+We can take this a step further and combine the plots to generate a quantile-quantile (q-q) plot.
+
+
+
+It's important to note the difference between a quantile-quantile plot and a scatter plot. The latter is used when pairing of values between variables is explicit  (for example average male and female income for a county). In othe words, the q-q plot does not assume that the value from one group is paired with the value from another group.  This is made more evident with our working example which has unequal number of singers in both groups being compared.
+
+
+
+
+## The Tukey mean-difference plot
