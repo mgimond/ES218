@@ -210,7 +210,7 @@ ggplot(df.md) + aes(x = md.x, y = md.y) + geom_point() + geom_abline( slope=0 ) 
                 xlab("Mean height (in)") + ylab("Difference in height (in)")
 ```
 
-The units on both axes are in inches. It's clear from this plot that differences in heights are pretty much consistent across the quantiles, except near the higher end of the quantiles.
+The units on both axes are in inches. It's clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.
 
 ### Generating an m-d plot using `lattice`
 
@@ -227,4 +227,36 @@ tmd(df2.qq,
     aspect=1,
     ylab = "Difference (inches)",
     xlab = "Mean (inches)")
+```
+
+## Pairwise q-q plots
+
+A **pairwise q-q plot** allows one to view all combinations of batch pairs. This requires that we first find the smallest batch of height values, then interpolate all other batch values to match the smallest batch quantiles. Note that the pairwise plot is symmetrical about the diagonal.
+
+
+```{r fig.width=6, fig.height=6} 
+# Find smallest batch
+f.rng <- min(tapply(singer$height, singer$voice.part, length))
+
+# Define quantile function
+fun1 <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
+
+# Compute quantiles for all factors
+t1 <- aggregate(singer$height ~ singer$voice.part, FUN=fun1, f.rng=f.rng )
+
+# Flip table and name columns
+t2 <- as.data.frame(t(t1[,-1]))
+names(t2) <- t1[,1]
+
+# Label columns of qmat using names of voice parts.
+splom(~t2,  axis.text.cex=0.6, pch = 20,
+      varname.cex=0.8,
+      pscales=3,
+      xlab="Heights (inches)",
+      prepanel.limits = function(x) (range(t2)), # force all axes the same
+      panel = function(x,y,...){
+        panel.grid()
+        panel.splom(x,y,...)
+        panel.abline(0,1,col="grey")
+      })
 ```
