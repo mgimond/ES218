@@ -28,7 +28,7 @@ There are many reasons we might want to compare empirical data to theoretical di
 
  * A theoretical distribution is easy to parameterize. For example, if the shape of the distribution of a batch of numbers can be approximated by a normal distribution we can reduce the complexity of our data to just two values: the mean and the standard deviation.
  
- * If data can be approximated by certain theoretical distributions, then many mainstream statistical procedures can be implemented in our analysis of the data.
+ * If data can be approximated by certain theoretical distributions, then many mainstream statistical procedures can be applied to the data.
  
  * In inferential statistics, knowing that a sample was derived from a population whose distribution follows a theoretical distribution allows us to derive certain properties of the population from the sample. For example, if we know that a sample comes from a normally distributed population, we can define confidence intervals for the sample mean using a t-distribution.
  
@@ -36,18 +36,18 @@ There are many reasons we might want to compare empirical data to theoretical di
  
 But very few empirical datasets follow any theoretical distributions exactly. So the questions usually ends up being "how well does theoretical distribution X fit my data?"
 
-The theoretical quantile-quantile plot is a tool to explore how a batch of numbers deviates from a theoretical distribution and to assess whether the difference is significance for the purpose of the analysis. In the following examples, we will compare empirical data to the normal distribution using the **normal quantile-quantile** plot.
+The theoretical quantile-quantile plot is a tool to explore how a batch of numbers deviates from a theoretical distribution and to assess whether the difference is significant for the purpose of the analysis. In the following examples, we will compare empirical data to the normal distribution using the **normal quantile-quantile** plot.
 
 # The normal q-q plot
 
-The *normal q-q plot* plot is just a special case of the *empirical q-q plot* we've explored so far; the difference being that we assign the normal distribution quantiles to the x-axis.
+The *normal q-q plot* is just a special case of the *empirical q-q plot* we've explored so far; the difference being that we assign the normal distribution quantiles to the x-axis.
 
 ## Drawing a normal q-q plot from scratch
 
 In the following example, we'll compare the `Alto 1` group to a normal distribution.
  
 ```{r}
-df <- lattice::singer
+df   <- lattice::singer
 alto <- df[df$voice.part == "Alto 1", 1]
 ```
 
@@ -57,7 +57,7 @@ First, we need to sort `alto` in ascending order.
 alto <- sort(alto)
 ```
 
-Next,we need to find the matching normal distribution quantiles. We first find the quantiles for `alto`, then use `qnorm` to find the matching normal distribution values from the quantiles.
+Next, we need to find the matching normal distribution quantiles. We first find the quantiles for `alto`, then use `qnorm` to find the matching normal distribution values from the quantiles.
 
 ```{r}
 i  <- 1:length(alto)
@@ -65,7 +65,7 @@ fi <- (i - 0.5) / length(alto)
 x.norm <- qnorm(fi)
 ```
 
-Now we can plot the sorted `alto` values against the normal values
+Now we can plot the sorted `alto` values against the normal values.
 
 ```{r fig.height = 3, fig.width = 3, echo=2}
 OP <-par(mar=c(3,3,1,1))
@@ -73,7 +73,7 @@ plot( alto ~ x.norm, type="p", xlab="Normal quantiles", pch=20)
 par(OP)
 ```
 
-When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45° (or x=y) slope; such a line would only make sense if we were evaluating additive or multiplicative offsets. Here, we are only seeking straightness of the points.
+When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45° (or x=y) slope; the range of values between both sets of numbers do not match. Here, we are only seeking the **straightness** of the points.
 
 There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile of the q-q plot. The x and y values for both points can be computed as follows:
 
@@ -111,7 +111,7 @@ qqline(alto)
 par(OP)
 ```
 
-That's it. Just two lines!
+That's it. Just two lines of code!
 
 ## Using the lattice plotting environment
 
@@ -139,21 +139,23 @@ We can take advantage of the `stat_qq()` function to plot the points, but the eq
 ```{r, fig.height=3, fig.width=3}
 library(ggplot2)
 
-# Find the slope and intercept that passes through the 1st and 3rd quartile
-# of the normal q-q plot
+# Find the slope and intercept of the line that passes through the 1st and 3rd
+# quartile of the normal q-q plot
 
-y <- quantile(alto, c(0.25, 0.75))
-x <- qnorm( c(0.25, 0.75))
-slope <- diff(y) / diff(x)
-int   <- y[1] - slope * x[1]
+y     <- quantile(alto, c(0.25, 0.75)) # Find the 1st and 3rd quartiles
+x     <- qnorm( c(0.25, 0.75))         # Find the matching normal values on the x-axis
+slope <- diff(y) / diff(x)             # Compute the line slope
+int   <- y[1] - slope * x[1]           # Compute the line intercept
 
 # Generate normal q-q plot
+
 ggplot() + aes(sample=alto) + stat_qq(dist=qnorm) + 
            geom_abline(intercept=int, slope=slope)            
 ```
 
 # Trellising a normal q-q plot
 
+## Trellising using `lattice`
 The lattice package is well suited for trellising (or faceting) plots, the following replicates Cleveland's figure 2.11 (except for the layout which we'll setup as a single row of plots)
 
 ```{r fig.height=3, fig.width=9}
