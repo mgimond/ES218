@@ -1,0 +1,122 @@
+---
+title: "Understanding logs"
+output: html_document
+---
+
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+#  dev=c('CairoPNG', 'CairoPDF'),
+  type = "cairo",
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8",
+#  pointsize=12* 200 / 72, # = size * DPI / 72
+  res=200)
+```
+
+
+One of the most popular transformations used in data analysis is the logarithm. It is particularly useful when the change in one value as a function of another is multiplicative and not additive. An example of such a dataset is the compounding interest. Let's assume that we start off with $1000 in an investment account that yields 10% interest each year. We can calculate the size of our investment for the next 50 years as follows:
+
+```{r tidy=FALSE}
+rate <- 0.1               # Rate is stored as a fraction
+y    <- vector(length=50) # Create an empty vector that can hold 50 values
+y[1] <- 1000              # Start 1st year with $1000
+
+# Next, compute the investment ammount for years 2, 3, ..., 50.
+# Each iteration of the loop computes the new amount for year i based 
+# on the previous year's amount (i-1).
+for(i in 2:length(y)){
+  y[i] <- y[i-1] + (y[i-1] * rate)  # Or y[i-1] * (1 + rate)
+}
+```
+
+The vector `y` gives us the amount of our investment for each year over the course of 50 years.
+
+```{r, echo=FALSE}
+y
+```
+
+We can plot the values as follows:
+
+```{r, fig.width=4,fig.height=4}
+# Note that a scatter plot is created from 2 variables, however, if only one
+# is passed to the plot() function, R will assume that the x variable is
+# an equally spaced index.
+plot(y, pch=20)
+```
+
+The change in difference between values from year to year is **not additive**, in other words, the difference between years 48 and 49 is different than that for years 3 and 4.
+
+--------------------------------------------
+Years              Difference
+----------------  ---------------------------
+`y[49] - y[48]`    `r round(y[49] - y[48],2)`
+
+`y[4] - y[3]`      `r round(y[4] - y[3],2)`
+--------------------------------------------
+
+
+However, the ratios between the pairs of years are identical:
+
+-------------------------------------
+Years              Ratio
+----------------  -------------------
+`y[49] / y[48]`    `r y[49] / y[48]`
+
+`y[4] / y[3]`      `r y[4] / y[3]`
+-------------------------------------
+
+
+We say that the change in value is *multiplicative* across the years. In other words, the value amount 6 years out is $value(6) = (yearly\_increase)^{6} \times 1000$ or `1.1^6 * 1000` = `r 1.1^6 * 1000` which matches value `y[7]`. 
+
+When we expect a variable to change multiplicatively as a function of another variable, it is usually best to transform the variable using the logarithm. To see why, plot the log of 'y'.
+
+```{r, fig.width=4,fig.height=4}
+plot(log(y), pch=20)
+```
+
+Note the change from a curved line to a perfectly straight line. The logarithm will produce a straight line if the rate of change for `y` is constant over the range of `x`. This is a nifty property since it makes it so much easier to see if and where the rate of change differs. For example, let's look at the population growth rate of the US from 1850 to 2013.
+
+```{r fig.width=4,fig.height=4}
+dat <- read.csv("http://personal.colby.edu/personal/m/mgimond/R/Data/Population.csv", header=TRUE)
+plot(US ~ Year, dat, type="l") 
+```
+
+The population count for the US follows a slightly curved pattern. It's difficult to see from this plot if the rate of growth is consistent across the years (though there is an obvious jump in population count around the 1950's). Let's log the population count.
+
+```{r fig.width=4,fig.height=4}
+plot(log(US) ~ Year, dat, type="l")  
+```
+
+It's clear from the log plot that the rate of growth for the US has not be consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate of the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).
+
+A logarithm is defined by a base. Some of the most common bases are `10`, `2` and `exp(1)` with the latter being the natural log. The bases can be defined in the call to `log()` by adding a second parameter to that function. For example, to apply the log base 2 to the 5th value of the vector `y`, type `log( y[5], 2)`. To apply the natural log to that same value, simply type `log( y[5], exp(1))`. If you don't specify a base, `R` will default to the natural log.
+
+The choice of a log base will not impact the shape of the logged values in the plot, only in its value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with  whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.
+
+```{r fig.width=6, fig.height=4, echo=FALSE}
+ly1 <- log(y,2)
+ly2 <- log(y,10)
+brk <- round(seq(min(ly1), max(ly1), by=2))
+                
+OP <- par(mar=c(3,7,2,5))
+plot(log(y,2), type="p", pch=20, axes=FALSE, ylab=NA)
+axis(2, at=brk, label=round(log(2^brk,10),2), line=3.5, las=2, 
+     col="blue",col.ticks = "blue", col.axis = "blue")
+axis(2, at=brk, labels=brk, hadj=1, las=2)
+axis(4, at=brk, labels = 2^brk, las=2)
+axis(1, outer=FALSE)
+mtext("Base 2", 2, las=2, adj=1.2, padj=-12)
+mtext("Base 10", 2, las=2, padj=-12, adj=2.3,col="blue")
+mtext("Amount ($)", 4, las=2, padj=-13)
+box()
+grid()
+par(OP)
+
+```
+
+A rule of thumb is to use log base 10 when the range of values to be logged covers 3 or more powers of ten, $\geq 10^3$ (for example, a range of 5 to 50,000); if the range of values covers 2 or fewer powers of ten, $\leq 10^2$(for example, a range of 5 to 500) then a natural log or a log base 2 log is best.
