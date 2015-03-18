@@ -1,8 +1,18 @@
 ---
-title: "Understanding logs"
-output: html_document
+title: "Re-expressing values"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
 ---
 
+# Introduction
+
+Many batches of numbers do not always follow a nice symmetrical distribution. This is typical of count data which, because of a bounded minimum (usually 0) and unbounded maximum, tend to have skewed distributions. Non-symmetrical and/or skewed distributions do not lend themselves well to visual exploration and can therefore mask simple patterns. A solution to this problem is non-linear **re-expression** (aka transformation) of the values. In univariate analysis the objectives are to **symmetrize** the distribution and/or **equalize** the spread. In multivariate analysis, the objective is to usually linearize the relationship between variables and/or to normalize the residual in a regression model.
+
+One popular form of re-expression is the **log** (naturla or base 10). The other is the **box-cox** family of transformations (of which the *log* is a special case).
+
+# The log transformation
 
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(
@@ -73,7 +83,7 @@ Years              Ratio
 
 We say that the change in value is *multiplicative* across the years. In other words, the value amount 6 years out is $value(6) = (yearly\_increase)^{6} \times 1000$ or `1.1^6 * 1000` = `r 1.1^6 * 1000` which matches value `y[7]`. 
 
-When we expect a variable to change multiplicatively as a function of another variable, it is usually best to transform the variable using the logarithm. To see why, plot the log of 'y'.
+When we expect a variable to change multiplicatively as a function of another variable, it is usually best to transform the variable using the logarithm. To see why, plot the log of `y`.
 
 ```{r, fig.width=4,fig.height=4}
 plot(log(y), pch=20)
@@ -86,17 +96,17 @@ dat <- read.csv("http://personal.colby.edu/personal/m/mgimond/R/Data/Population.
 plot(US ~ Year, dat, type="l") 
 ```
 
-The population count for the US follows a slightly curved pattern. It's difficult to see from this plot if the rate of growth is consistent across the years (though there is an obvious jump in population count around the 1950's). Let's log the population count.
+The population count for the US follows a slightly curved (convex) pattern. It's difficult to see from this plot if the rate of growth is consistent across the years (though there is an obvious jump in population count around the 1950's). Let's log the population count.
 
 ```{r fig.width=4,fig.height=4}
 plot(log(US) ~ Year, dat, type="l")  
 ```
 
-It's clear from the log plot that the rate of growth for the US has not be consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate of the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).
+It's clear from the log plot that the rate of growth for the US has not been consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate over the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).
 
 A logarithm is defined by a base. Some of the most common bases are `10`, `2` and `exp(1)` with the latter being the natural log. The bases can be defined in the call to `log()` by adding a second parameter to that function. For example, to apply the log base 2 to the 5th value of the vector `y`, type `log( y[5], 2)`. To apply the natural log to that same value, simply type `log( y[5], exp(1))`. If you don't specify a base, `R` will default to the natural log.
 
-The choice of a log base will not impact the shape of the logged values in the plot, only in its value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with  whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.
+The choice of a log base will not impact the shape of the logged values in the plot, only in its absolute value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with  whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.
 
 ```{r fig.width=6, fig.height=4, echo=FALSE}
 ly1 <- log(y,2)
@@ -120,3 +130,73 @@ par(OP)
 ```
 
 A rule of thumb is to use log base 10 when the range of values to be logged covers 3 or more powers of ten, $\geq 10^3$ (for example, a range of 5 to 50,000); if the range of values covers 2 or fewer powers of ten, $\leq 10^2$(for example, a range of 5 to 500) then a natural log or a log base 2 log is best.
+
+# The Box-Cox transformation
+
+The Box-Cox family of transformations offers a broader range of re-expression options (which includes the log). The values are re-expressed using algorithm:
+
+$$
+re-expressed(x) = \frac{x^p -1}{p}\; for\; p\neq 0
+$$
+$$
+re-expressed(x) = ln(x)\; for\; p = 0
+$$
+
+The objective is to find a value for $p$ from a "ladder" of powers (e.g. -1, -1/2, 0, 1/2, 1) that does a good job in re-expressing the batch of values. Technically, $p$ can take on any value. But in practice, we normally pick a value for $p$ that may be "interpretable" in the context of our analysis. For example, a log transformation (`p=0`) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of $p$ may not be directly interpretable or may not be of concern to the analyst.
+
+A nifty solution to finding an appropriate $p$ is to create a function whose input is the vector (that we want to re-express) and a $p$ parameter we want to explore.
+
+```{r}
+BC <- function(x, p) {
+    if(p == 0) {
+        log(x)
+    } else {
+        if (p < 0) {
+            -(x^p)
+        } else {
+            x^p
+        }
+    }
+} 
+```
+
+To use the custom function `BC` simply pass two vectors: the batch of numbers being re-expressed and the $p$ parameter.
+
+```{r fig.width=3, fig.height=2, echo=2:6}
+OP <- par( mar=c(2,2,1,1))
+# Create a skewed distribution of 50 random values
+a <- rgamma(50, shape=1)
+
+# Let's look at the skewed disitribution
+boxplot(a, horizontal = TRUE)
+par(OP)
+```
+
+The batch is strongly skewed to the right. Let's first try a square-root transformation (`p=1/2`)
+
+```{r fig.width=3, fig.height=2, echo=2:3}
+OP <- par(mar=c(2,2,1,1))
+a.re <- BC(a, p = 1/2)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That certainly helps minimize the skew, but the distribution still lacks symmetry. Let's try a log transformation (`p=0`):
+
+```{r fig.width=3, fig.height=2, echo=2:3}
+OP <- par(mar=c(2,2,1,1))
+a.re <- BC(a, p = 0)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That's a little too much over-correction; we don't want to substitute a right skew for a left skew. Let's try a power in between (i.e.  `p=1/4`):
+
+```{r fig.width=3, fig.height=2, echo=2:3}
+OP <- par(mar=c(2,2,1,1))
+a.re <- BC(a, p = 1/4)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That's much better. The distribution is now nicely balanced about its median.
