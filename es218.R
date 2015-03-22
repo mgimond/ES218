@@ -10,10 +10,10 @@
 #   Exploratory Data Analysis, by John Tukey
 
 bc <- function(x, p = 0) {
-  if(i == 0) {
+  if(p == 0) {
     z <- log(x)
   } else {
-    z <- (x^i - 1)/i
+    z <- (x^p - 1)/p
   }
 }
 
