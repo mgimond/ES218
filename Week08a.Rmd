@@ -21,12 +21,12 @@ knitr::opts_chunk$set(
 
 # Letter value summaries
 
-The boxplot is a five number summary of a batch of values that gives us a handle on the symmetry (or lack thereof) of the data. The five numbers consist of the median, the inter-quartile values and the upper and lower adjacent values (aka whiskers). The **letter value summary** was introduced by John Tukey and extends  the boxplot's 5 number summary by exploring the symmetry of the batch for different levels or quantiles of the data.
+The boxplot is a five number summary of a batch of values that gives us a handle on the symmetry (or lack thereof) of the data. The five numbers consist of the median, the inter-quartile values and the upper and lower adjacent values (aka whiskers). The **letter value summary** was introduced by John Tukey and extends  the boxplot's 5 number summary by exploring the symmetry of the batch for depth levels other than the half (median) or the fourth (quartiles).
 
 ## Constructing the letter value summary
 
 ```{r echo=FALSE}
-n<-11;set.seed(13);x <- sample(1:30,n)
+n<-11;set.seed(13); x <- sample(1:30,n)
 ```
 
 Let's start with a simple batch of numbers: `r x`. 
@@ -71,7 +71,7 @@ If our batch consisted of even number of values, we would need to drop the ½ fr
 
 Note that the hinges are similar to the quartiles but because they are computed differently, their values may be slightly different.
 
-### The other letter summaries (E, D, C, B, A, etc..)
+### Find the other letter summaries (E, D, C, B, A, etc..)
 
 SO far, we've found the median (M)  and the hinges (H). We keep computing the depths for each outer group of values delimited by the outer extreme values and the previous depth. For example, the mid-point of the outer quarters gives us our **eights** (**E**):
 
@@ -116,8 +116,7 @@ lsum(x)
 
 # Fine tuning re-expression
 
-A lot can be learned by plotting the mid-summary values on a graph. Unlike the boxplot which gives us just one mid-summary value, the median, the letter values give us many mid-summary values.
-
+A lot can be learned by plotting the mid-summary values on a graph. Unlike the boxplot which gives us just one mid-summary value (i.e. the median), the letter values give us many mid-summary values.
 
 ```{r, fig.width=3, fig.height=2, echo=FALSE}
 OP <- par(mar=c(1,2,1,1))
@@ -130,3 +129,17 @@ par(OP)
 
 The mids drop steadily (at least for the first three letter values) indicating skeweness towards lower values for the mid three quarters of the batch. If all mid-summary values were equal, then we would have a perfectly balanced batch. If the mid-summary
 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+source("http://mgimond.github.io/ES218/es218.R")
+
+df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
+
+ggplot(df) +aes(y=bc(mean.length,0), x=dimension) +geom_boxplot()
+
+df %>% group_by(dimension) %>% 
+  do(as.data.frame( lsum(.$mean.length, l=6) )) %>%
+  ggplot(.) + aes(x=letter, y=bc(mid,-1)) + geom_point() + facet_grid(.~dimension)
+```
