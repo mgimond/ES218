@@ -1,0 +1,41 @@
+---
+title: "Fine-tuning re-expressions"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+#  dev=c('CairoPNG', 'CairoPDF'),
+  type = "cairo",
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8"
+)
+```
+
+# Fine tuning re-expression
+
+A lot can be learned by plotting the mid-summary values on a graph. Unlike the boxplot which gives us just one mid-summary value (i.e. the median), the letter values give us many mid-summary values.
+
+The mids drop steadily (at least for the first three letter values) indicating skeweness towards lower values for the mid three quarters of the batch. If all mid-summary values were equal, then we would have a perfectly balanced batch. If the mid-summary
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+source("http://mgimond.github.io/ES218/es218.R")
+
+df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
+
+ggplot(df) +aes(y=bc(mean.length,0), x=dimension) +geom_boxplot()
+
+df %>% group_by(dimension) %>% 
+  do(as.data.frame( lsum(.$mean.length, l=6) )) %>%
+  ggplot(.) + aes(x=letter, y=bc(mid,-1)) + geom_point() + facet_grid(.~dimension)
+```
