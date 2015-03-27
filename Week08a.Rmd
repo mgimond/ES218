@@ -1,5 +1,5 @@
 ---
-title: "Fine tuning re-expressions with letter value summaries"
+title: "Re-expressing values"
 output:
   html_document:
     toc: yes
@@ -15,131 +15,286 @@ knitr::opts_chunk$set(
   type = "cairo",
   cache = FALSE,
   warning = FALSE,
-  encoding = "UTF-8"
-)
+  encoding = "UTF-8",
+#  pointsize=12* 200 / 72, # = size * DPI / 72
+  res=200)
 ```
 
-# Letter value summaries
 
-The boxplot is a five number summary of a batch of values that gives us a handle on the symmetry (or lack thereof) of the data. The five numbers consist of the median, the inter-quartile values and the upper and lower adjacent values (aka whiskers). The **letter value summary** was introduced by John Tukey and extends  the boxplot's 5 number summary by exploring the symmetry of the batch for depth levels other than the half (median) or the fourth (quartiles).
+# Introduction
 
-## Constructing the letter value summary
+Many batches of numbers do not always follow a nice symmetrical distribution. This is typical of count data which, because of a bounded minimum (usually 0) and unbounded maximum, tend to have skewed distributions. Non-symmetrical and/or skewed distributions do not lend themselves well to visual exploration and can therefore mask simple patterns. A solution to this problem is non-linear **re-expression** (aka transformation) of the values. In univariate analysis the objectives are to **symmetrize** the distribution and/or **equalize** the spread. In multivariate analysis, the objective is to usually linearize the relationship between variables and/or to normalize the residual in a regression model.
 
-```{r echo=FALSE}
-n<-11;set.seed(13); x <- sample(1:30,n)
+Re-expression of batches has the following properties:
+
+ * The order of the values do not change; this means that the transformed median is the new median and the transformed quartiles are the new quartiles. Note that in some cases, these values can change if interpolation between points are needed.
+ 
+ * Relative proximity of values are preserved in the re-expressed batch. For example, if the third ordered value in the original batch is closer to the forth ordered value than the second ordered value, that relationship is preserved in the re-expressed batch.
+
+![Re-expression properties](img/Reexpression_properties.png)
+
+
+One popular form of re-expression is the **log** (natural or base 10). The other is the **box-cox** family of transformations (of which the *log* is a special case).
+
+# The log transformation
+
+One of the most popular transformations used in data analysis is the logarithm. The log, $y$, of a value $x$ is the power to which the base must be raised to produce $x$. This requires that the log function be defined by a **base**, $b$, such as `10`, `2` or `exp(1)` (the latter defining the natural log).
+
+$$
+y = log_b(x) \Leftrightarrow  x=b^y 
+$$
+
+In R, the base is defined by passing the parameter `base=` to the `log()` function as in `log(x , base=10)`.
+
+Re-expressing with the log is particularly useful when the change in one value as a function of another is multiplicative and not additive. An example of such a dataset is the compounding interest. Let's assume that we start off with $1000 in an investment account that yields 10% interest each year. We can calculate the size of our investment for the next 50 years as follows:
+
+```{r tidy=FALSE}
+rate <- 0.1               # Rate is stored as a fraction
+y    <- vector(length=50) # Create an empty vector that can hold 50 values
+y[1] <- 1000              # Start 1st year with $1000
+
+# Next, compute the investment ammount for years 2, 3, ..., 50.
+# Each iteration of the loop computes the new amount for year i based 
+# on the previous year's amount (i-1).
+for(i in 2:length(y)){
+  y[i] <- y[i-1] + (y[i-1] * rate)  # Or y[i-1] * (1 + rate)
+}
 ```
 
-Let's start with a simple batch of numbers: `r x`. 
+The vector `y` gives us the amount of our investment for each year over the course of 50 years.
 
-### Order the values
-
-First, we order the numbers from lowest to highest.
-
-![Letter value summary](./img/letter_value_summary_a.png)
-
-### Find the median (M)
-
-Next, we find the median. It's the location in the enumerated values that splits the batch into two equal sets of values. If the number of values is odd, then the median is the value furthest from the ends. If the number of values in the batch is even, then the median is the average of the two middle values, each furthest from its end. A simple formula to identify the element number (or depth) of the batch associated with the median is:
-
-$$
-depth\ of\ median = \frac{n + 1}{2}
-$$
-
-where $n$ is the number of values in the batch. In our example, we have 11 values, so the the median is (11 + 1)/2 or 6; it's the 6th element from the left (or the right) of the sorted values. 
-
-![Letter value summary](./img/letter_value_summary_median.png)
-
-If our batch consisted of an even number of values such as 10, the the median would be the 5.5th value which does not coincide with an existing value. This would require that we find the 5th and 6th element in the batch, then compute their average to find the median.
-
-The median is the value furthest from the extreme values; it's said to have the greatest **depth** (e.g. a depth of 6 in our example). The minimum and maximum values have the lowest depth with a depth value of 1, each. 
-
-
-
-### Find the hinges (H)
-
-Next, we take both halves of our batch of ordered numbers and find the middle of each. These mid points are referred to as **hinges**. They can be easily computed by modifying the formula used to find the median: we simply substitute the value $n$ with the depth associated with the median, $d(M)$ (i.e. the median becomes an extreme value in this operation).
-
-$$
-depth\ of\ hinge = \frac{d(M) + 1}{2}
-$$
-
-In our working example, the depth of the median is 6, therefore the depth of the hinge is (6+1)/2 = 3.5. So the hinge is the 3.5th element from the left (or right) of the first half of the batch and the 3.5th element from the left (or right) of the second half of the batch. Since the depth does not fall on an existing value, we need to compute it using the two closes values (depth 3 and depth 4). This gives us (8+11)/2=9.5 for the left hinge and (22+24)/2=23 for the right hinge.
-
-![Letter value summary](./img/letter_value_summary_hinge.png)
-
-If our batch consisted of even number of values, we would need to drop the ½ fraction from depth of the median before computing the depth of the hinge. For example, if we had 10 values the depth of the median would be 5.5 and the depth of the hinge would be calculated as (5+1)/2.
-
-Note that the hinges are similar to the quartiles but because they are computed differently, their values may be slightly different.
-
-### Find the other letter summaries (E, D, C, B, A, etc..)
-
-SO far, we've found the median (M)  and the hinges (H). We keep computing the depths for each outer group of values delimited by the outer extreme values and the previous depth. For example, the mid-point of the outer quarters gives us our **eights** (**E**):
-
-$$
-depth\ of\ eights = \frac{d(H) + 1}{2}
-$$
-
-or, after dropping the ½ fraction from the depth of the hinge, (3+1)/2=2.
-
-This continues until we've exhausted all depths (i.e. until we reach a depth of 1 associated with the minimum and maximum values). 
-Once past the eight, we label each subsequent depths using   letters in reverse lexicographic order starting with **D** (for sixteenth) then **C**, **B**, **A**, **Z**, **Y**, etc... 
-
-In our working example, we stop at a depth of **D** (though some will stop at a depth of two and only report the extreme values thereafter).
-
-### The mids and spreads
-
-Once we've identified the values associated with each depth, we compute the **middle** value for each depth pair. For example, the middle value for the paired hinges is 16.25; the middle value for the paired eights is 14; and so on. We can also compute the **spread** for each depth by computing the difference between each paired value.
-
-![Letter value summary](./img/letter_value_summary_b.png)
-
-The letter value summary is usually reported in tabular form:
-
-```{r echo=FALSE}
-source("http://mgimond.github.io/ES218/es218.R")
-x.lsum <- lsum(x)
-knitr::kable(x.lsum)
+```{r, echo=FALSE}
+y
 ```
 
-A custom function is available on the course website that will compute the letter value summaries. To access the function (named `lsum`) source the R `es218.R` script as follows.
+We can plot the values as follows:
+
+```{r, fig.width=4,fig.height=4}
+# Note that a scatter plot is created from 2 variables, however, if only one
+# is passed to the plot() function, R will assume that the x variable is
+# an equally spaced index.
+plot(y, pch=20)
+```
+
+The change in difference between values from year to year is **not additive**, in other words, the difference between years 48 and 49 is different than that for years 3 and 4.
+
+--------------------------------------------
+Years              Difference
+----------------  ---------------------------
+`y[49] - y[48]`    `r round(y[49] - y[48],2)`
+
+`y[4] - y[3]`      `r round(y[4] - y[3],2)`
+--------------------------------------------
+
+
+However, the ratios between the pairs of years are identical:
+
+-------------------------------------
+Years              Ratio
+----------------  -------------------
+`y[49] / y[48]`    `r y[49] / y[48]`
+
+`y[4] / y[3]`      `r y[4] / y[3]`
+-------------------------------------
+
+
+We say that the change in value is *multiplicative* across the years. In other words, the value amount 6 years out is $value(6) = (yearly\_increase)^{6} \times 1000$ or `1.1^6 * 1000` = `r 1.1^6 * 1000` which matches value `y[7]`. 
+
+When we expect a variable to change multiplicatively as a function of another variable, it is usually best to transform the variable using the logarithm. To see why, plot the log of `y`.
+
+```{r, fig.width=4,fig.height=4}
+plot(log(y), pch=20)
+```
+
+Note the change from a curved line to a perfectly straight line. The logarithm will produce a straight line if the rate of change for `y` is constant over the range of `x`. This is a nifty property since it makes it so much easier to see if and where the rate of change differs. For example, let's look at the population growth rate of the US from 1850 to 2013.
+
+```{r fig.width=4,fig.height=4}
+dat <- read.csv("http://personal.colby.edu/personal/m/mgimond/R/Data/Population.csv", header=TRUE)
+plot(US ~ Year, dat, type="l") 
+```
+
+The population count for the US follows a slightly curved (convex) pattern. It's difficult to see from this plot if the rate of growth is consistent across the years (though there is an obvious jump in population count around the 1950's). Let's log the population count.
+
+```{r fig.width=4,fig.height=4}
+plot(log(US) ~ Year, dat, type="l")  
+```
+
+It's clear from the log plot that the rate of growth for the US has not been consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate over the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).
+
+A logarithm is defined by a base. Some of the most common bases are `10`, `2` and `exp(1)` with the latter being the natural log. The bases can be defined in the call to `log()` by adding a second parameter to that function. For example, to apply the log base 2 to the 5th value of the vector `y`, type `log( y[5], 2)`. To apply the natural log to that same value, simply type `log( y[5], exp(1))`. If you don't specify a base, `R` will default to the natural log.
+
+The choice of a log base will not impact the shape of the logged values in the plot, only in its absolute value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with  whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.
+
+```{r fig.width=6, fig.height=4, echo=FALSE}
+ly1 <- log(y,2)
+ly2 <- log(y,10)
+brk <- round(seq(min(ly1), max(ly1), by=2))
+                
+OP <- par(mar=c(3,7,2,5))
+plot(log(y,2), type="p", pch=20, axes=FALSE, ylab=NA)
+axis(2, at=brk, label=round(log(2^brk,10),2), line=3.5, las=2, 
+     col="blue",col.ticks = "blue", col.axis = "blue")
+axis(2, at=brk, labels=brk, hadj=1, las=2)
+axis(4, at=brk, labels = 2^brk, las=2)
+axis(1, outer=FALSE)
+mtext("Base 2", 2, las=2, adj=1.2, padj=-12)
+mtext("Base 10", 2, las=2, padj=-12, adj=2.3,col="blue")
+mtext("Amount ($)", 4, las=2, padj=-13)
+box()
+grid()
+par(OP)
+
+```
+
+A rule of thumb is to use log base 10 when the range of values to be logged covers 3 or more powers of ten, $\geq 10^3$ (for example, a range of 5 to 50,000); if the range of values covers 2 or fewer powers of ten, $\leq 10^2$(for example, a range of 5 to 500) then a natural log or a log base 2 log is best.
+
+# The Box-Cox transformation
+
+The Box-Cox family of transformations offers a broader range of re-expression options (which includes the log). The values are re-expressed using algorithm:
+
+$$
+re-expressed(x) = \frac{x^p -1}{p}\; for\; p\neq 0
+$$
+$$
+re-expressed(x) = ln(x)\; for\; p = 0
+$$
+
+The objective is to find a value for $p$ from a "ladder" of powers (e.g. -1, -1/2, 0, 1/2, 1) that does a good job in re-expressing the batch of values. Technically, $p$ can take on any value. But in practice, we normally pick a value for $p$ that may be "interpretable" in the context of our analysis. For example, a log transformation (`p=0`) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of $p$ may not be directly interpretable or may not be of concern to the analyst.
+
+A nifty solution to finding an appropriate $p$ is to create a function whose input is the vector (that we want to re-express) and a $p$ parameter we want to explore.
 
 ```{r}
-source("http://mgimond.github.io/ES218/es218.R")
+BC <- function(x, p) {
+    if(p == 0) {
+        log(x)
+    } else {
+        if (p < 0) {
+            -(x^p)
+        } else {
+            x^p
+        }
+    }
+} 
 ```
 
-Then to generate the letter summary function for a batch of values `x`,
+To use the custom function `BC` simply pass two vectors: the batch of numbers being re-expressed and the $p$ parameter.
 
-```{r}
-x <- c(22, 8, 11, 3, 26, 1, 14, 18, 20, 25, 24)
-lsum(x)
-```
+```{r fig.width=3, fig.height=2, echo=2:7}
+OP <- par( mar=c(2,2,1,1))
+# Create a skewed distribution of 50 random values
+set.seed(9)
+a <- rgamma(50, shape=1)
 
-
-# Fine tuning re-expression
-
-A lot can be learned by plotting the mid-summary values on a graph. Unlike the boxplot which gives us just one mid-summary value (i.e. the median), the letter values give us many mid-summary values.
-
-```{r, fig.width=3, fig.height=2, echo=FALSE}
-OP <- par(mar=c(1,2,1,1))
-plot(x.lsum$mid, type="b", pch=16, xlab=NA, ylab="Mid-summary",
-     axes=FALSE, ylim=c(min(x.lsum$mid-1),max(x.lsum$mid+1) ))
-axis(2)
-text(1:nrow(x.lsum),x.lsum$mid, x.lsum$letter, pos=3)
+# Let's look at the skewed disitribution
+boxplot(a, horizontal = TRUE)
 par(OP)
 ```
 
-The mids drop steadily (at least for the first three letter values) indicating skeweness towards lower values for the mid three quarters of the batch. If all mid-summary values were equal, then we would have a perfectly balanced batch. If the mid-summary
+The batch is strongly skewed to the right. Let's first try a square-root transformation (`p=1/2`)
+
+```{r fig.width=3, fig.height=2, echo=2:3}
+OP <- par(mar=c(2,2,1,1))
+a.re <- BC(a, p = 1/2)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That certainly helps minimize the skew, but the distribution still lacks symmetry. Let's try a log transformation (`p=0`):
+
+```{r fig.width=3, fig.height=2, echo=2:3}
+OP <- par(mar=c(2,2,1,1))
+a.re <- BC(a, p = 0)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That's a little too much over-correction; we don't want to substitute a right skew for a left skew. Let's try a power in between (i.e.  `p=1/4`):
+
+```{r fig.width=3, fig.height=2, echo=2:3}
+OP <- par(mar=c(2,2,1,1))
+a.re <- BC(a, p = 1/4)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That's much better. The distribution is now nicely balanced about its median.
+
+# How quantile plots behave in the face of skewed data
+
+It can be helpful to simulate distributions of difference skewness to see how a quantile or a normal quantile plot may behave.
+
+## Quantile plots
+
+A beta distribution is used to simulate a range of distributions from right skew to left skew. The top row shows the different density distribution plots; the bottom row shows the **quantile plots** for each distribution.
 
 
-```{r}
-library(dplyr)
-library(ggplot2)
-source("http://mgimond.github.io/ES218/es218.R")
+```{r, echo=FALSE, fig.width=9,fig.height=4}
+# q.q function
+# =============
+# Function will generate q-q  plot and line
+# given two vectors: a (y-axis) and b (x-axis)
 
-df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
+q.q <- function(a,b){
+  probs <-  c(0.25, 0.75)
+  la <- length(a)
+  lb <- length(b)
+  a  <- sort(a)
+  b  <- sort(b)
+  fa <- ( 1:la - 0.5) / la
+  fb <- ( 1:lb - 0.5) / lb
+  if (la < lb) {
+    b <- approx(fb, b, fa)$y 
+  } else if( la > lb) {
+    a <- approx(fa, a, fb)$y
+  } else{}
+  y <- quantile(a,probs)
+  x <- quantile(b,probs)
+  slope <- diff(y)/diff(x)
+  int <- y[1] - slope * x[1]
+  plot(a ~ b, cex=0.7, pch=20, col="blue")
+  abline(int,slope)
+}
 
-ggplot(df) +aes(y=bc(mean.length,0), x=dimension) +geom_boxplot()
+#################
+# Quantile plots
+#################
 
-df %>% group_by(dimension) %>% 
-  do(as.data.frame( lsum(.$mean.length, l=6) )) %>%
-  ggplot(.) + aes(x=letter, y=bc(mid,-1)) + geom_point() + facet_grid(.~dimension)
+# Set sample size and compute uniform
+# values
+
+n  <- 1000 # Number of simulated samples
+fi <- (1:n - 0.5)/n
+b.shp1 <- c(1, 5 , 50, 10, 10)
+b.shp2 <- c(10,  10 , 70, 5, 1)
+
+# Generate quantile plots (uniform q-q)
+
+b  <- fi
+
+OP <- par( mfcol = c(2,5), mar = c(2,2,1,1) )
+for (i in 1:5 ) {
+  a <- qbeta(fi,shape1=b.shp1[i], shape2 = b.shp2[i])
+  plot(density(a),main=NA,xlab=NA)
+  q.q(a,b)
+}
+par(OP)
+```
+
+## Normal q-q  plots
+
+A beta distribution is used to simulate a range of distributions from right skew to left skew. The top row shows the different density distribution plots; the bottom row shows the **normal q-q plots** for each distribution.
+
+```{r, echo=FALSE, fig.width=9,fig.height=4}
+# Generate normal q-q plots
+
+b  <- qnorm(fi)
+
+OP <- par( mfcol = c(2,5), mar = c(2,2,1,1) )
+for (i in 1:5 ) {
+  a <- qbeta(fi,shape1=b.shp1[i], shape2 = b.shp2[i])
+  plot(density(a),main=NA,xlab=NA)
+  q.q(a,b)
+}
+par(OP)
+
 ```

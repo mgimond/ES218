@@ -76,3 +76,37 @@ lsum <- function (x, l = 5, all = TRUE)
   }
   return(out)
 } 
+
+# Spread-level table
+# ================================================
+#
+# Purpose:
+#  To generate a spread-level table (as a dataframe).
+#  df = input dataframe
+#  x  = category or group column
+#  y  = value column
+#  
+
+sl <- function(x,y,df) {
+  require(dplyr)
+  xx <- eval(substitute(x), df)
+  yy <- eval(substitute(y), df)
+
+  df1 <- data.frame(grp=xx,y=yy)
+  df2 <- df1 %>%
+        arrange(grp,y)                                 %>%
+        group_by(grp)                                  %>%
+        summarise( n = n(),
+                   M = (n - 1) / 2 ,
+                   H = ( floor(M) - 1 ) / 2,
+                   med = log(nth(y,M)),
+                   Hlo = nth(y,floor(H)),
+                   Hhi = nth(y,ceiling(n() + 1 - H)),
+                   sprd = log(Hhi - Hlo) )             %>%
+        select(grp, med, sprd)                          %>%
+        data.frame()
+  
+  return(df2)
+}
+
+
