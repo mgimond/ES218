@@ -298,3 +298,84 @@ for (i in 1:5 ) {
 par(OP)
 
 ```
+
+# Re-expressing to stabilize spread
+
+A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland's book (see the section titled "Spread-location plot" on the course website for an alternative version of the plot). We will make use of a custom function called `sl` available in the `ES218.R` script to help construct the s-l plot using .
+
+```{r fig.weight=4, fig.width=4}
+library(dplyr)
+
+source("http://mgimond.github.io/ES218/es218.R")
+
+df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
+
+# Create s-l table from custom sl() function
+df.sl <- sl(x=dimension, y=mean.length, df)
+
+# Plot spread vs median
+plot(sprd ~ med, df.sl, pch=16)
+```
+
+The plot suggests a monotonic relationship between spread and median. Next, we'll  fit a line to this scatter plot and compute its slope. We'll use the `lm()` function, but note that many other line fitting operations could be used as well.
+
+```{r echo=-1, fig.weight=4, fig.width=4}
+plot(sprd ~ med, df.sl, pch=16)
+# Run regression model
+M <- lm(sprd ~ med, df.sl)
+abline(M, col="red")
+```
+
+The slope can be used to come up with the best power transformation to minimize the systematic increase in spread. The power to use is 1 - $slope$. The slope can be extracted from the model as using the `coef` function:
+
+```{r}
+coef(M)
+```
+
+The second value in the output is the slope. So the power to use is 1 - 2.65 or -1.65. We will use the custom Box-Cox power transformation function `bc` (also available in the ES218.R script) to re-express the `mean.length` values. We'll add a new column to `df`:
+
+```{r}
+df$bc1.mean.length <- bc(df$mean.length, -1.65)
+```
+
+Let's first generate the boxplot of the original values.
+
+```{r fig.height=3, fig.width=4}
+boxplot(mean.length ~ dimension, df)
+```
+
+Now let's generate the boxplot of the re-expressed values.
+
+```{r fig.height=3, fig.width=4}
+boxplot(bc1.mean.length ~ dimension, df)
+```
+
+Recall that our goal here was to minimize any relationship between spread ane median. The re-expression seems to have done the trick. 
+
+In his book, Cleveland proposes a power transformation of -1; a power less aggressive than ours. Let's see how well it performs with our data.
+
+```{r fig.height=3, fig.width=6, fig.keep='all'}
+df$bc2.mean.length <- bc(df$mean.length, -1)
+
+df1.sl <- sl(x=dimension, y=bc1.mean.length, df)
+df2.sl <- sl(x=dimension, y=bc2.mean.length, df)
+
+OP <- par(mfrow=c(1,2))
+plot(sprd ~ med, df2.sl, pch=16, main="p = -1")
+plot(sprd ~ med, df1.sl, pch=16, main="p = -1.65")
+par(OP)
+```
+
+Neither plot seems to do a bad job in stabilizing spread. To help decide which power to choose, let's see how well they help balance the spread about the median.
+
+```{r}
+
+library(ggplot2)
+
+df %>% group_by(dimension) %>% 
+  do(as.data.frame( lsum(.$mean.length, l=6) )) %>%
+  ggplot(.) + aes(x=letter, y=bc(mid,-1)) + geom_point() + facet_grid(.~dimension)
+```
+
+
+
