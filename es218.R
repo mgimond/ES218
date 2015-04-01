@@ -25,7 +25,7 @@ bc <- function(x, p = 0) {
 #  x = vector
 #  p = vector of power
 #  l = level of summary values to output (or truncate to to smallest
-#      letter assoicated with level 1)
+#      letter associated with level 1)
 #  all = generate upper, lower and mid summaries if TRUE or
 #        generate mid summaries only if FALSE
 #  
@@ -42,14 +42,14 @@ lsum <- function (x, l = 5, all = TRUE)
   # letter summary labels
   let <- c("M", "H", "E", "D", "C", "B", "A", "Z", "Y", "X")
   # Remove missing values
-  x <- na.omit(x)
+  x   <- na.omit(x)
   # Sort values
-  x <- sort(x)
+  x   <- sort(x)
   # Find depths from each end
-  n <- length(x)
-  Lrnk <- vector()
-  Mrnk <- vector()
-  Rrnk <- vector()
+  n       <- length(x)
+  Lrnk    <- vector()
+  Mrnk    <- vector()
+  Rrnk    <- vector()
   Lrnk[1] <- n
   Mrnk[1] <- n
   Rrnk[1] <- n
