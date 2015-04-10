@@ -99,9 +99,11 @@ points(cbind(r.lm$xmed, r.lm$ymed), pch=16,col="red")
 
 ```
 
-Note that here, we do not include a same point in two median calculations. This implies that for the mid-third of the data, we do not include the point straddling the left boundary line when computing its median value. Likewise with the right-third of the data. The x median values are `r r.lm$xmed` and the y median values are `r r.lm$ymed`.
+Note that we do not include the same point in any two median calculations. This implies that for the mid-third of the data, we do not include the point straddling the left boundary line when computing its median value. Likewise with the right-third of the data. 
 
-Finally, we fit the tail end medians with a straight lines.
+The x median values are `r r.lm$xmed` and the y median values are `r r.lm$ymed`.
+
+Finally, we fit the tail end medians with a straight line.
 
 ```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,echo=FALSE}
 plot(x,y, pch=20)
@@ -110,7 +112,7 @@ points(cbind(r.lm$xmed, r.lm$ymed), pch=16,col="red")
 lines(cbind(r.lm$xmed[-2], r.lm$ymed[-2]),lty=1,col="#444444")
 ```
 
-This gives us the slope of the line (we can, of course, extend the lines to the boundaries of the x range of values). Note that we have not completely eliminated the influence of the outlier; this is not our goal. The outlier does take part in helping fit the line, but it doesn't wield disproportionate influence on the line. 
+This gives us the slope of the line (we can, of course, extend the lines to the boundaries of the x range of values). Note that we have not completely eliminated the influence of the outlier. The outlier does take part in helping fit the line, but it doesn't wield the same disproportionate influence on the line as did the regression line.
 
 So what purpose does the middle median serve? It helps us adjust the vertical location of the line. The goal is to nudge the line upward or downward about 1/3 of the way towards the middle median value (parallel to the y-axis). This then defines the line's *intercept* (which is where the line crosses the y-axis when x = 0).
 
@@ -121,34 +123,58 @@ points(cbind(r.lm$xmed, r.lm$ymed), pch=16,col="red")
 lines(cbind(r.lm$xmed[-2], r.lm$ymed[-2] + 0.4),lty=1,col="#444444")
 ```
 
+But you need not stop here. The next logical step is to look at the residuals. The following two plots compare the residuals from the regression model and the 3-point summary plot.
+
+```{r fig.height=2.5, fig.width=6,  small.mar=TRUE,echo=FALSE}
+OP <- par(mfrow = c(1,2))
+M.line <- line(x,y)
+r1 <- residuals(M)
+r2 <- residuals(M.line)
+plot(x, r1, ylim = range(r1,r2), pch=16, main="lm residual", ylab="Residual")
+plot(x, r2, ylim = range(r1,r2), pch=16, main="3pt residual", ylab="Residual")
+par(OP)
+```
+
+Recall that we are seeking to minimize an non-random pattern in the residual. Even though a monotonic increase in residuals is discernible in both plots, the 3-point summary residual has less of a slope and (ignoring the outlier) has a smaller spread.
+
+The 3-point summary fitting process can be extended by adding the residual slope to the original slope. This process is iterated as many times as needed until the residual slope is close to zero.
 
 ## Bisquare
 
-In his book (pages 112 - 119), Cleveland uses the *bisquare* estimation method to come up with a robust line.
+In his book (pages 112 - 119), Cleveland uses the *bisquare* estimation method to come up with a robust line. The first step is to run a linear regression model on the data then to extract the residuals. Next, a weighting scheme is fit to the residuals such that the points associated with outlier residuals are assigned the smallest weight and the points associated with the central residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals no longer show outliers. 
 
-```{r}
+```{r fig.height=2.5, fig.width=6, small.mar=TRUE}
+# Create the bisquare function
 wt.bisquare <- function(u, c=6) {
    ifelse( abs(u/c) < 1, (1-(u/c)^2)^2, 0)
 }
 
+# Assign an equal weight to all points
 wt <- rep(1,length(x))
 
-plot(x,y, pch=20)
+# Compute the regression, then assign weights based on residual values
 for(i in 1:10){
   dat.lm <- lm(y ~ x ,weights=wt)
   wt <- wt.bisquare( dat.lm$res/ median(abs(dat.lm$res)), c=6 )
 }
-abline(dat.lm, col=rgb(1,0,0,0.3))
 
+# Plot the data and the resulting line
+plot(x,y, pch=20)
+abline(dat.lm, col=rgb(1,0,0,0.3))
 ```
 
-## Sample data
+In the above example, the bisquare method does a great job in eliminating the outlier's influence. 
 
-```{r}
+### Sample data
+
+In this example, we fit both a un-modified regression line (dashed grey line) and a bisquare modified regression line (red line) to yearly mean temperature values for the Gulf of Maine.
+
+```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
 library(lubridate)
 library(dplyr)
 df <- read.csv("http://mgimond.github.io/ES218/Data/GoM_hist.csv")
 
+# Subset the data then compute the yearly mean temperature
 df2 <- df %>%
        mutate(Date = mdy(Date),
               Year = year(Date)) %>%
@@ -156,65 +182,68 @@ df2 <- df %>%
        group_by( Year) %>%
        summarize( AvgTemp = mean(Temp, na.rm=T)) 
 
-plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
-abline( lm( AvgTemp ~ Year, dat=df2) , col="red")
-```
+# Generate the base regression model
+M1 <- lm( AvgTemp ~ Year, dat=df2)
 
-
-```{r}
-
+# Run the bisquare regression model 
+# We'll use the wt.bisquare() function from the last chunk of code
 wt <- rep(1,length(df2$Year))
 
-plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
 for(i in 1:10){
-  dat.lm <- lm(AvgTemp ~ Year,df2 ,weights=wt)
-  wt <- wt.bisquare( dat.lm$res/ median(abs(dat.lm$res)), c=6 )
+  M2 <- lm(AvgTemp ~ Year,df2 ,weights=wt)
+  wt <- wt.bisquare( M2$res/ median(abs(M2$res)), c=6 )
 }
 
-# Plot the robust line
-abline( dat.lm, col="red")
+# Plot the points
+plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
 
-# Plot the default regression line
-abline( lm( AvgTemp ~ Year, dat=df2) , col="grey", lty=2)
+# Add the robust line
+abline( M2, col="red")
+
+# Add the default regression line
+abline( M1 , col="grey50", lty=2)
 ```
 
+Note the difference in slopes: The robust regression method computes a slope of `r round(coef(M2)[2],4)` while the original regression model computes a slope of `r round(coef(M1)[2],4)`.
 
 # Robust loess
 
-The bisquare 
+The bisquare estimation method can also be extended to the loess smoothing function. The following chunk of code fits both an uncorrected robust loess (dashed curve) and a bisquare loess (red curve) the the Gulf of Maine temperature data.
 
-Default loess
 
-```{r}
-# Fit a robust loess
-
+```{r fig.height=2.5, fig.width=6,  small.mar=TRUE,  fig.show='hold'}
+# Fit a regular loess model
 lo <- loess(AvgTemp ~ Year,df2, span=1/3)
 
-plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
-lines(df2$Year, predict(lo), col="red")
-```
-
-
-
-```{r}
-# Fit a robust loess
+# Fit a robust loess model
 wt <- rep(1,length(df2$Year))
 
-plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
+
 for(i in 1:10){
-  dat.lm <- loess(AvgTemp ~ Year,df2, weights = wt, span=1/3)
-  wt <- wt.bisquare( dat.lm$res/ median(abs(dat.lm$res)), c=6 )
+  lo2 <- loess(AvgTemp ~ Year,df2, weights = wt, span=1/3)
+  wt <- wt.bisquare( lo2$res/ median(abs(lo2$res)), c=6 )
 }
 
-# Robust loess
-lines(df2$Year, predict(dat.lm), col="red")
+# Plot the data
+plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
 
-# Add default loess
-lines(df2$Year, predict(lo), col="grey", lty=2)
+# Add the robust loess
+lines(df2$Year, predict(lo2), col="red")
+
+# Add the default loess
+lines(df2$Year, predict(lo), col="grey50", lty=2)
 
 ```
 
+The two curves overlap for most of the data range except between the years 2000 and 2010 where the un-corrected loess curve is unduly influenced by one or two rogue points incorrectly suggesting that a  *hump* in water temperature occurred between the years 2000 and 2010.
 
+The R base `loess` function and `ggplot2`'s `stat_smooth` function have the ability to compute a robust version of the loess by invoking the `family = "symmetric"` parameter as in,
 
+```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
+library(ggplot2)
+ggplot(df2) + aes(x=Year, y=AvgTemp) + geom_point() + 
+              stat_smooth(family="symmetric", se=FALSE, span=1/3, col="red") +  # Robust loess
+              stat_smooth( se=FALSE, span=1/3,col="grey50", lty=2)              # Regular loess
+```
 
-
+The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.
