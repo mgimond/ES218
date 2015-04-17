@@ -1,0 +1,174 @@
+---
+title: "Slicing data and identifying discontinuities"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+  word_document: default
+---
+
+```{r echo = FALSE, message = FALSE}
+knitr::knit_hooks$set(small.mar = function(before, options, envir) {
+    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
+})
+
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+  dev=c('CairoPNG', 'CairoPDF'),
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8")
+```
+
+# Introduction
+
+Let's start off by downloading a sample dataset.
+
+```{r}
+df <- read.csv("http://mgimond.github.io/ES218/Data/Sample1.csv")
+```
+
+Next, we'll plot the data.
+
+```{r fig.width=5, fig.height=3, small.mar=TRUE}
+plot(y ~ x, df, pch=20, col=rgb(0,0,0,.3))
+```
+
+The points *appear* to follow a linear pattern. Let's run a regression model then add the modeled line to the data.
+
+```{r fig.width=5, fig.height=3, small.mar=TRUE}
+M1 <- lm( y ~ x, df)
+plot(y ~ x, df, pch=20, col=rgb(0,0,0,.3))
+abline(M1, col="red")
+```
+
+The line seems to do a decent job in depicting the *overall* trend but the relationship does not appear perfectly linear. Let's check the residuals.
+
+```{r fig.width=5, fig.height=3, small.mar=TRUE}
+R1 <- residuals(M1)
+plot(R1 ~ df$x , pch=20, col=rgb(0,0,0,.3))
+abline(h=0, lty=2)
+```
+
+The residuals do not appear uniformly distributed across the range of x-values. There appears to be a dip in residual values between ~95 and ~107 followed by an increase beyond ~107. Let's plot the residuals using `ggplot` so as to take advantage of the built-in loess fitting function `stat_smooth`.
+
+
+```{r fig.width=5, fig.height=3}
+library(ggplot2)
+ggplot(df) + aes(x=x,y=residuals(M1)) +geom_point() +stat_smooth(span=1/2, se=FALSE)
+```
+
+The *kinks* in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slope and intercept)..
+
+Sometimes, the data may represent outcomes from different processes given different ranges in independent (x) values. Since the residual plot seems to suggest that the kinks occur are `x=95` and `x=106`, we'll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled `1`, `2`, and `3` and will be assigned to a new column called `grp`. This new column will then be used to facet the scatter plots and associated loess curve. We'll use the `cut()` function to perform this task (note that we could have also used the `ifesle()` function used earlier in the course).
+
+
+```{r fig.width=7, fig.height=3}
+library(dplyr)
+df3 <- df %>% mutate(grp = cut(x,c(-Inf,95,106,Inf), labels = c(1,2,3)) )
+
+ggplot(df3) + aes(x=x,y=y) + geom_point(col="grey") +
+              stat_smooth(se=F) + facet_grid(.~grp)
+```
+
+The segmented plots seem to confirm our earlier suspicion that the data followed three separate linear processes. We can extract the slope and intercept for each segment using the following chunk of code:
+
+```{r}
+df3 %>% 
+      group_by(grp) %>% 
+      do( M1 = coef(lm(y ~ x,.) ) )  %>%
+      data.frame()
+```
+
+The second column represents the intercept and the third column represents the slope.
+
+# Example
+
+> Disclaimer: the analysis presented here is only exploratory and does not mirror the complete analysis conducted by Vincent *et al.* nor the one conducetd by Stone.
+
+The following data are pulled from the paper titled "*Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000*" (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the the 90th and 10th percentiles respectively within each year. The percentiles are calculated for the 1961 to 2000 period.
+
+
+
+```{r message=FALSE}
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+
+Year <- 1960:2000
+PerC <- c(11.69,9.33,14.35,10.73,14.15,11.16,13,12.13,14.25,10.01,11.94,14.35,
+          10.83,9.38,11.5,10.44,12.66,7.55,9.77,9.81,8.9,8.51,7.02,6.83,9.67,
+          7.84,7.11,8.56,10.59,7.93,8.85,8.8,8.75,8.18,7.16,9.91,10.15,6.58,
+          6.44,9.43,8.03)
+PerH <- c(8.62,10.1,6.67,11.13,5.71,9.48,7.63,8.12,7.2,9.64,8.42,5.71,11.72,
+          11.32,7.2,7.17,7.46,13.17,9.28,8.75,12.38,10,13.83,17.59,10.14,
+          9.84,11.23,14.39,9.44,8.26,12.15,12.45,13.14,13.67,15.22,11.79,11.16,
+          20.37,17.56,11.13,11.49)
+d1 <- data.frame(Year, PerC, PerH)
+
+d1.l <- gather(d1, key=Temp, value=Percent, -Year)
+```
+
+Let's plot the data and fit a straight line to the points.
+
+```{r fig.width=6, fig.height=3}
+ggplot(d1.l) + aes(x=Year, y=Percent) + geom_point() +
+               stat_smooth(method="lm", se=F) +facet_grid( . ~ Temp)
+```
+
+The plot on the left is for percent cold nights and the one on the right is for percent hot nights. At first glance, the trends seem real and monotonic. Let's fit a loess to see if the trend are indeed monotonic.
+
+```{r fig.width=6, fig.height=3}
+ggplot(d1.l) + aes(x=Year, y=Percent) + geom_point() +
+               stat_smooth(method="loess", se=F) +facet_grid( . ~ Temp)
+```
+
+The patterns seem to be segmented around the 1975-1980 period for both plots suggesting that the observed trends may not be monotonic. In fact, there appears to be a prominent kink in the percent cold data around the mid to late 1970`s. A similar, but not as prominent kink can also be observed in the percent hot data at around the same time period.
+
+## Changepoint
+
+In a comment to *Vincent et al.*'s paper, R.J. Stone argues that the trend observed in the percent hot and cold dataset is not monotonic but segmented instead. In other words, there is an abrupt change in patterns for both datasets that make it *seem* as though a monotonic trend exists when in fact the data may follow relatively flat patterns for two different segments of time. He notes that the abrupt change (which her refers to as a **changepoint**) occurs around the 1976 and 1977 period. He suggests that this time period coincides with a change in the Pacific decadal oscillation (PDO)  pattern. PDO refers to an ocean/atmospheric weather pattern that spans multiple decades and that is believed to impact global climate. 
+
+The following chunk of code loads the PDO data then summarises by year before plotting the resulting dataset.
+
+```{r fig.width=7, fig.height=3.5}
+d1  <- read.table("http://mgimond.github.io/ES218/Data/PDO.dat", header=TRUE, na.strings = "-9999")
+dpo <- d1 %>%
+       gather(key=Month, value=DPO, -YEAR) %>%
+       group_by(YEAR) %>%
+       summarise(DPO = median(DPO) )
+
+ggplot(dpo) + aes(x=YEAR, y=DPO) + geom_line() + stat_smooth(se=F, span=1/4) + 
+             geom_vline(xintercept =c(1960, 1976,2000), lty=3)
+```
+
+The contrast in PDO indexes between the 1960-1976 period and the 1976-2000 period is obvious with the pre-1977 index values appearing to remain relatively flat over a 15 year period and with the post-1977 index appearing to show a gradual increase towards a peak around the early 1990's.
+
+To see if distinct patterns emerge from the percent hot and cold data before and after 1976, we'll split the data into two segments using a cutoff year of 1976-1977. Values associated with a period prior to 1977 will be assigned a `seg` value of `0` and those associated with a post-1977 period will be assigned a `seg` value of `1`.
+
+```{r}
+d2.l  <- d1.l  %>% 
+  mutate(seg = ifelse(Year < 1977, "0", "1"))
+```
+
+Next, we'll plot the data across four facets:
+
+```{r fig.width=6, fig.height=5}
+ggplot(d2.l) + aes(x=Year, y=Percent) + geom_point() +
+               stat_smooth(method="lm", se=F) + facet_grid( seg ~ Temp)
+```
+
+The "stair-step" pattern for the percent cold nights becomes more obvious in this plot. Note too that the lines appear *flatter* suggesting little change over the course of the years within each segment. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period whereas the pre-1977 period seems to suggest little change in percent hot nights. 
+
+# Reference
+
+**Original paper**: Vincent, L. A., et al., 2005. *Observed trends in indices of daily temperature extremes in South America 1960–2000.* J. Climate, 18, 5011–5023.
+
+**Comment to the paper** Stone, R. J., 2011. *Comments on "Observed trends in indices of daily temperature extremes in South America 1960–2000."* J. Climate, 24, 2880–2883.
+
+**The reply to the comment**  Vincent, L. A., et al., 2011. *Reply*, J. Climate, 24, 2884-2887.
+
+
+
