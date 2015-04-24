@@ -24,15 +24,15 @@ knitr::opts_chunk$set(
 
 # Anatomy of a two-way table
 
-Let's decompose the following table which represents infant mortality rates (per 1000 live births) by region and by a father's education attainment for the years 1964 through 1966 (Hoaglin *et al.*).
+Let's decompose the following table which represents infant mortality rates (per 1000 live births) by region and by a father's educational attainment for the years 1964 through 1966 (Hoaglin *et al.*).
 
 ![A 2-way table](img/twoway_1.png)
 
-A two way table is composed of three variables: 
+A two-way table is composed of three variables: 
 
   * a **row factor** which has four  levels in our working example: Northeast, North Central, South and West,
-  * a **column factor** which has five levels in our working example: ≤8, 9-11, 12, 13-15 and 16≥ years of education,
-  * **response variables** of which we have 4 (rows) x 5 (columns) = twenty all together.
+  * a **column factor** which has five levels in our working example: under 8, 9-11, 12, 13-15 and 16 and greater years of education,
+  * **response variables** of which we have 4 (rows) x 5 (columns) = 20 all together.
 
 A two-way table is an extension of univariate analyses conducted earlier in the course where a continuous variable (e.g. singer height) is grouped by category (e.g. tenor). Here, we explore a variable across *two * categories.
 
@@ -42,7 +42,7 @@ $$
 y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 $$
 
-where $y_{ij}$  is the **response variable** for row $i$ and column $j$, $\mu$ is the overall typical value (hereafter referred to as the common value), $\alpha_i$ is the **row effect**, $\beta_j$ is the **column effect** and  $\epsilon_{ij}$ is the **residual** or value left over after *all* effects are taken into account.
+where $y_{ij}$  is the **response variable** for row $i$ and column $j$, $\mu$ is the overall typical value (hereafter referred to as the *common value*), $\alpha_i$ is the **row effect**, $\beta_j$ is the **column effect** and  $\epsilon_{ij}$ is the **residual** or value left over after *all* effects are taken into account.
 
 The goal of this analysis is to decompose the response variables into their respective effects (education of father and region) via an iterative process where row medians and column medians are removed from the response variables repeatedly until the row and column medians approach zero.  
 
@@ -73,13 +73,13 @@ dotchart( as.matrix(df), cex=0.7)
 
 The plot helps visualize any differences in mortality rates across different father educational attainment levels. There seems to be a gradual decrease in child mortality with increasing father educational attainment. 
 
-But the plot does help spot differences across regions (except for the `ed12` group). We can generate another plot where region becomes the main grouping factor and educational attainment sub-levels. We do this my wrapping the matrix with the transpose function `t()`.
+But the plot does not help spot differences across regions (except for the `ed12` group). We can generate another plot where region becomes the main grouping factor. We do this by wrapping the matrix with the transpose function `t()`.
 
 ```{r small.mar=TRUE, fig.width=3, fig.height=3.8}
 dotchart( t(as.matrix(df)), cex=0.7)
 ```
 
-There seems to be higher death rates for the `NC` and `S` regions and relatively lower rates for the `W` and `NE` regions. 
+At first glance, there seems to be higher death rates for the `NC` and `S` regions and relatively lower rates for the `W` and `NE` regions. But our eyes may be fooled by outliers in the data.
 
 Next, we'll generate side-by-side boxplots to compare the effects between both categories. Note that we'll need to create a *long* version of the table using the `tydir` package.
 
@@ -99,7 +99,7 @@ par(OP)
 
 So at this point the plots suggest that there may be a father's educational attainment effect as well as a regional effect on infant mortality with the former effect being possibly more important. 
 
-Next we will attempt to quantify these effects using the Tukey's **median polish**.
+Next we will attempt to quantify these effects using Tukey's **median polish**.
 
 ## Median polish
 
@@ -118,7 +118,7 @@ Next, a **residual table** is created (highlighted in light green in the followi
 
 The row medians are then copied to the left hand side of the new residual table. These values represent the “row effect” in this first iteration. 
 
-Note that at this point, we are assigning values of zero to the column effect row since column effects have not yet been computed.
+Note that at this point, we are assigning values of zero to the *column effect* row since column effects have not yet been computed.
 
 ### Step 3: Compute the column medians
 
@@ -132,13 +132,13 @@ A new residual table (shown in light orange in the following figure) is created 
 
 Next, the column medians (red) are copied to the column effect row (shown in blue). These values represent the “column effect” in this first iteration.
 
-At this stage of the workflow, we subtract each row effect values in the light-green table by the median value of the common row effects (`20.2` in this working example). This will re-center the row effect values thus aiding us in assessing the effect each region factor has on the observed variables.
+At this stage of the workflow, we subtract each "row effect" (the left-hand column) values in the light-green table by the median value of the common row effects (`20.2` in this working example). This will re-center the row effect values thus aiding us in assessing the effect each region factor has on the observed variables.
 
 ![A 2-way table](img/twoway_5.png)
 
-Before moving on to the next step, we need to include the row effect median value, `20.2`, to the common effect variable. This will ensure that the additive formula remains balanced (the “why” will become clearer later in this tutorial). 
+However, before moving on to the next step, we need to include the row effect median value, `20.2`, to the common effect variable. This will ensure that the additive formula remains balanced (the “why” will become clearer later in this tutorial). 
 
-Compute the common effect value by summing the original common effect (whose initial value was `0`) and the median value from the row effect, `20.2`.
+Compute the common effect value by summing the original common effect (whose initial value was `0`) with the median value from the row effect, `20.2`.
 
 ![A 2-way table](img/twoway_6.png)
 
@@ -158,7 +158,7 @@ Next, the new row median values are added to the old row effect values. Note tha
 
 ![A 2-way table](img/twoway_9.png)
 
-The common effect value must also be updated by adding the column effects median to the original common effect variable.
+The common effect value must also be updated by adding the *column effects* median to the original *common effect* variable.
 
 ![A 2-way table](img/twoway_10.png)
 
@@ -244,7 +244,7 @@ The results differ slightly from the those produced using the median polish. Rec
 
 So what can we gain from the "mean" polish? Well, as it turns out, it serves as the basis of the **two-way ANOVA**, hence it's popularity.
 
-# Reference
+# References
 
 *Understanding Robust and Exploratory Data Analysis*, D.C. Hoaglin, F. Mosteller and J.W. Tukey, 1983.
 
