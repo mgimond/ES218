@@ -176,6 +176,81 @@ The goal is to iterate through the row and column smoothing operations until the
 
 ![A 2-way table](img/twoway_13.png)
 
+An animation of the median polish iterations follows. Note how, at the end of the iterations, the *common factor* ends up contributing the largest effect. Also note the one abnormally high residual in the southern region associated with 8th grade education.
+
+```{r clock, fig.width=6, fig.height=4, fig.show='animate', warning=FALSE, message=FALSE, echo=FALSE, results='hide', aniopts="controls"}
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+rnames = c("Effects", "NE","NC","S","W")
+
+df2 <- data.frame(Regions    = factor(rnames,levels=rnames),
+                 Effects    = c(0,0,0,0,0),
+                 ed8       = c(0,25.3,32.1,38.8,25.4), 
+                 ed9to11   = c(0,25.3,29,31,21.1),
+                 ed12      = c(0,18.2,18.8,19.3,20.3),
+                 ed13to15  = c(0,18.3,24.3,15.7,24),
+                 ed16      = c(0,16.3,19,16.8,17.5)
+)
+
+
+# Original table
+
+df2.l <- df2  %>%
+  gather(key=Edu, value = Deaths, -Regions) %>%
+  mutate( Regions = factor(Regions, levels=rev(rnames)))
+ggplot(df2.l) + aes(x=Edu, y=Regions, fill=Deaths) +geom_tile() +
+  geom_text(aes(fill = df2.l$Deaths, label = round(df2.l$Deaths, 1))) +
+    scale_fill_gradient(low = "white", high = "red") +
+   labs(title = "Raw Table", cex=2) +
+  theme(plot.title = element_text(size = rel(3)))
+   
+
+# Iteration 1
+M1 <- medpolish(as.matrix(df2[-1,-1:-2]), maxiter = 1)
+dfa <- rbind( t(as.data.frame(M1[3]))  , as.data.frame(M1$residuals) )
+dfb <- cbind( Regions    = factor(rnames,levels=rnames), Effects=c(M1$overall, M1$row) , dfa)
+
+df2.l <- dfb  %>%
+  gather(key=Edu, value = Deaths, -Regions) %>%
+  mutate( Regions = factor(Regions, levels=rev(rnames)))
+ggplot(df2.l) + aes(x=Edu, y=Regions, fill=Deaths) +geom_tile() +
+  geom_text(aes(fill = df2.l$Deaths, label = round(df2.l$Deaths, 1))) +
+    scale_fill_gradient(low = "white", high = "red") +
+   labs(title = "1st Iteration", cex=2) +
+  theme(plot.title = element_text(size = rel(3)))
+
+# Iteration 2
+M1 <- medpolish(as.matrix(df2[-1,-1:-2]), maxiter = 2)
+dfa <- rbind( t(as.data.frame(M1[3]))  , as.data.frame(M1$residuals) )
+dfb <- cbind( Regions    = factor(rnames,levels=rnames), Effects=c(M1$overall, M1$row) , dfa)
+
+df2.l <- dfb  %>%
+  gather(key=Edu, value = Deaths, -Regions) %>%
+  mutate( Regions = factor(Regions, levels=rev(rnames)))
+ggplot(df2.l) + aes(x=Edu, y=Regions, fill=Deaths) +geom_tile() +
+  geom_text(aes(fill = df2.l$Deaths, label = round(df2.l$Deaths, 1))) +
+    scale_fill_gradient(low = "white", high = "red") +
+   labs(title = "2nd Iteration", cex=2) +
+  theme(plot.title = element_text(size = rel(3)))
+
+# Iteration 3
+M1 <- medpolish(as.matrix(df2[-1,-1:-2]), maxiter = 3)
+dfa <- rbind( t(as.data.frame(M1[3]))  , as.data.frame(M1$residuals) )
+dfb <- cbind( Regions    = factor(rnames,levels=rnames), Effects=c(M1$overall, M1$row) , dfa)
+
+df2.l <- dfb  %>%
+  gather(key=Edu, value = Deaths, -Regions) %>%
+  mutate( Regions = factor(Regions, levels=rev(rnames)))
+ggplot(df2.l) + aes(x=Edu, y=Regions, fill=Deaths) +geom_tile() +
+  geom_text(aes(fill = df2.l$Deaths, label = round(df2.l$Deaths, 1))) +
+    scale_fill_gradient(low = "white", high = "red") +
+   labs(title = "3rd Iteration", cex=2) +
+  theme(plot.title = element_text(size = rel(3)))
+
+```
 
 ## Interpreting the median polish
 
