@@ -58,7 +58,6 @@ df <- data.frame(row.names = c("NE","NC","S","W"),
                  ed13to15  = c(18.3,24.3,15.7,24),
                  ed16      = c(16.3,19,16.8,17.5)
                  )
-
 ```
 
 ## Visualizing the data
@@ -317,7 +316,46 @@ The procedure is similar with some notable differences. First, we compute the gl
 
 The results differ slightly from the those produced using the median polish. Recall that the mean is sensitive to outliers and medians are not. If a robust estimate of the effects is sought, stick with the median polish.
 
-So what can we gain from the "mean" polish? Well, as it turns out, it serves as the basis of the **two-way ANOVA**, hence it's popularity.
+So what can we gain from the "mean" polish? Well, as it turns out, it serves as the basis of the **two-way ANOVA**. 
+
+## Two-way ANOVA
+
+A two-way ANOVA assesses whether the factors (categories) have a significant effect on the outcome. It's implementation can be conceptualized as a regression analysis where each row and column level is treated as a dummy variable. The computed regression coefficients are the same as the levels computed using the "mean" polish outlined in the previous step except for one notable difference: the ANOVA adds one of the column level values and one of the row level values to the grand mean then subtracts those values from their respective row/column effects.
+
+![A 2-way table](img/twoway_16.png)
+
+The resulting row/column levels are the regression coefficients:
+
+```{r}
+M <- lm(Deaths ~ Edu + Region, df.l)
+coef(M)
+```
+
+The regression formula takes on the form:
+
+$$
+Deaths = 32.21 - 3.8(ed9to11) -11.25(ed12) -9.83(ed13to15) -13(ed16) \\
+         -3.96(RegionNE) -0.320(RegionS)  -2.980(RegionW) + \epsilon_{ij}
+$$
+
+So, for example, to compute the first value in the raw table (death rate = 25.3) from the formula, substitute the variables as follows:
+
+$$
+Deaths = 32.21 - 3.8(0) -11.25(0) -9.83(0) -13(0) \\
+         -3.96(1) -0.320(0)  -2.980(0) - 3.0 \\
+       = 32.21 -3.96 -3.0 \\
+       = 25.3
+$$
+
+To assess if any of the factors have a significant effect on the `Death` variables, simply wrap the regression with an `anova()` function.
+
+
+```{r}
+anova(M)
+```
+
+The results suggest that the father's educational attainment has a significant effect on infant mortality (p = 0.0025) whereas the region does not (p = 0.338).
+
 
 # References
 
