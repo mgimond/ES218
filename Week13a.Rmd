@@ -1,0 +1,307 @@
+---
+title: "Mapping variables"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+  word_document: default
+---
+
+```{r echo = FALSE, message = FALSE}
+knitr::knit_hooks$set(small.mar = function(before, options, envir) {
+    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
+})
+
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+  dev=c('CairoPNG', 'CairoPDF'),
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8")
+```
+
+Variables can be mapped in R using readily available CRAN packages such as `rgdal` and `maps`. The focus of this tutorial will be on mapping vector (aka areal) data and not on raster (aka field) data.
+
+
+# Using the `maps` package
+
+## Generating a basic map
+
+Mapping values requires two datasets: the values to be mapped and the spatial boundaries of the areas being mapped. Packages such as `maps` offer R-ready maps for the US states and counties and administrative boundary maps of other countries such as Canada, France and Italy. 
+
+In the following example we will use `ggplot` to draw the counties map. We will also color the counties based on the state they are located in. The state name column is labeled `region` and the county name column is labeled `subregion`.
+
+```{r fig.width=6.5,fig.height=5}
+library(ggplot2)
+library(maps)
+
+# Load the county data from the maps package
+cnty <- map_data("county")
+
+# Plot the counties
+ggplot(cnty) +aes(long,lat, group = group) + 
+  geom_polygon(aes(fill = region), colour = rgb(1,1,1,0.2)) + 
+  coord_equal(1.3) + theme(legend.position="none")
+```
+
+The `x` and `y` values are assigned the `long` and `lat` columns that store the coordinate values for each vertex that delineates a county. The `group` parameter tells `ggplot` which polygon (county) a vertex is defining. The `geom_polygon()` function generates filled areas from those vertices. The `colour` parameter defines the polygon outline color. 
+
+## Joining income table to the map by county and state
+
+The next step is to *join* a dataset to the counties map. We will use the income-by-gender-education dataset used earlier in the course and limit the data to *median income per person*.
+
+```{r}
+library(dplyr)
+df <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv")
+df1 <- df %>% select(subregion=County, region=State, B20004001 )
+```
+
+Next, we need to join the census data to the county map using *two* columns: state name and county name (or `region` and `subregion` columns). Let's compare the two dataframes by viewing the first few rows of each.
+
+```{r}
+head(cnty)
+head(df1)
+```
+
+We note two problems. first, the `cnty` object encodes states using their full name and not their two letter abbreviation. Second, the county names in `cnty` are in *all* lower case. Before attempting to join the dataframes, we must first fix these discrepancies. We will choose to modify `df` so that its state and county names match those in the `cnty` (map) dataframe.
+
+We will first create a state name/abbreviation look-up table using the built-in `state.name` and `state.abb` objects. Note that using these pre-existing objects will require that we add the District of Columbia to the table since it's not present in either data objects.
+
+```{r}
+st <- data.frame(region=tolower(state.name), State = tolower(state.abb))
+st <- bind_rows(st, data.frame(region="district of columbia", State="dc") )
+```
+
+Next, we join the `st` look-up table to `df` then make the additional changes needed to join the census data to the counties map. Note that we are overwriting the earlier instance of `df1`.
+
+```{r}
+df1 <- df %>% 
+  inner_join(., st, by="State") %>%
+  mutate( subregion = tolower(County))  %>%
+  select(subregion, region, B20004001 )
+```
+
+We can now join `df1` to `cnty`.
+
+```{r}
+cnty.df1 <- inner_join(cnty, df1, by=c("region", "subregion") )
+```
+
+Now let's map the income distribution.
+
+```{r fig.width=7.5,fig.height=5}
+ggplot(cnty.df1) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
+  coord_equal(1.3)
+```
+
+You notice that the counties map does not seem complete; most notable is the absence of all Louisiana counties. Let's look at the rows in `cnty.df1` associated with the state of Louisiana.
+
+```{r}
+filter(cnty.df1, region == "louisiana")
+```
+
+There are no rows returned. This suggests that the Louisiana counties did not properly join. Let's compare the Louisiana county names between `df1` and `cnty`.
+
+```{r}
+df1 %>% filter(region == "louisiana") %>% select(subregion)
+cnty %>% filter(region == "louisiana") %>% select(subregion) %>% unique(.)
+```
+
+It turns out that Louisiana does not divide its administrative areas into *counties* but *parishes* instead. The census data follows through with that designation convention by adding the word "parish" to each of its administrative area names. We therefore need to remove all instances of `parish` in the `subregion` names associated with Louisiana. We will therefore need to recreate the `df1` object:
+
+```{r}
+library(stringr)
+df1 <- df %>% 
+  inner_join(., st, by="State") %>%
+  mutate( subregion = tolower(County) ,
+          subregion = ifelse(region=="louisiana", 
+                             str_replace(subregion, " parish", ""), subregion))  %>%
+  select(subregion, region, B20004001 )
+```
+
+Let's re-join the dataframes and re-plot the map.
+
+```{r fig.width=7.5,fig.height=5}
+cnty.df1 <- inner_join(cnty, df1, by=c("region", "subregion") )
+
+ggplot(cnty.df1) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
+  coord_equal(1.3)
+```
+
+Most of Louisiana's parishes are now mapped, but we are still missing a few parishes as well as a few counties. This is a result of differences in spelling for two-word county and parish names. For example, `df1` encodes St. Lucie county (Florida) as `st. lucie` whereas `cnty` omits the dot and encodes it as `st lucie`. Fixing these discrepancies will require additional labor. At this point, it may prove more fruitful to do away with state/county names and use **FIPS** county codes instead. FIPS (Federal Information Processing Standards) codes assign each county/state a unique five number designation thus making it easier to join data to spatial features. However, neither our census data table nor the built-in counties map have FIPS codes. We will download another version of the income data (one that has FIPS codes). Note that FIPS codes are normally part of datasets provided by the Census Bureau. The `maps` package has a dataset called `county.fips` that can be used to match state/county names from its `county` map to FIPS codes.
+
+## Joining income table by FIPS code
+
+Let's download the the FIPS version of the dataset. Note that we will not need to modify/add columns to the data since we will be joining this table to the county map using the FIPS code.
+
+```{r}
+df <- read.csv("http://mgimond.github.io/ES218/Data/Income_education_with_FIPS.csv")
+df1 <- df %>% select(FIPS, B20004001 )
+```
+
+Next, we'll load the `county.fips` dataset.
+
+```{r}
+# Load the county.fips dataset
+data(county.fips)
+head(county.fips)
+```
+
+Note that the state and county names are aggregated into a single column; this does not match the data structure in `cnty` where states and counties are stored in separate columns. This will require some minor data prepping.
+
+```{r}
+cnty2 <- cnty %>%
+        mutate(polyname = paste(region,subregion,sep=",")) %>%
+        left_join(.,county.fips, by="polyname")
+```
+
+Now that the FIPS codes are part of the county map dataframe, let's join the income data table then map the income values.
+
+```{r fig.width=7.5,fig.height=5}
+cnty2.df1 <- inner_join(cnty2, df1, by=c("fips" = "FIPS") )
+
+ggplot(cnty2.df1) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
+  coord_equal(1.3)
+```
+
+This is an improvement over the last map. But there are still a few counties missing. After a closer scrutiny of the the data, it seems that the `county.fips` table splits some counties into two or more sub-regions. For example, Accomack county (Virginia) is split into two regions (and thus into two different names):
+
+```{r}
+county.fips %>% filter( grepl("^virginia,accomack", polyname) )
+```
+
+Fixing these discrepancies would require manual intervention and time. Another work around is to use the Census Bureau's map files instead of `maps`'s built-in map.
+
+# Working with external GIS files
+
+The Census Bureau maintains its own library of administrative boundary shapefiles (shapefiles are popular map data formats). This may prove to be the best map source to use since its areal units are designed to match the records in the income data table. Loading a shapefile can easily be accomplished using the `readOGR()` function from the `rgdal` package. One option is to download the shapefile from the Census Bureau's website (usually in a zipped format) then unpack it in a local project folder before reading it into the current session with `readOGR()`. But we can maximize the replicability of the workflow by writing a chunk of code that will download the zipped shapefile into a temporary directory before unzipping it and loading the shapefile into an active R session as shown below.
+
+```{r}
+library(rgdal)
+
+tmp <- tempdir()
+link <- "http://www2.census.gov/geo/tiger/GENZ2010/gz_2010_us_050_00_20m.zip"
+filename <- basename(link)
+download.file(link, filename)
+unzip(filename, exdir = tmp )
+shapefile <- readOGR( dsn=tmp, layer = tools::file_path_sans_ext(filename) )
+```
+
+The shapefile is unzipped into a temporary folder, `tmp`, then read from that same directory and stored in a `SpatialPolygonsDataFrame` object called `shapefile`. The chunk `tools::file_path_sans_ext(filename)` extracts the name of the zip file (minus the extension) which turns out to also be the name of the shapefile.  Note that if the zip file was manually unpacked in a project folder then the only command that would have needed to be executed is the `readOGR` function as in `readOGR( dsn="../Data", layer = "gz_2010_us_050_00_20m" )` where the `dsn=` parameter points to the directory where the shapefile resides. Note too that the shapefile's extension is omitted from the name passed to the `layer=` parameter.
+
+
+The Census shapefile has a field called `GEO_ID` that includes the county FIPS codes along with other superfluous county ID values. We only need the five digit county FIPS code so we'll extract these codes into a new column called `FIPS`. We will also assign a unique ID value to each row of the dataset for use in a subsequent `fortify()` function call.
+
+```{r}
+shapefile$FIPS <- as.numeric(substr(shapefile$GEO_ID, 10, 14))
+shapefile$id   <- rownames(shapefile@data)
+```
+
+To plot the shapefile in `ggplot`, we need to convert the `SpatialPolygonsDataFrame` object to a dataframe using the `fortify` function.
+
+```{r}
+cnty2 <- fortify(shapefile, id="id")
+```
+
+Next we can append the original census map table to the new `cnty2` object.
+
+```{r}
+cnty2.cs <- cnty2 %>%
+            inner_join(. , shapefile@data, by="id") %>%
+            inner_join(. , df1, by="FIPS")
+```
+
+## Generating a continuous color scheme
+
+Now we can plot the income distribution map.
+
+```{r fig.width=7.5,fig.height=5}
+ggplot(cnty2.cs) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
+  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 )
+```
+
+Depending on the size of your output extent, you might find the county outlines distracting--especially in the northeastern region where the county sizes are so small. We can omit the outline by setting the `colour` parameter to `NA`.
+
+```{r fig.width=7.5,fig.height=5}
+ggplot(cnty2.cs) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = B20004001), colour = NA)  +
+  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) 
+```
+
+`ggplot` defaults to a **continuous** color scheme that ranges from a dark blue to a light blue. Continuous color schemes can be modified in ggplot by using the `scale_fill_gradient` function. For example, to use a light yellow to dark green color scheme modify the above chunk of code as follows:
+
+```{r fig.width=7.5,fig.height=5}
+ggplot(cnty2.cs) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = B20004001), colour = NA)  +
+  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) +
+  scale_fill_gradient(low="lightyellow2", high="darkgreen")
+```
+
+To see a list of available color names in R, type `colours()` at the console.
+
+## Generating a discrete color scheme
+
+You can also create a **discrete** color scheme--i.e. one where the number of colors are fixed by a finite set of income value intervals. For example, to split the income values across six intervals (e.g. $0 to $20000, $20000 to $30000, $30000 to $40000, $40000 to $50000 , $50000 to $60000 and $60000 to $75000) we can use the `cut()` function to assign each income value in the table to one of the intervals then add that interval value to the `ctny2.cs` map data frame object.
+
+```{r}
+interv <- c(0,20000,30000, 40000,50000, 60000, 75000)
+
+cnty2.cs$Income <- cut(cnty2.cs$B20004001, breaks = interv , labels = paste(interv[-1]))
+```
+
+The `labels=` parameter allows us to define the output interval names. Here we assign the interval's top dollar value to the intervals names. Note that we could have created fancier intervals such as `$0 to $20k`, `$20k to $30k`, etc...
+
+Next we'll map the data, but first we need to change the coloring scheme since we are now using a *discrete* color scheme as opposed to a *continuous* one. Cynthia Brewer of Penn State designed a website called [http://colorbrewer2.org/](http://colorbrewer2.org/) that suggests discrete color schemes to use for different map effects. The choice of colors, especially for a sequential color scheme where the hue is kept constant while its lightness level is modified, is not trivial. Fortunately, her color scheme recommendations are available in `ggplot` via the `scale_fill_brewer()` function. To see a list of Brewer color schemes, simply type `display.brewer.all()` in the console window. Note that we will need to load the `RColorBrewer` package first.
+
+```{r fig.width=7.5,fig.height=6}
+library(RColorBrewer)
+
+display.brewer.all()
+```
+
+We'll choose the `YlGn` color scheme. In case you did not run the last code chunk, we'll load the `RColorBrewer` package once more.
+
+```{r fig.width=7.5,fig.height=5}
+library(RColorBrewer)
+
+ggplot(cnty2.cs) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = Income), colour = NA)  +
+  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) +
+  scale_fill_brewer(palette = "YlGn")
+```
+
+## Generating a divergent color scheme
+
+We might choose to map the income distribution using a **divergent** color scheme where we compare the counties to some overall value such as the county median. We can use the `quantile()` function to break the income data into its percentiles. This will be helpful when generating symmetrical intervals about the median.
+
+```{r}
+inc.qt <- quantile(cnty2.cs$B20004001, probs = c(0, 0.125, .25, 0.5, .75, .875 , 1 ))
+```
+
+We'll create new income intervals centered on the median of `r round(median(cnty2.cs$B20004001))`. 
+
+```{r}
+interv <- inc.qt
+
+cnty2.cs$Income <- cut(cnty2.cs$B20004001, breaks = interv , labels = paste(interv[-1]))
+```
+
+
+A divergent color scheme consists of two different hues whose lightness values converge towards some central value (the median income in our case). We use Brewer's red-to-green color palette `RdYlGn` for this next map.
+
+```{r fig.width=7.5,fig.height=5}
+library(RColorBrewer)
+
+ggplot(cnty2.cs) +aes(long, lat,group = group) + 
+  geom_polygon(aes(fill = Income), colour = NA)  +
+  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) +
+  scale_fill_brewer(palette = "RdYlGn")
+```
+
+The divergent map gives us a different handle on the data. Here, we can identify the poorer than average regions such as the southeast and parts of the Mississippi river region as well as the wealthier regions such as the northeast (with the exception of Maine).
