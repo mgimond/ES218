@@ -1,0 +1,248 @@
+---
+title: "Working with string objects"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+#  dev=c('CairoPNG', 'CairoPDF'),
+  type = "cairo",
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8",
+#  pointsize=12* 200 / 72, # = size * DPI / 72
+  res=200)
+```
+
+Numbers and dates are not the only variable types we might be interested in exploring. We often find ourselves having to manipulate character (text) objects as well. In the programming environment, such queries are often referred to as **string** searches. String queries may involve assessing if a variable matches or contains an exact set of characters; it can also involve extracting a certain set of characters given some pattern. R has a very capable set of string operations built into its environment however, many find it difficult to master. A package that will be used in this tutorial that simplifies this task is called `stringr`. A write-up on its capabilities can be found [here](http://journal.r-project.org/archive/2010-2/RJournal_2010-2_Wickham.pdf).
+
+# Finding patterns in a string
+
+## Checking for an exact string match
+
+This is the simplest string operation one can perform. It involves assessing if a variable is equal (or not) to a complete text string. 
+
+We've already seen how the conditional statements can be used to check whether a variable is equal to, less than or greater than a number. We can use conditional statements to evaluate if a variable matches an exact string. For example,
+
+```{r}
+a <- "Abc def"
+a == "Abc def"
+```
+
+returns `TRUE` since the strings match exactly. However, note that **R differentiates cases** so that the following query,
+
+```{r}
+a == "abc def"
+```
+
+returns `FALSE` since the first character does not match in case (i.e. upper case `A`vs lower case `a`).
+
+### How to ignore case sensitivity?
+
+If you want to R to ignore cases in any string operations, simply force all variables to a lower case and define the pattern being compared against in lower case. For example:
+
+```{r}
+tolower(a) == "abc def"
+```
+
+## Checking for a partial match
+
+### Matching anywhere in the string
+
+To check if object `a` has the pattern `c d` anywhere in its string, we can use the `str_detect` function as follows:
+
+```{r}
+library(stringr)
+str_detect(a, "c d")
+```
+
+The following example will return `FALSE`:
+
+```{r}
+str_detect(a, "cd")
+```
+
+### Matching the begining of the string
+
+To check if object `a` *starts* with the pattern `c d` add the carat character `^` in front of the pattern as in:
+
+```{r}
+str_detect(a, "^c d")
+```
+
+
+### Matching the end of the sring
+
+To check if object `a` *ends* with the pattern `Abc` add the dollar character `$` at the end of the pattern as in:
+
+```{r}
+str_detect(a, "Abc$")
+```
+
+
+## Locating the position of a pattern in a string
+
+If you want to find where a particular pattern lies in a string, use the `str_locate` function. For example, to find to find where the pattern `c d` occurs in object `a` type:
+
+```{r}
+str_locate(a, "c d")
+```
+
+The function returns two values: the position in the string where the pattern **starts** (e.g. position `r str_locate(a, "c d")[1]`) and the position where the pattern ends (e.g. position `r str_locate(a, "c d")[2]` )
+
+Note that if the pattern is not found, `str_locate` returns `NA`'s:
+
+```{r}
+str_locate(a, "cd")
+```
+
+Note too that the `str_locate` function only returns the position of the first occurrence. For example, 
+
+```{r}
+b <- "Abc def Abg"
+str_locate(b, "Ab")
+```
+
+will only return the start/end positions of the first occurrence of `Ab`. To find *all* occurrences, use the `str_locate_all()` function as in:
+
+```{r}
+str_locate_all(b,"Ab")
+```
+
+The function returns a `list` object. To extract the position values into a dateframe, simply wrap the function in a call to `as.data.frame`, for example:
+
+```{r}
+str.pos <- as.data.frame(str_locate_all(b,"Ab"))
+str.pos
+```
+
+The reason `str_locate_all` returns a list and not a matrix or a data frame can be understood in the following example:
+
+```{r}
+# Create a 5 element string vector
+d <- c("Abc", "Def ", "Abc Def Ab", " bc ", "ef ")
+
+# Search for all instances of "Ab"
+str_locate_all(d,"Ab")
+```
+
+Here, `d` is a five element string vector (so far we've worked with single element vectors). The `str_locate_all` function returns a result for *each* element of that vector, and since patterns can be found multiple times in a same vector element, the output can only be conveniently stored in a list.
+
+## Finding the length of a string
+
+A natural extension to finding the positions of patterns in a text is to find the string's total length. This can be accomplished with the `str_length()` function:
+
+```{r}
+str_length(b)
+```
+
+For a multi-element vector, the output looks like this:
+
+```{r}
+str_length(d)
+```
+
+## Finding a pattern's frequency
+
+To find out how often the pattern `Ab` occurs in each element of object `d`, use the `str_count()` function.
+
+```{r}
+str_count(d, "Ab")
+```
+
+# Modifying strings
+
+## Padding strings with leading zeros
+
+The `str_pad()` function can be used to pad numbers with leading zeros. Note that in doing so, you are creating a character object from a numeric object.
+
+```{r}
+e <- c(12, 2, 503, 20, 0)
+str_pad(e, width=3, side="left", pad = "0" )
+```
+
+## Appending text to strings
+
+You can append strings with custom text using the `str_c()` functions. For example, to add the string length at the end of each vector element in `b`  type,
+
+```{r}
+str_c(d, " has ", str_length(d), " characters" )
+```
+
+## Removing white spaces
+
+You can remove leading, ending or both white spaces from a string. For example, to remove leading white spaces from object `d` type,
+
+```{r}
+d.left.trim <- str_trim(d, side="left")
+```
+
+Now let's compare the original to the left-trimmed version:
+
+```{r}
+str_length(d)
+str_length(d.left.trim)
+```
+
+To remove trailing spaces set `side = "right"` and to remove both leading and trailing spaces set `side = "both"`.
+
+## Replacing elements of a string
+
+To replace all instances of a specified set of characters in a string with another set of characters, use the `str_replace_all()` function. For example, to replace all *spaces* in object `b` with *dashes*, type:
+
+```{r}
+str_replace_all(b, " ", "-")
+```
+
+# Extracting parts of a string
+
+## Extracting elements of a string given start and end positions
+
+To find the character elements of a vector at a given position of a given string, use the `str_sub()` function. For example, to find the characters between positions two and five (inclusive) type:
+
+```{r}
+str_sub(b, start=2, end = 5)
+```
+
+If you don't specify a `start` position, then all characters up to and including the `end` position will be returned. Likewise, if the `end` position is not specified then all characters from the `start` position to the end of the string will be returned.
+
+## Splitting a string by a character
+
+If you want to break a string up into individual components based  on a character delimiter, use the `str_split()` function. For example, to split the following string into separate elements by comma, type the following:
+
+```{r}
+g <- "Year:2000, Month:Jan, Day:23"
+str_split(g, ",")
+```
+
+Note that if object `g` consists of more than one element, the output will be a list of elements and not a vector of elements.
+
+## Extracting parts of a string that follow a pattern
+
+To extract the three letter month from object `g` (defined in the last example), you can use a combination of `stringr` functions as in:
+
+```{r}
+loc <- str_locate(g, "Month:")
+str_sub(g, start = loc[,"end"] + 1, end = loc[,"end"]+3)
+```
+
+The above chunk of code firsts identifies the position of the `Month:` string and passes its output to the object `loc`. It then uses the `end` position in the call to `str_sub` to extract the three characters making up the month abbreviation. The value `1` is added to the `start` parameter to omit the last character of `Month:` (recall that the `str_locate` positions are inclusive).
+
+This can be extend to multi-element vectors as follows:
+
+```{r}
+gs <- c("Year:2000, Month:Jan, Day:23",
+       "Year:345, Month:Mar, Day:35",
+       "Year:1867 , Month:Nov, Day:35")
+
+loc <- str_locate(gs, "Month:")
+str_sub(gs, start = loc[,"end"] + 1, end = loc[,"end"]+3)
+```
+
+Note the non-uniformity in each element's length and `Month:` position which requires that we explicitly search for the `Month:` string position in each element. Had all elements been of equal length and format, we could have simply assigned the position numbers in the call to `str_sub` function.
