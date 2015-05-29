@@ -7,33 +7,44 @@ output:
   word_document: default
 ---
 
-# How to represent data in R
+```{r echo = FALSE, message = FALSE}
+knitr::knit_hooks$set(small.mar = function(before, options, envir) {
+    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
+})
 
-An object in R is a placeholder for different **types** of data and functions created or manipulated in R. The following sections focus on data **types** and then on data **objects**.
+knitr::opts_chunk$set(
+  comment = NA,
+  message = FALSE,
+  tidy = FALSE,
+  dev=c('CairoPNG', 'CairoPDF'),
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8")
+```
 
-## Data types
+# Data types
 
 R objects can store values as different data types including numeric, character, logical or date. R variable types are often referred to as **modes** and can be identified using the `mode()` function.
 
-### Numeric
+## Numeric
 
-The numerical data type is probably the simplest. It consists of numbers such as integers (e.g. `1 ,-3 ,33 ,0`) or doubles (e.g. `0.3, 12.4, -0.04, 1.0`). For example, to create a numeric (double) vector we can type:
+The **numeric** data type is probably the simplest. It consists of numbers such as integers (e.g. `1 ,-3 ,33 ,0`) or doubles (e.g. `0.3, 12.4, -0.04, 1.0`). For example, to create a numeric (double) vector we can type:
 
 ```{r}
 x <- c(1.0, -3.4, 2, 140.1)
 mode(x)
 ```
 
-### Character
+## Character
 
-The character data type consists of letters or words such as `"a", "f", "project", "house value"`.
+The **character** data type consists of letters or words such as `"a", "f", "project", "house value"`.
 
 ```{r}
 x <- c("a", "f", "project", "house value")
 mode(x)
 ```
 
-Characters can also consist of numbers represented as characters. The distinction between a numeric representation of a number and a numeric one is important. For example, if we have two numeric vector `x` and `y` such as
+Characters can also consist of numbers represented as characters. The distinction between a numeric representation of a number and a numeric one is important. For example, if we have two numeric vectors `x` and `y` such as
 
 ```{r}
 x <- 3
@@ -61,9 +72,9 @@ x <- c("1.0", "-3.4", "2", "140.1")
 mode(x)
 ```
 
-### Logical
+## Logical
 
-Logical values can take on one of two values: `TRUE` or `FALSE`. These can also be represented as `1` or `0`. For example, to create a logical vector of 4 elements, you can type
+**Logical** values can take on one of two values: `TRUE` or `FALSE`. These can also be represented as `1` or `0`. For example, to create a logical vector of 4 elements, you can type
 
 ```{r}
 x <- c(TRUE, FALSE, FALSE, TRUE)
@@ -76,9 +87,9 @@ x <- as.logical(c(1,0,0,1))
 
 Note that in both cases, `mode(x)` returns `r mode(x)`. Also note that the `1`'s and `0`'s are converted to `TRUE`'s and `FALSE`'s.
 
-### Factors
+## Factor
 
-Factors are usually used to group variables into categories having a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data may be loaded into R as a numeric or character data type in which case it needs to be converted to a factor using the `as.factor()` function.
+**Factors** are usually used to group variables into categories having a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data may be loaded into R as a numeric or character data type in which case it needs to be converted to a factor using the `as.factor()` function.
 
 ```{r}
 a      <- c("M", "F", "F", "M", "F", "M", "M", "F", "F", "M")
@@ -95,19 +106,18 @@ boxplot(x ~ gender, dat, horizontal = TRUE)
 par(OP)
 ```
 
-### Dates
+## Date
 
-Date values can be represented in tables as numbers or characters. But to work properly with date representation, it must be converted to an R date object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. The following subsections make use of the `lubridate` package.
+Date values can be represented in tables as numbers or characters. But to work properly with date representation, it must be converted to an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. Date objects are discussed in greater depth in subsequent tutorials.
 
-## Data structure
+# Data structures
 
-### Vectors
+A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of many *data structures*: **vectors**, **matrices**, **data frames** and **lists**.
 
-Vector objects can be broken down into two types: atomic vector and lists.
 
-### Atomic vectors
+## Vectors
 
-The *vector* is the simplest data structure in R which consists of an ordered set of values of the same type (e.g. numeric, character, date, etc...). The last section presented two examples of a vector object (`x <- 3.14` and `x <- runif(30,0,10)`). Another way of creating a vector object is by using the *combine* function `c()` as in
+The **vector** is the simplest data structure in R which consists of an ordered set of values of the same type (e.g. numeric, character, date, etc...). A vector can be created using the *combine* function `c()` as in
 
 ```{r}
 x <- c(674 , 4186 , 5308 , 5083 , 6140 , 6381)
@@ -146,94 +156,19 @@ x <- c("all", "b", "olive")
 x
 ```
 
-### Lists
-
-Like atomic vectors, a list is an ordered set of elements but unlike vectors, elements of a list can be of any type. A list is constructed using the `list()` function.
-
-For example, the following list consists of 3 elements: a three element numeric vector(element `a`), a two element logical vector (element `b`) and a three element character vector (element `c`).
+Note that a vector can be one data type only. For example, you cannot mix numeric and character types as in:
 
 ```{r}
-l <- list(a = c(123.1, 3, 87.6), b = c(TRUE, FALSE), c = c("apples", "oranges", "round"))
+x <- c( 1.2, 5, "Rt", "9-16-2000")
 ```
 
-You can view the contents of a list using the `str()` function.
+In such a situation, R will convert the element types to the **highest common mode** following the order **NULL < logical < integer < double < character**. In our working example, the elements are coerced to `character`:
 
 ```{r}
-str(l)
+mode(x)
 ```
 
-Lists can also be recursive (i.e. a list can contain other lists). For example, the following list `l2` houses two elements: a two-by-two matrix (element `a`) and the list `l` (element `b`).
-
-```{r}
-l2 <- list( a = matrix( c(12.3, 20, 1.2, 18.0) , nrow=2), b = l)
-str(l2)
-```
-
-You'll find that many functions in R return list objects such as the linear model function `lm`. For example, run a regression between two variables and save the output of the regression analysis to an object called `M`:
-
-```{r}
-x <- c(7.3, 29.4, 29.4, 2.9, 12.3, 7.5, 36.0, 4.8, 18.8, 4.2)
-y <- c(5.2, 26.6, 31.2, 2.2, 13.8, 7.8, 35.2, 8.6, 20.3, 1.1)
-M <- lm( y ~ x)
-```
-
-Now use the `typeof` function to view `M`'s data type:
-```{r}
-typeof(M)
-```
-
-The contents of the regression model object `M` consists of `r length(M)` elements which include various diagnostic statistics, regression coefficients, and residuals. 
-```{r}
-str(M)
-```
-
-Elements of a list can be extracted using the `$` symbol. For example, to access the values from `M`'s `residuals` element, type
-
-```{r}
-M$residuals
-```
-
-The element `residual` is a numeric vector. We can also access the contents of a recursive list element such as `qr`:
-
-```{r}
-M$qr
-```
-
-Note that since the element `qr` is a list, `M$qr` returns a list (and not a numeric vector as in the call to `M$residuals`). To extract the element `qraux` from the list `qr` (which is itself an element of `M`), you can use a recursive `$` as in:
-
-```{r}
-M$qr$qraux
-```
-
-Note that in the previous examples, a name was assigned to each element of the list (e.g. `a = matrix( c(12.3, 20, 1.2, 18.0)`) which allows us to access that element using the hash name (e.g. `l2$a`). We can list the element names of a list using the `names()` function:
-
-```{r}
-names(l2)
-```
-
-But lists can also be created without assigning names to an element. For example, list `l2` could be created as follows:
-
-```{r}
-l2.nonames <- list( matrix( c(12.3, 20, 1.2, 18.0) , nrow=2), l)
-```
-
-This last object has no names associated with its elements,
-
-```{r}
-names(l2.nonames)
-```
-
-This makes it impossible to access its elements using the `$` symbol. We must instead use the `[]` symbol to access the ordered elements. For example, to access the first element of `l2.nonames`, type:
-
-```{r}
-l2.nonames[1]
-```
-
-This displays the contents of the matrix, but the output is still a list which means that we cannot operate on the content as though it was a matrix (however, had the element been named as with the object `l2`, then the use of the `$` symbol would have returned a matrix as in `l2$a`).
-
-
-
-### Matrices and arrays
+## Matrices and arrays
 
 Matrices in R can be thought of as vectors indexed using *two* indices. For example, the following line of code creates a 3 by 3 matrix of randomly generated values. The parameters `nrow` and `ncol` define the matrix 2D dimension and the function `runif()` generates the nine random numbers that populate this matrix.
 
@@ -250,7 +185,7 @@ m
 ```
 
 
-Matrices and arrays can store numeric or character data types, but they cannot store both in a same object. This is not to say that you can't have a matrix of the kind
+Matrices and arrays can store numeric or character data types, but they cannot store both in a same object as with vector objects. This is not to say that you can't have a matrix of the kind
 
 ```{r echo=FALSE}
 matrix(c("a","b",2,4), nrow=2)
@@ -258,17 +193,23 @@ matrix(c("a","b",2,4), nrow=2)
 
 but the value `2` and `4` are no longer treated as numeric values but as character values instead (as indicated by the quotes surrounding the numbers).
 
-### Data frames
+## Data frames
 
-A *data frame* is what comes closest to our perception of a data *table*. It's an extension of the matrix object in that, unlike a matrix, a data frame can *mix* data types (e.g. both numeric and character data can coexist in a data frame). This will be the most frequently used data structure in this course with atomic vectors following closely behind.
+A **data frame** is what comes closest to our perception of a data *table*. It's an extension of the matrix object in that, unlike a matrix, a data frame can *mix* data types across columns (e.g. both numeric and character columns a can coexist in a data frame) but data type remains the same across rows. 
 
 
 ```{r}
-Name <- c("a1", "a2", "b3")
+Name   <- c("a1", "a2", "b3")
 Value1 <- c(23, 4, 12)
 Value2 <- c(1,45,5)
 dat    <- data.frame(Name, Value1, Value2)
 dat
+```
+
+To view each column's mode type:
+
+```{r}
+str(dat)
 ```
 
 Like a vector, elements of a data frame can be accessed by their index (aka subscripts). For example, to list the first two columns,
@@ -294,4 +235,118 @@ or the values in the column named *Value2*,
 ```{r}
 dat$Value2
 ```
+
+## Lists
+
+A **list** is an ordered set of elements. In fact, it's a special kind of vector called a **recursive vector**  where each element can be of different data type and *structure*. This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too!
+
+A list is constructed using the `list()` function. For example, the following list consists of 3 elements: a two-column data frame (element `A`), a two element logical vector (element `B`) and a three element character vector (element `D`).
+
+```{r}
+A <- data.frame(
+     x = c(7.3, 29.4, 29.4, 2.9, 12.3, 7.5, 36.0, 4.8, 18.8, 4.2),
+     y = c(5.2, 26.6, 31.2, 2.2, 13.8, 7.8, 35.2, 8.6, 20.3, 1.1)
+     )
+B <- c(TRUE, FALSE)
+D <- c("apples", "oranges", "round")
+
+lst <- list(A = A, B = B, D = D)
+```
+
+You can view each element's structure using the `str()` function.
+
+```{r}
+str(lst)
+```
+
+Each element of a list can be extracted using the `$` symbol followed by that element's **tag** (the name that was assigned to each element when we constructed the list object). For example, to access element `A` from list `lst`, type:
+
+```{r}
+lst$A
+```
+
+You can also access that same element using its *numerical index*. Since `A` is the first element in `lst`, its numerical index is `1`.
+
+```{r}
+lst[[1]]
+```
+
+Note that we are using **double brackets** to extract `A`. In doing so, we are extracting `A` in its *native data format* (a data frame in our example). Had we used single brackets, `A` would have been extracted as a *list* regardless of its native format. The following compares the different data structure outputs between single and double bracketed indices:
+
+```{r}
+class(lst[[1]])
+class(lst[1])
+```
+
+The tag names for each element in a list can be extracted using the `names()` function:
+
+```{r}
+names(lst)
+```
+
+Note that lists do not require tag names for its elements. For example, we could have created a list as follows:
+
+```{r}
+lst.notags <- list( A, B, D)
+```
+
+When we list its contents, we will see bracketed indices instead of tags.
+
+```{r}
+lst.notags
+```
+
+When lists do not have tags, the `names()` function will return `NULL`.
+
+```{r}
+names(lst.notags)
+```
+
+It's usually good practice to assign tags to list elements as these can provide meaningful descriptions of each element.
+
+You'll find that many functions in R return list objects such as the linear model function `lm`. For example, run a regression analysis for vector elements `x` and `y` (in data frame `A`) and save the output of the regression analysis to an object called `M`:
+
+```{r}
+M <- lm( y ~ x, A)
+```
+
+Now let's verify `M`'s data structure:
+```{r}
+typeof(M)
+```
+
+The contents of the regression model object `M` consists of `r length(M)` elements which include various diagnostic statistics, regression coefficients, and residuals. Let's extract each element's tag (i.e. element name):
+
+```{r}
+names(M)
+```
+
+Fortunately, the regression function assigns tags to each of its output's elements making it easier to figure out what most of these elements represent. For example, it's clear that the `residuals` tag stores the residual values from the regression model.
+
+```{r}
+M$residuals
+```
+
+The list `M` is more complex than the simple list `lst` we created earlier. In addition to having more elements, it stores a *wider range* of data type and structure. For example, element `qr` is itself a list of five elements!
+
+```{r}
+str(M$qr)
+```
+
+So if we want to access the element `rank` in the element `qr` of list `M`, we can type:
+
+```{r}
+M$qr$rank
+```
+
+If we want to access `rank` using indices instead, and noting that `qr` is  the 7th element in list `M` and that `rank` is the 5th element in list `qr` we type:
+
+```{r}
+M[[7]][[5]]
+```
+
+This should illustrate the value in assigning *tags* to list elements; not only does the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.
+
+
+
 
