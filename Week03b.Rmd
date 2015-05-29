@@ -4,12 +4,25 @@ output:
   html_document:
     toc: yes
     toc_depth: 3
-  word_document: default
 ---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+#  dev=c('CairoPNG', 'CairoPDF'),
+  type = "cairo",
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8",
+#  pointsize=12* 200 / 72, # = size * DPI / 72
+  res=200)
+```
 
 # Introduction
 
-Data tables come in different sizes and shape; it can be a very simple two column dataset or it can consist of many columns and "sub-columns". Understanding its structure, and learning how to reshape it into a workable form is critical to an effective and error free analysis.
+Data tables come in different sizes and shape; they can be a very simple two column dataset or they can consist of many columns and "sub-columns". Understanding its structure, and learning how to reshape it into a workable form is critical to an effective and error free analysis.
 
 For example, a median earnings data table downloaded from the census bureau's website might look something like this:
 
@@ -25,11 +38,11 @@ An observation consists of a **unique set** of attribute **values**. For example
 
 ![Tidy census table](img/Tidy_census.png)
 
-Note that each value of the table is part of a unique set of variable attributes. A dataset in this format may not be human "readable" (unlike its wide counterpart), but is the format of choice for many data analysis and visualization operations.
+Note that each row of the table is part of a unique set of variable attributes. A dataset in this format may not be human "readable" (unlike its *wide* counterpart), but is the format of choice for many data analysis and visualization operations.
 
 The next sections will demonstrate how one can convert a wide format to a long format and *vice versa*.
 
-# A working example
+# Wide and long table formats
 
 A 2014 Boston (Logan airport) flight data summary table will be used in this exercise. The summary displays average mean delay time (in minutes) by day of the work week and quarter. 
 
@@ -52,7 +65,7 @@ knitr::kable(df)
 
 There are three unique variables: day of week, quarter of year, and mean departure delay.
 
-# Creating a long table from a wide table
+## Creating a long table from a wide table
 
 A package that facilitates converting from wide to long (and *vice versa*)  is `tidyr`. To go from wide to long, we use the `gather` function and from long to wide, we use the `spread` function.
 
@@ -87,7 +100,7 @@ The following figure summarizes the wide to long conversion.
 
 ![Wide to long explained in figure](img/Tidyr_wide2long.png)
 
-# Creating a wide table from a long table
+## Creating a wide table from a long table
 
 If a table is to be used for a visual assessment of the values, a long format may be difficult to work with. A long table can be re-expressed into a wide form by picking the two variables that will define the new unique rows and columns. 
 
@@ -108,3 +121,38 @@ head(df.w, 10)
 The following figure summarizes the wide to long conversion.
 
 ![Wide to long explained in figure](img/Tidyr_long2wide.png)
+
+# Combining elements from many columns into a single column
+
+Another practical function in the `tidyr` package is `unite()`. It combines columns into a single column by chaining the contents of the combined columns. For example, the following table has hours, minutes and seconds in separate columns.
+
+```{r}
+library(tidyr)
+df <- data.frame(
+      Index = c( 1,2,3),
+      Hour = c(2,14,20),
+      Min = c(34,2,55),
+      Sec = c(55, 17, 23))
+
+df
+```
+
+To combine the three time elements into a single column, type:
+
+```{r}
+df2 <- unite(df,  col = Time , 2:4, sep=":", remove=TRUE)
+df2
+```
+
+The `col` parameter defines the new column name; the paremeter `2:4` tells `unite` that columns two through four are to be combined into column `Time`; `sep=":"` tells the function what characters are to be used to separate the elements (here, we are separating the time elements using `:`); `remove=TRUE` tells the function to remove columns two through four.
+
+# Separating elements in one column into separate columns
+
+The reverse of `unite()` is `separate()`. Continuing with the last example, if we want to split the time elements into their respective columns, type:
+
+```{r}
+df3 <-  separate(df2,  col = Time , c("Hour", "Minute", "Second"), sep=":", remove=TRUE)
+df3
+```
+
+You will recognize many of the parameters from the `unite` function with one difference: the new (to be created) column names need to be defined in a combine, `c()`, statement.
