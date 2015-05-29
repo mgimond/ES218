@@ -46,8 +46,9 @@ The differences in median values is obvious. What's more, the difference in over
 Are the spreads between the batches comparable? It's difficult to tell given that the batches are offset by about four inches. So let's level the playing field by subtracting the median values from their respective batches.
 
 ```{r fig.height=3, fig.width=3}
-df2.med <- df2 %>% group_by(voice.part) %>%
-           mutate_each( funs(. - median(.)), NormHeight= height)  
+df2.med <- df2 %>% 
+          group_by(voice.part) %>%
+          mutate( NormHeight= height - median(height))  
 ggplot(df2.med) + aes(x=voice.part, y=NormHeight) + geom_boxplot()
 ```
 
@@ -58,10 +59,10 @@ Leveling the boxplots certainly helps in assessing the difference in spreads. It
 The boxplot is a  five number summary of the data (median, upper/lower quartiles, and upper/lower adjacent values). The boxplot is a special case of the quantile plot. Let's compute the $f$-values for both batches.
 
 ```{r}
-df.qq <- df2 %>% group_by(voice.part) %>%
-        arrange(voice.part, height)   %>%
-        mutate_each( funs( (1:length(.) - 0.5) / n()), f.val=length(height))
-
+df.qq <- df2 %>% 
+         group_by(voice.part) %>%
+         arrange(voice.part, height) %>%
+         mutate( f.val = (1:length(height) - 0.5 ) / n())
 ```
 
 Now let's generate quantile plots for both batches.
