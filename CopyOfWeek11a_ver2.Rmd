@@ -16,21 +16,82 @@ knitr::opts_chunk$set(
   comment = "",
   message = FALSE,
   tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
+#  dev=c('CairoPNG', 'CairoPDF'),
   cache = FALSE,
   warning = FALSE,
-  encoding = "UTF-8")
+  encoding = "UTF-8",
+  scipen=3)
 ```
 
 # Introduction
 
+Before tackling two-way tables, let's explore a simpler one-way table. The data shows mean annual income by occupation for the year 2014 (*src: [Bureau of Labor Statistics](http://www.bls.gov/oes/#tables)*)
 
+```{r echo=FALSE, results='asis'}
+library(xtable)
+df <- data.frame( row.names =c("Architecture and Engineering", 
+"Arts, Design, Entertainment, Sports, and Media", "Building and Grounds Cleaning and Maintenance", 
+"Business and Financial Operations", "Community and Social Service", 
+"Computer and Mathematical", "Construction and Extraction", "Education, Training, and Library", 
+"Farming, Fishing, and Forestry", "Food Preparation and Serving Related", 
+"Healthcare Practitioners and Technical", "Healthcare Support", 
+"Installation, Maintenance, and Repair", "Legal", "Life, Physical, and Social Science", 
+"Management", "Office and Administrative Support", "Personal Care and Service", 
+"Production", "Protective Service", "Sales and Related", "Transportation and Material Moving"),
+Income = c(112490, 72410, 83970, 81520, 70070, 45310, 101110, 52210, 
+55790, 76010, 28820, 43980, 21980, 26370, 24980, 38660, 
+35530, 25160, 46600, 45220, 35490, 34460)
+)
+
+print(xtable(df, digits=0),include.rownames=TRUE, type="html", scalebox=0.5)
+```
+
+So, what can we glean from this dataset other than the raw values associated with each occupation type? For starters, we may be interested in coming up with a summary of income values such as the median; this gives us $`r sprintf("%i",median(df$Income))`. This is a single value that can be used to characterize the overall income value. However, the income values in our batch are not all equal to $`r sprintf("%i",median(df$Income))`--they vary above or below this median value. Next, we subtract the median income value from each income values to see by how much each occupation's income differs from the overall income. We can do this in a table, but will choose to do this with a dot plot chart instead to facilitate comparison.
+
+```{r small.mar=TRUE, fig.width=8,fig.height=3.5, echo=FALSE}
+options(scipen=3)
+dotchart( as.matrix(df)- median(df$Income), pch=16,cex=0.6)
+abline(v = 0, col="red")
+```
+
+We have separated the income values into two parts: an **overall** value and the difference which we will call the **residuals**. This can be written in an algebraic form:
+
+$$
+Income_{Occupation} = Income_{median} + Income_{residuals}
+$$
+
+For example, 'Healthcare Support' average income of  $`r sprintf("%i",df$Income[12])` can be separated into the sum of the median, $`r sprintf("%i",median(df$Income))`, and the residual, $`r sprintf("%i",df$Income[12]-median(df$Income))`. 
+
+So in addition to gleaning a median income value from this batch of values, we have also devised a way to facilitate the comparison of the income values to one another based across different occupation types. We could, if we liked, have assign colors to each cell of the table reflecting their values *relative* to the overall median.
+
+```{r small.mar=TRUE, fig.width=4,fig.height=5, echo=FALSE}
+library(RColorBrewer)
+library(ggplot2)
+cl <- brewer.pal(4, "RdYlGn")
+qtl <- quantile(df$Income)
+intv <- findInterval(df$Income, qtl[-1], rightmost.closed = TRUE) +1
+
+ggplot(df) + aes(x=rownames(df), y=1, fill=Income) +geom_tile(aes(fill=cl[intv])) + 
+  coord_flip() + scale_fill_identity(labels=sort(unique(intv)), breaks=cl) +
+  geom_text(aes( label = format(df$Income, decimal.mark = ",")), size=4) +
+  theme(axis.text.x=element_blank(), axis.title=element_blank(),
+        panel.background=element_blank(), axis.ticks=element_blank(),
+        text = element_text(size = 10))
+```
+
+The income value is often thought of as the **response** to the occupation type (also known as a **factor**). In other words, the factor determines the value in our table. We can re-write the last equation in a more formal way:
+
+$$
+y_{i} = \mu + \epsilon_i 
+$$
+
+where $y_{i}$  is the **response variable** for **factor** $i$, $\mu$ is the overall typical value (hereafter referred to as the **common value**) and is usually the mean or median, and $\epsilon_i$ is the **residual**. Next, we will see how the idea of separating the values into components can be expanded to **two-way** (aka **two-factor**) tables.
 
 # Anatomy of a two-way table
 
 Let's decompose the following table which represents infant mortality rates (per 1000 live births) by region and by a father's educational attainment for the years 1964 through 1966 (Hoaglin *et al.*).
 
-![A 2-way table](img/twoway_1.png)
+![A 2-way table](img/twoway_01.png)
 
 A two-way table is composed of three variables: 
 
@@ -40,15 +101,15 @@ A two-way table is composed of three variables:
 
 A two-way table is an extension of univariate analyses conducted earlier in the course where a continuous variable (e.g. singer height) is grouped by category (e.g. tenor). Here, we explore a variable across *two * categories.
 
-We can represent the relationship between the response variable, $y$, and the two categories as:
+We can represent the relationship between the response variable, $y$, and the *two* factors as:
 
 $$
 y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 $$
 
-where $y_{ij}$  is the **response variable** for row $i$ and column $j$, $\mu$ is the overall typical value (hereafter referred to as the *common value*), $\alpha_i$ is the **row effect**, $\beta_j$ is the **column effect** and  $\epsilon_{ij}$ is the **residual** or value left over after *all* effects are taken into account.
+where $y_{ij}$  is the **response variable** for row $i$ and column $j$, $\mu$ is the overall typical value (hereafter referred to as the *common value*), $\alpha_i$ is the **row effect**, $\beta_j$ is the **column effect** and  $\epsilon_{ij}$ is the **residual** or value left over after *all* effects are taken into account. 
 
-The goal of this analysis is to decompose the response variables into their respective effects (education of father and region) via an iterative process where row medians and column medians are removed from the response variables repeatedly until the row and column medians approach zero.  
+The goal of this analysis is to decompose the response variables into their respective effects--i.e. the contributing factors *education of father* and *region*--via an iterative process where row medians and column medians are removed from the response variables repeatedly until the row and column medians approach zero.  
 
 # Analysis workflow
 
@@ -106,30 +167,44 @@ Next we will attempt to quantify these effects using Tukey's **median polish**.
 
 ## Median polish
 
-### Step 1: Compute the row medians
+### Step 1: Compute overall median and residual table
 
-For each row, we will compute the median response variables (i.e. the median mortality for each region). The resulting median values are shown in red in the following figure.
+First, we will compute the median value for all values in the dataset; this will our first estimate of **common** value. The resulting median value is placed in the upper left-hand margin of the table. A **residual table** is created by taking the difference between the original value and the overall median.
 
-![A 2-way table](img/twoway_2.png)
+![A 2-way table](img/twoway_02.jpg)
+
+You'll also note that the row and column effect values are initially populated with 0 values.
 
 
-### Step 2: Create a residual table from the row medians
+### Step 2: Compute the row  medians
 
-Next, a **residual table** is created (highlighted in light green in the following figure). Each new cell in the residual table takes on the value of the subtraction of the row median from each response variable in that row.
+Next, row medians are computed  (shown in red in the following figure) from the residual table. 
 
-![A 2-way table](img/twoway_3.png)
-
-The row medians are then copied to the left hand side of the new residual table. These values represent the “row effect” in this first iteration. 
+![A 2-way table](img/twoway_03.jpg)
 
 Note that at this point, we are assigning values of zero to the *column effect* row since column effects have not yet been computed.
 
+
+### Step 3: Create a new residual table from the row medians
+
+The row medians are added to the left hand margin of the new residual table (in green). These values represent the “row effect” in this first iteration. A new set of residual values is created from the row medians where each cell takes on the value of the subtraction of the row median from each response variable in that row.
+
+![A 2-way table](img/twoway_04.jpg)
+
 ### Step 3: Compute the column medians
 
-Next, column medians are computed  (shown in red in the following figure) from the residual table. Note that you are NOT computing the column medians from the original response variables.
+Next, column medians are computed  (shown in red in the following figure) from the residual table. Note that you are NOT computing the column medians from the original response variables.  Note too that we are also computing the median value for the row effect values (left margin).
 
-![A 2-way table](img/twoway_4.png)
+![A 2-way table](img/twoway_05.jpg)
+
 
 ### Step 4: Create a new residual table from the column medians
+
+A new residual table is created from the column median where each new cell takes on the value of the subtraction of the column median from each initial residual value in that column. The column medians are also added to the column effect margin. Note that we are also adding the row effect median value, `-0.5`, to the common effect cell in the upper left-hand corner.
+
+![A 2-way table](img/twoway_06.jpg)
+
+### Step 5: Create a new residual table from the row medians
 
 A new residual table (shown in light orange in the following figure) is created from the column median where each new cell in this second residual table takes on the value of the subtraction of the column median from each response variable in that column.
 
