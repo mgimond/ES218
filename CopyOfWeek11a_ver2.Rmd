@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Before tackling two-way tables, let's explore a simpler one-way table. The data shows mean annual income by occupation for the year 2014 (*src: [Bureau of Labor Statistics](http://www.bls.gov/oes/#tables)*)
+Before tackling two-way tables, let's explore a simpler one-way table. The following dataset shows mean annual income by occupation for the year 2014 (*src: [Bureau of Labor Statistics](http://www.bls.gov/oes/#tables)*)
 
 ```{r echo=FALSE, results='asis'}
 library(xtable)
@@ -46,7 +46,7 @@ Income = c(112490, 72410, 83970, 81520, 70070, 45310, 101110, 52210,
 print(xtable(df, digits=0),include.rownames=TRUE, type="html", scalebox=0.5)
 ```
 
-So, what can we glean from this dataset other than the raw values associated with each occupation type? For starters, we may be interested in coming up with a summary of income values such as the median; this gives us $`r sprintf("%i",median(df$Income))`. This is a single value that can be used to characterize the overall income value. However, the income values in our batch are not all equal to $`r sprintf("%i",median(df$Income))`--they vary above or below this median value. Next, we subtract the median income value from each income values to see by how much each occupation's income differs from the overall income. We can do this in a table, but will choose to do this with a dot plot chart instead to facilitate comparison.
+So, what can we glean from this dataset other than the raw values associated with each occupation type? For starters, we may be interested in coming up with a summary of income values such as the median; this gives us $`r sprintf("%i",median(df$Income))`. This is a single value that can be used to characterize the overall income value. However, the income values in our batch are not all equal to $`r sprintf("%i",median(df$Income))`--they vary above or below this median value. Next, we subtract the median income value from each occupation income value to see by how much each occupation's income differs from the overall income. We can do this in a table, but will choose a dotplot chart instead to facilitate comparison.
 
 ```{r small.mar=TRUE, fig.width=8,fig.height=3.5, echo=FALSE}
 options(scipen=3)
@@ -62,7 +62,7 @@ $$
 
 For example, 'Healthcare Support' average income of  $`r sprintf("%i",df$Income[12])` can be separated into the sum of the median, $`r sprintf("%i",median(df$Income))`, and the residual, $`r sprintf("%i",df$Income[12]-median(df$Income))`. 
 
-So in addition to gleaning a median income value from this batch of values, we have also devised a way to facilitate the comparison of the income values to one another based across different occupation types. We could, if we liked, have assign colors to each cell of the table reflecting their values *relative* to the overall median.
+So in addition to gleaning a median income value from this batch of values, we have also devised a way to facilitate the comparison of the income values to one another. Alternatively, we could have assigned colors to each cell of the table reflecting their values *relative* to the overall median.
 
 ```{r small.mar=TRUE, fig.width=4,fig.height=5, echo=FALSE}
 library(RColorBrewer)
@@ -79,7 +79,7 @@ ggplot(df) + aes(x=rownames(df), y=1, fill=Income) +geom_tile(aes(fill=cl[intv])
         text = element_text(size = 10))
 ```
 
-The income value is often thought of as the **response** to the occupation type (also known as a **factor**). In other words, the factor determines the value in our table. We can re-write the last equation in a more formal way:
+The income value can be thought of as the **response** to the occupation type (also known as a **factor**). In other words, the factor determines the value in our table. We can re-write the last equation in a more formal way:
 
 $$
 y_{i} = \mu + \epsilon_i 
@@ -99,7 +99,7 @@ A two-way table is composed of three variables:
   * a **column factor** which has five levels in our working example: under 8, 9-11, 12, 13-15 and 16 and greater years of education,
   * **response variables** of which we have 4 (rows) x 5 (columns) = 20 all together.
 
-A two-way table is an extension of univariate analyses conducted earlier in the course where a continuous variable (e.g. singer height) is grouped by category (e.g. tenor). Here, we explore a variable across *two * categories.
+A two-way table is an extension of univariate analyses where instead of grouping continuous variable  into a single factor category we explore the variable across **two** factors.
 
 We can represent the relationship between the response variable, $y$, and the *two* factors as:
 
@@ -109,7 +109,7 @@ $$
 
 where $y_{ij}$  is the **response variable** for row $i$ and column $j$, $\mu$ is the overall typical value (hereafter referred to as the *common value*), $\alpha_i$ is the **row effect**, $\beta_j$ is the **column effect** and  $\epsilon_{ij}$ is the **residual** or value left over after *all* effects are taken into account. 
 
-The goal of this analysis is to decompose the response variables into their respective effects--i.e. the contributing factors *education of father* and *region*--via an iterative process where row medians and column medians are removed from the response variables repeatedly until the row and column medians approach zero.  
+The goal of this analysis is to decompose the response variable into its respective effects--i.e. the contributing factors *education of father* and *region*--via an iterative process where row medians and column medians are removed from the response variables repeatedly until the row and column medians approach zero.  
 
 # Analysis workflow
 
@@ -145,7 +145,7 @@ dotchart( t(as.matrix(df)), cex=0.7)
 
 At first glance, there seems to be higher death rates for the `NC` and `S` regions and relatively lower rates for the `W` and `NE` regions. But our eyes may be fooled by outliers in the data.
 
-Next, we'll generate side-by-side boxplots to compare the effects between both categories. Note that we'll need to create a *long* version of the table using the `tydir` package.
+Next, we'll generate side-by-side boxplots to compare the effects between both categories. Note that we'll need to create a *long* version of the table using the `tidyr` package.
 
 ```{r small.mar=TRUE, fig.width=6, fig.height=3, fig.show='hold'}
 library(tidyr)
@@ -169,7 +169,7 @@ Next we will attempt to quantify these effects using Tukey's **median polish**.
 
 ### Step 1: Compute overall median and residual table
 
-First, we will compute the median value for all values in the dataset; this will our first estimate of **common** value. The resulting median value is placed in the upper left-hand margin of the table. A **residual table** is created by taking the difference between the original value and the overall median.
+First, we will compute the median value for *all* values in the dataset; this will be our first estimate of the **common** value. The resulting median value is placed in the upper left-hand margin of the table. A **residual table** is created by taking the difference between the original value and the overall median.
 
 ![A 2-way table](img/twoway_02.jpg)
 
@@ -182,77 +182,54 @@ Next, row medians are computed  (shown in red in the following figure) from the 
 
 ![A 2-way table](img/twoway_03.jpg)
 
-Note that at this point, we are assigning values of zero to the *column effect* row since column effects have not yet been computed.
-
+Note that in addition to computing the row median values for the response variable, were are also computing the median value for the *column effects* in the upper margin (which happens to be zero since we have no column effect values yet).
 
 ### Step 3: Create a new residual table from the row medians
 
-The row medians are added to the left hand margin of the new residual table (in green). These values represent the “row effect” in this first iteration. A new set of residual values is created from the row medians where each cell takes on the value of the subtraction of the row median from each response variable in that row.
+The row medians are added to the left hand margin of the new residual table (shown in green). These values represent the *row effects* in this first iteration. A new set of residual values is created from the row medians where each cell takes on the value of the subtraction of the row median from each response variable in that row.
 
 ![A 2-way table](img/twoway_04.jpg)
 
-### Step 3: Compute the column medians
+The subtraction is also done for the *column effect* values (even though all values remain zero) **and** the global median (common effect value).
+
+### Step 4: Compute the column medians
 
 Next, column medians are computed  (shown in red in the following figure) from the residual table. Note that you are NOT computing the column medians from the original response variables.  Note too that we are also computing the median value for the row effect values (left margin).
 
 ![A 2-way table](img/twoway_05.jpg)
 
 
-### Step 4: Create a new residual table from the column medians
+### Step 5: Create a new residual table from the column medians
 
-A new residual table is created from the column median where each new cell takes on the value of the subtraction of the column median from each initial residual value in that column. The column medians are also added to the column effect margin. Note that we are also adding the row effect median value, `-0.5`, to the common effect cell in the upper left-hand corner.
+A new residual table is created from the column median where each new cell takes on the value of the subtraction of the column median from each initial residual value in that column.  For example, the first upper-left cell's residual is $7.0 - 7.4 = -0.4$.
+
+The column medians are also added to the column effect margin. Note that we are also adding the row effect median value, `-0.5`, to the *common effect* cell in the upper left-hand corner.
 
 ![A 2-way table](img/twoway_06.jpg)
 
-### Step 5: Create a new residual table from the row medians
+We have now completed our first row and column smoothing iteration. However, there may be more row and column effects that can be pulled from the residuals. We therefore move on to a second iteration.
 
-A new residual table (shown in light orange in the following figure) is created from the column median where each new cell in this second residual table takes on the value of the subtraction of the column median from each response variable in that column.
+### Step 6: Second iteration -- row effects
 
-Next, the column medians (red) are copied to the column effect row (shown in blue). These values represent the “column effect” in this first iteration.
+Next, we compute the row medians from the residuals, then add the *column effect* median to the top margin (and the common value) and subract the row medians from the residuals. as in step 3.
 
-At this stage of the workflow, we subtract each "row effect" (the left-hand column) values in the light-green table by the median value of the common row effects (`20.2` in this working example). This will re-center the row effect values thus aiding us in assessing the effect each region factor has on the observed variables.
+![A 2-way table](img/twoway_06b.jpg)
 
-![A 2-way table](img/twoway_5.png)
+### Step 7: Second iteration -- column effects
 
-However, before moving on to the next step, we need to include the row effect median value, `20.2`, to the common effect variable. This will ensure that the additive formula remains balanced (the “why” will become clearer later in this tutorial). 
+To wrap-up the second iteration, we compute the column median values from the residuals then subtract the medians from those residuals. We also add the medians to the row effect values and the common value.
 
-Compute the common effect value by summing the original common effect (whose initial value was `0`) with the median value from the row effect, `20.2`.
-
-![A 2-way table](img/twoway_6.png)
-
-The above step completes the first iteration. We now need to repeat the process in a second iteration.
-
-### Step 5: 2nd smoothing iteration
-
-Steps 1 through 4 are repeated with the last residual table. We start by computing new row medians.
-
-![A 2-way table](img/twoway_7.png)
-
-We then create a new residual table from the row medians.
-
-![A 2-way table](img/twoway_8.png)
-
-Next, the new row median values are added to the old row effect values. Note that the displayed values are rounded to one significant digit but that the computation is performed using many more significant digits.
-
-![A 2-way table](img/twoway_9.png)
-
-The common effect value must also be updated by adding the *column effects* median to the original *common effect* variable.
-
-![A 2-way table](img/twoway_10.png)
-
-Next, we compute new column medians and subtract those values from the column values to give us a new set of residual values shown in the light-orange table. We also add to the *row effect* values the column median (which is `0` in this iteration).
-
-![A 2-way table](img/twoway_11.png)
-
-To complete this 2nd iteration, we update the *common value* by adding the *row effect* median (which is `0.0`).
-
-![A 2-way table](img/twoway_12.png)
+![A 2-way table](img/twoway_07.jpg)
 
 ### When do we stop iterating?
 
-The goal is to iterate through the row and column smoothing operations until the row and column effect medians are close to 0. However, Hoaglin **et al.** (1983) warn against “using unrestrained iteration” and suggest that a few steps should be more than adequate in most instances. In our working example, a third iteration may be warranted. The workflow for this third iteration will not be shown here, but its mechanism is identical to the last sets of row/column smoothing operations. The final version of the table (along with the column and row values) is shown below:
+The goal is to iterate through the row and column smoothing operations until the row and column effect medians are close to 0. However, Hoaglin **et al.** (1983) warn against “using unrestrained iteration” and suggest that a few steps should be more than adequate in most instances. In our working example, a third iteration may be warranted. The complete workflow for this third iteration follows. 
 
-![A 2-way table](img/twoway_13.png)
+![A 2-way table](img/twoway_08.jpg)
+
+The final version of the table (along with the column and row values) is shown below:
+
+![A 2-way table](img/twoway_09.jpg)
 
 An animation of the median polish iterations follows. Note how, at the end of the iterations, the *common factor* ends up contributing the largest effect. Also note the one abnormally high residual in the southern region associated with 8th grade education.
 
@@ -332,7 +309,7 @@ ggplot(df2.l) + aes(x=Edu, y=Regions, fill=Deaths) +geom_tile() +
 
 ## Interpreting the median polish
 
-As noted in the introduction, a two-way table represents the relationship between the response variable, $y$, and the two categories as:
+As noted earlier, a two-way table represents the relationship between the response variable, $y$, and the two categories as:
 
 $$
 y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
@@ -340,13 +317,13 @@ $$
 
 In our working example, $\mu$ = 20.6; $\alpha_i$ = -1.5, 2.6   -0.4, and 0.4 for $i$ = `NE`, `Nc`, `S` and `W` respectively; $\beta_j$ = 7.6, 6.0, -0.9, 0.2 and -3.5 respectively.
 
-The residuals represent the potion of the mortality rates that can't be explained by either factors. 
+The residuals represent the portion of the mortality rates that can't be explained by either factors. 
 
 So the mortality rate in the upper left-hand cell from the original table can be deconstructed as:
 
-![A 2-way table](img/twoway_14.png)
+![A 2-way table](img/twoway_10.jpg)
 
-The examination of the table suggests that that the infant mortality rate is greatest for fathers who did not attain more than 8 years of school (i.e. who has not completed high school) as noted by the high column effect value of 7.6. This is the rate of infant mortality relative to the overall median (i.e. on average, 20.6 infants per thousand die every year and the rate goes up to 7.6 + 20.6 for infants whose father has not passed the 8th grade).  Infants whose father has completed more than 16 years of school (i.e. who as completed college) have a lower rate of mortality as indicated by the low effect value of -3.5 (i.e. 3.5 fewer depths than average). The effects from regions also show higher infant mortality rates for North Central and Western regions (with effect values of 2.6 and 0.4 respectively) and lower rates for the northeastern and southern regions; however the regional effect does not  appear to be as dominant as that of the father’s educational attainment. 
+The examination of the table suggests that the infant mortality rate is greatest for fathers who did not attain more than 8 years of school (i.e. who has not completed high school) as noted by the high column effect value of 7.6. This is the rate of infant mortality **relative to the overall median** (i.e. on average, 20.6 infants per thousand die every year and the rate goes up to 7.6 + 20.6 for infants whose father has not passed the 8th grade).  Infants whose father has completed more than 16 years of school (i.e. who as completed college) have a lower rate of mortality as indicated by the low effect value of -3.5 (i.e. 3.5 fewer depths than average). The effects from regions also show higher infant mortality rates for North Central and Western regions (with effect values of 2.6 and 0.4 respectively) and lower rates for the northeastern and southern regions; however the regional effect does not  appear to be as dominant as that of the father’s educational attainment. 
 
 It’s also important to look at the distribution of the residual numbers across the two-way table. One should identify unusually high or low residuals in the table. Such residuals may warrant further investigation (e.g. the high southern region residual value of 10.8 may need further exploration).
 
@@ -354,11 +331,11 @@ It’s also important to look at the distribution of the residual numbers across
 
 Thus far, we have assumed an additive relationship between the effects (factors). But this additive model may not be the best fit for our data. A good way to test this is by generating a **Tukey Additivity Plot** where we plot residuals vs. the **comparison value**, $cv_{ij}$, defined as $\alpha_i \beta_i / \mu$. If the plot is devoid of any obvious trend or pattern we can conclude that our dataset is consistent with an additive model. Such seems to be the case with our working example as shown in the following plot.
 
-```{r fig.width=3, fig.height=3, echo=FALSE, small.mar=TRUE}
+```{r fig.width=3, fig.height=3, echo=FALSE, small.mar=TRUE, message=FALSE, results='hide'}
 plot( medpolish(df,maxiter=3), pch=20)
 ```
 
-If the diagnostic plot revealed a trend, its shape—or more specifically, its slope--could be used in helping define an appropriate transformation for the data.  A rule of thumb is to apply a $(1 – slope)$ power transformation to the original data. If the resulting power is not appropriate for the dataset then the $cv_{ij}$ can be added to the additive model as follows:
+If the diagnostic plot revealed a trend, its shape--or more specifically, its slope--could be used in helping define an appropriate transformation for the data.  A rule of thumb is to apply a $(1 – slope)$ power transformation to the original data. If the resulting power is not appropriate for the dataset then the $cv_{ij}$ can be added to the additive model as follows:
 
 $$
 y_{ij} = \mu + \alpha_i + \beta_j + \alpha_i \beta_i / \mu  + \epsilon_{ij}
@@ -366,7 +343,7 @@ $$
 
 # Implementing the median polish in R
 
-The steps outlined in the previous section can be easily implemented using pen and paper or a spreadsheet environment for larger datasets. R has a built-in function called `medpolish()` which does this for us. We can define the maximum number of iterations by setting  the `maxiter=` parameter but note that `medpolish` will automatically estimate the best number of iterations for us. We'll set it to `3` to match the three iterations conducted in the previous selection.
+The steps outlined in the previous section can be easily implemented using pen and paper or a spreadsheet environment for larger datasets. R has a built-in function called `medpolish()` which does this for us. We can define the maximum number of iterations by setting  the `maxiter=` parameter but note that `medpolish` will, by default, automatically estimate the best number of iterations for us. We'll set it to `3` to match the three iterations conducted in the previous selection.
 
 ```{r}
 df.med <- medpolish( df , maxiter=3)
@@ -386,12 +363,11 @@ To generate the Tukey additivity plot, simply wrap the median polish object with
 plot( df.med )
 ```
 
-
 # What if we use the mean instead of the median?
 
-The procedure is similar with some notable differences. First, we compute the global mean (the common effect) then subtract it from all values in the table. Next, we compute the row means (the row effect) then subtract each mean from all values in its associated row. We finally compute the column means (from the residuals) to give us the column effect. That's it, unlike the median polish, we do not iterate the smoothing sequences. An example of a "mean" polish applied to our data follows:
+The procedure is similar with some notable differences. First, we compute the global mean instead of the medians (the common effect) then subtract it from all values in the table. Next, we compute the row means (the row effect) then subtract each mean from all values in its associated row. We finally compute the column means (from the residuals) to give us the column effect. That's it, unlike the median polish, we do not iterate the smoothing sequences. An example of a "mean" polish applied to our data follows:
 
-![A 2-way table](img/twoway_15.png)
+![A 2-way table](img/twoway_11.png)
 
 The results differ slightly from the those produced using the median polish. Recall that the mean is sensitive to outliers and medians are not. If a robust estimate of the effects is sought, stick with the median polish.
 
@@ -401,7 +377,7 @@ So what can we gain from the "mean" polish? Well, as it turns out, it serves as 
 
 A two-way ANOVA assesses whether the factors (categories) have a significant effect on the outcome. It's implementation can be conceptualized as a regression analysis where each row and column level is treated as a dummy variable. The computed regression coefficients are the same as the levels computed using the "mean" polish outlined in the previous step except for one notable difference: the ANOVA adds one of the column level values and one of the row level values to the grand mean then subtracts those values from their respective row/column effects.
 
-![A 2-way table](img/twoway_16.png)
+![A 2-way table](img/twoway_12.png)
 
 The resulting row/column levels are the regression coefficients:
 
