@@ -1,0 +1,174 @@
+---
+title: "The R and RStudio Environments"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r echo = FALSE, message = FALSE}
+knitr::knit_hooks$set(small.mar = function(before, options, envir) {
+    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
+})
+
+knitr::opts_chunk$set(
+  comment = "",
+  message = FALSE,
+  tidy = FALSE,
+  dev=c('CairoPNG', 'CairoPDF'),
+  cache = FALSE,
+  warning = FALSE,
+  encoding = "UTF-8")
+```
+
+# Command line vs. script file
+
+## Command line
+
+R can be run from a *R console* or *RStudio* command line environment. For example, we can assign four numbers to the object `x` then have `R` read out the values stored in `x`:
+
+```{r}
+x <- c(1,2,3,4)
+x
+```
+
+## R script files
+
+If you intend on typing more than a few lines of code in a command prompt environment, or if you wish to save a series of commands as part of a project's analysis, it is probably best that you write up your commands in an a R script file. Such file is usually saved with a *.R* extension. 
+
+In RStudio, you can run a line of code of a R script file by placing a cursor anywhere on that line (while being careful not to highlight any subset of that line) and pressing the shortcut keys `Ctrl+Enter`.
+
+You can also run an entire block of code by selecting all lines to be run then pressing the shortcut keys `Ctrl+Enter`. Or, you can run the entire R script by pressing `Ctrl+Alt+R`.
+
+In the following example, the R script file has three lines of code: two assignment operations and one regression analysis. The lines are run one at a time using the `Ctrl+Enter` keys and the output is displayed in the console window.
+
+![Example of a script environment](img/Script1.png)
+
+# Project directory structure
+
+If your analyses will involve many data files, analysis scripts and/or presentation files (such as Word or PDF documents), it is strongly recommended that you create a directory structure under your root project folder to store and organize all of these files. For example, you might have a project folder located under `D:\Jdoe\Project1`   whose directory structure might look like this:
+
+![Project directory structure](img/Project_directory.png)
+
+Note that although the above example is for an `R`-centric environment, such a directory structure is equally applicable to any analysis environment (such as a GIS, Stata or SPSS centric analysis environment).
+
+Key elements of a project folder include: a **Data** folder that houses all data files (which include all *raw* data files downloaded from websites or provided by colleagues as well as all subsets and manipulated versions of these data files), an **Analysis** folder which houses all analysis files (e.g. `R` scripts, GIS map documents, Stata scripts, etc...) including figures or maps that may be produced by the analyses (such files could be saved in a sub-directory called **Figures**), and a **Presentation** folder that stores final reports (e.g. *.docx*, *.pdf*, *.Rmd* files) and presentations (e.g. *.pptx*, *.html* files). Additionally, it is a good idea to save a *README* file at the root level of your directory that provides a description of the contents of the project folder as well as a synopsis of the project's goals. Such file can be saved as a plain *.txt* file, a *.docx* file or a *.md* markdown file.
+
+## Understanding directory structures
+Because a project's data file may be in a different directory than the R script which must read the data file before conducting the analysis, you need to know how to access that file from the R script's *location*.
+
+In the above example, user Jdoe has a project folder called Project1 in which reside a *./Data* folder and an *./Analysis* folder. She opens the R script called *Data_manipulation.R* which contains the following line:
+
+```{r eval=FALSE}
+dat <- read.csv("ACS.rds")
+```
+
+R returns the following error message:
+```{r echo=FALSE, error=TRUE}
+dat <- read.csv("ACS.csv")
+```
+
+The error message states that the file *ACS.csv* cannot be found. This is because the session's working directory is probably set to a directory other than the D:\\Jdoe\\Project1\\Data directory. This can be verified by typing the following command:
+
+```{r eval=FALSE}
+getwd()
+```
+
+`[1] "D:/jdoe/Project1/Analysis"`
+
+The working directory tells the current R session where to look for a file (or where to create one) if the directory is not explicitly defined. So in the above example, user Jdoe is asking R to open the file *ACS.csv* without explicitly telling R in which directory to look so R is defaulting to the current working directory which is D:\\jdoe\Project1\\Analysis--which does not containing the file ACS.csv.
+
+There are two options to resolving this problem. The first is to set the working directory to the folder that contains the ACS.csv file using the `setwd()` function.
+
+```{r eval=FALSE}
+setwd("D:/Jdoe/Project1/Data")
+```
+
+Note the use of the `/` slash in specifying the directory as opposed to the `\` slash used in the Windows file manager environment.
+
+The second is to modify the `read.csv` call by specifying the path to the *ACS.csv* file.
+
+```{r eval=FALSE}
+dat <- read.csv("D:/Jdoe/Project1/Data/ACS.csv")
+```
+
+However, this approach makes it difficult to share the project folder with someone else who may choose to place it under a different folder such as C:\\User\\John\\Documents\\Project1\\. In such a scenario, the user would need to modify every R script that references the directory D:\\Jdoe\\Project1\\. A better solution is to specify the location of the data folder *relative* to the location of the *Analysis* folder such as,
+
+```{r eval=FALSE}
+dat <- read.csv("../Data/ACS.csv")
+```
+
+The two dots, `..`, tell R to move *up* the directory hierarchy relative to the current working directory. So in our working example,  `..\` tells R to move out of the *Analysis/* folder and up into the *Project1/* folder. The relative path `..\Data\ACS.csv` tells R to move out of the *Analysis/* directory and over into the *Data/* directory before attempting to read the contents of the *ACS.csv* data file.
+
+Using *relative paths* makes your project folder independent of the directory structure in which it resides thus facilitating the reproducibility of your work on a different PC our directory environment.
+
+# Packages
+
+One of R's attractive features is its rich collection of packages designed for specific applications and techniques. Packages allow researchers and scientists to share R functions and data with other users. Some packages come already installed with R, others must be downloaded separately from a CRAN repository or other locations such as GitHub or personal websites.
+
+## Base packages
+R comes installed with a set of default packages. A snapshot of a subset of the installed base packages is shown below:
+
+![Snapshot of base packages](img/Base_packages1.png)
+
+## Installing packages from CRAN
+There are thousands of R packages to choose from. Most can be accessed from the CRAN repository. To install a CRAN package from RStudio, click on the *Package* tab, select *Install Packages* and choose *Repository (CRAN, CRANextra)* as the source location. In the following example, the library *ggplot2* is installed from CRAN.
+
+![Install from CRAN](img/Install_CRAN_packages.png)
+
+Package installation from CRAN's repository can also be accomplished at a command line.
+
+```{r eval=FALSE}
+install.packages("ggplot2")
+```
+
+The installation is usually straight forward and if any other packages need to be installed, RStudio will install those as well as long as the *Install dependencies* option is checked. In the previous example, *ggplot2* requires that a dozen or so packages be present on your computer (such as *RColorBrewer* and *reshape2*)--all of which are automatically installed by RStudio.
+
+Note that R packages are installed in the user's home directory (C:/Users/...) by default. This is advantageous in that you do not need to have administrative privileges to install any packages. It can be a disadvantage as well in that if someone else logs on to the same computer where you installed a package she will not have access to it (requiring that she installs that package in *her* home directory). 
+
+## Installing packages from GitHub
+Some packages may be in *development* and deemed not *mature* enough to reside on the CRAN repository. Such packages are often found on GitHub, a website that hosts software projects. Installing a package from GitHub requires the use of another package called *devtools* available on CRAN.
+
+For example, to install the latest version of *ggplot2* from GitHub  (i.e. the developmental version and not the stable version available on CRAN) type the following:
+
+```{r eval=FALSE}
+install.packages("devtools")  # Install the devtools package if not already present
+library(devtools)             # Load the devtools package in the current R session
+install_github("hadley/ggplot2")
+
+```
+
+The argument *hadley* points to the name of the repository and *ggplot2* to the name of the package.
+
+## Using a package in a R session
+
+Just because a package is installed on your computer (in your home directory or in a directory accessible to you) does not mean that you have access to its functions. For example, after installing the *ggplot2* library you might want to use one of its functions, `qplot`, to generate a scatter plot and type, 
+
+```{r eval=FALSE}
+qplot(mpg, wt, data=mtcars)
+```
+
+only to see the following error message:
+```{r eval=TRUE, error=TRUE, echo=FALSE}
+qplot(mpg, wt, data=mtcars)
+```
+
+This is because the contents of the *ggplto2* package have not been loaded into the current R session. To make the functions and/or data of a package available in a R session, use the `library()` function:
+
+```{r fig.width=3, fig.height=2}
+library(ggplot2)
+qplot(mpg, wt, data=mtcars)
+```
+
+Note that the dataset `mtcars` and its variables `mpg` and `wt` comes bundled with the R installation.
+
+# Getting a session's info
+
+Reproducibility is a fundamental idea behind an open source analysis environment such as R. So it's only fitting that *all* aspects of your analysis environment be made available (along with your data and analysis results). This is because functions and programming environments may change in their behavior as versions evolve; this may be by design or the result of a bug in the code fixed in later versions. No pieces of software, open-source or commercial, are immune to this. It's therefore important that you publicize the R session in which parts of or all analyses were conducted. A simple way to do this is to call the `sessionInfo()` function.
+
+```{r}
+sessionInfo()
+```
+
+Output includes all loaded base packages and external packages (e.g. *ggplot2* in this working example) as well as their version.
+
