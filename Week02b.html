@@ -92,65 +92,62 @@ img {
 
 <div id="reading-data-files-into-r" class="section level1">
 <h1>Reading data files into R</h1>
-<p>Note that files can be loaded from the web (this is the method used in the next subsections), or from a local directory on your desktop or laptop. When loading the file locally, make sure to specify the folder in which the file resides (see the online tutorial <a href="http://personal.colby.edu/personal/m/mgimond/RIntro/01_The_R_environment.html#understanding-directory-structures">Understanding directory structures</a>).</p>
+<p>Data files can be loaded from the R session’s working directory, from a directory structure <em>relative</em> to the working directory using the single dot <code>.</code> or double dot <code>..</code> syntax, or (for some file types) directly from a website. The following sections will expose you to a mixture of data file environments. For a refresher on directory structures, review <a href="The_R_environment.html#understanding-directory-structures">Understanding directory structures</a>.</p>
 <div id="reading-from-a-comma-delimitted-csv-file" class="section level2">
 <h2>Reading from a comma delimitted (CSV) file</h2>
 <p>A popular data file format (and one that has withstood the test of time) is the text file format where columns are separated by a <em>tab</em>, <em>space</em> or <em>comma</em>. In the following example, R reads a comma delimited file called <em>ACS.csv</em> into a data object called <code>dat</code>.</p>
-<pre class="r"><code>dat &lt;- read.csv(&quot;http://personal.colby.edu/personal/m/mgimond/R/Data/Data/ACS.csv&quot;, header=TRUE)</code></pre>
+<pre class="r"><code>dat &lt;- read.csv(&quot;ACS.csv&quot;, header=TRUE)</code></pre>
+<p>If the file resides on a website, you can load the CSV directly from that site as follows:</p>
+<pre class="r"><code>dat &lt;- read.csv(&quot;http://mgimond.github.io/ES218/Data/ACS.csv&quot;, header=TRUE)</code></pre>
 <p>To read other text formats that use different delimiters invoke the command <code>read.table()</code> and define the type of delimiter using the <code>sep=</code> parameter. For example, to read a tab delimited data file called <em>ACS.txt</em>, run the command <code>read.table(&quot;ACS.txt&quot;, sep=&quot;\t&quot;)</code>.</p>
 </div>
 <div id="reading-from-a-r-data-file" class="section level2">
 <h2>Reading from a R data file</h2>
-<p>R has its own file format; it’s usually saved as a <em>.rds</em> file. To read a R data file, invoke the <code>readRDS()</code> function.</p>
-<pre class="r"><code>dat &lt;- readRDS(&quot;http://personal.colby.edu/personal/m/mgimond/R/Data/ACS.rds&quot;)</code></pre>
+<p>R has its own file format; it’s usually saved using the <em>.rds</em> extension. To read a R data file, invoke the <code>readRDS()</code> function.</p>
+<pre class="r"><code>dat &lt;- readRDS(&quot;ACS.rds&quot;)</code></pre>
+<p>As with a CSV file, you can load a RDS file straight from a website, however, you must first run the file through a <em>decompressor</em> before attempting to load it via <code>readRDS</code>. A built-in decompressor function called <code>gzcon</code> can be used for this purpose.</p>
+<pre class="r"><code>dat &lt;- readRDS(gzcon(url(&quot;http://mgimond.github.io/ES218/Data/ACS.rds&quot;)))</code></pre>
+<p>The .rds file format is usually smaller than its text file counterpart and will therefore take up less storage space.</p>
 </div>
 <div id="reading-from-an-excel-file" class="section level2">
 <h2>Reading from an Excel file</h2>
-<p>A package that does a good job in importing Excel files is <code>readxl</code>. It usually recognizes the data format defined by Excel (this includes dates). However, only one sheet can be loaded at a time. So if multiple Excel sheets are to be worked on, each sheet will need to be loaded into separate dataframes.</p>
-<p>If you don’t have the <code>readxl</code>library installed, install the package as you would any other package:</p>
+<p>A package that does a good job in importing Excel files is <code>readxl</code>. It recognizes most column formats defined by Excel including date formats. However, only one sheet can be loaded at a time. So if multiple Excel sheets are to be worked on, each sheet will need to be loaded into separate dataframe objects.</p>
+<p>If you don’t have the <code>readxl</code>library installed, install the package as you would any other package via RStudio’s interface or in R using the following command:</p>
 <pre class="r"><code>install.packages(&quot;readxl&quot;)</code></pre>
-<p>In this example, we will load an Excel sheet called <code>Discharge</code> which tabulates daily river water discharge. The sample file can be downloaded <a href="http://mgimond.github.io/ES218/Data/Discharge_2004_2014.xlsx">here</a>. The following chunk of code assumes that the Excel file is saved in a folder called <code>Data</code>.</p>
+<p>In this example, we will load an Excel data sheet called <code>Discharge</code> which tabulates daily river water discharge. The sample file, <code>Discharge_2004_2014.xlsx</code>, can be downloaded <a href="http://mgimond.github.io/ES218/Data/Discharge_2004_2014.xlsx">here</a>. The following chunk of code assumes that the Excel file is saved in a folder called <code>Data/</code> inside the R session’s working directory.</p>
 <pre class="r"><code>library(readxl)
-xl &lt;- read_excel(&quot;./Data/Discharge_2004_2014.xlsx&quot;, sheet = &quot;Discharge&quot;)
-summary(xl)</code></pre>
-<pre><code>##       Date                       Discharge         Code          
-##  Min.   :2004-06-01 00:00:00   Min.   : 1600   Length:3866       
-##  1st Qu.:2007-01-23 06:00:00   1st Qu.: 5685   Class :character  
-##  Median :2009-09-15 12:00:00   Median : 8510   Mode  :character  
-##  Mean   :2009-09-15 12:00:00   Mean   :11678                     
-##  3rd Qu.:2012-05-08 18:00:00   3rd Qu.:13600                     
-##  Max.   :2014-12-31 00:00:00   Max.   :87700                     
-##                                                                  
-##                
-##  Min.   : NA   
-##  1st Qu.: NA   
-##  Median : NA   
-##  Mean   :NaN   
-##  3rd Qu.: NA   
-##  Max.   : NA   
-##  NA's   :3866</code></pre>
-<p>Note that the date field was saved in a date format in the original Excel file.</p>
+xl &lt;- read_excel(&quot;./Data/Discharge_2004_2014.xlsx&quot;, sheet = &quot;Discharge&quot;)</code></pre>
+<p>Note that the single dot <code>.</code> that precedes the <code>Data/</code> folder name instructs R to look for the <code>Data/</code> folder in the <em>current</em> working directory. A later example will show you how to instruct R to look for files and folders <em>outside</em> of the current working directory using two dots <code>..</code> instead of one.</p>
+<p>An advantage to using this package for loading Excel files is its ability to preserve data types–including date formatted columns! In the above example, the Excel file has a column called <code>Date</code> which stores the month/day/year data as a date object. We can check that the loaded <code>xl</code> object recognizes the <code>Date</code> column as a <code>date</code> data type:</p>
+<pre class="r"><code>str(xl)</code></pre>
+<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    3866 obs. of  4 variables:
+##  $ Date     : POSIXct, format: &quot;2004-06-01&quot; &quot;2004-06-02&quot; ...
+##  $ Discharge: num  6170 6590 6210 7120 6990 6160 5570 4500 4940 4550 ...
+##  $ Code     : chr  &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;A&quot; ...
+##  $          : num  NA NA NA NA NA NA NA NA NA NA ...</code></pre>
+<p>The <code>Date</code> column is defined as a <code>POSIXct</code> data type; this is the computer’s way of storing dates as seconds since some internal reference date. We would therefore not need to convert the date column as would be the case if the date column was loaded from a CSV file. If such was the case, then the date column would most likely be loaded as a character or factor data type. A more in-depth discussion on date objects and their manipulation in R is covered in the <a href="Week02c.html">next chapter</a>.</p>
 </div>
 <div id="importing-data-from-proprietary-data-file-formats" class="section level2">
 <h2>Importing data from proprietary data file formats</h2>
-<p>It’s usually recommended that files be stored as a CSV or tab delimited file format before reading it into R. However, you might find yourself in a situation where you have no option but to try and import a foreign file if access to the proprietary software is not available. This requires the use (and installation) of a package called <code>Hmisc</code>. The package will read SAS (XPT format), SPSS (SAV format) and Stata (dta format). You can install the package on your computer as follows:</p>
+<p>It’s usually recommended that a data file be stored as a CSV or tab delimited file format before reading it into R. However, you might find yourself in a situation where you have no option but to try and import data stored in a proprietary format. This requires the use (and installation) of a package called <code>Hmisc</code>. The package will convert the following file formats: SAS (XPT format), SPSS (SAV format) and Stata (dta format). You can install the package on your computer as follows:</p>
 <pre class="r"><code>install.packages(&quot;Hmisc&quot;)</code></pre>
 <p>In this example, a SAS file of blood pressure from the <a href="http://www.cdc.gov/nchs/nhanes.htm">CDC</a> will be loaded into an object called <code>dat</code> (file documentation can be found <a href="http://personal.colby.edu/reload/personal/m/mgimond/R/Data/BPX_G_README.txt">here</a>).</p>
 <pre class="r"><code>library(Hmisc)
 dat &lt;- sasxport.get(&quot;http://personal.colby.edu/personal/m/mgimond/R/Data/BPX_G.xpt&quot;)</code></pre>
-<p>To import an SPSS file, use the <code>spss.get()</code> function. To import a STATA file, use the <code>stata.get()</code> function.</p>
+<p>Likewise, to import an SPSS file, use the <code>spss.get()</code> function; to import a STATA file, use the <code>stata.get()</code> function.</p>
 </div>
 </div>
 <div id="how-to-save-r-objects-to-data-files" class="section level1">
 <h1>How to save R objects to data files</h1>
 <div id="export-to-a-csv-file" class="section level2">
 <h2>Export to a CSV file</h2>
-<p>To export the data object <code>dat.sub</code> as a comma delimited file, run the following:</p>
+<p>To export a data object called <code>dat.sub</code> as a comma delimited file in a folder called <code>Data/</code> residing at a level <em>above</em> the R session’s working directory, run the following:</p>
 <pre class="r"><code>write.csv(dat.sub, &quot;../Data/ACS_sub.csv&quot;)</code></pre>
+<p>Note that the two dots <code>..</code> tells the function to get out of the current folder (i.e. moving up a directory) before proceeding down into the <code>Data/</code> folder.</p>
 </div>
 <div id="export-to-a-rds-file" class="section level2">
 <h2>Export to a Rds file</h2>
-<p>To export the data object <code>dat.sub</code> to a <em>Rds</em> file, run the following:</p>
+<p>To export a data object called <code>dat.sub</code> to a .Rds (R) file format in a folder called <code>Data/</code> residing at a level <em>above</em> the R session’s working directory, run the following:</p>
 <pre class="r"><code>saveRDS(dat.sub, &quot;../Data/ACS_sub.rds&quot;)</code></pre>
 </div>
 </div>
@@ -171,7 +168,7 @@ dat &lt;- sasxport.get(&quot;http://personal.colby.edu/personal/m/mgimond/R/Data
 
 <div class="footer">
 <hr />
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAPCAMAAABEF7i9AAAAllBMVEUAAAD///+rsapERER3d3eIiIjMzMzu7u4iIiKUmZO6v7rKzsoODg4RERFVVVUNDQ0NDg0PEA8zMzNLTEtbXltmZmZydnF9gn2AgICPkI+ZmZmqqqq7u7vFxsXIzMgNDQwZGRkgICAhISEkJSMnKCcuMC4xMzE5Ozk7PTtBQkFCQkJDQ0Nna2eGhoaHh4ezuLLGysbd3d1wVGpAAAAA0klEQVR42q2TZxOCMAyGk7QsZYniAPfe4///OVstIOd5cNL3+qVp7umbpAXQLtQqCSSpMxgqxFyHqN35010GdFwjv4StiVrDhsD9snBtQo9o2m0GDA00bWAWA9tEthU1j1R/VdJHvgxXAQcwRttHzj0rSZGHouaJOn8tzAeodlgB7INpyan4kayZu0S3e+5QpWUw/En7dshiz+IJ8qDssCC8y63hkAIDUw9i0cPogadNqYdlYL0e0m6hecrO7JoDjysN71CM5aJ4h3nTn6L7L2vWE+d6CQIzJHDTAAAAAElFTkSuQmCC" /></a>  Manny Gimond (2015)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAPCAMAAABEF7i9AAAAllBMVEUAAAD///+rsapERER3d3eIiIjMzMzu7u4iIiKUmZO6v7rKzsoODg4RERFVVVUNDQ0NDg0PEA8zMzNLTEtbXltmZmZydnF9gn2AgICPkI+ZmZmqqqq7u7vFxsXIzMgNDQwZGRkgICAhISEkJSMnKCcuMC4xMzE5Ozk7PTtBQkFCQkJDQ0Nna2eGhoaHh4ezuLLGysbd3d1wVGpAAAAA0klEQVR42q2TZxOCMAyGk7QsZYniAPfe4///OVstIOd5cNL3+qVp7umbpAXQLtQqCSSpMxgqxFyHqN35010GdFwjv4StiVrDhsD9snBtQo9o2m0GDA00bWAWA9tEthU1j1R/VdJHvgxXAQcwRttHzj0rSZGHouaJOn8tzAeodlgB7INpyan4kayZu0S3e+5QpWUw/En7dshiz+IJ8qDssCC8y63hkAIDUw9i0cPogadNqYdlYL0e0m6hecrO7JoDjysN71CM5aJ4h3nTn6L7L2vWE+d6CQIzJHDTAAAAAElFTkSuQmCC" /></a>  Manny Gimond (2016)
 </br>
 
 </div>
