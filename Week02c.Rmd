@@ -7,7 +7,11 @@ output:
   word_document: default
 ---
 
-Date values can be represented in tables as numbers or characters. But to work properly with date representation, it must be converted to an R date object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. The following subsections make use of the `lubridate` package.
+```{r echo=FALSE}
+source("libs/Common.R")
+```
+
+Date values can be represented in tables as numbers or characters. But to work properly with date representation, it should be converted to an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. The following subsections will make use of `lubridate` functions.
 
 # Creating date/time objects
 
@@ -27,14 +31,22 @@ x.date <- mdy(x)
 x.date
 ```
 
-If you need to specify the time zone, add the parameter `tz=`.
+If you need to specify the time zone, add the parameter `tz=`. For example, to specify *Eastern Standard Time*, type:
 
 ```{r}
 x.date <- mdy(x, tz="EST")
 x.date
 ```
 
-The function `mdy` can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same. Different `lubridate` functions are available for different date formats. A few are listed below.
+R does not maintain its own list of timezone names instead, it relies on the operating system's naming convention. To list the supported timezone names for your particular R environment, type:
+
+```{r eval=FALSE}
+OlsonNames()
+```
+
+The function `mdy` can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same so long as the order remains month/day/year.
+
+For different month/day/year arrangements other `lubridate` functions need to be used:
 
 Functions  |  Date Format
 -----------|--------------
@@ -93,10 +105,9 @@ If you want the day of the week displayed as its three letter designation, add t
 wday(x.date, label = TRUE)
 ```
 
-You'll note that this last call not only returns the day of the week (`r as.character(wday(x.date, label = TRUE))`) but it also returns `Levels` information indicating that the returned values are  treated as factors and not plain characters or dates.
+You'll note that this last call not only returns the day of the week (`r as.character(wday(x.date, label = TRUE))`) but it also returns `Levels` information (indicating that the returned values are treated as factors and not plain characters or dates) along with their hierarchy.
 
 The following table lists functions that extract different elements of a date object.
-
 
 Functions  |  Extracted element
 -----------|--------------
@@ -113,15 +124,27 @@ Functions  |  Extracted element
 You can apply certain operations to dates as you would to numbers. For example, to list the number of days between the first and third elements of the vector `x.date` type the following:
 
 ```{r}
-(x.date[3] - x.date[1]) / edays()
+(x.date[3] - x.date[1]) / ddays()
 ```
 
 To get the number of weeks between both dates:
 ```{r}
-(x.date[3] - x.date[1]) / eweeks()
+(x.date[3] - x.date[1]) / dweeks()
 ```
 
-Likewise, you can get the number of minutes between dates by dividing by `eminutes()` and the number of years by dividing by `eyears()`. 
+Likewise, you can get the number of minutes between dates by dividing by `dminutes()` and the number of years by dividing by `dyears()`. 
+
+You can also apply Boolean operations on dates. For example, to find which date element falls between the 11th and 24th day of the month, type:
+
+```{r}
+(mday(x.date) > 11) & (mday(x.date) < 24)
+```
+
+If you want the command to return just the dates that satisfy this query, pass the Boolean operation as an index to the `x.date` vector:
+
+```{r}
+x.date[ (mday(x.date) > 11) & (mday(x.date) < 24) ]
+```
 
 # Formatting date objects
 

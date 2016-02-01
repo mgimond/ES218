@@ -7,19 +7,8 @@ output:
   word_document: default
 ---
 
-```{r echo = FALSE, message = FALSE}
-knitr::knit_hooks$set(small.mar = function(before, options, envir) {
-    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
-})
-
-knitr::opts_chunk$set(
-  comment = NA,
-  message = FALSE,
-  tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8")
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
 
 # Data types
@@ -109,7 +98,9 @@ Note that in both cases, `mode(x)` returns `r mode(x)`. Also note that the `1`'s
 
 ## Factor
 
-**Factors** are usually used to group variables a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data are usually loaded into R as a numeric or character data type requiring that they be converted to a factor using the `as.factor()` function.
+**Factors** are usually used to group variables into fixed number of **levels**. For example, a dataset may be grouped by gender or month of the year. Such data are usually loaded into R as a numeric or character data type requiring that they be converted to a factor using the `as.factor()` function.
+
+In the following example, a dataframe is created with a column storing one of two values: `M` and `F`. These values are first encoded as character objects, but are then converted to factors using the `as.factor` function.
 
 ```{r}
 a      <- c("M", "F", "F", "M", "F", "M", "M", "F", "F", "M")
@@ -118,7 +109,19 @@ x      <- c(166, 47, 61, 148, 62, 123, 232, 98, 93, 55)
 dat    <- data.frame(x = x, gender = a.fact)
 ```
 
-Many functions recognize factor data types and will allow you to split the output into groups defined by the factor's levels. For example, to create two boxplots of the value `x`, one for each gender type `F` and `M`, type the following:
+The `gender` column is no a factor with two levels: `F` and `M`. 
+
+```{r}
+str(dat)
+```
+
+You can also use the `levels` function to identify the unique levels in a factor:
+
+```{r}
+levels(dat$gender)
+```
+
+Many functions recognize factor data types and will allow you to split the output into groups defined by the factor's unique levels. For example, to create two boxplots of the value `x`, one for each gender type `F` and `M`, type the following:
 
 ```{r fig.width = 4, fig.height=2.5,echo=2}
 OP <- par( mar=c(2,2,0,0))
@@ -127,6 +130,55 @@ par(OP)
 ```
 
 The tilde `~` operator is used in the plot function to split (or *condition*) the data into two separate plots based on the factor `gender`.
+
+### Rearranging level order
+
+A factor will define a hierarchy for its levels.  When we invoked the `levels` function in the last example, you may have noted that the level `F` appeared before `M`or  --this is the level hierarchy defined by R (i.e. `F`>`M` ). This means that regardless of the order in which the factors appear in a table, anytime a plot or operation is conditioned by the factor, the grouped elements will appear in the order defined by the levels. When we created the boxplot from our `dat` object, the plotting function ordered the boxplot (bottom to top) following `gender`'s level hierarchy (i.e. `F` first, then `M`). 
+
+If we wanted the boxplots to be plotted in a different order (i.e. `M` first then `F`) we would need to modify the `gender` column by recreating the factor object as follows:
+
+```{r}
+dat$gender <- factor(dat$gender, levels=c("M","F"))
+str(dat)
+```
+
+The `factor` function is given the original factor values but is also given the levels in the order in which they are to appear. Now, if we recreate the boxplot, the `M` plot will appear first (closest to the y=0 origin).
+
+```{r fig.width = 4, fig.height=2.5,echo=2}
+OP <- par( mar=c(2,2,0,0))
+boxplot(x ~ gender, dat, horizontal = TRUE)
+par(OP)
+```
+
+### Subsetting table by level
+
+We can subset the table by level using the subset function. For example, to subset the values associated with `F`, type:
+
+```{r}
+dat.f <- subset(dat, gender == "F")
+dat.f
+```
+
+However, if you display the levels associated with this new dataframe, you'll see that level `M` is still listed even it no longer appears in the `gender` column.
+
+```{r}
+str(dat.f)
+```
+
+This can be nuissance when plot the data subset.
+
+```{r fig.width = 4, fig.height=2.5,echo=2}
+OP <- par( mar=c(2,2,0,0))
+boxplot(x ~ gender, dat.f, horizontal = TRUE)
+par(OP)
+```
+
+Even though no records are available for `M`, the plot function allocates a slot for that level. To resolve this, we can use the `droplevels` function to remove all unused levels.
+
+```{r}
+dat.f$gender <- droplevels(dat.f$gender)
+str(dat.f)
+```
 
 ## Date
 

@@ -97,17 +97,18 @@ img {
 <h2>Reading from a comma delimitted (CSV) file</h2>
 <p>A popular data file format (and one that has withstood the test of time) is the text file format where columns are separated by a <em>tab</em>, <em>space</em> or <em>comma</em>. In the following example, R reads a comma delimited file called <em>ACS.csv</em> into a data object called <code>dat</code>.</p>
 <pre class="r"><code>dat &lt;- read.csv(&quot;ACS.csv&quot;, header=TRUE)</code></pre>
-<p>If the file resides on a website, you can load the CSV directly from that site as follows:</p>
+<p>If the CSV file resides on a website, you can load the file directly from that site as follows:</p>
 <pre class="r"><code>dat &lt;- read.csv(&quot;http://mgimond.github.io/ES218/Data/ACS.csv&quot;, header=TRUE)</code></pre>
+<p>Note that not all data file formats can be readily loaded directly from a website in a “read” function without additional lines of code. Examples are given in the next two sub-sections.</p>
 <p>To read other text formats that use different delimiters invoke the command <code>read.table()</code> and define the type of delimiter using the <code>sep=</code> parameter. For example, to read a tab delimited data file called <em>ACS.txt</em>, run the command <code>read.table(&quot;ACS.txt&quot;, sep=&quot;\t&quot;)</code>.</p>
 </div>
 <div id="reading-from-a-r-data-file" class="section level2">
 <h2>Reading from a R data file</h2>
-<p>R has its own file format; it’s usually saved using the <em>.rds</em> extension. To read a R data file, invoke the <code>readRDS()</code> function.</p>
+<p>R has its own data file format–it’s usually saved using the <em>.rds</em> extension. To read a R data file, invoke the <code>readRDS()</code> function.</p>
 <pre class="r"><code>dat &lt;- readRDS(&quot;ACS.rds&quot;)</code></pre>
 <p>As with a CSV file, you can load a RDS file straight from a website, however, you must first run the file through a <em>decompressor</em> before attempting to load it via <code>readRDS</code>. A built-in decompressor function called <code>gzcon</code> can be used for this purpose.</p>
 <pre class="r"><code>dat &lt;- readRDS(gzcon(url(&quot;http://mgimond.github.io/ES218/Data/ACS.rds&quot;)))</code></pre>
-<p>The .rds file format is usually smaller than its text file counterpart and will therefore take up less storage space.</p>
+<p>The .rds file format is usually smaller than its text file counterpart and will therefore take up less storage space. The .rds file will also preserve data types such as factors and dates eliminating the need to redefine data types after loading the file.</p>
 </div>
 <div id="reading-from-an-excel-file" class="section level2">
 <h2>Reading from an Excel file</h2>
@@ -120,21 +121,27 @@ xl &lt;- read_excel(&quot;./Data/Discharge_2004_2014.xlsx&quot;, sheet = &quot;D
 <p>Note that the single dot <code>.</code> that precedes the <code>Data/</code> folder name instructs R to look for the <code>Data/</code> folder in the <em>current</em> working directory. A later example will show you how to instruct R to look for files and folders <em>outside</em> of the current working directory using two dots <code>..</code> instead of one.</p>
 <p>An advantage to using this package for loading Excel files is its ability to preserve data types–including date formatted columns! In the above example, the Excel file has a column called <code>Date</code> which stores the month/day/year data as a date object. We can check that the loaded <code>xl</code> object recognizes the <code>Date</code> column as a <code>date</code> data type:</p>
 <pre class="r"><code>str(xl)</code></pre>
-<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    3866 obs. of  4 variables:
-##  $ Date     : POSIXct, format: &quot;2004-06-01&quot; &quot;2004-06-02&quot; ...
-##  $ Discharge: num  6170 6590 6210 7120 6990 6160 5570 4500 4940 4550 ...
-##  $ Code     : chr  &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;A&quot; ...
-##  $          : num  NA NA NA NA NA NA NA NA NA NA ...</code></pre>
+<pre><code>Classes 'tbl_df', 'tbl' and 'data.frame':   3866 obs. of  4 variables:
+ $ Date     : POSIXct, format: &quot;2004-06-01&quot; &quot;2004-06-02&quot; &quot;2004-06-03&quot; &quot;2004-06-04&quot; ...
+ $ Discharge: num  6170 6590 6210 7120 6990 6160 5570 4500 4940 4550 ...
+ $ Code     : chr  &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;A&quot; ...
+ $          : num  NA NA NA NA NA NA NA NA NA NA ...</code></pre>
 <p>The <code>Date</code> column is defined as a <code>POSIXct</code> data type; this is the computer’s way of storing dates as seconds since some internal reference date. We would therefore not need to convert the date column as would be the case if the date column was loaded from a CSV file. If such was the case, then the date column would most likely be loaded as a character or factor data type. A more in-depth discussion on date objects and their manipulation in R is covered in the <a href="Week02c.html">next chapter</a>.</p>
+<p>Excel files can be loaded directly from the web using the following chunk of code:</p>
+<pre class="r"><code>web.file &lt;- &quot;http://mgimond.github.io/ES218/Data/Discharge_2004_2014.xlsx&quot;
+tmp      &lt;- tempfile(fileext=&quot;.xlsx&quot;)
+download.file(web.file,destfile=tmp, mode=&quot;wb&quot;)
+xl       &lt;-  read_excel(tmp, sheet = &quot;Discharge&quot;)</code></pre>
+<p>Instead of downloading the file into virtual memory, R needs to download the file into a temporary folder before it can open it. However, that temporary file my not be available in a later R sessions.</p>
 </div>
 <div id="importing-data-from-proprietary-data-file-formats" class="section level2">
 <h2>Importing data from proprietary data file formats</h2>
-<p>It’s usually recommended that a data file be stored as a CSV or tab delimited file format before reading it into R. However, you might find yourself in a situation where you have no option but to try and import data stored in a proprietary format. This requires the use (and installation) of a package called <code>Hmisc</code>. The package will convert the following file formats: SAS (XPT format), SPSS (SAV format) and Stata (dta format). You can install the package on your computer as follows:</p>
+<p>It’s usually recommended that a data file be stored as a CSV or tab delimited file format if compatibility across software platforms is desired. However, you might find yourself in a situation where you have no option but to import data stored in a proprietary format. This requires the use (and installation) of a package called <code>Hmisc</code>. The package will convert the following file formats: SAS (XPT format), SPSS (SAV format) and Stata (dta format). You can install the package on your computer as follows:</p>
 <pre class="r"><code>install.packages(&quot;Hmisc&quot;)</code></pre>
 <p>In this example, a SAS file of blood pressure from the <a href="http://www.cdc.gov/nchs/nhanes.htm">CDC</a> will be loaded into an object called <code>dat</code> (file documentation can be found <a href="http://personal.colby.edu/reload/personal/m/mgimond/R/Data/BPX_G_README.txt">here</a>).</p>
 <pre class="r"><code>library(Hmisc)
 dat &lt;- sasxport.get(&quot;http://personal.colby.edu/personal/m/mgimond/R/Data/BPX_G.xpt&quot;)</code></pre>
-<p>Likewise, to import an SPSS file, use the <code>spss.get()</code> function; to import a STATA file, use the <code>stata.get()</code> function.</p>
+<p>Likewise, to import an SPSS file, use the <code>spss.get()</code> function; and to import a STATA file, use the <code>stata.get()</code> function.</p>
 </div>
 </div>
 <div id="how-to-save-r-objects-to-data-files" class="section level1">
@@ -156,7 +163,7 @@ dat &lt;- sasxport.get(&quot;http://personal.colby.edu/personal/m/mgimond/R/Data
 <p>You can save an entire R session (which includes <em>all</em> data objects) using the <code>save</code> function.</p>
 <p>To save <em>all</em> objects, set the <code>list=</code> parameter to <code>ls()</code>:</p>
 <pre class="r"><code>save(list = ls(), file = &quot;../Data/ACS_all.Rdata&quot;)</code></pre>
-<p>To save only two R session objects to a file, pass the list of object to the <code>list=</code> parameter:</p>
+<p>To save only two R session objects–<code>dat</code> and <code>dat.sub</code>–to a file, pass the list of object to the <code>list=</code> parameter:</p>
 <pre class="r"><code>save(list = c(dat, dat.sub), file = &quot;../Data/ACS_subset.Rdata&quot;)</code></pre>
 </div>
 <div id="loading-an-r-session" class="section level1">

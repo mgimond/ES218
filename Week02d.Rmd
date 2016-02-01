@@ -7,6 +7,9 @@ output:
   word_document: default
 ---
 
+```{r echo=FALSE}
+source("libs/Common.R")
+```
 
 Dataset used in this tutorial was downloaded from [NOAA' NDBC buoy data center](http://www.ndbc.noaa.gov/view_text_file.php?filename=44005h2010.txt.gz&dir=data/historical/stdmet/) in a space delimited format. It consists of hourly air and ocean physical measurements such as temperature, wind speed and wave height for 2012 measured at NOAA's buoy #44005 located in the Gulf of Maine (43.204 N, 69.128 W). 
 
@@ -35,26 +38,27 @@ names(dat)
 A brief description of each column follows:
 
 
-Field  | Description
--------|------------
-YY|  Year
-MM|  Month
-DD|	Day
-hh|	Hour
-mm|	Minute
-WDIR|	Wind direction  (the direction the wind is coming from in degrees clockwise from true N)
-WSPD|	Wind speed, averaged over an eight-minute period (m/s)
-GST|	Peak 5 or 8 second gust speed measured during the eight-minute or two-minute period(m/s)
-WVHT|	Significant wave height (meters) 
-DPD|	Dominant wave period (seconds) 
-APD|	Average wave period (seconds)
-MWD|	The direction from which the waves at the dominant period (DPD) are coming. The units are degrees from true North, increasing clockwise, with North as 0 (zero) degrees and East as 90 degrees.
-PRES|	Sea level pressure (hPa)
-ATMP|	Air temperature (Celsius)
-WTMP|	Sea surface temperature (Celsius)
-DEWP|	Dewpoint temperature (Celsius)
-VIS|	visibility (nautical miles)
-TIDE|	Water level in feet above or below Mean Lower Low Water, MLLW (feet)
+Field      |  Description
+-----------|------------------------------------------
+YY         |  Year
+MM         |  Month
+DD         |	Day
+hh         |	Hour
+mm         |	Minute
+WDIR       |	Wind direction  (the direction the wind is coming from in degrees clockwise from true N)
+WSPD       |	Wind speed, averaged over an eight-minute period (m/s)
+GST        |	Peak 5 or 8 second gust speed measured during the eight-minute or two-minute period(m/s)
+WVHT       |	Significant wave height (meters) 
+DPD        |	Dominant wave period (seconds) 
+APD        |	Average wave period (seconds)
+MWD        |	The direction from which the waves at the dominant period (DPD) are coming. The units are degrees from true North, increasing clockwise, with North as 0 (zero) degrees and East as 90 degrees.
+PRES       |	Sea level pressure (hPa)
+ATMP       |	Air temperature (Celsius)
+WTMP       |	Sea surface temperature (Celsius)
+DEWP       |	Dewpoint temperature (Celsius)
+VIS        |	visibility (nautical miles)
+TIDE       |	Water level in feet above or below Mean Lower Low Water, MLLW (feet)
+
 
 For large datasets, it's sometimes helpful to display just the first few lines of the table to get a sense of the kind of data we are dealing with. We'll use the `head` function to do this and have R return the first five records of the table (`n=5`).
 
@@ -82,7 +86,7 @@ Now let's generate a summary of the table.
 summary(dat)
 ```
 
-You'll note that many columns contain values of 99 or 999. Such values are often placeholders for missing values. In some cases, these values stand out as outliers; for example, the wave height field, `WVHT`, has values that average less than 2 meters so a value of 99 meters should be flagged as suspicious. In fact, NOAA's [documentation](http://www.ndbc.noaa.gov/measdes.shtml) states that *"Missing data ... are denoted by ... a variable number of 9's ... depending on the data type (for example: 999.0 99.0)."*
+You'll note that many columns in our data contain values of 99 or 999. Such values are often placeholders for missing data. If not dealt with properly, these values will be interpreted as valid data by the software. One tell-tale sign that these values should be treated specially is their extreme values compared to the rest of the data batch. For example, the wave height field, `WVHT`, has values that average less than 2 meters so a value of 99 meters should be flagged as suspicious. In fact, NOAA's [documentation](http://www.ndbc.noaa.gov/measdes.shtml) states that *"Missing data ... are denoted by ... a variable number of 9's ... depending on the data type (for example: 999.0 99.0)."*
 
 We also note that some columns have nothing but missing values (e.g. `VIS` and `TIDE`) suggesting that either these variables are not measured at this particular buoy or the instruments did not function properly during the data collection period.
 
@@ -90,7 +94,7 @@ Before proceeding with any analysis, we need to address the missing values by fl
 
 # Removing columns with no data
 
-Let's first remove all columns devoid of data. These columns are `MWD`, `VIS` and `TIDE`. There are many ways to do this. We will opt for subsetting the table and assigning this subset to a new data frame we will call `dat1`.
+Let's first remove all columns devoid of valid data. These columns are `MWD`, `VIS` and `TIDE`. There are many ways to do this. We will opt for subsetting the table and assigning this subset to a new data frame we will call `dat1`.
 
 ```{r}
 dat1 <- dat[ , !(names(dat) %in% c("MWD", "VIS", "TIDE"))]
@@ -118,9 +122,9 @@ head(dat1)
 
 # Assigning `NA` to missing data
 
-It's usually best to assign `NA` values at the moment a data file is loaded into R. For example, had all `NA` values been flagged as `-9999`, we could have added the parameter `na.strings="-9999"` to the `read.table()` function. But our dataset contains missing values flagged as 99, 999 *and* 9999 requiring that we combine the missing string values such as `na.strings=c("99", "999", "9999")` however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as `NA` would be sensible, but a wind direction of 99 degrees would make sense an flagging such value as `NA` would not be appropriate. Had we set *all* values of 99 to `NA` the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as `NA` in our dataset will require manual intervention.
+It's usually best to assign `NA` values the moment a data file is loaded into R. For example, had all `NA` values been flagged as `-9999`, we could have added the parameter `na.strings="-9999"` to the `read.table()` function. But our dataset contains missing values flagged as 99, 999 *and* 9999 requiring that we combine the missing string values such as `na.strings = c("99", "999", "9999")` however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as `NA` would be sensible, but a wind direction of 99 degrees would make sense and flagging such value as `NA` would not be appropriate. Had we set *all* values of 99 to `NA` the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as `NA` in our dataset will require manual intervention.
 
-Let's review the data summary to identify each column's nodata numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the `dat1` dataframe. 
+Let's review the data summary to identify each column's nodata numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the `dat1` dataframe and not the orginal `dat`.
 
 ```{r}
 summary(dat1)
@@ -164,7 +168,7 @@ Note the `NA`'s in the summary output. We now have a clean dataframe to work wit
 
 # Removing rows with `NA` values
 
-You might need to work with rows that have complete cases (i.e. no missing values). You can use the `na.omit` function to return just the rows that have complete cases. We will create a synthetic example to demonstrate the `na.omit()` function. 
+Your analysis might require that all rows in a table have complete cases (i.e. no missing values). You can use the `na.omit` function to return just the rows that have complete cases. We will create a synthetic example to demonstrate the `na.omit()` function. 
 
 ```{r tidy=FALSE}
 d <- data.frame(x = c(1,4,2,5,2,3,NA), 
@@ -180,4 +184,9 @@ d.complete <- na.omit(d)
 d.complete
 ```
 
+All rows with at least one `NA` value have been removed. Note that the table's dimension has changed from seven rows to four.
+
+# Is there an easier way?
+
+Cleaning data tables is an important component of any analytical workflow, but the syntax can get complicated  and difficult to follow. Fortunately, there is an easier way to clean data tables using the `dplyr`  package which will be covered in Week 3. 
 
