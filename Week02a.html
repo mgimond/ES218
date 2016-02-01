@@ -81,6 +81,7 @@ img {
 <li><a href="#logical">Logical</a></li>
 <li><a href="#factor">Factor</a></li>
 <li><a href="#date">Date</a></li>
+<li><a href="#na-and-null">NA and NULL</a></li>
 </ul></li>
 <li><a href="#data-structures">Data structures</a><ul>
 <li><a href="#atomic-vectors">(Atomic) Vectors</a></li>
@@ -93,13 +94,24 @@ img {
 
 <div id="data-types" class="section level1">
 <h1>Data types</h1>
-<p>R objects can store values as different data types including numeric, character, logical or date. R variable types are often referred to as <strong>modes</strong> and can be identified using the <code>mode()</code> function.</p>
+<p>R objects can store values as different data types including <strong>numeric</strong> (both integer and double), <strong>character</strong>, <strong>logical</strong> or <strong>date</strong>. R variable types are often referred to as <strong>modes</strong> and can be identified using the <code>mode()</code> or <code>typeof()</code> functions.</p>
 <div id="numeric" class="section level2">
 <h2>Numeric</h2>
 <p>The <strong>numeric</strong> data type is probably the simplest. It consists of numbers such as integers (e.g. <code>1 ,-3 ,33 ,0</code>) or doubles (e.g. <code>0.3, 12.4, -0.04, 1.0</code>). For example, to create a numeric (double) vector we can type:</p>
 <pre class="r"><code>x &lt;- c(1.0, -3.4, 2, 140.1)
 mode(x)</code></pre>
 <pre><code>[1] &quot;numeric&quot;</code></pre>
+<p>To assess if the number is stored as an <em>integer</em> or a <em>double</em> use the <code>typeof()</code> function.</p>
+<pre class="r"><code>typeof(x)</code></pre>
+<pre><code>[1] &quot;double&quot;</code></pre>
+<p>Note that removing the fraction part of a number when creating a numeric object does not necessarily create an integer. For example, creating what seems to be an integer object return double when queried by <code>typeof()</code>:</p>
+<pre class="r"><code>x &lt;- 4
+typeof(x)</code></pre>
+<pre><code>[1] &quot;double&quot;</code></pre>
+<p>To force R to recognize a value as and integer add an upper case <code>L</code> to the number.</p>
+<pre class="r"><code>x &lt;- 4L
+typeof(x)</code></pre>
+<pre><code>[1] &quot;integer&quot;</code></pre>
 </div>
 <div id="character" class="section level2">
 <h2>Character</h2>
@@ -133,47 +145,65 @@ mode(x)</code></pre>
 </div>
 <div id="factor" class="section level2">
 <h2>Factor</h2>
-<p><strong>Factors</strong> are usually used to group variables into categories having a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data may be loaded into R as a numeric or character data type in which case it needs to be converted to a factor using the <code>as.factor()</code> function.</p>
+<p><strong>Factors</strong> are usually used to group variables a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data are usually loaded into R as a numeric or character data type requiring that they be converted to a factor using the <code>as.factor()</code> function.</p>
 <pre class="r"><code>a      &lt;- c(&quot;M&quot;, &quot;F&quot;, &quot;F&quot;, &quot;M&quot;, &quot;F&quot;, &quot;M&quot;, &quot;M&quot;, &quot;F&quot;, &quot;F&quot;, &quot;M&quot;)
 a.fact &lt;- as.factor(a)
 x      &lt;- c(166, 47, 61, 148, 62, 123, 232, 98, 93, 55)
 dat    &lt;- data.frame(x = x, gender = a.fact)</code></pre>
-<p>Many functions recognize factor data types and will allow you to split the output into groups. For example, to create a boxplot of the value <code>x</code> split into two groups, <code>F</code> and <code>M</code>, you can type the following:</p>
+<p>Many functions recognize factor data types and will allow you to split the output into groups defined by the factor’s levels. For example, to create two boxplots of the value <code>x</code>, one for each gender type <code>F</code> and <code>M</code>, type the following:</p>
 <pre class="r"><code>boxplot(x ~ gender, dat, horizontal = TRUE)</code></pre>
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAwAAAAHgCAIAAACdOJ1yAAAABmJLR0QA/wD/AP+gvaeTAAAZVUlEQVR4nO3da4xU5f3A8TPclIvxggqWeIfScitF2sZdb02xFopYepEXtrZN2iVqDCheCK0BRcFETaGpJpCmFrQ29U2bBRbTII1NIbbEtBokwMKGCkZKiEsAoSAw/xfz72QD7Mzs7DBnZ36fzwuzzp7ZeeA8PPPdc87MJNl6N3fu3AQAoIM+aQ+gelauXHnFFVekPQoAIE1//etfFy5cGCiAGhsbr7vuurRHAQCkqb29PUmSXmkPAwCg2gQQABCOAAIAwhFAAEA4AggACEcAAQDhCCAAIBwBBACEI4AAgHAEEAAQjgACAMIRQABAOAIIAAhHAAEA4QggACAcAQQAhCOAAIBwBBAAEI4AAgDCEUAAQDgCCAAIRwABAOEIIAAgHAEEAIQjgACAcAQQABCOAAIAwhFAAEA4AggACKdP2gMAaturr766YsWKtEdB+a655pqlS5cOGDAg7YFAVQkgoHzZbPaBBx44ePBg2gOhWyZNmjRjxoy0RwFVJYCA8p06dSpXP/369Rs4cGDaw6mqo0eP/ve//z3z9vPPP79///7VH08ZTpw4cejQoSRJ2tvb0x4LVJsAAirgO9/5zmuvvZb2KKpqwYIFTz755Jm3P/744wsWLKj6cMqxfv36r33ta2mPAtLhImgAIBwBBACEI4AAgHAEEAAQjgACAMIRQABAOAIIAAhHAAEA4QggACAcAQQAhCOAAIBwBBAAEI4AAgDCEUAAQDgCCAAIRwABAOEIIAAgHAEEAIQjgACAcAQQABCOAAIAwhFAAEA4AggACEcAAQDhCCAAIBwBBACEI4AAgHAEEAAQjgACAMIRQABAOAIIAAhHAAEA4QggACAcAQRUwIcffpj2ECjfe++9l/YQoNoEEFABmzdvTnsIlK+lpSXtIUC1CSCgAk6ePJn2ECjf8ePH0x4CVJsAAgDCEUAAQDgCCAAIRwABAOEIIAAgHAEEAIQjgACAcAQQABCOAAIAwhFAAEA4AggACEcAAQDhCCAAIBwBBACEI4AAgHAEEAAQjgACAMIRQABAOAIIAAhHAAEA4QggACAcAQQAhCOAAIBwBBAAEI4AAgDC6VN0i0wmU5FHymazFfk5AADd5AgQABBO8SNAnCPt7e2rV69et27d3r17P/3006FDh95yyy133XXXFVdckfbQAKBHOHHixFtvvdXc3NzW1nb48OGLLrpo7Nix06dP/+IXv9jNn9zlAGptbR0+fHg3HzW4o0ePPvvss88///yRI0c63v773//+wQcfbGpqevrppy+++OK0hgcAPcGf/vSnRx55ZOfOnafduHDhwptuumnp0qUTJkwo+4cXPwWWzWYbGhry/ztixIhMJlOpC4MC+uijj2699dannnoqXz8DBgwYNGhQ7usTJ0689NJLEydO3LJlS3pjBIA0ZbPZhx56aPr06fn66dOnz8UXX5zPj7/97W8NDQ0vv/xy2Q9R0jVAGzZsyGazra2tHW/MZdDMmTPLfuyAjhw5cuedd27atClJksGDBz/zzDN79uz55JNPDh06tH///hdffPGqq65KkqStre2OO+746KOP0h4vAKTgiSeeWLJkSZIkvXv3/sEPfrBp06bjx49//PHHx44dW7t27Ve/+tUkSY4dO/aTn/zkj3/8Y3kP0YWLoIcPH57NZrPZbEtLS/7G5cuX50po7dq15Y0glEceeeSdd95JkmTChAnvvffevHnzhg0blvvW4MGD77///s2bN0+ZMiVJkj179vzoRz9KcagAkIp169YtWrQoSZJBgwa1tLSsXLly4sSJuWM/ffv2/cY3vrF+/fpf/OIXmUzm1KlTP/zhD8s7XlDOq8AmT56cK6Gmpqb8jVOmTHFqrLC2trZf//rXSZIMGzZszZo1n/nMZ87c5oILLnj99dfHjx+fJMmf//znv/zlL9UeJQCkat68edlsNpPJvPLKK1//+tfPus3s2bMff/zxJEkOHTr0zDPPlPEo3XoZ/LJly3Il1PFGp8Y687vf/e7TTz9NkmTx4sVDhw7tbLOBAwe+9NJLua9/+9vfVmdsANATvP/++7kLRe66665vfetbBbZ88sknr7nmmiRJXnvttdzTa5dU5n2ACpwaW7p0aUUeog688cYbSZIMGjToe9/7XuEtb7zxxs997nP5uwBAEPknvh//+MeFt+zXr98999yTJEl7e/vbb7/d1Qeq5PsA5U6NJUkyc+bM5cuX526cPXv27Nmzk26/E3Rzc/PPfvaz0143Xor//Oc/3XncCvrggw+SJBk1atT5559fdOMJEyZs3bp13759n3zyycCBA8/96KBbyvj1i57j2LFjaQ8B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" title alt width="384" /></p>
+<p>The tilde <code>~</code> operator is used in the plot function to split (or <em>condition</em>) the data into two separate plots based on the factor <code>gender</code>.</p>
 </div>
 <div id="date" class="section level2">
 <h2>Date</h2>
-<p>Date values can be represented in tables as numbers or characters. But to work properly with date representation, it must be converted to an R <strong>date</strong> object. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier. A separate <a href="Week02c.html">section</a> is dedicated to the manipulation of date objects.</p>
+<p>Date values can be represented as numbers or characters. But to be properly interpreted as a date object in R, values must be stored as an R <strong>date</strong> object. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier. A separate <a href="Week02c.html">section</a> is dedicated to the creation and manipulation of date objects.</p>
+</div>
+<div id="na-and-null" class="section level2">
+<h2>NA and NULL</h2>
+<p>You will find that many data files contain missing or unknown values. It may be tempting to assign these missing or unknown values with <code>0</code> but doing so can lead to many undesirable results when analyzing the data. R has two placeholders for such elements: <code>NA</code> and <code>NULL</code>.</p>
+<p>For example, let’s say that we made four measurements where the second measurement was not available but we wanted that missing value to be recorded in our table, we would encode that missing value as follows:</p>
+<pre class="r"><code>x &lt;- c(23, NA, 1.2, 5)</code></pre>
+<p><code>NA</code> (Not Available) is a missing value indicator. It suggests that <em>a</em> value should be present but is unknown.</p>
+<p>The <code>NULL</code> object also represents missing values but its interpretation is slightly different in that it suggests that the value does not exist or that it’s not measurable.</p>
+<pre class="r"><code>y &lt;- c(23, NULL, 1.2, 5)</code></pre>
+<p>The difference between <code>NA</code> and <code>NULL</code> may seem subtle, but their interpretation in some functions can lead to different outcomes. For example, when computing the mean of <code>x</code>, R returns an <code>NA</code> value:</p>
+<pre class="r"><code>mean(x)</code></pre>
+<pre><code>[1] NA</code></pre>
+<p>This serves as a check to remind the user that one of the elements is missing. This can be overcome by setting the <code>na.rm</code> parameter to <code>TRUE</code> as in <code>mean(x, na.rm=T)</code> in which case R ignores the missing value.</p>
+<p>A <code>NULL</code> object, on the other hand, is treated differently. Since <code>NULL</code> implies that a value <em>should not</em> be present, R no longer feels the need to treat such element as questionable and allows the mean value to be computed:</p>
+<pre class="r"><code>mean(y)</code></pre>
+<pre><code>[1] 9.733333</code></pre>
+<p>It’s more common to find data tables with missing elements populated with <code>NA</code>’s than <code>NULL</code>’s so unless you have a specific reason to use <code>NULL</code> as a missing value placeholder, use <code>NA</code> instead.</p>
 </div>
 </div>
 <div id="data-structures" class="section level1">
 <h1>Data structures</h1>
-<p>A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of many <em>data structures</em>: <strong>vectors</strong>, <strong>matrices</strong>, <strong>data frames</strong> and <strong>lists</strong>.</p>
+<p>A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of several <em>data structures</em> such as <strong>(atomic) vectors</strong>, <strong>matrices</strong>, <strong>data frames</strong> and <strong>lists</strong>.</p>
 <div id="atomic-vectors" class="section level2">
 <h2>(Atomic) Vectors</h2>
 <p>The <strong>atomic vector</strong> (or vector for short) is the simplest data structure in R which consists of an ordered set of values of the same type (e.g. numeric, character, date, etc…). A vector can be created using the <em>combine</em> function <code>c()</code> as in</p>
 <pre class="r"><code>x &lt;- c(674 , 4186 , 5308 , 5083 , 6140 , 6381)
 x</code></pre>
 <pre><code>[1]  674 4186 5308 5083 6140 6381</code></pre>
-<p>A vector object is an indexable collection of values and can thus allow one to access a specific index number. For example, to access the third element of <code>x</code>, type</p>
+<p>A vector object is an indexable collection of values which allows one to access a specific index number. For example, to access the third element of <code>x</code>, type</p>
 <pre class="r"><code>x[3]</code></pre>
 <pre><code>[1] 5308</code></pre>
 <p>You can also select a subset of elements by index values using the combine function <code>c()</code>,</p>
 <pre class="r"><code>x[c(1,3,4)]</code></pre>
 <pre><code>[1]  674 5308 5083</code></pre>
-<p>If you are interested in a range of indexed values, use <code>:</code></p>
+<p>Or, if you are interested in a range of indexed values, use the <code>:</code> operator,</p>
 <pre class="r"><code>x[2:4]</code></pre>
 <pre><code>[1] 4186 5308 5083</code></pre>
-<p>You can also assign new values to a specific index. For example, we can replace the second value with 0</p>
+<p>You can also assign new values to a specific index. For example, we can replace the second value in vector <code>x</code> with <code>0</code>,</p>
 <pre class="r"><code>x[2] &lt;- 0
 x</code></pre>
 <pre><code>[1]  674    0 5308 5083 6140 6381</code></pre>
-<p>Note that a vector can also store characters or strings</p>
+<p>Note that a vector can store any data type such as characters or strings,</p>
 <pre class="r"><code>x &lt;- c(&quot;all&quot;, &quot;b&quot;, &quot;olive&quot;)
 x</code></pre>
 <pre><code>[1] &quot;all&quot;   &quot;b&quot;     &quot;olive&quot;</code></pre>
-<p>Note that a vector can be one data type only. For example, you cannot mix numeric and character types as in:</p>
+<p>However, a vector can only be of one type. For example, you cannot mix numeric and character types as follows:</p>
 <pre class="r"><code>x &lt;- c( 1.2, 5, &quot;Rt&quot;, &quot;9-16-2000&quot;)</code></pre>
 <p>In such a situation, R will convert the element types to the <strong>highest common mode</strong> following the order <strong>NULL &lt; logical &lt; integer &lt; double &lt; character</strong>. In our working example, the elements are coerced to <code>character</code>:</p>
 <pre class="r"><code>mode(x)</code></pre>
@@ -184,38 +214,38 @@ x</code></pre>
 <p>Matrices in R can be thought of as vectors indexed using <em>two</em> indices. For example, the following line of code creates a 3 by 3 matrix of randomly generated values. The parameters <code>nrow</code> and <code>ncol</code> define the matrix 2D dimension and the function <code>runif()</code> generates the nine random numbers that populate this matrix.</p>
 <pre class="r"><code>m &lt;- matrix(runif(9,0,10), nrow = 3, ncol = 3)
 m</code></pre>
-<pre><code>         [,1]     [,2]     [,3]
-[1,] 7.495095 3.819532 4.822154
-[2,] 1.443115 8.278201 1.369699
-[3,] 1.797525 4.775214 5.363384</code></pre>
+<pre><code>          [,1]     [,2]     [,3]
+[1,] 7.1957821 4.116823 5.885776
+[2,] 7.9619296 8.858293 5.743703
+[3,] 0.4276576 7.690266 4.296171</code></pre>
 <p>If a higher dimension vector is desired, then use the <code>array()</code> function to generate the n-dimensional object. A 3x3x3 array can be created as follows:</p>
 <pre class="r"><code>m &lt;- array(runif(27,0,10), c(3,3,3))
 m</code></pre>
 <pre><code>, , 1
 
           [,1]     [,2]     [,3]
-[1,] 0.9950997 8.828196 7.505112
-[2,] 7.9211640 5.433351 7.084839
-[3,] 8.9063695 1.243959 6.429526
+[1,] 8.6352176 5.312650 5.147596
+[2,] 9.7877263 8.267942 6.637635
+[3,] 0.8692227 6.685061 1.265731
 
 , , 2
 
-         [,1]       [,2]      [,3]
-[1,] 5.904757 0.26081762 9.8283534
-[2,] 8.734513 0.04423963 0.4554944
-[3,] 7.102669 4.99483900 8.9767257
+         [,1]      [,2]      [,3]
+[1,] 4.898196 2.1460078 0.6262034
+[2,] 7.386249 0.8842098 7.0080218
+[3,] 1.494170 3.6840491 4.7728597
 
 , , 3
 
-         [,1]     [,2]     [,3]
-[1,] 7.459947 2.559304 1.072875
-[2,] 6.016354 7.743491 6.512048
-[3,] 9.541693 4.240022 5.303005</code></pre>
-<p>Matrices and arrays can store numeric or character data types, but they cannot store both in a same object as with vector objects. This is not to say that you can’t have a matrix of the kind</p>
+          [,1]     [,2]     [,3]
+[1,] 0.5139513 4.051535 3.278536
+[2,] 4.4475432 7.347205 5.456087
+[3,] 5.0552968 9.777359 1.502009</code></pre>
+<p>Matrices and arrays can store numeric or character data types, but they cannot store both. This is not to say that you can’t have a matrix of the kind</p>
 <pre><code>     [,1] [,2]
 [1,] &quot;a&quot;  &quot;2&quot; 
 [2,] &quot;b&quot;  &quot;4&quot; </code></pre>
-<p>but the value <code>2</code> and <code>4</code> are no longer treated as numeric values but as character values instead (as indicated by the quotes surrounding the numbers).</p>
+<p>but the value <code>2</code> and <code>4</code> are no longer treated as numeric values but as character values instead.</p>
 </div>
 <div id="data-frames" class="section level2">
 <h2>Data frames</h2>
@@ -235,27 +265,26 @@ dat</code></pre>
  $ Name  : Factor w/ 3 levels &quot;a1&quot;,&quot;a2&quot;,&quot;b3&quot;: 1 2 3
  $ Value1: num  23 4 12
  $ Value2: num  1 45 5</code></pre>
-<p>Like a vector, elements of a data frame can be accessed by their index (aka subscripts). For example, to list the first two columns,</p>
+<p>Like a vector, elements of a data frame can be accessed by their index (aka subscripts). The first index represents the row number and the second index represents the column number. For example, to list the second row of the third column, type:</p>
+<pre class="r"><code>dat[2, 3]</code></pre>
+<pre><code>[1] 45</code></pre>
+<p>If you wish to list all rows for columns one through two leave the first index blank:</p>
 <pre class="r"><code>dat[ , 1:2 ]</code></pre>
 <pre><code>  Name Value1
 1   a1     23
 2   a2      4
 3   b3     12</code></pre>
-<p>or the third row,</p>
+<p>or the third row for all columns, leave the second index blank:</p>
 <pre class="r"><code>dat[ 3 , ]</code></pre>
 <pre><code>  Name Value1 Value2
 3   b3     12      5</code></pre>
-<p>or the first entry of the data frame,</p>
-<pre class="r"><code>dat[ 1 , 1 ]</code></pre>
-<pre><code>[1] a1
-Levels: a1 a2 b3</code></pre>
-<p>or the values in the column named <em>Value2</em>,</p>
+<p>You can also reference columns by their names if you append the <code>$</code> character to the dataframe object name. For example, to list the values in the column named <em>Value2</em>, type:</p>
 <pre class="r"><code>dat$Value2</code></pre>
 <pre><code>[1]  1 45  5</code></pre>
 </div>
 <div id="lists" class="section level2">
 <h2>Lists</h2>
-<p>A <strong>list</strong> is an ordered set of elements stored in a 1D structure. In fact, it’s a another kind of vector called a <strong>recursive vector</strong> where each element (referred to as a <strong>slot</strong>) can be of different data type and <em>structure</em>. This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell (or slot) can store anything from a number to a three paragraph sentence to a five column table. The latter may be difficult to implement in a spreadsheet be can be readily implemented in a list.</p>
+<p>A <strong>list</strong> is an ordered set of elements stored in a 1D structure. In fact, it’s a another kind of vector called a <strong>recursive vector</strong> where each element can be of different data type and <em>structure</em>. This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number to a three paragraph sentence to a five column table.</p>
 <p>A list is constructed using the <code>list()</code> function. For example, the following list consists of 3 elements: a two-column data frame (element <code>A</code>), a two element logical vector (element <code>B</code>) and a three element character vector (element <code>D</code>).</p>
 <pre class="r"><code>A &lt;- data.frame(
      x = c(7.3, 29.4, 29.4, 2.9, 12.3, 7.5, 36.0, 4.8, 18.8, 4.2),
@@ -375,7 +404,7 @@ lst &lt;- list(A = A, B = B, D = D)</code></pre>
 
 <div class="footer">
 <hr />
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAPCAIAAAD8q9/YAAAABGdBTUEAANbY1E9YMgAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIySURBVHjaYmAYYYARiP///z9SfAsEEA+v2bQaWWLPrr0zp87s6OgoLy/H1Obq6nrq1Km27lZxCXEgV15WwdXJ9eOHj4Pct0BvAv3LhCnx8sXL5YuX4/ItEOzevdvMzGxy/xQI98PHD4UFhUMlkrF4ePmSFcLCwrh8CwHA4Lh54+aGtRuB7I+fPnj4eHj7eA9VD1+6eCk9PR3IOHv2rLKyMjAZANPw+/fvgSSQDRQBihsbG7u4uFy7eg1qChMTkIuWfiAAzkWWwpreMNnIJtDKw5cuXv786TPQP0B2WFgYkAG0Ekh2dnYC/fnu3TtgzN+7dw8oCxS8c/sOPFUDEzmWEoKREeJiOAOSkXDlMcwsB9dIKw9//fIFSAoKCgKjFOgxiM+BCRjIVlJSAoqnpaWFhobCinio03/+/MHIwojpAWTvQZwO56IlAeRAwQw4GnqYm4cHSAJ9C/Qb0IfAWIUUy0Au0M9A8YqKilmzZqHFCTs7x/8///HEMPYagpERzTNY1dM2hvX0dXl5eSH+BEbsnj17gI4A+hzIBsa2kJAQUASSXc+cOaOorAjRJcAvAKyo8Mcw8VUlsufJMIGohgdyPdzX1f/86fP79+/j0QYMERMTk+i46IBgfyBXVlquuaF565atQ7Iejo6Levv2DTBK8WguKytTUVWG+JafT2DHlh2D3Lf4qiVg+yk1M7WysrK9vR2rHidnp+vXrxeUFMDTc/+E/tG29CBtS4+0zhIDQIABALCdLOPlj1pIAAAAAElFTkSuQmCC" /></a>  Manny Gimond (2016)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAPCAMAAABEF7i9AAAAllBMVEUAAAD///+rsapERER3d3eIiIjMzMzu7u4iIiKUmZO6v7rKzsoODg4RERFVVVUNDQ0NDg0PEA8zMzNLTEtbXltmZmZydnF9gn2AgICPkI+ZmZmqqqq7u7vFxsXIzMgNDQwZGRkgICAhISEkJSMnKCcuMC4xMzE5Ozk7PTtBQkFCQkJDQ0Nna2eGhoaHh4ezuLLGysbd3d1wVGpAAAAA0klEQVR42q2TZxOCMAyGk7QsZYniAPfe4///OVstIOd5cNL3+qVp7umbpAXQLtQqCSSpMxgqxFyHqN35010GdFwjv4StiVrDhsD9snBtQo9o2m0GDA00bWAWA9tEthU1j1R/VdJHvgxXAQcwRttHzj0rSZGHouaJOn8tzAeodlgB7INpyan4kayZu0S3e+5QpWUw/En7dshiz+IJ8qDssCC8y63hkAIDUw9i0cPogadNqYdlYL0e0m6hecrO7JoDjysN71CM5aJ4h3nTn6L7L2vWE+d6CQIzJHDTAAAAAElFTkSuQmCC" /></a>  Manny Gimond (2016)
 </br>
 
 </div>

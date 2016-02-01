@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 # Data types
 
-R objects can store values as different data types including numeric, character, logical or date. R variable types are often referred to as **modes** and can be identified using the `mode()` function.
+R objects can store values as different data types including **numeric** (both integer and double), **character**, **logical** or **date**. R variable types are often referred to as **modes** and can be identified using the `mode()` or `typeof()` functions.
 
 ## Numeric
 
@@ -33,6 +33,26 @@ The **numeric** data type is probably the simplest. It consists of numbers such 
 ```{r}
 x <- c(1.0, -3.4, 2, 140.1)
 mode(x)
+```
+
+To assess if the number is stored as an *integer* or a *double* use the `typeof()` function.
+
+```{r}
+typeof(x)
+```
+
+Note that removing the fraction part of a number when creating a numeric object does not necessarily create an integer. For example, creating what seems to be an integer object return double when queried by `typeof()`:
+
+```{r}
+x <- 4
+typeof(x)
+```
+
+To force R to recognize a value as and integer add an upper case `L` to the number.
+
+```{r}
+x <- 4L
+typeof(x)
 ```
 
 ## Character
@@ -89,7 +109,7 @@ Note that in both cases, `mode(x)` returns `r mode(x)`. Also note that the `1`'s
 
 ## Factor
 
-**Factors** are usually used to group variables into categories having a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data may be loaded into R as a numeric or character data type in which case it needs to be converted to a factor using the `as.factor()` function.
+**Factors** are usually used to group variables a fixed number of levels. For example, a dataset may be grouped by gender or month of the year. Such data are usually loaded into R as a numeric or character data type requiring that they be converted to a factor using the `as.factor()` function.
 
 ```{r}
 a      <- c("M", "F", "F", "M", "F", "M", "M", "F", "F", "M")
@@ -98,7 +118,7 @@ x      <- c(166, 47, 61, 148, 62, 123, 232, 98, 93, 55)
 dat    <- data.frame(x = x, gender = a.fact)
 ```
 
-Many functions recognize factor data types and will allow you to split the output into groups. For example, to create a boxplot of the value `x` split into two groups, `F` and `M`, you can type the following:
+Many functions recognize factor data types and will allow you to split the output into groups defined by the factor's levels. For example, to create two boxplots of the value `x`, one for each gender type `F` and `M`, type the following:
 
 ```{r fig.width = 4, fig.height=2.5,echo=2}
 OP <- par( mar=c(2,2,0,0))
@@ -106,14 +126,49 @@ boxplot(x ~ gender, dat, horizontal = TRUE)
 par(OP)
 ```
 
+The tilde `~` operator is used in the plot function to split (or *condition*) the data into two separate plots based on the factor `gender`.
+
 ## Date
 
-Date values can be represented in tables as numbers or characters. But to work properly with date representation, it must be converted to an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. A separate [section](Week02c.html) is dedicated to the manipulation of date objects.
+Date values can be represented as numbers or characters. But to be properly interpreted as a date object in R, values must be stored as an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. A separate [section](Week02c.html) is dedicated to the creation and manipulation of date objects.
+
+## NA and NULL
+
+You will find that many data files contain missing or unknown  values. It may be tempting to assign these missing or unknown values with `0` but doing so can lead to many undesirable results when analyzing the data. R has two placeholders for such elements: `NA` and `NULL`.
+
+For example, let's say that we made four measurements where the second measurement was not available but we wanted that missing value to be recorded in our table, we would encode that missing value as follows:
+
+```{r}
+x <- c(23, NA, 1.2, 5)
+```
+
+`NA` (Not Available) is a missing value indicator. It suggests that *a* value should be present but is unknown.
+
+The `NULL` object also represents missing values but its interpretation is slightly  different in that it suggests that the value does not exist or that it's not measurable. 
+
+```{r}
+y <- c(23, NULL, 1.2, 5)
+```
+
+The difference between `NA` and `NULL` may seem subtle, but their interpretation in some functions can lead to different outcomes. For example, when computing the mean of `x`, R returns an `NA` value:
+
+```{r}
+mean(x)
+```
+
+This serves as a check to remind the user that one of the elements is missing. This can be overcome by setting the `na.rm` parameter to `TRUE` as in `mean(x, na.rm=T)` in which case R ignores the missing value.
+
+A `NULL` object, on the other hand, is treated differently. Since `NULL` implies that a value *should not* be present, R no longer feels the need to treat such element as questionable and allows the mean value to be computed:
+
+```{r}
+mean(y)
+```
+
+It's more common to find data tables with missing elements populated with `NA`'s than `NULL`'s so unless you have a specific reason to use `NULL` as a missing value placeholder, use `NA` instead.
 
 # Data structures
 
-A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of many *data structures*: **vectors**, **matrices**, **data frames** and **lists**.
-
+A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of several *data structures* such as **(atomic) vectors**, **matrices**, **data frames** and **lists**.
 
 ## (Atomic) Vectors
 
@@ -124,7 +179,7 @@ x <- c(674 , 4186 , 5308 , 5083 , 6140 , 6381)
 x
 ```
 
-A vector object is an indexable collection of values and can thus allow one to access a specific index number. For example, to access the third element of `x`, type
+A vector object is an indexable collection of values which allows one to access a specific index number. For example, to access the third element of `x`, type
 
 ```{r}
 x[3]
@@ -136,27 +191,27 @@ You can also select a subset of elements by index values using the combine funct
 x[c(1,3,4)]
 ```
 
-If you are interested in a range of indexed values, use `:`
+Or, if you are interested in a range of indexed values, use the `:` operator,
 
 ```{r}
 x[2:4]
 ```
 
-You can also assign new values to a specific index. For example, we can replace the second value with 0
+You can also assign new values to a specific index. For example, we can replace the second value in vector `x` with `0`,
 
 ```{r}
 x[2] <- 0
 x
 ```
 
-Note that a vector can also store characters or strings
+Note that a vector can store any data type such as characters or strings,
 
 ```{r}
 x <- c("all", "b", "olive")
 x
 ```
 
-Note that a vector can be one data type only. For example, you cannot mix numeric and character types as in:
+However, a vector can only be of one type. For example, you cannot mix numeric and character types as follows:
 
 ```{r}
 x <- c( 1.2, 5, "Rt", "9-16-2000")
@@ -185,13 +240,13 @@ m
 ```
 
 
-Matrices and arrays can store numeric or character data types, but they cannot store both in a same object as with vector objects. This is not to say that you can't have a matrix of the kind
+Matrices and arrays can store numeric or character data types, but they cannot store both. This is not to say that you can't have a matrix of the kind
 
 ```{r echo=FALSE}
 matrix(c("a","b",2,4), nrow=2)
 ```
 
-but the value `2` and `4` are no longer treated as numeric values but as character values instead (as indicated by the quotes surrounding the numbers).
+but the value `2` and `4` are no longer treated as numeric values but as character values instead.
 
 ## Data frames
 
@@ -212,25 +267,25 @@ To view each column's mode type:
 str(dat)
 ```
 
-Like a vector, elements of a data frame can be accessed by their index (aka subscripts). For example, to list the first two columns,
+Like a vector, elements of a data frame can be accessed by their index (aka subscripts). The first index represents the row number and the second index represents the column number. For example, to list the second row of the third column, type:
+
+```{r}
+dat[2, 3]
+```
+
+If you wish to list all rows for columns one through two leave the first index blank:
 
 ```{r}
 dat[ , 1:2 ]
 ```
 
-or the third row,
+or the third row for all columns, leave the second index blank:
 
 ```{r}
 dat[ 3 , ]
 ```
 
-or the first entry of the data frame,
-
-```{r}
-dat[ 1 , 1 ]
-```
-
-or the values in the column named *Value2*,
+You can also reference columns by their names if you append the `$` character to the dataframe object name. For example, to list the values in the column named *Value2*, type:
 
 ```{r}
 dat$Value2
@@ -238,7 +293,7 @@ dat$Value2
 
 ## Lists
 
-A **list** is an ordered set of elements stored in a 1D structure.  In fact, it's a another kind of vector called a **recursive vector**  where each element (referred to as a **slot**) can be of different data type and *structure*.  This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell (or slot) can store anything from a number to a three paragraph sentence to a five column table. The latter may be difficult to implement in a spreadsheet be can be readily implemented in a list.
+A **list** is an ordered set of elements stored in a 1D structure.  In fact, it's a another kind of vector called a **recursive vector**  where each element can be of different data type and *structure*.  This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number to a three paragraph sentence to a five column table. 
 
 A list is constructed using the `list()` function. For example, the following list consists of 3 elements: a two-column data frame (element `A`), a two element logical vector (element `B`) and a three element character vector (element `D`).
 
