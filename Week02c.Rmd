@@ -11,7 +11,7 @@ output:
 source("libs/Common.R")
 ```
 
-Date values can be represented in tables as numbers or characters. But to work properly with date representation, it should be converted to an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. The following subsections will make use of `lubridate` functions.
+Date values can be represented in tables as numbers or characters. But to be properly interpreted by R as dates, date values should be converted to an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. The following subsections will make use of the `lubridate` package.
 
 # Creating date/time objects
 
@@ -23,7 +23,7 @@ You can convert many representations of date and time to date objects. For examp
 x <- c("06/23/2013", "06/30/2013", "07/12/2014")
 ```
 
-At this point, R treats the vector `x` as characters. To force R to interpret these as dates, use `lubridate`'s `mdy` function. `mdy` will convert date strings where the date elements are ordered as month, day and year (for other date element arrangements, see the table shown below).
+At this point, R treats the vector `x` as characters. To force R to interpret these as dates, use `lubridate`'s `mdy` function. `mdy` will convert date strings where the date elements are ordered as month, day and year.
 
 ```{r}
 library(lubridate)
@@ -44,9 +44,25 @@ R does not maintain its own list of timezone names instead, it relies on the ope
 OlsonNames()
 ```
 
-The function `mdy` can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same so long as the order remains month/day/year.
+For example, to select Daylight Savings Time type `tz="EST5DST"`.
 
-For different month/day/year arrangements other `lubridate` functions need to be used:
+The telltale sign that the element is recognized as a date is to run the element through `str()`:
+
+```{r}
+str(x.date)
+```
+
+The keywords you are looking for are `POSIXct` or `POSIXt` which define the object's **class**. Note that R stores the date object as a number (double precision)--in fact, if you run the date object though the functions `typeof()` or `mode()` you'll see that the dates are indeed stored as numbers. An object's *class* is a wrapper around that object that helps R figure out what to do with it. You can find an object's class by wrapping it with the `class` function.
+
+```{r}
+class(x.date)
+```
+
+So even though the dates are stored as numbers R will know to treat them as dates.
+
+Turning our attention back to the function `mdy`, note that it can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same so long as the order remains month/day/year.
+
+For different month/day/year arrangements, other `lubridate` functions need to be used:
 
 Functions  |  Date Format
 -----------|--------------
@@ -54,7 +70,7 @@ Functions  |  Date Format
 `ymd()`    | year/month/day
 `ydm()`    | year/day/month
 
-If your data contains both date and time in a "month/day/year hour:minutes:seconds" format use the `mdy_hms` function.
+If your data contains both date *and* time in a "month/day/year hour:minutes:seconds" format use the `mdy_hms` function.
 
 ```{r}
 x <- c("06/23/2013 03:45:23", "07/30/2013 14:23:00", "08/12/2014 18:01:59")
@@ -62,18 +78,24 @@ x.date <- mdy_hms(x, tz="EST")
 x.date
 ```
 
-The characters `_h`, `_hm` or `_hms` can be appended to any of the date functions to accommodate other date/time formats such as `dmy_h` or `ymd_hms`.
+The characters `_h`, `_hm` or `_hms` can be appended to any of the four date function names described earlier to accommodate time formats. A few examples follow:
+
+```{r}
+mdy_h("6/23/2013 3", tz="EST") 
+dmy_hm("23/6/2013 3:15", tz="EST5EDT")
+ymd_hms("2013/06/23 3:15:7", tz="UTC")
+```
 
 ## From separate date elements
 
-If your data file splits the date elements into separate vector objects or columns, use the `paste` function to combine the elements into a single date string before passing it to one of the lubridate functions. Let's look at an example:
+If your data table splits the date elements into separate vector objects or columns, use the `paste` function to combine the elements into a single date string before passing it to one of the lubridate functions. Let's look at an example:
 
 ```{r}
 dat1 <- read.csv("http://mgimond.github.io/ES218/Data/CO2.csv")
 head(dat1)
 ```
 
-The CO2 data set has the date split across two elements: `Year` and `Month` (both loaded as integers). You can combine the columns into a character string using the `paste` function. For example, if we want to create a "Year-Month" string as in `1959-10`, we could type:
+The CO2 dataset has the date split across two columns: `Year` and `Month` (both loaded as integers). You can combine the columns into a character string using the `paste` function. For example, if we want to create a "Year-Month" string as in `1959-10`, we could type:
 
 ```{r eval=FALSE}
 paste(dat1$Year,"-",dat1$Month, sep="")
@@ -81,15 +103,32 @@ paste(dat1$Year,"-",dat1$Month, sep="")
 
 The above example uses four arguments: the three objects that are pasted together (i.e. `Year`, `-` and `Month`) and the `sep=""` parameter which tells R **not** to leave spaces between the three elements (by default, `paste` would have added spaces thus creating strings in the form of `1959 - 10` instead of `1959-10`).
 
-`lubridate` does not have a function like `ym` to convert only year-month strings, this requires that we add an artifical day of the month to the string. We'll choose to add the 15th day of the month as in `paste(dat1$Year,"-",dat1$Month,"-15", sep="")`
+`lubridate` does not have a function like `ym` to convert only year-month strings, this requires that we add an artificial day of the month to the string. We'll choose to add the 15th day of the month as in 
 
-To add a new column called `Date` to the `dat` object, simply wrap the paste function with `ymd`:
+```{r eval=FALSE}
+paste(dat1$Year,"-",dat1$Month,"-15", sep="")
+```
+
+And finally, we'll add a new column called `Date` to the `dat` object, and fill that column with the newly created date string wrapped with the `ymd` function:
 
 ```{r}
 dat1$Date <- ymd( paste(dat1$Year,"-",dat1$Month, "-15", sep="") )
 head(dat1)
 ```
 
+To confirm that the `Date` column is indeed formatted as a date object type:
+
+```{r}
+str(dat1)
+```
+
+or you could type,
+
+```{r}
+class(dat1$Date)
+```
+
+Note the POSIX class designation in both outputs.
 
 # Extracting date information
 
@@ -105,7 +144,7 @@ If you want the day of the week displayed as its three letter designation, add t
 wday(x.date, label = TRUE)
 ```
 
-You'll note that this last call not only returns the day of the week (`r as.character(wday(x.date, label = TRUE))`) but it also returns `Levels` information (indicating that the returned values are treated as factors and not plain characters or dates) along with their hierarchy.
+You'll note that this last call not only returns the day of the week for each element (`r as.character(wday(x.date, label = TRUE))`) but it also returns `levels` information along with its hierarchy.
 
 The following table lists functions that extract different elements of a date object.
 
@@ -134,7 +173,7 @@ To get the number of weeks between both dates:
 
 Likewise, you can get the number of minutes between dates by dividing by `dminutes()` and the number of years by dividing by `dyears()`. 
 
-You can also apply Boolean operations on dates. For example, to find which date element falls between the 11th and 24th day of the month, type:
+You can also apply Boolean operations on dates. For example, to find which date element in `x.date` falls between the 11^th^ and 24^th^ day of any month, type:
 
 ```{r}
 (mday(x.date) > 11) & (mday(x.date) < 24)
@@ -148,7 +187,7 @@ x.date[ (mday(x.date) > 11) & (mday(x.date) < 24) ]
 
 # Formatting date objects
 
-You can create a character vector from a date object. For example, to convert the date object `x.date` to a "Month_name Year" format, type the following:
+You can create a character vector from a date object. This is useful if you want to annotate  plots with dates or include date values in reports. For example, to convert the date object `x.date` to a "Month_name Year" character format, type the following:
 
 ```{r}
 as.character(x.date, format="%B %Y")

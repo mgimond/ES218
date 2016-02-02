@@ -85,14 +85,14 @@ img {
 </ul>
 </div>
 
-<p>Date values can be represented in tables as numbers or characters. But to work properly with date representation, it should be converted to an R <strong>date</strong> object. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier. The following subsections will make use of <code>lubridate</code> functions.</p>
+<p>Date values can be represented in tables as numbers or characters. But to be properly interpreted by R as dates, date values should be converted to an R <strong>date</strong> object. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier. The following subsections will make use of the <code>lubridate</code> package.</p>
 <div id="creating-datetime-objects" class="section level1">
 <h1>Creating date/time objects</h1>
 <div id="from-complete-date-strings" class="section level2">
 <h2>From complete date strings</h2>
 <p>You can convert many representations of date and time to date objects. For example, let’s create a vector of dates represented as month/day/year character strings,</p>
 <pre class="r"><code>x &lt;- c(&quot;06/23/2013&quot;, &quot;06/30/2013&quot;, &quot;07/12/2014&quot;)</code></pre>
-<p>At this point, R treats the vector <code>x</code> as characters. To force R to interpret these as dates, use <code>lubridate</code>’s <code>mdy</code> function. <code>mdy</code> will convert date strings where the date elements are ordered as month, day and year (for other date element arrangements, see the table shown below).</p>
+<p>At this point, R treats the vector <code>x</code> as characters. To force R to interpret these as dates, use <code>lubridate</code>’s <code>mdy</code> function. <code>mdy</code> will convert date strings where the date elements are ordered as month, day and year.</p>
 <pre class="r"><code>library(lubridate)
 x.date &lt;- mdy(x)
 x.date</code></pre>
@@ -103,8 +103,16 @@ x.date</code></pre>
 <pre><code>[1] &quot;2013-06-23 EST&quot; &quot;2013-06-30 EST&quot; &quot;2014-07-12 EST&quot;</code></pre>
 <p>R does not maintain its own list of timezone names instead, it relies on the operating system’s naming convention. To list the supported timezone names for your particular R environment, type:</p>
 <pre class="r"><code>OlsonNames()</code></pre>
-<p>The function <code>mdy</code> can read in date formats that use different delimiters so that <code>mdy(&quot;06/23/2013&quot;)</code>, <code>mdy(&quot;06-23-2013&quot;)</code> and <code>mdy(&quot;06.23.2013&quot;)</code> are parsed exactly the same so long as the order remains month/day/year.</p>
-<p>For different month/day/year arrangements other <code>lubridate</code> functions need to be used:</p>
+<p>For example, to select Daylight Savings Time type <code>tz=&quot;EST5DST&quot;</code>.</p>
+<p>The telltale sign that the element is recognized as a date is to run the element through <code>str()</code>:</p>
+<pre class="r"><code>str(x.date)</code></pre>
+<pre><code> POSIXct[1:3], format: &quot;2013-06-23&quot; &quot;2013-06-30&quot; &quot;2014-07-12&quot;</code></pre>
+<p>The keywords you are looking for are <code>POSIXct</code> or <code>POSIXt</code> which define the object’s <strong>class</strong>. Note that R stores the date object as a number (double precision)–in fact, if you run the date object though the functions <code>typeof()</code> or <code>mode()</code> you’ll see that the dates are indeed stored as numbers. An object’s <em>class</em> is a wrapper around that object that helps R figure out what to do with it. You can find an object’s class by wrapping it with the <code>class</code> function.</p>
+<pre class="r"><code>class(x.date)</code></pre>
+<pre><code>[1] &quot;POSIXct&quot; &quot;POSIXt&quot; </code></pre>
+<p>So even though the dates are stored as numbers R will know to treat them as dates.</p>
+<p>Turning our attention back to the function <code>mdy</code>, note that it can read in date formats that use different delimiters so that <code>mdy(&quot;06/23/2013&quot;)</code>, <code>mdy(&quot;06-23-2013&quot;)</code> and <code>mdy(&quot;06.23.2013&quot;)</code> are parsed exactly the same so long as the order remains month/day/year.</p>
+<p>For different month/day/year arrangements, other <code>lubridate</code> functions need to be used:</p>
 <table>
 <thead>
 <tr class="header">
@@ -127,16 +135,22 @@ x.date</code></pre>
 </tr>
 </tbody>
 </table>
-<p>If your data contains both date and time in a “month/day/year hour:minutes:seconds” format use the <code>mdy_hms</code> function.</p>
+<p>If your data contains both date <em>and</em> time in a “month/day/year hour:minutes:seconds” format use the <code>mdy_hms</code> function.</p>
 <pre class="r"><code>x &lt;- c(&quot;06/23/2013 03:45:23&quot;, &quot;07/30/2013 14:23:00&quot;, &quot;08/12/2014 18:01:59&quot;)
 x.date &lt;- mdy_hms(x, tz=&quot;EST&quot;)
 x.date</code></pre>
 <pre><code>[1] &quot;2013-06-23 03:45:23 EST&quot; &quot;2013-07-30 14:23:00 EST&quot; &quot;2014-08-12 18:01:59 EST&quot;</code></pre>
-<p>The characters <code>_h</code>, <code>_hm</code> or <code>_hms</code> can be appended to any of the date functions to accommodate other date/time formats such as <code>dmy_h</code> or <code>ymd_hms</code>.</p>
+<p>The characters <code>_h</code>, <code>_hm</code> or <code>_hms</code> can be appended to any of the four date function names described earlier to accommodate time formats. A few examples follow:</p>
+<pre class="r"><code>mdy_h(&quot;6/23/2013 3&quot;, tz=&quot;EST&quot;) </code></pre>
+<pre><code>[1] &quot;2013-06-23 03:00:00 EST&quot;</code></pre>
+<pre class="r"><code>dmy_hm(&quot;23/6/2013 3:15&quot;, tz=&quot;EST5EDT&quot;)</code></pre>
+<pre><code>[1] &quot;2013-06-23 03:15:00 EDT&quot;</code></pre>
+<pre class="r"><code>ymd_hms(&quot;2013/06/23 3:15:7&quot;, tz=&quot;UTC&quot;)</code></pre>
+<pre><code>[1] &quot;2013-06-23 03:15:07 UTC&quot;</code></pre>
 </div>
 <div id="from-separate-date-elements" class="section level2">
 <h2>From separate date elements</h2>
-<p>If your data file splits the date elements into separate vector objects or columns, use the <code>paste</code> function to combine the elements into a single date string before passing it to one of the lubridate functions. Let’s look at an example:</p>
+<p>If your data table splits the date elements into separate vector objects or columns, use the <code>paste</code> function to combine the elements into a single date string before passing it to one of the lubridate functions. Let’s look at an example:</p>
 <pre class="r"><code>dat1 &lt;- read.csv(&quot;http://mgimond.github.io/ES218/Data/CO2.csv&quot;)
 head(dat1)</code></pre>
 <pre><code>  Year Month Average Interpolated  Trend Daily_mean
@@ -146,11 +160,12 @@ head(dat1)</code></pre>
 4 1959     4  317.72       317.72 315.56         -1
 5 1959     5  318.29       318.29 315.50         -1
 6 1959     6  318.15       318.15 315.92         -1</code></pre>
-<p>The CO2 data set has the date split across two elements: <code>Year</code> and <code>Month</code> (both loaded as integers). You can combine the columns into a character string using the <code>paste</code> function. For example, if we want to create a “Year-Month” string as in <code>1959-10</code>, we could type:</p>
+<p>The CO2 dataset has the date split across two columns: <code>Year</code> and <code>Month</code> (both loaded as integers). You can combine the columns into a character string using the <code>paste</code> function. For example, if we want to create a “Year-Month” string as in <code>1959-10</code>, we could type:</p>
 <pre class="r"><code>paste(dat1$Year,&quot;-&quot;,dat1$Month, sep=&quot;&quot;)</code></pre>
 <p>The above example uses four arguments: the three objects that are pasted together (i.e. <code>Year</code>, <code>-</code> and <code>Month</code>) and the <code>sep=&quot;&quot;</code> parameter which tells R <strong>not</strong> to leave spaces between the three elements (by default, <code>paste</code> would have added spaces thus creating strings in the form of <code>1959 - 10</code> instead of <code>1959-10</code>).</p>
-<p><code>lubridate</code> does not have a function like <code>ym</code> to convert only year-month strings, this requires that we add an artifical day of the month to the string. We’ll choose to add the 15th day of the month as in <code>paste(dat1$Year,&quot;-&quot;,dat1$Month,&quot;-15&quot;, sep=&quot;&quot;)</code></p>
-<p>To add a new column called <code>Date</code> to the <code>dat</code> object, simply wrap the paste function with <code>ymd</code>:</p>
+<p><code>lubridate</code> does not have a function like <code>ym</code> to convert only year-month strings, this requires that we add an artificial day of the month to the string. We’ll choose to add the 15th day of the month as in</p>
+<pre class="r"><code>paste(dat1$Year,&quot;-&quot;,dat1$Month,&quot;-15&quot;, sep=&quot;&quot;)</code></pre>
+<p>And finally, we’ll add a new column called <code>Date</code> to the <code>dat</code> object, and fill that column with the newly created date string wrapped with the <code>ymd</code> function:</p>
 <pre class="r"><code>dat1$Date &lt;- ymd( paste(dat1$Year,&quot;-&quot;,dat1$Month, &quot;-15&quot;, sep=&quot;&quot;) )
 head(dat1)</code></pre>
 <pre><code>  Year Month Average Interpolated  Trend Daily_mean       Date
@@ -160,6 +175,20 @@ head(dat1)</code></pre>
 4 1959     4  317.72       317.72 315.56         -1 1959-04-15
 5 1959     5  318.29       318.29 315.50         -1 1959-05-15
 6 1959     6  318.15       318.15 315.92         -1 1959-06-15</code></pre>
+<p>To confirm that the <code>Date</code> column is indeed formatted as a date object type:</p>
+<pre class="r"><code>str(dat1)</code></pre>
+<pre><code>'data.frame':   671 obs. of  7 variables:
+ $ Year        : int  1959 1959 1959 1959 1959 1959 1959 1959 1959 1959 ...
+ $ Month       : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ Average     : num  316 316 317 318 318 ...
+ $ Interpolated: num  316 316 317 318 318 ...
+ $ Trend       : num  316 316 316 316 316 ...
+ $ Daily_mean  : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+ $ Date        : POSIXct, format: &quot;1959-01-15&quot; &quot;1959-02-15&quot; &quot;1959-03-15&quot; &quot;1959-04-15&quot; ...</code></pre>
+<p>or you could type,</p>
+<pre class="r"><code>class(dat1$Date)</code></pre>
+<pre><code>[1] &quot;POSIXct&quot; &quot;POSIXt&quot; </code></pre>
+<p>Note the POSIX class designation in both outputs.</p>
 </div>
 </div>
 <div id="extracting-date-information" class="section level1">
@@ -171,7 +200,7 @@ head(dat1)</code></pre>
 <pre class="r"><code>wday(x.date, label = TRUE)</code></pre>
 <pre><code>[1] Sun  Tues Tues
 Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre>
-<p>You’ll note that this last call not only returns the day of the week (Sun, Tues, Tues) but it also returns <code>Levels</code> information (indicating that the returned values are treated as factors and not plain characters or dates) along with their hierarchy.</p>
+<p>You’ll note that this last call not only returns the day of the week for each element (Sun, Tues, Tues) but it also returns <code>levels</code> information along with its hierarchy.</p>
 <p>The following table lists functions that extract different elements of a date object.</p>
 <table>
 <thead>
@@ -221,7 +250,7 @@ Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre
 <pre class="r"><code>(x.date[3] - x.date[1]) / dweeks()</code></pre>
 <pre><code>[1] 59.37069</code></pre>
 <p>Likewise, you can get the number of minutes between dates by dividing by <code>dminutes()</code> and the number of years by dividing by <code>dyears()</code>.</p>
-<p>You can also apply Boolean operations on dates. For example, to find which date element falls between the 11th and 24th day of the month, type:</p>
+<p>You can also apply Boolean operations on dates. For example, to find which date element in <code>x.date</code> falls between the 11<sup>th</sup> and 24<sup>th</sup> day of any month, type:</p>
 <pre class="r"><code>(mday(x.date) &gt; 11) &amp; (mday(x.date) &lt; 24)</code></pre>
 <pre><code>[1]  TRUE FALSE  TRUE</code></pre>
 <p>If you want the command to return just the dates that satisfy this query, pass the Boolean operation as an index to the <code>x.date</code> vector:</p>
@@ -230,7 +259,7 @@ Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre
 </div>
 <div id="formatting-date-objects" class="section level1">
 <h1>Formatting date objects</h1>
-<p>You can create a character vector from a date object. For example, to convert the date object <code>x.date</code> to a “Month_name Year” format, type the following:</p>
+<p>You can create a character vector from a date object. This is useful if you want to annotate plots with dates or include date values in reports. For example, to convert the date object <code>x.date</code> to a “Month_name Year” character format, type the following:</p>
 <pre class="r"><code>as.character(x.date, format=&quot;%B %Y&quot;)</code></pre>
 <pre><code>[1] &quot;June 2013&quot;   &quot;July 2013&quot;   &quot;August 2014&quot;</code></pre>
 <p>The <code>format=</code> parameter accepts many different date/time format codes listed in the following table (note the case!).</p>
