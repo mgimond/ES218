@@ -83,10 +83,9 @@ img {
 </ul>
 </div>
 
-<p>Dataset used in this tutorial was downloaded from <a href="http://www.ndbc.noaa.gov/view_text_file.php?filename=44005h2010.txt.gz&amp;dir=data/historical/stdmet/">NOAA’ NDBC buoy data center</a> in a space delimited format. It consists of hourly air and ocean physical measurements such as temperature, wind speed and wave height for 2012 measured at NOAA’s buoy #44005 located in the Gulf of Maine (43.204 N, 69.128 W).</p>
-<p>Type the following to load the data file into your current R session (note that we are using the <code>read.table</code> function instead of the <code>read.csv</code> function):</p>
-<pre class="r"><code># Load the data (columns are separated by spaces)
-dat &lt;- read.table(&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;, sep=&quot;&quot;, header=TRUE)</code></pre>
+<p>The dataset used in this tutorial was downloaded from <a href="http://www.ndbc.noaa.gov/view_text_file.php?filename=44005h2010.txt.gz&amp;dir=data/historical/stdmet/">NOAA’ NDBC buoy data center</a> in a space delimited file format. It consists of hourly air and ocean physical measurements such as temperature, wind speed and wave height for 2012 measured at NOAA’s buoy #44005 located in the Gulf of Maine (43.204 N, 69.128 W).</p>
+<p>Type the following to load the data file into your current R session (note that we are using the <code>read.table</code> function instead of the <code>read.csv</code> function since the data are not comma delimited):</p>
+<pre class="r"><code>dat &lt;- read.table(&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;, sep=&quot;&quot;, header=TRUE)</code></pre>
 <div id="exploring-a-dataframe" class="section level1">
 <h1>Exploring a dataframe</h1>
 <p>First, let’s extract the number of rows and columns in our table:</p>
@@ -200,7 +199,7 @@ dat &lt;- read.table(&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.d
 8345 2012 12 14  3 50  999   99  99 0.36 12.90 4.04 999 1025.0  5.6  9.7 -4.2  99   99
 8346 2012 12 14  4 50  999   99  99 0.36 12.90 3.87 999 1024.6  5.6  9.7 -4.0  99   99
 8347 2012 12 14  5 50  999   99  99 0.37  8.33 3.66 999 1023.8  5.6  9.6 -3.9  99   99</code></pre>
-<p>We can usually tell what data types are assoicated with each column by viewing the first few lines. But it’s best to check with the <code>str</code> function.</p>
+<p>We can usually tell what data types are associated with each column by viewing the first few lines. But it’s best to check with the <code>str</code> function.</p>
 <pre class="r"><code>str(dat)</code></pre>
 <pre><code>'data.frame':   8347 obs. of  18 variables:
  $ YY  : int  2011 2012 2012 2012 2012 2012 2012 2012 2012 2012 ...
@@ -254,10 +253,10 @@ dat &lt;- read.table(&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.d
 <p>Let’s first remove all columns devoid of valid data. These columns are <code>MWD</code>, <code>VIS</code> and <code>TIDE</code>. There are many ways to do this. We will opt for subsetting the table and assigning this subset to a new data frame we will call <code>dat1</code>.</p>
 <pre class="r"><code>dat1 &lt;- dat[ , !(names(dat) %in% c(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;))]</code></pre>
 <p>Let’s break down this expression into its many components. <code>names(dat)</code> returns a list of column names in the order in which they appear in the object <code>dat</code>: YY, MM, DD, hh, mm, WDIR, WSPD, GST, WVHT, DPD, APD, MWD, PRES, ATMP, WTMP, DEWP, VIS, TIDE.</p>
-<p>The Boolean operator <code>%in%</code> compares two sets of vectors and assesses if an element on the left-hand side of <code>%in%</code> is included in the elements on the right. For each element in the left hand set, R returns <code>TRUE</code> if the value is included in the right-hand set of values or <code>FALSE</code> if it is not. In our example, R is evaluating if the column names are included in the set of elements defined in <code>c(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;)</code>. The expression could be read as “…are any of the column names (i.e. YY, MM, DD, hh, mm, WDIR, WSPD, GST, WVHT, DPD, APD, MWD, PRES, ATMP, WTMP, DEWP, VIS, TIDE) included in the set <code>(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;)</code>?” The output of this comparison is a series of <code>TRUE</code>’s and <code>FALSE</code>’s depending on whether or not a match is found.</p>
+<p>The Boolean operator <code>%in%</code> compares two sets of vectors and assesses if an element on the left-hand side of <code>%in%</code> is included in the elements on the right. For each element in the left hand set, R returns <code>TRUE</code> if the value is present in the right-hand set of values or <code>FALSE</code> if it is not. In our example, R is evaluating if the column names are included in the set of elements defined in <code>c(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;)</code>. The expression could be read as “… are any of the column names (i.e. YY, MM, DD, hh, mm, WDIR, WSPD, GST, WVHT, DPD, APD, MWD, PRES, ATMP, WTMP, DEWP, VIS, TIDE) included in the set <code>(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;)</code>?” The output of this comparison is a series of <code>TRUE</code>’s and <code>FALSE</code>’s depending on whether or not a match is found.</p>
 <pre class="r"><code>names(dat) %in% c(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;)</code></pre>
 <pre><code> [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE  TRUE</code></pre>
-<p>The order in which the <code>TRUE</code>’s and <code>FALSE</code>’s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a <code>TRUE</code> value! This last expression gives us <code>TRUE</code> values for columns containing missing data. We want the reverse, so we add the “not” operator, <code>!</code>, in front of the expression thus flipping the <code>TRUE</code>/<code>FALSE</code> values.</p>
+<p>The order in which the <code>TRUE</code>’s and <code>FALSE</code>’s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a <code>TRUE</code> value! We want the reverse, so we add the “not” operator, <code>!</code>, in front of the expression thus flipping the <code>TRUE</code>/<code>FALSE</code> values.</p>
 <pre class="r"><code>!(names(dat) %in% c(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;))</code></pre>
 <pre><code> [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE</code></pre>
 <p>So <code>dat1</code> contains all the columns except <code>MWD</code>, <code>VIS</code> and <code>TIDE</code>.</p>
@@ -272,7 +271,7 @@ dat &lt;- read.table(&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.d
 </div>
 <div id="assigning-na-to-missing-data" class="section level1">
 <h1>Assigning <code>NA</code> to missing data</h1>
-<p>It’s usually best to assign <code>NA</code> values the moment a data file is loaded into R. For example, had all <code>NA</code> values been flagged as <code>-9999</code>, we could have added the parameter <code>na.strings=&quot;-9999&quot;</code> to the <code>read.table()</code> function. But our dataset contains missing values flagged as 99, 999 <em>and</em> 9999 requiring that we combine the missing string values such as <code>na.strings = c(&quot;99&quot;, &quot;999&quot;, &quot;9999&quot;)</code> however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as <code>NA</code> would be sensible, but a wind direction of 99 degrees would make sense and flagging such value as <code>NA</code> would not be appropriate. Had we set <em>all</em> values of 99 to <code>NA</code> the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as <code>NA</code> in our dataset will require manual intervention.</p>
+<p>It’s usually best to assign <code>NA</code> values the moment a data file is loaded into R. For example, had all <code>NA</code> values been flagged as <code>-9999</code>, we could have added the parameter <code>na.strings=&quot;-9999&quot;</code> to the <code>read.table()</code> function. But our dataset contains missing values flagged as 99, 999 <em>and</em> 9999 requiring that we combine the missing string values such as <code>na.strings = c(&quot;99&quot;, &quot;999&quot;, &quot;9999&quot;)</code> however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as <code>NA</code> would be sensible, but a wind direction of 99 degrees would make sense and flagging such value as <code>NA</code> would not be appropriate. Had we set <em>all</em> values of 99 to <code>NA</code> the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as <code>NA</code> in our dataset will require column level intervention.</p>
 <p>Let’s review the data summary to identify each column’s nodata numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the <code>dat1</code> dataframe and not the orginal <code>dat</code>.</p>
 <pre class="r"><code>summary(dat1)</code></pre>
 <pre><code>       YY             MM               DD             hh              mm          WDIR            WSPD     
@@ -308,10 +307,10 @@ dat1[,na999][dat1[, na999] == 999] &lt;- NA
 dat1[,na9999][dat1[, na9999] == 9999] &lt;- NA</code></pre>
 <p>There are two components to the last three lines of code: The first is a subset of columns for which a particular missing value is designated (e.g. <code>dat1[,na99]</code> ), the second is an evaluation statement identifying which values in the column subset is flagged as missing (e.g. <code>[dat1[, na99] == 99]</code>). Together, these elements define the indices (table cells) for which a value is replaced with <code>NA</code> (e.g. <code>&lt;- NA</code>).</p>
 <p>Another way this could have been accomplished (and one you might feel more comfortable with) would have been to work off of one column at a time, for example:</p>
-<pre class="r"><code>dat1$WSPD[dat1$WSPD == 99] &lt;- NA
-dat1$GST[dat1$WSPD == 99] &lt;- NA
+<pre class="r"><code>dat1$WSPD[dat1$WSPD == 99]   &lt;- NA
+dat1$GST[dat1$WSPD == 99]    &lt;- NA
 ...
-dat1$WDIR[dat1$WDIR == 999] &lt;- NA
+dat1$WDIR[dat1$WDIR == 999]  &lt;- NA
 ...
 dat1$PRES[dat1$PRES == 9999] &lt;- NA</code></pre>
 <p>Let’s look at a summary of our table:</p>
