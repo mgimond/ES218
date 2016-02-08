@@ -1,30 +1,26 @@
 ---
-title: "Week3: Tidying data tables"
+title: "Week3: Tidying/reshaping tables using tidyr"
 output:
   html_document:
     toc: yes
     toc_depth: 3
 ---
 
-```{r, echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-#  dev=c('CairoPNG', 'CairoPDF'),
-  type = "cairo",
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8",
-#  pointsize=12* 200 / 72, # = size * DPI / 72
-  res=200)
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
+
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`tidyr`**
+</div>
+ 
 
 # Introduction
 
 Data tables come in different sizes and shape; they can be a very simple two column dataset or they can consist of many columns and "sub-columns". Understanding its structure, and learning how to reshape it into a workable form is critical to an effective and error free analysis.
 
-For example, a median earnings data table downloaded from the census bureau's website might look something like this:
+For example, a median earnings data table downloaded from the U.S. census bureau's website might look something like this:
 
 ![A typical table](img/Typical_table.png)
 
@@ -71,9 +67,9 @@ A package that facilitates converting from wide to long (and *vice versa*)  is `
 
 The `gather` function takes three arguments: 
 
- * `key=`: This is the name of the new column which will combine all values associated with the variable type associated with each column (e.g. `Q1`, `Q2`, `Q3` and `Q4`).
- * `value=`: This is the name of the new column which will list all values associated with a unique row and column variable (e.g. average delay times)
- * The third parameter does not have a name, but is a list of columns that are to be collapsed. The column can be referenced by column number or column name.
+ * `key`: This is the name of the new column which will combine all column variables (e.g. `Q1`, `Q2`, `Q3` and `Q4`).
+ * `value`: This is the name of the new column which will list all values (e.g. average delay times) associated with each variable combination (e.g. `Mon` and `Q1`, `Tues` and `Q1`, etc...)
+ * The third parameter does not have a name, but is a list of columns that are to be collapsed. The column can be referenced by column number or column name. Note that the column enumeration does not need be wrapped in a `c()` function.
  
 In our example, the line of code needed to re-express the table into a long form can be written in one of three ways:
  
@@ -156,3 +152,27 @@ df3
 ```
 
 You will recognize many of the parameters from the `unite` function with one difference: the new (to be created) column names need to be defined in a combine, `c()`, statement.
+
+# Filling gaps in a table using `complete`
+
+It's not uncommon to be handed a table with incomplete combinations of observations. For example, the following table gives us yield and data source values for each combination of year and grain type. However, several combinations of year/grain are missing.
+
+```{r}
+df <- data.frame( Year  = c(1999,1999,2000,2000,2001,2003,2003,2005),
+                  Grain = c("Oats", "Corn","Oats", "Corn","Oats", "Oats", "Corn","Oats"),
+                  Yield = c(23,45,24,40,20,19,41,22),
+                  Src   = c("a","a","b","c","a","a","c","a"))
+df
+```
+
+For example, we do not have records for `2001` and `Corn`, `2003` and `Corn`, and data for both grains are missing for `2002` and `2004`. To add rows for all missing pairs of year/grain values, use the `complete` function.
+
+```{r}
+df.all <- complete(df, Year=1999:2005, Grain=c("Oats", "Corn"), fill=list(Yield=NA,Src=NA))
+df.all
+```
+
+The function allows you to define the full range of expected values for `year` and `Grain`; the function will then create all pair combinations and add those pairs that are missing to the table. For all missing pairs, the function allows the user to define the missing values to assign to the `Yield` and `Src` variables (here, we choose to assign `NA` values to each).
+
+Note that the `combine` function can be used with one or more columns in a table.
+

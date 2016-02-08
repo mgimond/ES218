@@ -1,31 +1,21 @@
 ---
-title: "Week 3: Querying data tables"
+title: "Week 3: Manipulating data tables with dplyr"
 output:
   html_document:
     toc: yes
     toc_depth: 3
 ---
 
-```{r, echo = FALSE, message = FALSE}
-options( scipen = 999)
-
-knitr::knit_hooks$set(small.mar = function(before, options, envir) {
-    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
-})
-
-
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-#  dev=c('CairoPNG', 'CairoPDF'),
-  type = "cairo",
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8",
-#  pointsize=12* 200 / 72, # = size * DPI / 72
-  res=200)
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
+
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**
+</div>
+ 
+
 
 The data file  *FAO_grains_NA.csv* will be used in this exercise. This dataset consists of grain yield and harvest year by north american country. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014. 
 
@@ -48,7 +38,7 @@ The basic set of R tools can accomplish many data table queries, but the syntax 
 `mutate()`         | Add columns
 `summarise()`      | Summarize columns
 
-Make sure to load the `dplyr` package before proceeding with the following examples. All examples assume that `dplyr` version 0.3 or greater is installed.
+Make sure to load the `dplyr` package before proceeding with the following examples. 
 
 ```{r, message=FALSE}
 library(dplyr)
@@ -68,7 +58,8 @@ Note that R is case sensitive, so make sure that you respect each letter's case 
 We can expand our query by including both `Oats`, `Buckwheat` and limiting the country to `Canada`.
 
 ```{r}
-dat.query2 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat", Country == "Canada")
+dat.query2 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat", 
+                          Country == "Canada")
 summary(dat.query2)
 ```
 
@@ -78,11 +69,13 @@ We can expand this query by limiting our output to the years 2005 to 2010
 
 ```{r}
 library(dplyr)
-dat.query3 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat", Country == "Canada", Year >= 2005 & Year <= 2010)
+dat.query3 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat", 
+                          Country == "Canada", 
+                          Year >= 2005 & Year <= 2010)
 summary(dat.query3)
 ```
 
-Note the use of the Boolean operator AND, `&`, instead of OR for the `Year` query. We want the `Year` value to satisfy two criteria simultaneously: *greater than or equal to 2005* **AND** *less then or equal to 2010*. Had we used the `|` operator, R would have returned all years since all year values satisfy at least one of the two criteria.
+Note the use of the AND Boolean operator (`&`) instead of the OR operator (`|`) for the `Year` query. We want the `Year` value to satisfy two criteria simultaneously: *greater than or equal to 2005* **AND** *less than or equal to 2010*. Had we used the `|` operator, R would have returned all years since all year values satisfy at least one of the two criteria.
 
 ## Sort rows by column value: `arrange`
 
@@ -113,7 +106,7 @@ head(dat.subcol)
 
 ## Adding columns: `mutate`
 
-You can add columns (and compute their values) using the `mutate` function. For example, to add a column `Ctr_abbr` and assign it the value `CAN` for Canada and `USA` for the United States of America based on the values in column `Country` type:
+You can add columns (and compute their values) using the `mutate` function. For example, to add a column `Ctr_abbr` and assign it the abbreviated values `CAN` for Canada and `USA` for the United States of America based on the values in column `Country` type:
 
 ```{r}
 dat.extended <- mutate(dat, Ctr_abbr = ifelse(Country == "Canada", "CAN", "USA"))
@@ -121,9 +114,11 @@ head(dat.extended)
 tail(dat.extended)
 ```
 
+Here, we make use of an embedded function, `ifelse`, which performs a conditional operation: if the `Country` value is `Canada` return `CAN` if not, return `USA`.
+
 Note that if you wish to *rename* a column, you can use the `rename()` function instead of `mutate`.
 
-## Summarize columns `summarise`
+## Summarize columns: `summarise`
 
 You can summarize (or "collapse") one or more columns using the `summarise` function. For instance, to get the minimum and maximum years from the `Year` column, type:
 
@@ -142,7 +137,7 @@ dat.sum   <- summarise(dat.grp, mean_yield = mean(Value))
 dat.sum
 ```
 
-This block of code introduces you to another function called `group_by`. This function creates a new type of object (a list) which breaks the data into different groups for subsequent analysis. This implies that all functions that include `dat.grp` as input will output an object of similar class. So in our example, `dat.sum` is a list object and not a data frame. To force the `dat.sum` object back to a data frame, simply wrap it with the `as.data.frame()` function.
+This block of code introduces you to another function called `group_by`. This function creates a new type of object (a list) which breaks the data into different groups for subsequent analysis. This implies that all functions that include `dat.grp` as input will output an object of similar class. So in our example, `dat.sum` is a list object and not a dataframe. To force the `dat.sum` object back to a dataframe, simply wrap it with the `as.data.frame()` function.
 
 ```{r}
 as.data.frame(dat.sum)
@@ -150,7 +145,7 @@ as.data.frame(dat.sum)
 
 The one downside to this approach of combining data table manipulation functions for complex queries is the use of several intermediate objects (e.g. `dat.yield`, `dat.grp`, `dat.sum`). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects. 
 
-Another approach to combining `dplyr` operations is to use the operator `%>%` which daisy chains `dplyr` functions. So our previous workflow would look like:
+Another approach to combining `dplyr` operations is to use the **piping operator** ,`%>%`, which daisy chains `dplyr` functions. So our previous workflow would look like:
 
 ```{r}
 dat %>%
@@ -159,9 +154,9 @@ dat %>%
   summarise(mean_yield = mean(Value))
 ```
 
-The chunk of code can be read as "with the `dat` table, `filter` by ..., then `group_by` ...., then `summarise` by ..." with the result from one operation being passed on to the next using the `%>%` operator. Note that the `filter`, `group_by` and `summarise` functions do not include the data table name making the chunk of code less cluttered and easier to read.
+The chunk of code can be read as *"... with the `dat` table, `filter` by ..., then `group_by` ...., then `summarise` by ..."* with the result from one operation being passed on to the next using the `%>%` operator. Note that the `filter`, `group_by` and `summarise` functions do not include the data table name making the chunk of code less cluttered and easier to read.
 
-This chunk of code will output the results to the screen, if you want to save it to an object called `dat2`, replace the first line with `dat2 <- dat %>%`
+This chunk of code will output the results to the screen, if you want to save it to an object called `dat2`, replace the first line with `dat2 <- dat %>% ...`.
 
 Here's a more complicated output whereby the median yield for each USA crop is summarized by year for the years spanning 2005 through 2010 and the output is sorted by crop name (in ascending order) and median yield value (in descending order).
 
@@ -176,11 +171,11 @@ dat %>%
 
 # Combining `group_by` with `mutate`
 
-The `group_by` function followed by the `summarise` function will generate a new table with as many rows as there are groups defined in the `group_by` function. But grouping variables can be used for other purposes where the output table contains the same number of rows as the input table. The following sub-sections shows a few examples.
+The `group_by` function followed by the `summarise` function will generate a new table with as many rows as there are groups defined in the `group_by` function. But grouping variables can be used for other purposes where the output table contains the same number of rows as the input table. The following sub-sections highlight a few examples.
 
 ## Normalizing each value in a group by the group median
 
-In this example, we are subtracting each value in a group by that group's median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We'll save the output data frame as `dat2`.
+In this example, we are subtracting each value in a group by that group's median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We'll save the output dataframe as `dat2`.
 
 ```{r}
 dat2 <- dat %>% 
@@ -218,5 +213,5 @@ dat2 <- dat %>%
                                      data.frame(Year)) )   
 ```
 
-The `deparse(substitute(...))` functions are necessary in the piping operations for `dplyr` to properly interpret the formula. The `predict()` function extracts predicted values from the regression model by passing one or many values as a data frame (even if we are only predicting the crop yield for a single year by row).  
+The `deparse(substitute(...))` functions are necessary in the piping operations for `dplyr` to properly interpret the formula. The `predict()` function extracts predicted values from the regression model by passing one or many values as a dataframe (even if we are only predicting the crop yield for a single year by row).  
 

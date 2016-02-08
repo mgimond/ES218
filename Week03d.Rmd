@@ -6,21 +6,16 @@ output:
     toc_depth: 3
 ---
 
-```{r, echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-#  dev=c('CairoPNG', 'CairoPDF'),
-  type = "cairo",
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8",
-#  pointsize=12* 200 / 72, # = size * DPI / 72
-  res=200)
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
 
-Numbers and dates are not the only variable types we might be interested in exploring. We often find ourselves having to manipulate character (text) objects as well. In the programming environment, such queries are often referred to as **string** searches. String queries may involve assessing if a variable matches or contains an exact set of characters; it can also involve extracting a certain set of characters given some pattern. R has a very capable set of string operations built into its environment however, many find it difficult to master. A package that will be used in this tutorial that simplifies this task is called `stringr`. A write-up on its capabilities can be found [here](http://journal.r-project.org/archive/2010-2/RJournal_2010-2_Wickham.pdf).
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`stringr`**
+</div>
+
+Numbers and dates are not the only variable types we might be interested in exploring. We often find ourselves having to manipulate character (text) objects as well. In the programming environment, such queries are often referred to as **string** searches. String queries may involve assessing if a variable matches or contains an exact set of characters; it can also involve extracting a certain set of characters given some pattern. R has a very capable set of string operations built into its environment however, many find it difficult to master. A package that will be used in this tutorial that simplifies this task is called `stringr`. A write-up of its capabilities can be found [here](http://journal.r-project.org/archive/2010-2/RJournal_2010-2_Wickham.pdf).
 
 # Finding patterns in a string
 
@@ -53,7 +48,7 @@ tolower(a) == "abc def"
 
 ### Matching anywhere in the string
 
-To check if object `a` has the pattern `"c d"` (note the space in between the letters) anywhere in its string, use the `str_detect` function as follows:
+To check if object `a` has the pattern `"c d"` (note the space in between the letters) anywhere in its string, use `stringr`'s `str_detect` function as follows:
 
 ```{r}
 library(stringr)
@@ -77,7 +72,7 @@ str_detect(a, "^c d")
 
 ### Matching the end of the sring
 
-To check if object `a` *ends* with the pattern `"Abc"` add the dollar character `$` at the end of the pattern as in:
+To check if object `a` *ends* with the pattern `"Abc"` add the dollar character `$` to the end of the pattern as in:
 
 ```{r}
 str_detect(a, "Abc$")
@@ -86,7 +81,7 @@ str_detect(a, "Abc$")
 
 ## Locating the position of a pattern in a string
 
-If you want to find *where* a particular pattern lies in a string, use the `str_locate` function. For example, to find to find where the pattern `"c d"` occurs in object `a` type:
+If you want to find *where* a particular pattern lies in a string, use the `str_locate` function. For example, to find where the pattern `"c d"` occurs in object `a` type:
 
 ```{r}
 str_locate(a, "c d")
@@ -223,14 +218,14 @@ The output is a one element list. If object `g` consists of more than one elemen
 
 ## Extracting parts of a string that follow a pattern
 
-To extract the three letter month from object `g` (defined in the last example), you can use a combination of `stringr` functions as in:
+To extract the three letter months from object `g` (defined in the last example), you can use a combination of `stringr` functions as in:
 
 ```{r}
 loc <- str_locate(g, "Month:")
 str_sub(g, start = loc[,"end"] + 1, end = loc[,"end"]+3)
 ```
 
-The above chunk of code firsts identifies the position of the `Month:` string and passes its output to the object `loc` (a matrix). It then uses the `loc`'s `end` position in the call to `str_sub` to extract the three characters making up the month abbreviation. The value `1` is added to the `start` parameter in `str_sub` to omit the last character of `Month:` (recall that the `str_locate` positions are inclusive).
+The above chunk of code first identifies the position of the `Month:` string and passes its output to the object `loc` (a matrix). It then uses the `loc`'s `end` position in the call to `str_sub` to extract the three characters making up the month abbreviation. The value `1` is added to the `start` parameter in `str_sub` to omit the last character of `Month:` (recall that the `str_locate` positions are inclusive).
 
 This can be extend to multi-element vectors as follows:
 
