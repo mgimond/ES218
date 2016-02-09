@@ -126,32 +126,54 @@ You can summarize (or "collapse") one or more columns using the `summarise` func
 summarise(dat, yr_min = min(Year), yr_max=max(Year))
 ```
 
-## Combining table manipulation functions using `%>%`
+## Splitting data operations by group: `group_by`
 
-In most cases, you will find yourself wanting to combine several of `dplyr`'s data manipulation functions. For example, to summarize the total yield of Oats by country, you could type the following:
+The `group_by` function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the `Year` column for which crop data are available *by crop type*, we would type the following:
+
+```{r}
+dat.grp <- group_by(dat, Crop)
+summarise(dat.grp, yr_min = min(Year), yr_max=max(Year))
+```
+
+The `dat.grp` object is a special data structure which differs from that of `dat` in that it explicitly defines the groups for which any subsequent operations (like `summarise`) are to be split across. 
+
+## `dplyr`'s output data structure
+
+Many of `dplyr`'s functions will add one or more classes to a data table. For example, if we stored the summary output from the last chunk of code to an object called `dat.sum`, we'd discover that this object is associated with three classes.
+
+```{r}
+dat.sum <- summarise(dat.grp, yr_min = min(Year), yr_max=max(Year))
+class(dat.sum)
+```
+
+This may prove to be problematic when using this table in none `dplyr` functions. To remedy this, you can force the `dat.sum` object to a standalone `dataframe` as follows:
+
+```{r}
+dat.df <- data.frame(dat.sum)
+class(dat.df)
+```
+
+# Combining table manipulation functions using `%>%`
+
+In most cases, you will find yourself wanting to combine several of `dplyr`'s data manipulation functions. For example, to summarize the total yield of oats by country, you could type the following:
 
 ```{r}
 dat.yield <- filter(dat, Information == "Yield (Hg/Ha)", Crop == "Oats")
 dat.grp   <- group_by(dat.yield, Country)
 dat.sum   <- summarise(dat.grp, mean_yield = mean(Value))
-dat.sum
-```
-
-This block of code introduces you to another function called `group_by`. This function creates a new type of object (a list) which breaks the data into different groups for subsequent analysis. This implies that all functions that include `dat.grp` as input will output an object of similar class. So in our example, `dat.sum` is a list object and not a dataframe. To force the `dat.sum` object back to a dataframe, simply wrap it with the `as.data.frame()` function.
-
-```{r}
-as.data.frame(dat.sum)
+data.frame(dat.sum)
 ```
 
 The one downside to this approach of combining data table manipulation functions for complex queries is the use of several intermediate objects (e.g. `dat.yield`, `dat.grp`, `dat.sum`). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects. 
 
-Another approach to combining `dplyr` operations is to use the **piping operator** ,`%>%`, which daisy chains `dplyr` functions. So our previous workflow would look like:
+Another approach to combining `dplyr` operations is to use the **piping operator** ,`%>%`, which daisy chains `dplyr` operations. So our previous workflow would look like:
 
 ```{r}
 dat %>%
   filter(Information == "Yield (Hg/Ha)", Crop == "Oats") %>%
   group_by(Country) %>%
-  summarise(mean_yield = mean(Value))
+  summarise(mean_yield = mean(Value)) %>%
+  data.frame()
 ```
 
 The chunk of code can be read as *"... with the `dat` table, `filter` by ..., then `group_by` ...., then `summarise` by ..."* with the result from one operation being passed on to the next using the `%>%` operator. Note that the `filter`, `group_by` and `summarise` functions do not include the data table name making the chunk of code less cluttered and easier to read.
@@ -169,7 +191,7 @@ dat %>%
   arrange(Crop, desc(median_yield))
 ```
 
-# Combining `group_by` with `mutate`
+# More on the `group_by` function
 
 The `group_by` function followed by the `summarise` function will generate a new table with as many rows as there are groups defined in the `group_by` function. But grouping variables can be used for other purposes where the output table contains the same number of rows as the input table. The following sub-sections highlight a few examples.
 
@@ -181,11 +203,10 @@ In this example, we are subtracting each value in a group by that group's median
 dat2 <- dat %>% 
   filter(Information == "Yield (Hg/Ha)",
          Country == "United States of America") %>%
-  select(Crop, Year, Value)                    %>%
-  group_by(Crop)                               %>%
-  mutate(NormYield = Value - median(Value))    %>%
+  select(Crop, Year, Value)                     %>%
+  group_by(Crop)                                %>%
+  mutate(NormYield = Value - median(Value))     %>%
   arrange(Crop)
-
 ```
 
 Let's plot the normalized yields by year for Barley and add a `0` line representing the (normalized) central value.

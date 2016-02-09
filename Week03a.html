@@ -82,9 +82,11 @@ img {
 <li><a href="#subset-by-column-select">Subset by column: <code>select</code></a></li>
 <li><a href="#adding-columns-mutate">Adding columns: <code>mutate</code></a></li>
 <li><a href="#summarize-columns-summarise">Summarize columns: <code>summarise</code></a></li>
-<li><a href="#combining-table-manipulation-functions-using">Combining table manipulation functions using <code>%&gt;%</code></a></li>
+<li><a href="#splitting-data-operations-by-group-group_by">Splitting data operations by group: <code>group_by</code></a></li>
+<li><a href="#dplyrs-output-data-structure"><code>dplyr</code>’s output data structure</a></li>
 </ul></li>
-<li><a href="#combining-group_by-with-mutate">Combining <code>group_by</code> with <code>mutate</code></a><ul>
+<li><a href="#combining-table-manipulation-functions-using">Combining table manipulation functions using <code>%&gt;%</code></a></li>
+<li><a href="#more-on-the-group_by-function">More on the <code>group_by</code> function</a><ul>
 <li><a href="#normalizing-each-value-in-a-group-by-the-group-median">Normalizing each value in a group by the group median</a></li>
 <li><a href="#computing-the-residuals-after-fitting-a-linear-regression-model-for-each-group">Computing the residuals after fitting a linear regression model for each group</a></li>
 </ul></li>
@@ -281,34 +283,58 @@ head(dat.extended)</code></pre>
 <pre><code>  yr_min yr_max
 1   1961   2012</code></pre>
 </div>
-<div id="combining-table-manipulation-functions-using" class="section level2">
-<h2>Combining table manipulation functions using <code>%&gt;%</code></h2>
-<p>In most cases, you will find yourself wanting to combine several of <code>dplyr</code>’s data manipulation functions. For example, to summarize the total yield of Oats by country, you could type the following:</p>
+<div id="splitting-data-operations-by-group-group_by" class="section level2">
+<h2>Splitting data operations by group: <code>group_by</code></h2>
+<p>The <code>group_by</code> function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the <code>Year</code> column for which crop data are available <em>by crop type</em>, we would type the following:</p>
+<pre class="r"><code>dat.grp &lt;- group_by(dat, Crop)
+summarise(dat.grp, yr_min = min(Year), yr_max=max(Year))</code></pre>
+<pre><code>Source: local data frame [11 x 3]
+
+           Crop yr_min yr_max
+         (fctr)  (int)  (int)
+1        Barley   1961   2012
+2     Buckwheat   1961   2012
+3   Canary seed   1980   2012
+4  Grain, mixed   1961   2012
+5         Maize   1961   2012
+6        Millet   1961   2012
+7          Oats   1961   2012
+8       Popcorn   1961   1982
+9           Rye   1961   2012
+10      Sorghum   1961   2012
+11    Triticale   1989   2012</code></pre>
+<p>The <code>dat.grp</code> object is a special data structure which differs from that of <code>dat</code> in that it explicitly defines the groups for which any subsequent operations (like <code>summarise</code>) are to be split across.</p>
+</div>
+<div id="dplyrs-output-data-structure" class="section level2">
+<h2><code>dplyr</code>’s output data structure</h2>
+<p>Many of <code>dplyr</code>’s functions will add one or more classes to a data table. For example, if we stored the summary output from the last chunk of code to an object called <code>dat.sum</code>, we’d discover that this object is associated with three classes.</p>
+<pre class="r"><code>dat.sum &lt;- summarise(dat.grp, yr_min = min(Year), yr_max=max(Year))
+class(dat.sum)</code></pre>
+<pre><code>[1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<p>This may prove to be problematic when using this table in none <code>dplyr</code> functions. To remedy this, you can force the <code>dat.sum</code> object to a standalone <code>dataframe</code> as follows:</p>
+<pre class="r"><code>dat.df &lt;- data.frame(dat.sum)
+class(dat.df)</code></pre>
+<pre><code>[1] &quot;data.frame&quot;</code></pre>
+</div>
+</div>
+<div id="combining-table-manipulation-functions-using" class="section level1">
+<h1>Combining table manipulation functions using <code>%&gt;%</code></h1>
+<p>In most cases, you will find yourself wanting to combine several of <code>dplyr</code>’s data manipulation functions. For example, to summarize the total yield of oats by country, you could type the following:</p>
 <pre class="r"><code>dat.yield &lt;- filter(dat, Information == &quot;Yield (Hg/Ha)&quot;, Crop == &quot;Oats&quot;)
 dat.grp   &lt;- group_by(dat.yield, Country)
 dat.sum   &lt;- summarise(dat.grp, mean_yield = mean(Value))
-dat.sum</code></pre>
-<pre><code>Source: local data frame [2 x 2]
-
-                   Country mean_yield
-                    (fctr)      (dbl)
-1                   Canada   21932.51
-2 United States of America   19785.44</code></pre>
-<p>This block of code introduces you to another function called <code>group_by</code>. This function creates a new type of object (a list) which breaks the data into different groups for subsequent analysis. This implies that all functions that include <code>dat.grp</code> as input will output an object of similar class. So in our example, <code>dat.sum</code> is a list object and not a dataframe. To force the <code>dat.sum</code> object back to a dataframe, simply wrap it with the <code>as.data.frame()</code> function.</p>
-<pre class="r"><code>as.data.frame(dat.sum)</code></pre>
+data.frame(dat.sum)</code></pre>
 <pre><code>                   Country mean_yield
 1                   Canada   21932.51
 2 United States of America   19785.44</code></pre>
 <p>The one downside to this approach of combining data table manipulation functions for complex queries is the use of several intermediate objects (e.g. <code>dat.yield</code>, <code>dat.grp</code>, <code>dat.sum</code>). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects.</p>
-<p>Another approach to combining <code>dplyr</code> operations is to use the <strong>piping operator</strong> ,<code>%&gt;%</code>, which daisy chains <code>dplyr</code> functions. So our previous workflow would look like:</p>
+<p>Another approach to combining <code>dplyr</code> operations is to use the <strong>piping operator</strong> ,<code>%&gt;%</code>, which daisy chains <code>dplyr</code> operations. So our previous workflow would look like:</p>
 <pre class="r"><code>dat %&gt;%
   filter(Information == &quot;Yield (Hg/Ha)&quot;, Crop == &quot;Oats&quot;) %&gt;%
   group_by(Country) %&gt;%
-  summarise(mean_yield = mean(Value))</code></pre>
-<pre><code>Source: local data frame [2 x 2]
-
-                   Country mean_yield
-                    (fctr)      (dbl)
+  summarise(mean_yield = mean(Value)) %&gt;%
+  data.frame()</code></pre>
+<pre><code>                   Country mean_yield
 1                   Canada   21932.51
 2 United States of America   19785.44</code></pre>
 <p>The chunk of code can be read as <em>“… with the <code>dat</code> table, <code>filter</code> by …, then <code>group_by</code> …., then <code>summarise</code> by …”</em> with the result from one operation being passed on to the next using the <code>%&gt;%</code> operator. Note that the <code>filter</code>, <code>group_by</code> and <code>summarise</code> functions do not include the data table name making the chunk of code less cluttered and easier to read.</p>
@@ -337,9 +363,8 @@ Groups: Crop [7]
 10 Buckwheat  2006        10000
 ..       ...   ...          ...</code></pre>
 </div>
-</div>
-<div id="combining-group_by-with-mutate" class="section level1">
-<h1>Combining <code>group_by</code> with <code>mutate</code></h1>
+<div id="more-on-the-group_by-function" class="section level1">
+<h1>More on the <code>group_by</code> function</h1>
 <p>The <code>group_by</code> function followed by the <code>summarise</code> function will generate a new table with as many rows as there are groups defined in the <code>group_by</code> function. But grouping variables can be used for other purposes where the output table contains the same number of rows as the input table. The following sub-sections highlight a few examples.</p>
 <div id="normalizing-each-value-in-a-group-by-the-group-median" class="section level2">
 <h2>Normalizing each value in a group by the group median</h2>
@@ -347,9 +372,9 @@ Groups: Crop [7]
 <pre class="r"><code>dat2 &lt;- dat %&gt;% 
   filter(Information == &quot;Yield (Hg/Ha)&quot;,
          Country == &quot;United States of America&quot;) %&gt;%
-  select(Crop, Year, Value)                    %&gt;%
-  group_by(Crop)                               %&gt;%
-  mutate(NormYield = Value - median(Value))    %&gt;%
+  select(Crop, Year, Value)                     %&gt;%
+  group_by(Crop)                                %&gt;%
+  mutate(NormYield = Value - median(Value))     %&gt;%
   arrange(Crop)</code></pre>
 <p>Let’s plot the normalized yields by year for Barley and add a <code>0</code> line representing the (normalized) central value.</p>
 <pre class="r"><code>plot( NormYield ~ Year, dat2[dat2$Crop == &quot;Barley&quot;,] )
