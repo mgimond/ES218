@@ -7,21 +7,14 @@ output:
   word_document: default
 ---
 
-```{r echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8")
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
 
-> This tutorial will make use of the following R packages:
->
-> * `dplyr`
-> * `tidyr`
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**
+</div>
 
 # Data prep work
 
@@ -32,7 +25,7 @@ dat1 <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header
 dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", header=TRUE)
 ```
 
-## `dat1` dataset
+## Dataset `dat1` 
 
 `dat1` consists of grain yields by north american countries and by year. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014.
 
@@ -51,7 +44,7 @@ dat1w <- dat1 %>%
 head(dat1w)
 ```
 
-## `dat2` dataset
+## Dataset `dat2`
 
 `dat2` consists of county income and educational attainment for both the male and female population. A codebook [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv) provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
 
@@ -59,7 +52,7 @@ head(dat1w)
 dat2 <- na.omit(dat2)
 ```
 
-# Packaged plots
+# Base plotting functions
 
 ## Point and line plots
 
@@ -71,7 +64,7 @@ plot(B20004007 ~ B20004013, dat=dat2)
 par(OP)
 ```
 
-The above `plot` command takes two arguments: `B20004007 ~ B20004013` which is to be read as "plot variable B20004007 as a function of B20004013" and `dat=dat2` which tells the plot function which data frame to extract the variables from. Another way to call this command is to type:
+The above `plot` command takes two arguments: `B20004007 ~ B20004013` which is to be read as *plot variable B20004007 as a function of B20004013* and `dat=dat2` which tells the plot function which data frame to extract the variables from. Another way to call this command is to type:
 
 ```{r eval=FALSE}
 plot(dat2$B20004007 ~ dat2$B20004013)
@@ -86,7 +79,7 @@ plot(B20004007 ~ B20004013, dat=dat2, xlab = "Female median income ($)",
 par(OP)
 ```
 
-There are over 3000 unique values which makes it difficult the see what may be going on in the cloud of points. We can change the symbol type to solid fill (`pch=20`) and set its color to 85% transparent (`col=rgb(0,0,0,0.15)`).
+There are over 3000 unique values which makes it difficult the see what may be going on in the cloud of points. We can change the symbol type to solid fill,`pch=20`, and set its color to 85% transparent (or 15% opaque), `col=rgb(0,0,0,0.15)`. The `rgb()` function defines the intensities (on a scale of 0 to 1) for each of the display's primary colors: red, green and blue. The forth value is optional and provides the fraction opaqueness with a value of `1` being completely opaque.
 
 ```{r fig.height=3, fig.width=4, echo=2}
 OP <- par(mar=c(4,4,1,1))
@@ -122,7 +115,7 @@ lines(Barley ~ Year, dat=dat1w, lty=2)
 par(OP)
 ```
 
-Note how the plot does not automatically re-scale to accommodate the new line. The plot is a static object meaning that we need to define the axes limits before calling the original plot function. Both axes limits can be set using the `xlim` and `ylim` parameters. We don't need to set the x-axis range since both variable cover the same range of year. We will therefore only focus on the y-axis limits. We can grab both the minimum and maximum values for the variables `Oats` and `Barley` using the `range` function, then pass the range to the `ylim` parameter in the call to `plot`.
+Note how the plot does not automatically re-scale to accommodate the new line. The plot is a static object meaning that we need to define the axes limits before calling the original plot function. Both axes limits can be set using the `xlim` and `ylim` parameters. We don't need to set the x-axis range since both variables cover the same year range. We will therefore only focus on the y-axis limits. We can grab both the minimum and maximum values for the variables `Oats` and `Barley` using the `range` function, then pass the range to the `ylim` parameter in the call to `plot`.
 
 ```{r fig.height=3, fig.width=4, echo=2:4,results='hold'}
 OP <- par(mar=c(4,4,1,1))
@@ -200,7 +193,7 @@ par(OP)
 
 The `names` parameter labels the x-axis. 
 
-The outliers can be removed from the plot if desired by setting the `outine` parameter to `FALSE`:
+The outliers can be removed from the plot if desired by setting the `outline` parameter to `FALSE`:
 
 ```{r fig.height=3, fig.width=3, echo=2}
 OP <- par(mar=c(2,2,1,2))
@@ -239,7 +232,7 @@ The first line of code computes the median values for all but the first column (
 
 ## Histograms
 
-The histogram is another form of data distribution visualization. It consists of partitioning a batch of values into intervals of equal length then tallying their count in each each interval. The length of the each bar represents these counts. For example, we can plot the histogram of maize yields using the `hist` function as follows:
+The histogram is another form of data distribution visualization. It consists of partitioning a batch of values into intervals of equal length then tallying their count in each interval. The length of each bar represents these counts. For example, we can plot the histogram of maize yields using the `hist` function as follows:
 
 ```{r fig.height=3, fig.width=4, echo=2}
 OP <- par(mar=c(4,4,1,1))
@@ -264,7 +257,7 @@ par(OP)
 
 So far, you have learned how to customize point and line symbols, but this may not be enough. You might want to modify other graphic elements such as the axes layout and label formats for publication. Let's see how we can further customize a plot of median income  for male and female population having attained a HS degree.
 
-First, we plot the points but omit the axes and axes labels with the parameters `axes = FALSE, xlab = NA, ylab = NA`. We will want both axes to cover the same range of values, so we will use the `range` function to find min and max values for both male and female income.
+First, we plot the points but omit the axes and its labels with the parameters `axes = FALSE, xlab = NA, ylab = NA`. We will want both axes to cover the same range of values, so we will use the `range` function to find min and max values for both male and female income.
 
 Next, we draw the x axis using the `axis` function. The first parameter to this function is a number that indicates which axis is to be drawn (i.e. 1=bottom x, 2=left y, 3=top x and 4=right y). We will then use the `mtext` function to place the axis label under the axis line.
 
@@ -341,7 +334,7 @@ The string `\n` in the text `"Median\nIncome"` is interpreted in R as being a ca
 
 # Exporting plots to image file formats
 
-You might need to export your plots as standalone image files for publications. R will export to many different raster image file formats such as jpg, png, gif and tiff, and several vector file formats such as PostScript and PDF. You can specify the image resolution (in dpi), the image height and width, and the size of the margins.
+You might need to export your plots as standalone image files for publications. R will export to many different raster image file formats such as jpg, png, gif and tiff, and several vector file formats such as PostScript, svg and PDF. You can specify the image resolution (in dpi), the image height and width, and the size of the margins.
 
 The following example saves the last plot as an uncompressed tiff file with a 5"x6" dimension and a resolution of 300 dpi. This is accomplished by simply book-ending the plotting routines between the `tiff()` and `dev.off()` functions:
 
