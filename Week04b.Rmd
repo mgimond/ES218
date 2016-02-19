@@ -7,22 +7,14 @@ output:
   word_document: default
 ---
 
-```{r echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8")
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
 
-> This tutorial will make use of the following R packages:
->
-> * `dplyr`
-> * `tidyr`
-> * `lattice`
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**, **`lattice`**
+</div>
 
 # Data
 
@@ -32,7 +24,7 @@ dat1 <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header
 dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", header=TRUE)
 ```
 
-## `dat1` dataset
+## Dataset `dat1`
 
 `dat1` consists of grain yields by north american countries and by year. The data set was downloaded from http://faostat3.fao.org/ in June of 2014.
 
@@ -58,9 +50,9 @@ dat1l <- gather(dat1w, key = "Crop", value = "Yield", 2:6)
 head(dat1l,10)
 ```
 
-## `dat2` dataset
+## Dataset `dat2` 
 
-`dat2` consists of county income and educational attainment for both the male and female population. A codebook [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv) provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
+`dat2` consists of county income and educational attainment for both the male and female population. A codebook, [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv), provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
 
 ```{r}
 dat2 <- na.omit(dat2)
@@ -103,7 +95,7 @@ tail(dat2b)
 
 Note that we have eliminated references to variable names such as "B20004001" from `dat2b` making it easier to interpret the variable names/values.
 
-In `dat2b` the genders are treated as values for the `Gender` variable. We may wish to have male and female incomes assigned there own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
+In `dat2b` the genders are lumped under a single `Gender` variable. We may wish to have male and female incomes assigned their own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
 
 ```{r}
 dat2c <- spread(dat2b, key = Gender, value = value )
@@ -142,7 +134,7 @@ head(dat2c)
 
 # The `lattice` package
 
-The `lattice` package is an implementation of the **Trellis** display (or multi-panel display) used to visualize multivariate data or, more specifically, to visualize the dependencies and interactions between multiple variables. For example, the following lattice (or Trellis) plot displays the counts of people who perished on the Titanic grouped by gender, adult/child and economic status or crew.  
+The `lattice` package is an implementation of the **Trellis** display (or multi-panel display) used to visualize multivariate data or, more specifically, to visualize the dependencies and interactions between multiple variables. For example, the following lattice (or Trellis) plot displays the counts of people (grouped by gender, adult/child and economic status or crew) who perished on the Titanic.  
 
 ```{r echo=FALSE, fig.height=3, fig.width=5, cache=FALSE}
 library(lattice)
@@ -187,9 +179,9 @@ densityplot( ~ Yield | Crop, dat1l, plot.points = "", layout = c(5, 1))
 
 The `layout=c(5,1)` parameter instructs the lattice function to layout the panels along 5 column and 1 row. If you wanted the plots to be displayed in 5 rows and 1 column you would simply type `layout=c(1,5)`.
 
-The first thing to note is that the x-scale axis range is the same for all five plots. At first, this may seem as an inefficient use of the range of x values--for example, the buckwheat density plot is squeezed in the left-hand side of the plot, but it is important to understand the purpose of a trellis plot: to facilitate comparison of plots. By ensuring that all scale ranges remain the same, we can easily compare the range of distribution plots. In the above plot, it is clear that the yield of buckwheat remains consistent across the years compared to Maize which displays the greatest variability across the years.
+The first thing to note is that the x-scale axis range is the same for all five plots. At first, this may seem as an inefficient use of the range of x values--for example, the buckwheat density plot is squeezed in the left-hand side of the plot, but it is important to understand the purpose of a trellis plot: **to facilitate comparison of plots**. By ensuring that all scale ranges remain the same, we can easily compare the plot shape. In the above plot, it is clear that the yield of buckwheat remains consistent across the years compared to Maize which displays the greatest variability across the years.
 
-The `lattice` package also  has a built-in histogram function:
+The `lattice` package also has a histogram function:
 
 ```{r fig.height=3, fig.width=7, warning=FALSE, cache=FALSE}
 histogram( ~ Yield | Crop, dat1l, plot.points = "", nint = 20, layout = c(5, 1))
@@ -263,7 +255,7 @@ xyplot( M ~ F | Level, dat2c, type = c("p","g"), pch=20, cex=0.6,
         xlab="Female income ($)", ylab="Male income($)")
 ```
 
-The `xyplot` function is passed several parameters. The parameter `type = c("p","g")` instructs the function to generate both points, `"p"` and a background grid `"g"`. Parameter `type` can accept many other options, a few are listed in the following table:
+The `xyplot` function is passed several parameters. The parameter `type = c("p","g")` instructs the function to generate both points, `"p"`, and a background grid ,`"g"`. Parameter `type` can accept many other options, a few are listed in the following table:
 
 Option  | Adds...
 --------|------------
