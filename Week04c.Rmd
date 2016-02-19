@@ -6,36 +6,27 @@ output:
     toc_depth: 3
   word_document: default
 ---
-
-```{r echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8")
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
 
-> This tutorial will make use of the following R packages:
->
-> * `dplyr`
-> * `tidyr`
-> * `ggplot2`
-> * `stringr`
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**, **`ggplot2`**, **`stringr`**
+</div>
 
 # Data
 
+Data used in this tutorial include grain harvest for north america and income/education census data for the US.
 
 ```{r cache=TRUE}
 dat1 <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=TRUE)
 dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", header=TRUE)
 ```
 
-## `dat1` dataset
+## Dataset `dat1` 
 
-`dat1` consists of grain yields by north american countries and by year. The data set was downloaded from http://faostat3.fao.org/ in June of 2014.
+`dat1` consists of grain yields by north american countries and by year. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014.
 
 A subset of `dat1` will be used in this tutorial in both a *wide* form and a *long* form. The wide form will be called `dat1w` and will be a table of year vs. crop yields.
 
@@ -73,7 +64,7 @@ head(dat1l2,15)
 ```
 
 
-## `dat2` dataset
+## Dataset `dat2`
 
 `dat2` consists of county income and educational attainment for both the male and female population. A codebook [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv) provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
 
@@ -81,11 +72,11 @@ head(dat1l2,15)
 dat2 <- na.omit(dat2)
 ```
 
-As with `dat1`, we will create long forms of `dat2` for use with `lattice` plotting routines. 
+As with `dat1`, we will create long forms of `dat2` for use with `ggplot` plotting routines. 
 
 The `dat2` dataset has income data broken down by educational attainment and gender. It would therefore be convenient for subsequent plot operations if two variables, `Gender` and (educational) `Level`, were added to the long table version of `dat2`.
 
-We will first generate five educational category vectors whose values are the census data variable names (see the codebook for census variable name descriptions). These category vectors will then be used in the chain operation's `ifelse` functions. We then generate two category vectors for male and female groups--note the use of the `paste()` function in lieu of the combine function `c()` (which could have been used as well). Also note that `dat2` has income values for *all* sexes and *all* educational attainments. We did not create categories for this since they present the "else" option in the `ifelse` function. In other words, if a variable such as `B20004001` is not in any of the educational category vectors (e.g. `NoHS`, `HS`, etc...), then its `Level` value will be `"All"`. Likewise, if the variable is not in either `Male` or `Female` vectors, then the value `"All"` will be assigned to `Gender`.
+We will first generate five educational category vectors whose values are the census data variable names (see the codebook for census variable name descriptions). These category vectors will then be used in the chain operation's `ifelse` functions. We then generate two category vectors for male and female groups--note the use of the `paste()` function in lieu of the combine function `c()` (which could have been used as well). Also note that `dat2` has income values for *all* sexes and *all* educational attainments. We did not create categories for this since they present the "else" option in the `ifelse` function. In other words, if a variable such as `B20004001` is not in any of the educational category vectors (e.g. `NoHS`, `HS`, etc...), then its `Level` value will be `"All"`. Likewise, if the variable is not in either the `Male` or `Female` vectors, then the value `"All"` will be assigned to `Gender`.
 
 We will also take this opportunity to add a new field called `Region` which will associated each state with a region. R has a built-in vector called `state.region` that assigns a region to each state. However, you'll note that this vector only has region names but makes no reference to states. It's intended to be used with another built-in data vector called `state.abb` or `state.name`. We will combine `state.abb` with `state.region` to create a data frame "lookup table". We will also need to convert the uppercase state abbreviations to lower case using `tolower` so that they match the `dat2`'s lowercase state abbreviations. Note that  D.C. is not included in the built-in states dataset, so we will add this record the the `st.reg` table and assign D.C. to the `South` region.
 
@@ -115,7 +106,7 @@ tail(dat2b)
 
 Note that we have eliminated references to variable names such as "B20004001" from `dat2b` making it easier to interpret the variable names/values.
 
-In `dat2b` the genders are treated as values for the `Gender` variable. We may wish to have male and female incomes assigned there own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
+In `dat2b` the gender values are lumped under the variable called `Gender`. We may wish to have male and female incomes assigned there own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
 
 ```{r}
 dat2c <- spread(dat2b, key = Gender, value = value )
@@ -124,15 +115,18 @@ dat2c <- spread(dat2b, key = Gender, value = value )
 
 # The `ggplot2` package
 
-The `ggplot2` package is designed around the idea that scientific graphics can be deconstructed into a formal system of rules: grammatical rules. The `ggplot2` learning curve is the steepest of all graphing environments encountered thus far, but once mastered it affords the greatest control over graphical design. For an up-to-date list of `ggplot2` functions, you may want to refer to ggplot2's [website](http://docs.ggplot2.org/current/).
+The `ggplot2` package is designed around the idea that scientific graphics can be decomposed into a formal system of rules--grammatical rules. The `ggplot2` learning curve is the steepest of all graphing environments encountered thus far, but once mastered it affords the greatest control over graphical design. For an up-to-date list of `ggplot2` functions, you may want to refer to ggplot2's [website](http://docs.ggplot2.org/current/).
 
-A plot in `ggplot2` consists of different *layering* components:
+A plot in `ggplot2` consists of different *layering* components, with the three primary components being:
 
-+ The **data frame** that houses the data to be plotted.
++ The **dataset** that houses the data to be plotted.
++ The **aesthetics** which describe how data are to be mapped to the geometric elements
 + The **geometric** elements to use in the plot (i.e. points, lines, rectangles, etc...)
-+ **Aesthetic mappings** which describe how data are to be mapped to the geometric elements
+
+Additional (optional) layering components include:
+
 + **Statistical** elements such as smoothing, binning or transforming the variable
-+ **Facets** for conditional plots
++ **Facets** for conditional or trellis plots
 + **Coordinate systems** for defining the plots shape (i.e. cartesian, polar, spatial map projections, etc...)
 
 To access `ggplot2` functions, you will need to load its library:
@@ -143,18 +137,34 @@ library(ggplot2)
 
 From a grammatical perspective, a scientific graph is the conversion of *data* to **aesthetic** attributes and **geometric** objects. This is an important concept to grasp since it underlies the construction of all graphics in `ggplot2`.
 
-For example, if we want to generate line plots of crop yield as a function of year using the `dat1l` data frame, we type:
+For example, if we want to generate a point plot of crop yield as a function of year using the `dat1l` data frame, we type:
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1l) + aes(x=Year, y=Yield, color=Crop) + geom_line()
+ggplot(dat1l , aes(x=Year, y=Yield)) + geom_point()
 ```
 
-where the function, `ggplot()`, is passed the data frame name whose content will be mapped; the `aes()` function is given data-to-geometry mapping instructions (which tells us which variables are assigned to the x and y axes, and which variable will be used to color the geometry); and `geom_line()` is the geometry type.
+where the function, `ggplot()`, is passed the data frame name whose content will be mapped; the `aes()` function is given data-to-geometry mapping instructions (`Year` is mapped to the x-axis and `Yield` is mapped to the y-axis); and `geom_line()` is the geometry type.
 
-If we want to plot points instead of lines, simply substitute with the `geom_point()` geometry.
+If we wanted to include a third variable, crop type, to the map, we would need to map its aesthetics: here we'll map `Crop` to the color element of the geom.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1l) + aes(x=Year, y=Yield, color=Crop) + geom_point(size=0.8)
+ggplot(dat1l , aes(x=Year, y=Yield, color=Crop)) + geom_point()
+```
+
+The parameter `color` acts as a grouping parameter whereby the groups are assigned unique colors.
+
+If we want to plot lines instead of points, simply substitute the geometry type with the `geom_line()` geometry.
+
+```{r fig.height=3, fig.width=5}
+ggplot(dat1l , aes(x=Year, y=Yield, color=Crop)) + geom_line()
+```
+
+Note that the aesthetics are still mapped in the same way with `Year` mapped to the x coordinate, `Yield` mapped to the y coordinate and `Crop` mapped to the geom's color.
+
+Note that the parameters `x=` and `y=` can be omitted from the syntax reducing the line of code to:
+
+```{r eval = FALSE}
+ggplot(dat1l , aes(Year, Yield, color=Crop)) + geom_line()
 ```
 
 # Geometries
@@ -166,32 +176,36 @@ Examples of a few available geometric elements follow.
 `geom_line` generates line geometries. We'll use data from `dat1w` to generate a simple plot of oat yield as a function of year.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1w) + aes(x=Year, y=Oats) + geom_line() 
+ggplot(dat1w, aes(x=Year, y=Oats)) + geom_line() 
 ```
 
 Parameters such as color and linetype can be passed directly to the `geom_line()` function:
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1w) + aes(x=Year, y=Oats) + geom_line(linetype=2, colour = "blue", size=0.4) 
+ggplot(dat1w, aes(x=Year, y=Oats)) + geom_line(linetype=2, colour = "blue", size=0.4) 
 ```
 
-But be careful, if color or linetype is assigned to a variable in `aes()`, any parameter defined in `geom_line()` will overwrite any of the aesthetic arguments. Using the earlier example, we get:
+But be careful, if the aesthetic grouping parameters `colour` or `linetype` are assigned to a variable in `aes()`, identical parameters defined in `geom_line()` will overwrite any of the aesthetic arguments. For example, if the parameters `colour=` are present in both the `aes()` and `geom_line()` functions, we get the following output:
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1l) + aes(x=Year, y=Yield, colour=Crop) + geom_line(linetype=2, colour = "blue", size=0.4)
+ggplot(dat1l, aes(x=Year, y=Yield, colour=Crop)) + geom_line(linetype=2, colour = "blue", size=0.4)
 ```
 
-This is not the desired outcome. Since a single color is defined in `geom_line`, ggplot assumes that *all* values in the `Yield` column belong to the same series, despite having instructed otherwise in the call to `aes()`
+This is not the desired outcome. Since a single color is defined in `geom_line`, ggplot assumes that *all* values in the `Yield` column belong to the same series, despite having instructed otherwise in the call to `aes()`.
 
 ## `geom_point`
 
 This generates point geometries. This is often used in generating scatterplots. For example, to plot male income (variable `B20004013`) vs female income (variable `B20004007`), type:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) 
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) 
 ```
 
-We modify the point's transparency by passing the `alpha=0.3` parameter to the `geom_point` function.
+We modify the point's transparency by passing the `alpha=0.3` parameter to the `geom_point` function. Other parameters that can be passed to point geoms include `colour`, `pch` (point symbol type) and `cex` (point size as a fraction).
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(colour="red", pch=3 , alpha=0.3, cex=0.6) 
+```
 
 ## `geom_boxplot`
 
@@ -330,10 +344,13 @@ To highlight differences in income, we will make a few changes to the plots. Fir
 
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
-ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) + ylim( c(0,150000)) +
-                geom_smooth(method = "lm", col="red") + facet_grid( . ~ incrng) + 
-                coord_fixed() + geom_abline(c(0,1), col="grey50") +
-                scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+ggplot(dat2c,  aes(x=F, y=M)) + 
+      geom_point(alpha=0.2, pch=20, cex=0.8) + 
+      ylim( c(0,150000)) +
+      geom_smooth(method = "lm", col="red") + 
+      facet_grid( . ~ incrng) + 
+      coord_fixed() + geom_abline(intercept = 0, slope = 1, col="grey50") +
+      scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
   
 ```
 
@@ -343,8 +360,8 @@ Now let's look at the same data but this time conditioned on educational attainm
 # Plot M vs F by educational attainment except for Level == All
 ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
       ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
-      facet_grid( . ~ Level) +  coord_fixed() + 
-      geom_abline(c(0,1), col="grey50") +
+      facet_grid( . ~ Level) +  
+      coord_fixed() + geom_abline(intercept = 0, slope = 1, col="grey50") +
       scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
 ```
 
@@ -354,7 +371,7 @@ We can also condition the plots on two variables: educational attainment and reg
 ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) +
       ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
       facet_grid( Region ~ Level) +  coord_fixed() + 
-      geom_abline(c(0,1), col="grey50") +
+      geom_abline(intercept = 0, slope = 1, col="grey50") +
       scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
 ```                                        
 
