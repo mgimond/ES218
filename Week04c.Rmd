@@ -247,33 +247,49 @@ ggplot(dat2, aes(State)) + geom_bar()
 
 ## Combining geometries
 
-We've already seen how point and line geometries can be combined in an earlier example. We can also combine other geometries such as a linear model line fit:
+Geometries can be layered. For example, to overlay a linear regression line to the data we can add the `geom_smooth` layer:
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) + 
-               geom_smooth(method = "lm")
+                                              geom_smooth(method = "lm")
 ```
 
-Or a LOESS line fit:
+The `geom_smooth` can be used to fit other *lines* such as a loess:
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               geom_smooth(method = "loess")
+                                              geom_smooth(method = "loess")
 ```
 
-The confidence interval can be removed from the smooth geometry by specifying `fill=NA`.
+The confidence interval can be removed from the smooth geometry by specifying `se=FALSE`.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
+                                              geom_smooth(method = "loess", se=FALSE)
+```
+
 
 # Tweaking a ggplot2 graph
 
-## Labels
+## Title
 
-Labels can be explicitly defined using the `xlab()` and `ylab()` functions.
+You can add a plot title using the `ggtile` function.
+
+```{r fig.height=2.5, fig.width=8}
+ggplot(dat2, aes(State)) + geom_bar() +ggtitle("Number of counties by state")
+```
+
+## Axes labels
+
+Axes labels can be explicitly defined using the `xlab()` and `ylab()` functions.
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
                geom_smooth(method = "lm") +
                xlab("Female income ($)") + ylab("Male income ($)")
 ```
+
+To remove axis labels, simply pass `NULL` to the functions as in `xlab(NULL)` and `ylab(NULL)`.
 
 ## Axes limits
 
@@ -286,6 +302,17 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
                xlim( c(10000, 75000)) + ylim( c(10000, 75000)) 
 ```
 
+## Aspect ratio
+
+You can impose an aspect ratio to your plot using the `coord_equal()` function. For example, to set the axes units equal (in length) to one another set `ratio=1`:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
+               geom_smooth(method = "lm") +
+               xlab("Female income ($)") + ylab("Male income ($)") +
+               coord_equal(ratio=1)
+```
+
 # Faceting
 
 ## Faceting by categorical variable
@@ -293,20 +320,29 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
 Faceting (or conditioning on a variable) can be implemented in `ggplot2` using the `facet_wrap()` function.
 
 ```{r fig.height=4, fig.width=6}
-ggplot(dat1l2, aes(x=Year, y=Yield, color=Crop)) + geom_line() + facet_wrap( ~ Country, nrow=1)
+ggplot(dat1l2, aes(x=Year, y=Yield, color=Crop)) + geom_line() + 
+                                    facet_wrap( ~ Country, nrow=1)
 ```
 
-The parameter `  ~ Country` tells ggplot to condition the plots on country. If we wanted the plots to be stacked, we would set `nrow` to `2`.
+The parameter ` ~ Country` tells ggplot to condition the plots on country. If we wanted the plots to be stacked, we would set `nrow` to `2`. 
 
-We can condition the plots on two variables such as crops and countries using the `facet_grid` function instead of `facet_wrap`:
+We can also condition the plots on two variables such as `crop` and `Country`.
+
+```{r fig.height=4, fig.width=8}
+ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() +
+                                    facet_wrap(Crop ~ Country, nrow=1)
+```
+
+This creates as many plots as there are unique combinations of variables `Crop` and `Country`. But such plots are usually best represented in a grid structure where one variable is spread along one axis and the other variable is spread along another axis of the plot layout. This can be accomplished using the `facet_grid` function:
 
 ```{r fig.height=4, fig.width=6}
-ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() + facet_grid( Crop ~ Country)
+ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() + 
+                                       facet_grid( Crop ~ Country)
 ```
 
 ## Faceting by continuous variable
 
-In the above example, we are faceting the plots based on a categorical variable: `Country` or `crop`. But what if we want to facet the plots based on a continuous variable? For example,  we might be interested in comparing male and female incomes across different female income ranges. This requires that a new categorical field (a factor) be created assigning to each case (row) an income group. We can use the `cut()` function to accomplish this task (we'll also omit all values greater than 100,000):
+In the above example, we are faceting the plots based on a categorical variable: `Country` and/or `crop`. But what if we want to facet the plots based on a continuous variable? For example,  we might be interested in comparing male and female incomes across different female income ranges. This requires that a new categorical field (a factor) be created assigning to each case (row) an income group. We can use the `cut()` function to accomplish this task (we'll also omit all values greater than 100,000):
 
 ```{r }
 dat2c$incrng <- cut(dat2c$F , breaks = c(0, 25000, 50000, 75000, 100000) )
@@ -341,47 +377,56 @@ levels(dat2c$incrng) <-  c("Under 25k", "25k-50k", "50k-75k", "75k-100k")
 head(dat2c)
 ```
 
+Note that the order in which the names are passed must match that of the oroginal breaks.
+
 Now we can facet male vs. female scatterplots by income ranges. We will also throw in a best fit line to the plots.
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
 ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20) +
-                geom_smooth(method = "lm", col="red") + facet_grid( . ~ incrng) 
+                               geom_smooth(method = "lm", col="red") +
+                               facet_grid( . ~ incrng) 
 ```
 
 One reason we would want to explore our data across different ranges of value is to assess the consistency in relationship between variables. In our example, this plot helps assess whether the relationship between male and female income is consistent across income groups.
 
-To highlight differences in income, we will make a few changes to the plots. First, we will reduce the y-axis range to $0-$150k (this will remove a few points from the data); we will force the x-axis and y-axis units to match (`coord_fix()`) so that a unit of $50k on the x-axis has the same length as that on the y-axis; and we will add a 45° line (`geom_abline(c(0,1))` where 0 is the intercept and 1 is the slope) to help visualize the discrepancy (if a point lies above the 45° line, then male's income is greater, if the point lies below, then female's income is greater); we will also reduce the number of tics and assign shorthand notation to income values (such as "50k" instead of "50000"). All this can be accomplished by adding the `scale_x_continuous()` function to the stack of ggplot elements.
+To highlight differences in income, we will make a few changes to the plots. First, we will reduce the y-axis range to $0-$150k (this will remove a few points from the data); we will force the x-axis and y-axis units to match  so that a unit of $50k on the x-axis has the same length as that on the y-axis; and we will add a 45° line (`geom_abline(c(0,1))` where 0 is the intercept and 1 is the slope) to help visualize the discrepancy (if a point lies above the 45° line, then male's income is greater, if the point lies below, then female's income is greater); we will also reduce the number of tics and assign shorthand notation to income values (such as "50k" instead of "50000"). All this can be accomplished by adding the `scale_x_continuous()` function to the stack of ggplot elements.
 
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
-ggplot(dat2c,  aes(x=F, y=M)) + 
-      geom_point(alpha=0.2, pch=20, cex=0.8) + 
-      ylim( c(0,150000)) +
-      geom_smooth(method = "lm", col="red") + 
-      facet_grid( . ~ incrng) + 
-      coord_fixed() + geom_abline(intercept = 0, slope = 1, col="grey50") +
-      scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+ggplot(dat2c,  aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
+                                ylim( c(0,150000)) +
+                                geom_smooth(method = "lm", col="red") + 
+                                facet_grid( . ~ incrng) + 
+                                coord_equal(ratio=1) + 
+                                geom_abline(intercept = 0, slope = 1, col="grey50") +
+                                scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
   
 ```
+
+Note the change in regression slope for the last facet. The `geom_smooth` operation is only applied to the data limited to the axis range defined by `ylim`.
 
 Now let's look at the same data but this time conditioned on educational attainment.
 
 ```{r fig.height=3, fig.width=10, warning=FALSE}
 # Plot M vs F by educational attainment except for Level == All
-ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
-      ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
-      facet_grid( . ~ Level) +  
-      coord_fixed() + geom_abline(intercept = 0, slope = 1, col="grey50") +
-      scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) +
+                               ylim( c(0,150000)) + 
+                               geom_smooth(method = "lm", col="red") +
+                               facet_grid( . ~ Level) +  
+                               coord_equal(ratio=1) + 
+                               geom_abline(intercept = 0, slope = 1, col="grey50") +
+                               scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
 ```
 
 We can also condition the plots on two variables: educational attainment and region.
 
 ```{r fig.height=8, fig.width=10, warning= FALSE}
 ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) +
-      ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
-      facet_grid( Region ~ Level) +  coord_fixed() + 
-      geom_abline(intercept = 0, slope = 1, col="grey50") +
-      scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+                               ylim( c(0,150000)) + 
+                               geom_smooth(method = "lm", col="red") + 
+                               facet_grid( Region ~ Level) +  
+                               coord_equal(ratio=1) +
+                               geom_abline(intercept = 0, slope = 1, col="grey50") +
+                               scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
 ```                                        
 
