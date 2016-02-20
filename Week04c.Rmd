@@ -185,13 +185,7 @@ Parameters such as color and linetype can be passed directly to the `geom_line()
 ggplot(dat1w, aes(x=Year, y=Oats)) + geom_line(linetype=2, colour = "blue", size=0.4) 
 ```
 
-But be careful, if the aesthetic grouping parameters `colour` or `linetype` are assigned to a variable in `aes()`, identical parameters defined in `geom_line()` will overwrite any of the aesthetic arguments. For example, if the parameters `colour=` are present in both the `aes()` and `geom_line()` functions, we get the following output:
-
-```{r fig.height=3, fig.width=5}
-ggplot(dat1l, aes(x=Year, y=Yield, colour=Crop)) + geom_line(linetype=2, colour = "blue", size=0.4)
-```
-
-This is not the desired outcome. Since a single color is defined in `geom_line`, ggplot assumes that *all* values in the `Yield` column belong to the same series, despite having instructed otherwise in the call to `aes()`.
+Note the difference in how `colour=` is implemented here. It's no longer **mapping** a variable's levels to a range of colors as when it's called inside of the `aes()` function, instead, it's **setting** the line color to `blue`.
 
 ## `geom_point`
 
@@ -212,13 +206,21 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(colour="red", pch=3 , a
 In the following example, a boxplot of `Yield` is generated for each crop type.
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1l) + aes(x=Crop, y=Yield) + geom_boxplot(fill="bisque") 
+ggplot(dat1l, aes(x=Crop, y=Yield)) + geom_boxplot(fill="bisque") 
 ```
 
 If we want to generate a single boxplot (for example for all yields irrespective of crop type) we need to pass a *dummy* variable to `x=`:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1l) + aes(x="", y=Yield) + geom_boxplot(fill="bisque") + xlab("All crops")
+ggplot(dat1l, aes(x="", y=Yield)) + geom_boxplot(fill="bisque") + xlab("All crops")
+```
+
+## `geom_violin`
+
+A violin plot is a symmetrical version of a density plot which provides greater detail of a sample's distribution than a boxplot. 
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat1l, aes(x="", y=Yield)) + geom_violin(fill="bisque") 
 ```
 
 ## `geom_histogram`
@@ -226,13 +228,21 @@ ggplot(dat1l) + aes(x="", y=Yield) + geom_boxplot(fill="bisque") + xlab("All cro
 Histograms can be plotted for single variables only (unless faceting is used) as can be noted by the absence of a `y=` parameter in `aes()`:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1w) + aes(x=Oats) + geom_histogram(fill="grey50") 
+ggplot(dat1w, aes(x=Oats)) + geom_histogram(fill="grey50") 
 ```
 
 The bin widths can be specified in terms of the value's units. In our example, the unit is yield of oats (in Hg/Ha). So if we want to generate bin widths that cover 1000 Hg/Ha, we can type,
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1w) + aes(x=Oats) + geom_histogram(fill="grey50", binwidth = 1000) 
+ggplot(dat1w, aes(x=Oats)) + geom_histogram(fill="grey50", binwidth = 1000) 
+```
+
+## `geom_bar`
+
+Bar plots are uses to summarise the counts of a categorical value. For example, to plot the number of counties in each state (note that each record in `dat2` is assigned a county):
+
+```{r fig.height=2.5, fig.width=8}
+ggplot(dat2, aes(State)) + geom_bar()
 ```
 
 ## Combining geometries
@@ -240,14 +250,14 @@ ggplot(dat1w) + aes(x=Oats) + geom_histogram(fill="grey50", binwidth = 1000)
 We've already seen how point and line geometries can be combined in an earlier example. We can also combine other geometries such as a linear model line fit:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) + 
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) + 
                geom_smooth(method = "lm")
 ```
 
 Or a LOESS line fit:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
                geom_smooth(method = "loess")
 ```
 
@@ -260,7 +270,7 @@ The confidence interval can be removed from the smooth geometry by specifying `f
 Labels can be explicitly defined using the `xlab()` and `ylab()` functions.
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
                geom_smooth(method = "lm") +
                xlab("Female income ($)") + ylab("Male income ($)")
 ```
@@ -270,7 +280,7 @@ ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
 The axis range can be set using `xlim()` and `ylim()`. 
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
-ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
                geom_smooth(method = "lm") +
                xlab("Female income ($)") + ylab("Male income ($)") +
                xlim( c(10000, 75000)) + ylim( c(10000, 75000)) 
@@ -283,7 +293,7 @@ ggplot(dat2) + aes(x=B20004013, y=B20004007) + geom_point(alpha=0.3) +
 Faceting (or conditioning on a variable) can be implemented in `ggplot2` using the `facet_wrap()` function.
 
 ```{r fig.height=4, fig.width=6}
-ggplot(dat1l2) + aes(x=Year, y=Yield, color=Crop) + geom_line() + facet_wrap( ~ Country, nrow=1)
+ggplot(dat1l2, aes(x=Year, y=Yield, color=Crop)) + geom_line() + facet_wrap( ~ Country, nrow=1)
 ```
 
 The parameter `  ~ Country` tells ggplot to condition the plots on country. If we wanted the plots to be stacked, we would set `nrow` to `2`.
@@ -291,7 +301,7 @@ The parameter `  ~ Country` tells ggplot to condition the plots on country. If w
 We can condition the plots on two variables such as crops and countries using the `facet_grid` function instead of `facet_wrap`:
 
 ```{r fig.height=4, fig.width=6}
-ggplot(dat1l2) + aes(x=Year, y=Yield) + geom_line() + facet_grid( Crop ~ Country)
+ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() + facet_grid( Crop ~ Country)
 ```
 
 ## Faceting by continuous variable
@@ -334,7 +344,7 @@ head(dat2c)
 Now we can facet male vs. female scatterplots by income ranges. We will also throw in a best fit line to the plots.
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
-ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20) +
+ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20) +
                 geom_smooth(method = "lm", col="red") + facet_grid( . ~ incrng) 
 ```
 
@@ -358,7 +368,7 @@ Now let's look at the same data but this time conditioned on educational attainm
 
 ```{r fig.height=3, fig.width=10, warning=FALSE}
 # Plot M vs F by educational attainment except for Level == All
-ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
+ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
       ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
       facet_grid( . ~ Level) +  
       coord_fixed() + geom_abline(intercept = 0, slope = 1, col="grey50") +
@@ -368,7 +378,7 @@ ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) +
 We can also condition the plots on two variables: educational attainment and region.
 
 ```{r fig.height=8, fig.width=10, warning= FALSE}
-ggplot(dat2c) + aes(x=F, y=M) + geom_point(alpha=0.2, pch=20, cex=0.8) +
+ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) +
       ylim( c(0,150000)) + geom_smooth(method = "lm", col="red") + 
       facet_grid( Region ~ Level) +  coord_fixed() + 
       geom_abline(intercept = 0, slope = 1, col="grey50") +
