@@ -29,20 +29,33 @@ dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", hea
 
 `dat1` consists of grain yields by north american countries and by year. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014.
 
-A  subset of `dat1` will be used in this tutorial and will be a *wide* table of year vs. crop yields (in Hg/Ha) for the US.
+A  subset of `dat1` will be used in this tutorial and will be in both a *wide* table format and a *long* table format.
 
-```{r message =FALSE}
+```{r}
 library(dplyr)
 library(tidyr)
-dat1w <- dat1 %>%
+
+# Create a subset
+dat1l <- dat1 %>%
   filter(Information == "Yield (Hg/Ha)", 
              Country =="United States of America", 
              Crop == "Oats" | Crop == "Maize" | Crop == "Barley" |
              Crop == "Buckwheat"| Crop == "Rye")                     %>%
-  select(Year, Crop, Value)                                          %>%
-  spread(key = Crop, value="Value")
+  mutate(Crop = droplevels(Crop))  %>%
+  select(Year, Crop, Value)                                          
+
+head(dat1l)
+
+# Create a wide version of the table
+```
+
+Now create the wide version of the table:
+
+```{r}
+dat1w <- spread(dat1l, key = Crop, value="Value")
 head(dat1w)
 ```
+
 
 ## Dataset `dat2`
 
@@ -211,24 +224,55 @@ boxplot(dat2$B20004001, dat2$B20004007, dat2$B20004013, names=c("All", "Male", "
 par(OP)
 ```
 
-One can also order the boxplots based on the median values. In our working example, this could involve simply rearranging the variables in the call to `boxplot` by hand. But this option can be tedious and prone to human error if the number of variables is large. The following generates boxplots for yearly grain yields in North America over a 52 year period:
+The last two plots highlight on downside in using a table in wide format: the long series of column names passed to the boxplot function. It's more practical to store such data in long form. To demonstrate this, let's switch back to the crop data. To plot all columns in `dat1w`, we would need to type:
 
 ```{r fig.height=3, fig.width=5, echo=2}
 OP <- par(mar=c(2,2,1,1))
-boxplot(dat1w[,2:5])
+boxplot(dat1w$Barley, dat1w$Buckwheat, dat1w$Maize,dat1w$Oats,dat1w$Rye,
+        names=c("Barley", "Buckwheat", "Maize", "Oats", "Rye"))
 par(OP)
 ```
 
-(Note the use of the index `dat1w[, 2:5]` which instructs R to plot columns 2 through 5). The boxplot can be ordered by first computing the median for each column then passing the sorted list of column indices to the boxplot function:
+If you use the long version of that table, the command looks like this:
 
-```{r fig.height=3, fig.width=5, echo=2:3}
+```{r fig.height=3, fig.width=5, echo=2}
 OP <- par(mar=c(2,2,1,1))
-crop.med <- apply(dat1w[, 2:5], 2, median)
-boxplot(dat1w[, order(crop.med) + 1])
+boxplot(Value ~ Crop, dat1l)
 par(OP)
 ```
 
-The first line of code computes the median values for all but the first column (Year) in `dat1w`. This results in a vector of median crop yield values, `crop.med`, where index 1 is `r names(crop.med[1])` and not `Year` as is the case in the `dat1w` data frame (this is why the object `crop.med` is incremented by `+1` in the call to `boxplot`--to ensure that the `r names(crop.med[1])` column is not treated as the "first" column in `dat1w`).
+where `~ Crop` tells the function to break the boxplots across unique `Crop` levels.
+
+One can order the boxplots based on the median values. By default, `boxplot` will order the boxplots following the factor's level order. In our example, the crop levels are ordered alphabetically.
+
+```{r}
+levels(dat1l$Crop)
+```
+
+To reorder the levels following the median values of yields across each level, we can use the `reorder()` function:
+
+```{r}
+dat1l$Crop.ord <- reorder(dat1l$Crop, dat1l$Value, median)
+```
+
+This creates a new variable called `Crop.ord` whose values mirror those in variable `Crop` but differ in the underlying level order:
+
+```{r}
+levels(dat1l$Crop.ord)
+```
+
+If we wanted the order to be in descending order, we would prefix the value parameter with the negative operator as in `reorder(dat1l$Crop, -dat1l$Value, median)`.
+
+The function `reorder` takes three arguments: the factor whose levels are to be reordered (`Crop`), the value whose quantity will determine the new order (`Value`) and the statistic that will be used to summarize the values across each factor's level (`median`).
+
+The modified boxplot expression now looks like:
+
+```{r fig.height=3, fig.width=5, echo=2}
+OP <- par(mar=c(2,2,1,1))
+boxplot(Value ~ Crop.ord, dat1l)
+par(OP)
+```
+
 
 ## Histograms
 

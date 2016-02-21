@@ -239,11 +239,25 @@ ggplot(dat1w, aes(x=Oats)) + geom_histogram(fill="grey50", binwidth = 1000)
 
 ## `geom_bar`
 
-Bar plots are uses to summarise the counts of a categorical value. For example, to plot the number of counties in each state (note that each record in `dat2` is assigned a county):
+Bar plots are uses to summaries the counts of a categorical value. For example, to plot the number of counties in each state (note that each record in `dat2` is assigned a county):
 
 ```{r fig.height=2.5, fig.width=8}
 ggplot(dat2, aes(State)) + geom_bar()
 ```
+
+To arrange the bars in ascending order we need to rearrange the `State` factor level order based on total count. We won't be able to use the `reorder` function since we do not have a value field to summarize. Instead, we'll make use of the `table` function to enumerate each instance of a record associated with each state, sort that vector, then extract the `sorted` state names. We'll then recreate the `state` factor object to reflect the new level order.
+
+```{r}
+new.lev.ord <- names( sort(table(dat2$State)) )
+dat2$State  <- factor(dat2$State, levels = new.lev.ord)
+```
+
+Now let's recreate the bar plot with the new factor level order.
+
+```{r fig.height=2.5, fig.width=8}
+ggplot(dat2, aes(State)) + geom_bar()
+```
+
 
 ## Combining geometries
 
@@ -377,9 +391,9 @@ levels(dat2c$incrng) <-  c("Under 25k", "25k-50k", "50k-75k", "75k-100k")
 head(dat2c)
 ```
 
-Note that the order in which the names are passed must match that of the oroginal breaks.
+Note that the order in which the names are passed must match that of the original breaks.
 
-Now we can facet male vs. female scatterplots by income ranges. We will also throw in a best fit line to the plots.
+Now we can facet male vs. female scatter plots by income ranges. We will also throw in a best fit line to the plots.
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
 ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20) +
