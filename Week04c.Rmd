@@ -247,17 +247,40 @@ Bar plots are uses to summaries the counts of a categorical value. For example, 
 ggplot(dat2, aes(State)) + geom_bar()
 ```
 
-To arrange the bars in ascending order we need to rearrange the `State` factor level order based on total count. We won't be able to use the `reorder` function since we do not have a value field to summarize. Instead, we'll make use of the `table` function to enumerate each instance of a record associated with each state, sort that vector, then extract the `sorted` state names. We'll then recreate the `state` factor object to reflect the new level order.
+To arrange the bars in ascending order we need to rearrange the `State` factor level order based on total count. We won't be able to use the `reorder` function since we do not have a value field to summarize. Instead, we'll make use of the `table` function to enumerate each instance of a record associated with each state, sort that vector, then extract the `sorted` state names. We'll then create a copy of the `State` factor object to reflect the new level order.
 
 ```{r}
-new.lev.ord <- names( sort(table(dat2$State)) )
-dat2$State  <- factor(dat2$State, levels = new.lev.ord)
+new.lev.ord     <- names( sort(table(dat2$State)) )
+dat2$State.ord  <- factor(dat2$State, levels = new.lev.ord)
 ```
 
 Now let's recreate the bar plot with the new factor level order.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2, aes(State)) + geom_bar()
+ggplot(dat2, aes(State.ord)) + geom_bar()
+```
+
+
+## dot plot
+
+The dot plot is an alternative way to visualize counts as a function of a categorical variable. We'll make use of the `geom_point` function but we will need to summarize the counts across each state first; unlike `geom_bar` which will summarize the counts across each factor level,`geom_point` must be passed a single value for each state.
+
+```{r fig.height=2.5, fig.width=8}
+dat2.ct <- dat2 %>% group_by(State) %>% 
+                summarize(Counties = n())
+head(dat2.ct)
+```
+
+Instead of mapping `State` to the x-axis, we'll map it to the y-axis.
+
+```{r fig.height=4.5, fig.width=4}
+ggplot(dat2.ct , aes(x=Counties, y=State)) + geom_point()
+```
+
+Dot plot graphics benefit from sorting--more so then bar plots. But instead of computing a new level order outside of the plotting function, we will make use of the `reorder` function *inside* of the `aes` function. 
+
+```{r fig.height=4.5, fig.width=4}
+ggplot(dat2.ct , aes(x=Counties, y=reorder(State, Counties))) + geom_point()
 ```
 
 
@@ -329,6 +352,69 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
                coord_equal(ratio=1)
 ```
 
+## Colors
+
+You can customize geom colors using one of two sets of color schemes: one for continuous values, the other for categorical (discrete) values.
+
++------------------------+----------------------+
+|   Continuous           |   Categorical        |
++========================+======================+
+|`scale_colour_gradient` | `scale_colour_hue`   |
+|`scale_colour_gradient2`| `scale_colour_grey`  |
+|`scale_color_distiller` | `scale_colour_manual`|
+|`scale_fill_gradient2`  | `scale_colour_brewer`|
+|`scale_fill_gradient`   |                      |
+|`scale_fill_distiller`  |                      |
++------------------------+----------------------+
+
+A few examples follow.
+
+### Continuous color schemes
+
+The following chunk applies a green to red color gradient fill to each bar. Note that we are using the summarized count table (and not the original `dat2` table). When plotting bars from counts already tabulated specify `stat="identity"` in the `geom_bar` function.
+
+```{r fig.height=2.5, fig.width=8}
+ggplot(dat2.ct, aes(x=reorder(State, Counties), y=Counties, fill=Counties)) + 
+                geom_bar(stat="identity") + 
+                scale_fill_gradient(low = "green", high = "red")
+```
+
+The following chunk applies a divergent color scheme while allowing one to specify the central value of this scheme. Note that the colors are symmetrical about the midpoint which may result in only a partial range of the full possible gradient of colors.
+
+```{r fig.height=2.5, fig.width=8}
+ggplot(dat2.ct, aes(x=reorder(State, Counties), y=Counties, fill=Counties)) + 
+                geom_bar(stat="identity") + 
+                scale_fill_gradient2(low = "blue", mid = "white",  high = "red", midpoint = 61)
+```
+
+In the last two chunk, we *filled* the bars with colors (note the use of functions with the string `_fill_`). When assigning color to point or line symbols, use the function with the `_colour_` string. For example:
+
+```{r fig.height=4.5, fig.width=4}
+ggplot(dat2.ct , aes(x=Counties, y=reorder(State, Counties), col=Counties)) +
+                 geom_point() +
+                 scale_colour_gradient2(low = "darkblue", mid = "white",  high = "darkred", midpoint = 61)
+```
+
+### Categorical color schemes
+
+In the following chunk, we assign colors manually to each level in the variable `Yield`. The order of the color names mirror the order of the variable levels.
+
+```{r}
+ggplot(dat1l, aes(Year, Yield, col=Crop)) + 
+              geom_line() +
+              scale_colour_manual(values = c("red", "orange", "green", "blue", "yellow"))
+```
+
+The following chunk applies a predefined discrete color scheme named `Dark2` to each level.  
+
+```{r}
+ggplot(dat1l, aes(Year, Yield, col=Crop)) + 
+              geom_line() +
+              scale_colour_brewer(palette = "Dark2")
+```
+
+To see a list of predefined `scale_colour_brewer` colors, type  `?scale_colour_brewer` at the console.
+
 # Faceting
 
 ## Faceting by categorical variable
@@ -351,7 +437,7 @@ ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() +
 
 This creates as many plots as there are unique combinations of variables `Crop` and `Country`. But such plots are usually best represented in a grid structure where one variable is spread along one axis and the other variable is spread along another axis of the plot layout. This can be accomplished using the `facet_grid` function:
 
-```{r fig.height=4, fig.width=6}
+```{r fig.height=4, fig.width=6} 
 ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() + 
                                        facet_grid( Crop ~ Country)
 ```
