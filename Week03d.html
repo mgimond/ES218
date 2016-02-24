@@ -122,6 +122,8 @@ img {
 <li><a href="#extracting-parts-of-a-string">Extracting parts of a string</a><ul>
 <li><a href="#extracting-elements-of-a-string-given-start-and-end-positions">Extracting elements of a string given start and end positions</a></li>
 <li><a href="#splitting-a-string-by-a-character">Splitting a string by a character</a></li>
+</ul></li>
+<li><a href="#section"></a><ul>
 <li><a href="#extracting-parts-of-a-string-that-follow-a-pattern">Extracting parts of a string that follow a pattern</a></li>
 </ul></li>
 </ul>
@@ -301,7 +303,26 @@ d &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot
 <p>The workaround is to convert the right-hand output to a single vector using the <code>unlist</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;Year:2000&quot;</span> %in%<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">str_split</span>(g, <span class="st">&quot;,&quot;</span>))</code></pre></div>
 <pre><code>[1] TRUE</code></pre>
+<p>If you are applying the split function to a column of data from a dataframe, you will want to use the function <code>str_split_fixed</code> instead. This function assumes that the number of components to be extracted via the split will be the same for each vector element. For example, the following vector, <code>T1</code>, has <strong>two</strong> time components that need to be extracted. The separator is a dash, <code>-</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">T1 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;9:30am-10:45am&quot;</span>, <span class="st">&quot;9:00am- 9:50am&quot;</span>, <span class="st">&quot;1:00pm- 2:15pm&quot;</span>)
+T1</code></pre></div>
+<pre><code>[1] &quot;9:30am-10:45am&quot; &quot;9:00am- 9:50am&quot; &quot;1:00pm- 2:15pm&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str_split_fixed</span>(T1, <span class="st">&quot;-&quot;</span>, <span class="dv">2</span>)</code></pre></div>
+<pre><code>     [,1]     [,2]     
+[1,] &quot;9:30am&quot; &quot;10:45am&quot;
+[2,] &quot;9:00am&quot; &quot; 9:50am&quot;
+[3,] &quot;1:00pm&quot; &quot; 2:15pm&quot;</code></pre>
+<p>The third parameter in the <code>str_split_fixed</code> function is the number of elements to return which also defines the output dimension (here, a three row and two column table). If you want to extract both times to separate vectors, reference the columns by index number:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">T1.start &lt;-<span class="st"> </span><span class="kw">str_split_fixed</span>(T1, <span class="st">&quot;-&quot;</span>, <span class="dv">2</span>)[,<span class="dv">1</span>]
+T1.start</code></pre></div>
+<pre><code>[1] &quot;9:30am&quot; &quot;9:00am&quot; &quot;1:00pm&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">T1.end   &lt;-<span class="st"> </span><span class="kw">str_split_fixed</span>(T1, <span class="st">&quot;-&quot;</span>, <span class="dv">2</span>)[,<span class="dv">2</span>]
+T1.end</code></pre></div>
+<pre><code>[1] &quot;10:45am&quot; &quot; 9:50am&quot; &quot; 2:15pm&quot;</code></pre>
 </div>
+</div>
+<div id="section" class="section level1">
+<h1></h1>
 <div id="extracting-parts-of-a-string-that-follow-a-pattern" class="section level2">
 <h2>Extracting parts of a string that follow a pattern</h2>
 <p>To extract the three letter months from object <code>g</code> (defined in the last example), you can use a combination of <code>stringr</code> functions as in:</p>
