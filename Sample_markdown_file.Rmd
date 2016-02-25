@@ -1,19 +1,9 @@
----
-title: "Water and Air Temperature Report"
-author: "Manny"
-output:
-  html_document:
-    fig_caption: yes
-  word_document:
-    fig_caption: yes
----
-
 ```{r, echo=FALSE, message=FALSE}
 library(lubridate)
 library(dplyr)
-library(tidyr)
 ```
 
+# Buoy Report
 
 ```{r, echo=FALSE}
 # Get data
@@ -26,23 +16,15 @@ dat <-  read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat",
 buoy <- 41009
 year <- 2010
 
-# Create list of columns with missing values
-na99   <- c("WSPD", "GST", "WVHT", "DPD",  "APD")
-na999  <- c("WDIR",  "DEWP", "ATMP", "WTMP")
-na9999 <- "PRES"
-
-# Replace missing values with NA
-dat[,na99][dat[, na99] == 99] <- NA
-dat[,na999][dat[, na999] == 999] <- NA
-dat[,na9999][dat[, na9999] == 9999] <- NA
-
 # Subset columns
 dat1 <- dat %>%
-        select(-MWD, -VIS, -TIDE)             %>%
-        mutate( Date = ymd_hm(paste(YY, MM, DD, hh, mm), tz = "UTC"))   %>%
-        mutate( Date = with_tz(Date , tzone = "EST")) %>%   # Force to EST 
-        mutate( Month = month(Date, label=TRUE)) %>%
-        select( -YY, -MM, -DD, -hh, -mm)
+        mutate_each(funs(ifelse( . == 99,NA,.)), WSPD, GST, WVHT, DPD, APD) %>% 
+        mutate_each(funs(ifelse( . == 999,NA,.)), WDIR,  DEWP, ATMP, WTMP) %>% 
+        mutate_each(funs(ifelse( . == 9999,NA,.)), PRES) %>% 
+        mutate( Date  = ymd_hm(paste(YY, MM, DD, hh, mm), tz = "UTC"),
+                Date  = with_tz(Date , tzone = "EST"),  # Force to EST 
+                Month = month(Date, label=TRUE)) %>%
+        select(-MWD, -VIS, -TIDE, -YY, -MM, -DD, -hh, -mm)
 ```
 
 This report is generated from data downloaded from NOAA's NDBC buoy data center. It consists of hourly air and ocean physical measurements such as temperature, wind speed and wave height for the year `r as.character(year)`.
@@ -79,8 +61,8 @@ lbs  <- c("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 library(ggplot2)
 wind <- dat1 %>%
   filter( is.na(WDIR) == FALSE, is.na(WSPD) == FALSE) %>%  
-  mutate(WDIR2 = (WDIR + 360/8/2)%%360) %>%
-  mutate( dirbin = cut(WDIR2, breaks=brks, labels=lbs) )  %>%
+  mutate(WDIR2 = (WDIR + 360/8/2)%%360 , 
+         dirbin = cut(WDIR2, breaks=brks, labels=lbs) )  %>%
   group_by(dirbin, Month) %>%
   summarise(dircnt =  n(), medspd = median(WSPD) )
 
