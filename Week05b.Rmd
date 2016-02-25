@@ -6,7 +6,18 @@ output:
     toc_depth: 3
 ---
 
-> This material is intended to supplement section 2.2 of Cleveland's book.
+
+```{r echo=FALSE}
+source("libs/Common.R")
+```
+
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**, **`ggplot2`**, **`lattice`** (only for its data).
+
+This material is intended to supplement **section 2.2** of **Cleveland's book**.
+</div>
+
 
 Let's compare singer heights between `Bass 2` and `Tenor 1` group. We will work off of a subset of Cleveland's `singer` dataset.
 
@@ -14,21 +25,22 @@ Let's compare singer heights between `Bass 2` and `Tenor 1` group. We will work 
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-df <- lattice::singer
+
+df  <- lattice::singer
 df2 <- filter(df, voice.part == "Bass 2" | voice.part=="Tenor 1")
 ```
 
 Let's plot both datasets side-by-side. We will jitter the points about their category groups to expose overlapping points.
 
 ```{r fig.height=3, fig.width=4}
-ggplot(df2) + aes(y=height, x=voice.part, col=voice.part) + 
-             geom_jitter(position = position_jitter(width = .1, height=0))
+ggplot(df2, aes(y=height, x=voice.part, col=voice.part)) + 
+            geom_jitter(position = position_jitter(width = .1, height=0))
 ```
 
 Let's get the count and median values for both batches.
 
 ```{r}
-df2 %>% group_by(voice.part) %>% summarize(median = median(height), count = n() )
+df2 %>% group_by(voice.part) %>% summarise(median = median(height), count = n() )
 ```
 
 The basest tend to be slightly taller than the Tenor--this is one way to compare the batches. But how do their distributions differ? We will explore this in the next section.
@@ -48,8 +60,9 @@ Are the spreads between the batches comparable? It's difficult to tell given tha
 ```{r fig.height=3, fig.width=3}
 df2.med <- df2 %>% 
           group_by(voice.part) %>%
-          mutate( NormHeight= height - median(height))  
-ggplot(df2.med) + aes(x=voice.part, y=NormHeight) + geom_boxplot()
+          mutate( NormHeight= height - median(height)) 
+
+ggplot(df2.med, aes(x=voice.part, y=NormHeight)) + geom_boxplot()
 ```
 
 Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the `Tenor 1` group has a slightly wider range of heights than the `Bass 2` group. About 50% of singers in the `Tenor 1` group have heights that range five inches whereas the singers in the `Bass 2` group have heights that range four inches. We also note from the that the `Tenor 1` height distribution tends to be skewed towards taller singers whereas the `Bass 2` height distribution tends to be a little less skewed toward smaller heights.
@@ -68,7 +81,7 @@ df.qq <- df2 %>%
 Now let's generate quantile plots for both batches.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(df.qq) + aes(x=f.val, y = height) + geom_line(col="grey") + geom_point()  + facet_grid( voice.part ~ .) 
+ggplot(df.qq, aes(x=f.val, y = height)) + geom_line(col="grey") + geom_point()  + facet_grid( voice.part ~ .) 
 ```
 
 We can take this a step further and combine the plots to generate a **quantile-quantile** (**q-q**) plot.  If the number of values in both batches are equal, than the plotting process is straightforward: sort (from smallest value to largest value) both batches, then pair up the sorted values and plot one batch vs. the other batch.
@@ -118,7 +131,7 @@ Finally, we will combine the interpolated `Bass 2` values (which is already in a
 s.qq <- data.frame( Bass  = b.hgt.interp$y,
                     Tenor = sort( df[ df$voice.part == "Tenor 1", 1 ] ) )
 
-ggplot(s.qq) + aes( x= Tenor, y = Bass) + geom_point() + geom_abline( c(0,1))
+ggplot(s.qq, aes( x= Tenor, y = Bass)) + geom_point() + geom_abline( intercept=0, slope=1)
 ```
 
 Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes.
@@ -131,8 +144,10 @@ xylim <- range( c(s.qq$Bass, s.qq$Tenor) )
 # (This avoids having the points plotted on the edge of the plot)
 xylim <- xylim + c(-0.05 * diff(xylim), + 0.05 * diff(xylim))
 
-ggplot(s.qq) + aes( x= Tenor, y = Bass) + geom_point() + geom_abline( c(0,1)) +
-               coord_fixed(ratio = 1, xlim=xylim, ylim = xylim)
+ggplot(s.qq, aes( x= Tenor, y = Bass)) + 
+             geom_point() + 
+             geom_abline( intercept=0, slope=1) +
+             coord_fixed(ratio = 1, xlim=xylim, ylim = xylim)
 ```
 
 
@@ -160,26 +175,13 @@ qq.out <- as.data.frame(qq.out)
 
 xylim <- range( c(qq.out$x, qq.out$y) )
 xylim <- xylim + c(-0.05 * diff(xylim), + 0.05 * diff(xylim))
-ggplot(qq.out) + aes( x= x, y = y) + geom_point() + geom_abline( c(0,1)) +
-  coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
-  xlab("Tenor") + ylab("Bass")
+ggplot(qq.out, aes( x= x, y = y)) + 
+               geom_point() + 
+               geom_abline( intercept=0, slope=1) +
+               coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
+               xlab("Tenor") + ylab("Bass")
 ```
 
-
-
-### Using `lattice`'s `qq`function
-
-like `ggplot`, the `qq` plotting function requires that the data be in a long form; so we'll use the `df2` object.  This suggests that the order in which the `voice.part` categories are ordered will determine which singer group will be assigned to the $x$ and $y$ axes. Since we will have the `Tenor 1` group on the x-axis and the `Bass 2` group on the y-axis, we will need to order the levels such that `Tenor 1` comes first.
-
-
-```{r fig.height=3, fig.width=3}
-library(lattice)
-
-df2$voice.part <- ordered(df2$voice.part, levels= c("Tenor 1", "Bass 2"))
-
-qq(df2$voice.part ~ df2$height, aspect=1)
-
-```
 
 ## q-q plots vs scatter plots
 
@@ -204,32 +206,15 @@ This forces the 45° line in the previous q-q plots to a 0° slope. The final pl
 We continue with the `qq.out` dataset generated from the `qqplot` function.
 
 ```{r fig.height=3, fig.width=3}
-md.y <- (qq.out$y - qq.out$x) 
-md.x <- (qq.out$y + qq.out$x) * 0.5
+md.y  <- (qq.out$y - qq.out$x) 
+md.x  <- (qq.out$y + qq.out$x) * 0.5
 df.md <- data.frame(md.x, md.y)
 
-ggplot(df.md) + aes(x = md.x, y = md.y) + geom_point() + geom_abline( slope=0 ) +
-                xlab("Mean height (in)") + ylab("Difference in height (in)")
+ggplot(df.md,  aes(x = md.x, y = md.y)) + geom_point() + geom_abline( slope=0 ) +
+               xlab("Mean height (in)") + ylab("Difference in height (in)")
 ```
 
 The units on both axes are in inches. It's clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.
-
-### Generating an m-d plot using `lattice`
-
-The `lattice` package's `tmd` function takes as an argument the output of `lattice`'s `qq` function. We will recreate the call to `qq`, but instead of displaying its plot, we will save the output to the object `df2.qq` which will then be used by `tmd` to generate the m-d plot.
-
-
-```{r fig.height=3, fig.width=3}
-# Save the qq output
-df2$voice.part <- ordered(df2$voice.part, levels= c("Tenor 1", "Bass 2"))
-df2.qq <- qq(df2$voice.part ~ df2$height, aspect=1)
-
-# Plot the m-d
-tmd(df2.qq,
-    aspect=1,
-    ylab = "Difference (inches)",
-    xlab = "Mean (inches)")
-```
 
 ## Pairwise q-q plots
 
@@ -237,17 +222,18 @@ A **pairwise q-q plot** allows one to view all combinations of batch pairs. This
 
 
 ```{r fig.width=6, fig.height=6} 
+library(lattice)
 # Find smallest batch
 f.rng <- min(tapply(singer$height, singer$voice.part, length))
 
 # Define quantile function
-fun1 <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
+fun1  <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
 
 # Compute quantiles for all factors
-t1 <- aggregate(singer$height ~ singer$voice.part, FUN=fun1, f.rng=f.rng )
+t1    <- aggregate(singer$height ~ singer$voice.part, FUN=fun1, f.rng=f.rng )
 
 # Flip table and name columns
-t2 <- as.data.frame(t(t1[,-1]))
+t2    <- as.data.frame(t(t1[,-1]))
 names(t2) <- t1[,1]
 
 # Label columns of qmat using names of voice parts.
