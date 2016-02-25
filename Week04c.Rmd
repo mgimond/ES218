@@ -70,13 +70,17 @@ head(dat1l2,15)
 dat2 <- na.omit(dat2)
 ```
 
-As with `dat1`, we will create long forms of `dat2` for use with `ggplot` plotting routines. 
+As with `dat1`, we will create a tidy version of `dat2` for use with `ggplot` plotting routines. 
 
-The `dat2` dataset has income data broken down by educational attainment and gender. It would therefore be convenient for subsequent plot operations if two variables, `Gender` and (educational) `Level`, were added to the long table version of `dat2`.
+The `dat2` dataset has income data broken down by educational attainment and gender aggregated at the county level. It would therefore be convenient for subsequent plot operations if two variables, `Gender` and (educational) `Level`, were added to the long table version of `dat2`.
 
-We will first generate five educational category vectors whose values are the census data variable names (see the codebook for census variable name descriptions). These category vectors will then be used in the chain operation's `ifelse` functions. We then generate two category vectors for male and female groups--note the use of the `paste()` function in lieu of the combine function `c()` (which could have been used as well). Also note that `dat2` has income values for *all* sexes and *all* educational attainments. We did not create categories for this since they present the "else" option in the `ifelse` function. In other words, if a variable such as `B20004001` is not in any of the educational category vectors (e.g. `NoHS`, `HS`, etc...), then its `Level` value will be `"All"`. Likewise, if the variable is not in either the `Male` or `Female` vectors, then the value `"All"` will be assigned to `Gender`.
+![Census Table](img/Census_table_1.png)
 
-We will also take this opportunity to add a new field called `Region` which will associated each state with a region. R has a built-in vector called `state.region` that assigns a region to each state. However, you'll note that this vector only has region names but makes no reference to states. It's intended to be used with another built-in data vector called `state.abb` or `state.name`. We will combine `state.abb` with `state.region` to create a data frame "lookup table". We will also need to convert the uppercase state abbreviations to lower case using `tolower` so that they match the `dat2`'s lowercase state abbreviations. Note that  D.C. is not included in the built-in states dataset, so we will add this record the the `st.reg` table and assign D.C. to the `South` region.
+We will first generate a lookup table, `Edu.Gend`, of variable elements that will match each census category (e.g. `B20004001`, `B20004002`, ...) to its matching pair of `Level` and `Gender` types. 
+
+We will also create a State/Region lookup table, `st.reg`, that will store two variables: the two letter state abbreviation variable `State` and it matching region variable `Region`. R has a built-in vector called `state.region` that assigns a region to each state. However, you'll note that this vector only has region names but makes no reference to states. It's intended to be used with another built-in data vector called `state.abb` or `state.name`. We will combine `state.abb` with `state.region` to create `st.reg`. We will also need to convert the uppercase state abbreviations to lower case using `tolower` so that they match the `dat2`'s lowercase state abbreviations. Note that  D.C. is not included in the built-in states dataset, so we will add this record the `st.reg` table and assign D.C. to the `South` region.
+
+Finally, the two tables, `Edu.gend` and `st.reg`, will be joined to the long version of `dat2` such that each observation will be assigned a `Level`, `Gender` and `Region`.
 
 ```{r message =FALSE}
 library(stringr)
@@ -104,7 +108,7 @@ tail(dat2b)
 
 Note that we have eliminated references to variable names such as "B20004001" from `dat2b` making it easier to interpret the variable names/values.
 
-In `dat2b` the gender values are lumped under the variable called `Gender`. We may wish to have male and female incomes assigned there own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
+In `dat2b` the gender values are lumped under the variable called `Gender`. We may wish to have male and female incomes assigned their own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
 
 ```{r}
 dat2c <- spread(dat2b, key = Gender, value = value )
