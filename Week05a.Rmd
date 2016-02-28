@@ -6,11 +6,10 @@ output:
     toc_depth: 3
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 source("libs/Common.R")
 ## Following libraries are hidden from user and are 
 ## only used for RMD output
-library(Gmisc)
 ```
 
 
@@ -25,20 +24,19 @@ This material is intended to supplement **sections 2.1 and 2.3** of **Cleveland'
 
 Let's create two batches of numbers, `a` and `b`:
 
-```{r message=FALSE}
-a <- rep(12, 10)
-b <- rep(15, 10)
+```{r}
+a  <- rep(12, 10)
+b  <- rep(15, 10)
 df <- data.frame(a,b)
 ```
 
 How do the two batches differ?
 
-```{r echo = FALSE, message =FALSE, fig.height=2, fig.width=1.5,dev='svglite'}
-library(Gmisc)
-htmlTable(as.matrix(as.matrix(cbind(a,b))))
+```{r echo = FALSE, results='asis'}
+pander::pandoc.table(df, justify = 'left')
 ```
 
-Let's plot the data (though this is really not needed). 
+If the difference wasn't obvious from the table view we can create a jittered point plot from the data. 
 
 ```{r fig.height=3, fig.width=4}
 # To plot across categories, we need the data in a long (tidy) form
@@ -50,7 +48,7 @@ ggplot(dfl,  aes(y = Value, x = Category, col=Category)) +
              geom_jitter(position = position_jitter(height = 0, width=0.4))
 ```
 
-It's clear that both batches differ by their uniform values, batch `a` is made up of the same numbers, $12$, and batch `b` is made up of a different set of identical values, $15$. Note that because so many values overlapped, we made use of the `geom_jitter()` function which randomly *jitters* or nudges the data about its actual location.
+It's clear that both batches differ by their uniform values, batch `a` is made up of the identical numbers, `12`, and batch `b` is made up of a different set of identical values, `15`. Note that because so many values overlapped, we made use of the `geom_jitter()` function which randomly *jitters* or nudges the data about its actual location.
 
 Now let's compare a more complicated batch of numbers.
 
@@ -66,13 +64,13 @@ dfl <- gather(df, key=Category, value=Value)
 ```
 
 
-```{r echo = FALSE, message =FALSE}
-library(Gmisc)
-htmlTable(as.matrix(as.matrix(cbind(a,b))))
+```{r echo = FALSE, results='asis'}
+pander::pandoc.table(df, justify = 'left')
 ```
 
 
-```{r fig.height=3, fig.width=4}
+```{r fig.height=3, fig.width=4, echo=-1}
+set.seed(14)
 ggplot(dfl, aes(y = Value, x = Category, col=Category)) + 
               geom_jitter(position = position_jitter(height = 0, width=0.4))
 ```
@@ -107,7 +105,7 @@ A histogram **bins** the values (usually in equal sized bins) and plots the freq
 ggplot(df, aes(x=a)) + geom_histogram(breaks = seq(6.5,16.5,by=1), colour="white")
 ```
 
-We have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on until the second to last bin where we have 3 values that fall in it (bin covering the range 14.5 to 15.5). Note in the parameter `seq(6.5, 16.5, by=1)` we are defining the last bin as covering a range from 15.5 to 16.5 which ends up not receiving a value, hence no grey bar on the plot at that location.
+We have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on until the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). Note in the parameter `seq(6.5, 16.5, by=1)` we are defining the last bin as covering a range from 15.5 to 16.5 which ends up not receiving a value, hence no grey bar on the plot at that location. The parameter `colour=` defines the outline color.
 
 We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:
 
@@ -117,19 +115,33 @@ ggplot(df, aes(x=a)) +geom_histogram(breaks = seq(6.5,16.5,by=2), colour="white"
 
 You'll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.
 
+You can also opt to have the function determine the bin ranges by simply specifying the number of bins using the `bin=` parameter:
+
+```{r fig.height=2, fig.width=4.5}
+ggplot(df, aes(x=a)) +geom_histogram(bins=12, colour="white")
+```
+
+
+
+
 # Boxplots
 
 A boxplot is another popular plot used to explore distributions. In `ggplot` we use the `geom_boxplot()` function as in,
 
-```{r fig.height=2, fig.width=6}
-ggplot(df, aes(x=1, y=a)) + geom_boxplot() + coord_flip()
+```{r fig.height=1.2, fig.width=6.5}
+ggplot(df, aes(x=1, y=a)) + geom_boxplot() + 
+           xlab(NULL) + theme(axis.text.y=element_blank()) +
+           coord_flip()
 ```
 
-Note that the `coord_flip()` function flips the boxplot on its side (the boxplot is normally plotted upright). Again, make note of how the `aes()` function differs from ones we have encountered when generating $y$ vs. $x$ plots; here, we instruct R to plot the value along the y-axis (which is now the x-axis after flipping the plot) and a single category along the x-axis.
+Note that the `coord_flip()` function flips the boxplot on its side (the boxplot is normally plotted upright). The `geom_boxplot` function requires that both x and y axes be mapped a variable; usually, the x-axis is assigned a category, but since we are looking at a unique batch, we artifically map a value of 1 to the x-axis (we could have used any value). This requires that we mask the x-axis's label and text so as not to confuse the reader using the the options `xlab(NULL) + theme(axis.text.y=element_blank())`.
 
-![Boxplot explained](./img/boxplot_intro.png)
+The following figure describes the anatomy of a boxplot.
 
-The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie along the full range of values (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range. Note that this is only an approximation given that some datasets my not lend themselves well to defining exactly 50% of their central values. In our example, only four data points fall within the interquartile range.
+
+![Boxplot explained](./img/Boxplot.png)
+
+The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie along the full range of values (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range (or **IQR** for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. In our example, only four data points fall within the interquartile range.
 
 The long narrow lines extending beyond the interquartile range are sometimes referred to as **whiskers** and are about 1.5 times the width of the interquartile range or the most extreme value, whichever comes first.
 
@@ -137,25 +149,29 @@ Sometimes, you will encounter values that fall outside of the lower and/or upper
 
 ## Not all boxplots are created equal!
 
-Note that not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, William Cleveland computes a quantile as $( i - 0.5) / n$ where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. For example, `boxplot(a)` (part of the base plotting function) will generate a different output from `ggplot`:
+Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, William Cleveland computes a quantile as $( i - 0.5) / n$ where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. The base's plotting function `boxplot`  will generate a different output from that of `ggplot`'s:
 
-```{r, fig.height=2, fig.width=6, echo=FALSE}
-OP <- par(mar=c(2,1,1,1))
+```{r, fig.height=1.2, fig.width=6.5, echo=4}
+OP <- par(mar=c(2,1,1,1), bty="n")
 boxplot(a, horizontal = TRUE)
 grid(lty=1, col="grey90")
 boxplot(a, horizontal = TRUE, add=TRUE)
 par(OP)
 ```
 
-The upper and lower quartiles differ from those of `ggplot`, this is because there are many ways to define a quartile given the batch characteristics (e.g. odd vs even number of values, identical values vs unique values, etc...). In most cases the difference will not matter as long as you *adopt the same boxplot procedure when comparing batches*.
+The upper and lower quartiles differ from those of `ggplot`, this is because there are many ways to define a quartile given the batch's characteristics (e.g. odd vs even number of values, identical values vs unique values, etc...). In most cases the difference will not matter as long as you *adopt the same boxplot procedure when comparing batches*.
 
 # Quantile plots
 
+In his book, Cleveland introduces you to the quantile plot which gives you the quantile of a value in a batch. The boxplot is a special case of the $f$-quantile function in that it only returns the 1^st^, 2^nd^ and 3^rd^ quantile. The $f$-quantile returns the $full$ range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest.  The following figure describes the anatomy of a quantile plot. 
+
+![Quantile explained](./img/Quantile.png)
+
+The x-axis is the $f$-values: the full range of fractions. The y-axis is the $f$-quantile, $q(f)$, which shows the sorted batch values (from smallest to largest). The points in the plot link the values on the y-axis to the $f$-values on the x-axis. For example, the $f$-value of 0.25 (i.e. the 25^th^ percentile) is associated with the $q(f)$ value of 8 meaning that 25% of the values in the dataset have values of 9 or less. Likewise, the $f$-value of 0.5 (the median) is associated with a $q(f)$ value of 12.5 implying that half of the dataset's values are 12.5 or less. The boxplot is shown alongside the quantile plot to highlight the analogy (note that *Cleveland's* implementation of the boxplot is shown and not that of `ggplot`).
+
 ## Computing the $f$-quantile
 
-The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch that is less than a value of interest. For example, from the boxplot generated with `ggplot` function, we can see that half of the values in object `a` are less than 12.5. 
-
-In his book, Cleveland introduces you to the $f$ quantile which gives us the quantile of a value in a batch. Computing $f$ requires that the batch of numbers be ordered from smallest to largest.
+ Computing $f$ requires that the batch of numbers be ordered from smallest to largest.
 
 ```{r}
 a.o <- sort(a)
@@ -182,9 +198,8 @@ a.fi <- data.frame(a.o , fi)
 
 Note that in the last line of code, we are appending the ordered representation of `a` to `fi` given that `fi` assumes an ordered dataset. The data frame `a.fi` should look like this:
 
-```{r echo = FALSE, message =FALSE}
-library(Gmisc)
-htmlTable(as.matrix(as.matrix(cbind(a.o,fi))))
+```{r echo = FALSE, results='asis'}
+pander::pandoc.table(a.fi, justify = 'left')
 ```
 
 
@@ -220,5 +235,5 @@ If you did not want to go through the trouble of computing the $f$-values and th
 ggplot(df, aes(sample=a)) + stat_qq(distribution = qunif) + xlab("f-value")
 ```
 
-Note the slight change in parameter values to `aes()`:  `sample = a` where `a`is the (unsorted) variable being plotted.
+Note the slight change in mapping values to `aes()`:  `sample = a` where `a`is the (unsorted) variable being plotted.
 

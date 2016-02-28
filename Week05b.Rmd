@@ -27,7 +27,8 @@ library(tidyr)
 library(ggplot2)
 
 df  <- lattice::singer
-df2 <- filter(df, voice.part == "Bass 2" | voice.part=="Tenor 1")
+df2 <- filter(df, voice.part == "Bass 2" | voice.part=="Tenor 1") %>% 
+       mutate(voice.part = droplevels(voice.part))
 ```
 
 Let's plot both datasets side-by-side. We will jitter the points about their category groups to expose overlapping points.
@@ -67,9 +68,13 @@ ggplot(df2.med, aes(x=voice.part, y=NormHeight)) + geom_boxplot()
 
 Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the `Tenor 1` group has a slightly wider range of heights than the `Bass 2` group. About 50% of singers in the `Tenor 1` group have heights that range five inches whereas the singers in the `Bass 2` group have heights that range four inches. We also note from the that the `Tenor 1` height distribution tends to be skewed towards taller singers whereas the `Bass 2` height distribution tends to be a little less skewed toward smaller heights.
 
-## The quantile-quantile (q-q) plot
+## The quantile-quantile (Q-Q) plot
 
-The boxplot is a  five number summary of the data (median, upper/lower quartiles, and upper/lower adjacent values). The boxplot is a special case of the quantile plot. Let's compute the $f$-values for both batches.
+A quantile-quantile plot (or Q-Q plot for short) combines two separate quantile plots from  different batches of values by pairing the point values by their common $f$-value.
+
+![QQ plot construcion](img/QQ_plot.png)
+
+Let's compute the $f$-values for both batches of singer data (`Bass 2` and `Tenor 1`).
 
 ```{r}
 df.qq <- df2 %>% 
@@ -103,7 +108,7 @@ round(fi,2)
 
 To find matching values for the singer heights in `Bass2`, we need to interpolate values. In practice, a linear interpolation is sought unless theory justifies otherwise. 
 
-We will explore three methods: a **manual** approach to constructing a q-q plot,  the `qqplot` function from the base installation, and the `qq` function from the `lattice` package. **Note that all three methods can produce slightly different q-q plots**; this is to be expected since they may adopt different quantile algorithms. 
+We will explore two methods: a **manual** approach to constructing a q-q plot and the `qqplot` function from the base installation. **Note that both methods can produce slightly different q-q plots**; this is to be expected since they may adopt different quantile algorithms. 
 
 In all three cases, we will add a 45° line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
 
@@ -183,7 +188,7 @@ ggplot(qq.out, aes( x= x, y = y)) +
 ```
 
 
-## q-q plots vs scatter plots
+## q-q plots are *not* scatter plots
 
 It's important to note the difference between a quantile-quantile plot and a [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot). The latter is used when the pairing of values between variables is explicit  (for example average male and female incomes for a specific US county). The q-q plot does not assume any pairing of observations (e.g. the height measurement for a singer in `Bass 2` is not linked to a height measurement in `Tenor 2`).  This is made more evident with our working example which has unequal number of singers in both groups being compared since such a dataset could not be plotted using a scatter plot.
 
