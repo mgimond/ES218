@@ -13,17 +13,16 @@ source("libs/Common.R")
 
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
-This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**, **`ggplot2`**, **`lattice`** (only for its data).
+This tutorial makes use of the following R package(s): **`dplyr`**, **`ggplot2`**, **`lattice`**.
 
 This material is intended to supplement **section 2.2** of **Cleveland's book**.
 </div>
 
 
-Let's compare singer heights between `Bass 2` and `Tenor 1` group. We will work off of a subset of Cleveland's `singer` dataset.
+Let's compare singer heights between the `Bass 2` group and `Tenor 1` group. We will work off of a subset of Cleveland's `singer` dataset which can be found in the `lattice` package.
 
 ```{r message=FALSE}
 library(dplyr)
-library(tidyr)
 library(ggplot2)
 
 df  <- lattice::singer
@@ -66,7 +65,7 @@ df2.med <- df2 %>%
 ggplot(df2.med, aes(x=voice.part, y=NormHeight)) + geom_boxplot()
 ```
 
-Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the `Tenor 1` group has a slightly wider range of heights than the `Bass 2` group. About 50% of singers in the `Tenor 1` group have heights that range five inches whereas the singers in the `Bass 2` group have heights that range four inches. We also note from the that the `Tenor 1` height distribution tends to be skewed towards taller singers whereas the `Bass 2` height distribution tends to be a little less skewed toward smaller heights.
+Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the `Tenor 1` group has a slightly wider range of heights than the `Bass 2` group. About 50% of singers in the `Tenor 1` group have heights that range five inches whereas the singers in the `Bass 2` group have heights that range four inches. We also note that the `Tenor 1` height distribution tends to be skewed towards taller singers whereas the `Bass 2` height distribution tends to be a little less skewed toward smaller heights.
 
 ## The quantile-quantile (Q-Q) plot
 
@@ -74,7 +73,7 @@ A quantile-quantile plot (or Q-Q plot for short) combines two separate quantile 
 
 ![QQ plot construcion](img/QQ_plot.png)
 
-Let's compute the $f$-values for both batches of singer data (`Bass 2` and `Tenor 1`).
+First, we need to compute the $f$-values for both batches of singer data (`Bass 2` and `Tenor 1`).
 
 ```{r}
 df.qq <- df2 %>% 
@@ -89,11 +88,11 @@ Now let's generate quantile plots for both batches.
 ggplot(df.qq, aes(x=f.val, y = height)) + geom_line(col="grey") + geom_point()  + facet_grid( voice.part ~ .) 
 ```
 
-We can take this a step further and combine the plots to generate a **quantile-quantile** (**q-q**) plot.  If the number of values in both batches are equal, than the plotting process is straightforward: sort (from smallest value to largest value) both batches, then pair up the sorted values and plot one batch vs. the other batch.
+While the geometric structure of a boxplot lends itself well to side-by-side comparison, the same cannot be said for side-by-side quantile plot comparison hence the need for an amalgamation of these plots called a  **quantile-quantile** (**q-q**) plot.  If the number of values in both batches are equal, than the plotting process is straightforward: sort (from smallest value to largest value) both batches, then pair up the sorted values and plot one batch vs. the other batch (see schematic at the beginning of this section)
 
 If the two batches differ in size (as is the case with our example where we have 21 tenors and 26 bassists), we won't be able to match sorted values. For example, in the above graph, you'll note that one of the singer's height in the `Bass 2` batch is associated with an $f$-value of 0.75, however, there are no singer heights associated with an $f$-value of 0.75 in the `Tenor 1` batch. 
 
-To overcome the problem with batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the smallest sized batch (21 in our working example). This requires that we find matching singer height values to the set of $f$-values associated with a batch of 21 values, or:
+To overcome the problem with batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the smallest sized batch (21 in our working example). This requires that we find matching singer height values to the set of $f$-values associated with a batch of 21 values. The following chunk of code computes the 21 $f$-values. We are rounding the output to two decimal places for presentation only.
 
 ```{r}
 # Generate and index
@@ -105,12 +104,11 @@ round(fi,2)
 ```
 
 
+To find the matching singer height values in `Bass2`, we need to interpolate the original height values. In practice, a linear interpolation is sought unless theory justifies otherwise. 
 
-To find matching values for the singer heights in `Bass2`, we need to interpolate values. In practice, a linear interpolation is sought unless theory justifies otherwise. 
+We will explore two methods: a **manual** approach to constructing a q-q plot and the `qqplot()` function approach. **Note that both methods can produce slightly different q-q plots**--this is to be expected since they may adopt different quantile algorithms. 
 
-We will explore two methods: a **manual** approach to constructing a q-q plot and the `qqplot` function from the base installation. **Note that both methods can produce slightly different q-q plots**; this is to be expected since they may adopt different quantile algorithms. 
-
-In all three cases, we will add a 45° line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
+In all cases, we will add a 45° line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
 
 ### Manual construction of a q-q plot 
 
@@ -130,7 +128,7 @@ b.hgt.interp <- approx(df.bass$f.val, df.bass$height, fi)
 
 The output generates two columns: the 21 quantiles, `fi`, and the 21 `Bass 2` interpolated height values.
 
-Finally, we will combine the interpolated `Bass 2` values (which is already in an ascending order) with  **sorted** heights for the `Tenor 1` singers. Then, we will plot the paired values using `ggplot`. We will also add an 45° line to facilitate comparison.
+Finally, we will combine the interpolated `Bass 2` values (which is already in an ascending order) with  **sorted** heights for the `Tenor 1` singers. Then, we will plot the paired values using `ggplot`. We will also add the 45° line to facilitate comparison.
 
 ```{r, fig.width=3, fig.height=3}
 s.qq <- data.frame( Bass  = b.hgt.interp$y,
@@ -139,7 +137,7 @@ s.qq <- data.frame( Bass  = b.hgt.interp$y,
 ggplot(s.qq, aes( x= Tenor, y = Bass)) + geom_point() + geom_abline( intercept=0, slope=1)
 ```
 
-Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes.
+Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes. 
 
 ```{r, fig.width=3, fig.height=3}
 # Get the range of both datasets
@@ -223,7 +221,7 @@ The units on both axes are in inches. It's clear from this plot that differences
 
 ## Pairwise q-q plots
 
-A **pairwise q-q plot** allows one to view all combinations of batch pairs. This requires that we first find the smallest batch of height values, then interpolate all other batch values to match the smallest batch quantiles. Note that the pairwise plot is symmetrical about the diagonal.
+A **pairwise q-q plot** allows one to view all combinations of batch pairs. This requires that we first find the smallest batch of height values, then interpolate all other batch values to match the smallest batch quantiles. Note that the pairwise plot is symmetrical about the diagonal. Here, we'll make use of the `lattice` package to generate the pairwise q-q plots.
 
 
 ```{r fig.width=6, fig.height=6} 
