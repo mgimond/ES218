@@ -60,7 +60,7 @@ Are the spreads between the batches comparable? It's difficult to tell given tha
 ```{r fig.height=3, fig.width=3}
 df2.med <- df2 %>% 
           group_by(voice.part) %>%
-          mutate( NormHeight= height - median(height)) 
+          mutate( NormHeight = height - median(height)) 
 
 ggplot(df2.med, aes(x=voice.part, y=NormHeight)) + geom_boxplot()
 ```
@@ -85,7 +85,8 @@ df.qq <- df2 %>%
 Now let's generate quantile plots for both batches.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(df.qq, aes(x=f.val, y = height)) + geom_line(col="grey") + geom_point()  + facet_grid( voice.part ~ .) 
+ggplot(df.qq, aes(x=f.val, y = height)) + geom_point() +
+              geom_line(col="grey") + facet_grid( voice.part ~ .) 
 ```
 
 While the geometric structure of a boxplot lends itself well to side-by-side comparison, the same cannot be said for side-by-side quantile plot comparison hence the need for an amalgamation of these two plots into a single plot called a  **quantile-quantile** (**q-q**) plot.  If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs. the other batch (see schematic at the beginning of this section)
@@ -117,7 +118,8 @@ To find a value in the larger dataset (i.e. `Bass 2`) that matches the 21 quanti
 First, we will extract all values associated with `Bass 2` from the dataset.
 
 ```{r}
-df.bass <- df.qq %>%  filter( voice.part == "Bass 2")
+df.bass  <- df.qq %>%  filter( voice.part == "Bass 2")
+df.tenor <- df.qq %>%  filter( voice.part == "Tenor 1")
 ```
 
 Next, we will interpolate a new set of height values for `Bass 2` that match the 21 quantile values in `fi`.
@@ -131,10 +133,11 @@ The output generates two columns: the 21 quantiles, `fi`, and the 21 `Bass 2` in
 Finally, we will combine the interpolated `Bass 2` values (which is already in an ascending order) with  **sorted** heights for the `Tenor 1` singers. Then, we will plot the paired values using `ggplot`. We will also add the 45° line to facilitate comparison.
 
 ```{r, fig.width=3, fig.height=3}
-s.qq <- data.frame( Bass  = b.hgt.interp$y,
-                    Tenor = sort( df[ df$voice.part == "Tenor 1", 1 ] ) )
+s.qq <- df.tenor %>% mutate(`Bass 2`  = b.hgt.interp$y) %>% 
+                     rename(`Tenor 1` = height) %>% 
+                     select(-voice.part)
 
-ggplot(s.qq, aes( x= Tenor, y = Bass)) + geom_point() + geom_abline( intercept=0, slope=1)
+ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) + geom_point() + geom_abline( intercept=0, slope=1)
 ```
 
 Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes. 
@@ -147,7 +150,7 @@ xylim <- range( c(s.qq$Bass, s.qq$Tenor) )
 # (This avoids having the points plotted on the edge of the plot)
 xylim <- xylim + c(-0.05 * diff(xylim), + 0.05 * diff(xylim))
 
-ggplot(s.qq, aes( x= Tenor, y = Bass)) + 
+ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) + 
              geom_point() + 
              geom_abline( intercept=0, slope=1) +
              coord_fixed(ratio = 1, xlim=xylim, ylim = xylim)
@@ -163,9 +166,9 @@ This approach is quicker and requires fewer lines of code, but it does not affor
 
 ```{r fig.height=3, fig.width=3, echo=2:5}
 OP <- par(mar=c(4,4,0,0))
-Tenor <- df[ df$voice.part == "Tenor 1", 1 ]
-Bass  <- df[ df$voice.part == "Bass 2", 1 ]
-qqplot(x=Tenor, y=Bass, asp=1)
+Tenor <- filter(df, voice.part == "Tenor 1")
+Bass  <- filter(df, voice.part == "Bass 2")
+qqplot(x=Tenor$height, y=Bass$height, asp=1)
 abline( c(0,1))
 par(OP)
 ```
@@ -173,7 +176,7 @@ par(OP)
 `qqplot` offers the option to output the q-q plot values (this includes the interpolated values) as a **list**  by setting the parameter `plot.it=FALSE`. We then need to convert this list object to a dataframe using `as.data.frame`. The output can then be used in a call to `ggplot`.
 
 ```{r fig.height=3, fig.width=3}
-qq.out <- qqplot(x=Tenor, y=Bass, plot.it=FALSE)
+qq.out <- qqplot(x=Tenor$height, y=Bass$height, plot.it=FALSE)
 qq.out <- as.data.frame(qq.out)
 
 xylim <- range( c(qq.out$x, qq.out$y) )
