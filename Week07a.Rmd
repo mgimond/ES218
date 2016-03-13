@@ -5,11 +5,17 @@ output:
     toc: yes
     toc_depth: 3
 ---
-```{r default options, echo=FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
 
-> This section is intended to supplement pages 34 to 41 of Cleveland's book.
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`ggplot2`**, **`dplyr`**, **`lattice`**.
+
+This material is intended to supplement **pages 34 to 41** of **Cleveland's book**.
+</div>
+
 
 In previous lectures, we've determined that the `voice.part` singer groups differed only by location (central value) and not so much by spread. In this section, we will expand this analysis by  **fitting** a model to our data then exploring the residuals.
 
@@ -20,23 +26,19 @@ Univariate data can be characterized by their location and by their spread. The 
 First, we'll load the libraries that will be used in this exercise, then load the `singer` data into the object `df`.
 
 ```{r}
-library(lattice)
 library(dplyr)
 library(ggplot2)
 
-df <- singer
+df <- lattice::singer
 ```
 
 
 Next, we'll plot the singer values using jittered points, then add a horizontal line to each batch that will represent each group mean.
 
 ```{r fig.width = 6, fig.height=3}
-ggplot(df) + aes(y=height, x=voice.part, col=voice.part)         + 
-  geom_jitter(position = position_jitter(height=0, width=0.1),
-              size=1.5, shape=19, alpha=0.6)                     +
-  geom_errorbar(stat = "hline", yintercept = "mean", width=0.7, 
-                aes(ymax=..y..,ymin=..y..),size=1.3,col="black") +
-  theme(legend.position="none")
+ggplot(df, aes(y=height, x=voice.part))         + 
+  geom_jitter(width = 0.1, height=0, alpha=0.1) +
+  stat_summary(fun.y = "mean", col="red", geom="point", cex=3, pch=21, bg="orange") 
 ```
 
 We've **fitted** each group with the **mean**--a mathematical description of the batches. Note that we could have used other measures of location such as the median, but since the data seem to follow a normal distribution, the mean is an adequate choice.
@@ -48,19 +50,16 @@ Now we'll subtract the group means from their respective group values: this will
 ```{r}
 # Add residual values to the data
 df2 <- df %>% group_by(voice.part) %>%
-              mutate( H = ( height - mean(height)) ) 
+              mutate( Height.res = ( height - mean(height)) ) 
 ```
 
 Next, we will generate a plot of the (jittered) residuals.
 
 ```{r fig.width = 6, fig.height=3}
 # Now plot the data after fitting height with group mean
-ggplot(df2) + aes(y=H, x=voice.part, col=voice.part)             + 
-  geom_jitter(position = position_jitter(height=0, width=0.1),
-              size=1.5, shape=19, alpha=0.6)                     +
-  geom_errorbar(stat = "hline", yintercept = "mean", width=0.7, 
-                aes(ymax=..y..,ymin=..y..),size=1.3,col="black") +
-  theme(legend.position="none")
+ggplot(df2) + aes(y=Height.res, x=voice.part)             + 
+  geom_jitter(width = 0.1, height=0, alpha=0.1) +
+  stat_summary(fun.y = "mean", col="red", geom="point", cex=3, pch=21, bg="orange")
 ```
 
 We've *normalized* the batches to a common location. Note that the values along the y-axis have changed: all values are now spread around $0$. Next, we'll check that the batches of residuals have similar spread.
@@ -69,11 +68,12 @@ We've *normalized* the batches to a common location. Note that the values along 
 
 The feature that interests us in the residuals is the **spread**. We've learned that a good way to compare spreads is to plot the quantiles of each batch against one another. 
 
-## Pairwise q-q plots
+## Pairwise q-q plots with the `lattice` package
 
 If we want to compare *all* batches, we can create a pairwise q-q plot using the `lattice` package.
 
 ```{r fig.width = 5, fig.height= 5}
+library(lattice)
 f.rng <- min(tapply(df2$H, df2$voice.part, length))
 fun1  <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
 t1    <- aggregate(df2$H ~ df2$voice.part, FUN=fun1, f.rng=f.rng )
@@ -100,16 +100,16 @@ In earlier analyses, it was determined that the spread of the data was homogeneo
 
 df3 <- df2 %>%
        group_by(voice.part)                     %>%
-       mutate(H.sorted = sort(H),
+       mutate(H.sorted = sort(Height.res),
               f.val    = (1:n() - 0.5) / n() )  %>%
        ungroup()                                %>%
-       mutate(Pooled.res = quantile(H, f.val))  %>%
+       mutate(Pooled.res = quantile(Height.res, f.val))  %>%
        select(voice.part, H.sorted, Pooled.res)
 
 
-ggplot(df3) + aes(y=H.sorted, x=Pooled.res) + geom_point(alpha=0.5) + 
-              facet_grid(. ~ voice.part) + geom_abline(c(0,1))
-
+ggplot(df3, aes(y=H.sorted, x=Pooled.res)) + geom_point(alpha=0.5) + 
+              geom_abline(intercept=0, slope=1) +
+              facet_grid(. ~ voice.part) 
 ```
 
 # Comparing pooled residuals to the normal distribution
@@ -123,7 +123,7 @@ x     <- qnorm( c(0.25, 0.75))
 slope <- diff(y) / diff(x)             
 int   <- y[1] - slope * x[1]
 
-ggplot(df3) + aes(sample=Pooled.res) +stat_qq() +geom_abline(int=int, slope=slope)
+ggplot(df3, aes(sample=Pooled.res)) +stat_qq() +geom_abline(intercept = int, slope=slope)
 ```
 
 This dataset has behaved quite well. Its batches differed only by location, yet its spread remained homogeneous (enough) across the batches  to pool them and enable us to confirm, with greater confidence, that the spread follows a normal distribution. 

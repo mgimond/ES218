@@ -6,18 +6,15 @@ output:
     toc_depth: 3
 ---
 
-```{r, echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-#  dev=c('CairoPNG', 'CairoPDF'),
-  type = "cairo",
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8"
-)
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**.
+
+This material is intended to supplement **pages 34 to 41** of **Cleveland's book**.
+</div>
 
 # Introduction
 
@@ -60,68 +57,6 @@ mtext(sl.line$nv.vv, side=3, at=sl.line$location)
 The red line in the plot helps identify the type of relationship between spread and location. If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.
 
 In the data fusion example, there is an obvious increase in spread as a function of location.
-
-# Other examples
-
-## Cleveland's food web data
-
-On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the  number of hierarchical prey-predator links in the web) for the three different ecosystem types. We will modify the chunk of code used in generating the s-l plot in the last section to sort the ecosystem dimensions by group median (i.e. we want the batches to be ordered from smallest median to largest median along the x-axis); this is done in the last three lines of the piping operation.
-
-```{r, fig.height=4,fig.width=3.5}
-df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
-
-# Create two new columns: group median and group residual
-df1 <- df %>%
-       group_by(dimension)                            %>%
-       mutate( med = median(mean.length),
-               res = sqrt( abs( mean.length - med)))  %>%
-       ungroup()                                      %>%
-       arrange(med)                                   %>%
-       mutate( dimension = factor(dimension, levels=unique(dimension)))
-```
-
-Some batches of data may show a systematic change in spread vs. location; a good example is the stereogram fusion time data in Cleveland's book where an increase in location translates into an increase in spread. Such dependency is often undesirable (e.g. in an ANOVA for instance) and preferably removed in an analysis. A plot well suited for visualizing this dependency is the **spread-level** plot, **s-l** (or **spread-location** plot as Cleveland calls it).
-
-# Constructing the s-l plot
-
-The plot compares a measure of the spread's residuals to the location (usually the median) for each batch of data. The spread is usually distilled down to its residuals (what remains after subtracting each batch value by the batch median) then transformed by taking the square root of its absolute value. Taking the absolute value collapses the spread about the median to prevent symmetric spreads from masking any systematic change in spread vs. location. The square root helps reduce the strong skew usually present in the residuals.
-
-The following block of code recreates the s-l plot in figure 2.25 from Cleveland's book.
-
-```{r, fig.height=4,fig.width=3.5}
-library(dplyr)
-
-df <- read.csv("http://mgimond.github.io/ES218/Data/fusion.csv")
-
-# Create two new columns: group median and group residual
-df1 <- df %>%
-       group_by(nv.vv)   %>%
-       mutate( med = median(time),
-               res = sqrt( abs( time - med)))
-
-# Compute the coordinate values needed to connect residual medians
-sl.line <- df1 %>%
-           group_by(nv.vv)  %>%
-           summarise(location = median(time),
-                     res.med  = median(res))
-
-# Generate the s-l plot
-plot( res ~ jitter( med, am=0), dat=df1, pch=20, col=rgb(0,0,0,0.3),
-      xlab = "Median time (jittered)",
-      ylab = "Sqrt of absolute residual time")
-
-# Connect the residual medians
-lines( sl.line$location, sl.line$res.med, col="red")
-
-# Add group labels to batches
-mtext(sl.line$nv.vv, side=3, at=sl.line$location)
-
-```
-
-The red line in the plot helps identify the type of relationship between spread and location. If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.
-
-In the data fusion example, there is an apparent increase in spread as a function of location.
-
 
 # Other examples
 
