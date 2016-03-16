@@ -24,8 +24,9 @@ Some batches of data may show a systematic change in spread vs. location; a good
 
 The plot compares a measure of the spread's residual to the location (usually the median) for each batch of data. The spread is usually distilled down to its residual (what remains after subtracting each batch value by the batch median) then transformed by taking the square root of its absolute value. The following block of code recreates the s-l plot in figure 2.25 from Cleveland's book.
 
-```{r, fig.height=4,fig.width=3.5}
+```{r, fig.height=3,fig.width=3}
 library(dplyr)
+library(ggplot2)
 
 df <- read.csv("http://mgimond.github.io/ES218/Data/fusion.csv")
 
@@ -42,15 +43,8 @@ sl.line <- df1 %>%
                      res.med  = median(res))
 
 # Generate the s-l plot
-plot( res ~ jitter( med, am=0), dat=df1, pch=20, col=rgb(0,0,0,0.3),
-      xlab = "Median time (jittered)",
-      ylab = "Sqrt of absolute residual time")
-
-# Connect the residual medians
-lines( sl.line$location, sl.line$res.med, col="red")
-
-# Add group labels to batches
-mtext(sl.line$nv.vv, side=3, at=sl.line$location)
+ggplot(df1, aes(x=med, y=res)) + geom_jitter(alpha=0.4,width=0.2) +
+  geom_line(data=sl.line,aes(x=location,y=res.med), col="red")
 
 ```
 
@@ -64,7 +58,7 @@ In the data fusion example, there is an obvious increase in spread as a function
 
 On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the  number of hierarchical prey-predator links in the web) for the three different ecosystem types. We will modify the chunk of code used in generating the s-l plot in the last section to sort the ecosystem dimensions by group median (i.e. we want the batches to be ordered from smallest median to largest median along the x-axis); this is done in the last three lines of the piping operation. We would normally not need to sort numeric values (recall that the x-axis represents the median of each batch, hence a number), but we do so to facilitate the plotting of the connecting lines.
 
-```{r, fig.height=4,fig.width=3.5}
+```{r, fig.height=3,fig.width=3.5}
 df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
 
 # Create two new columns: group median and group residual
@@ -84,15 +78,10 @@ sl.line <- df1 %>%
                      res.med  = median(res))
 
 # Generate the s-l plot
-plot( res ~ jitter( med, am=0), dat=df1, pch=20, col=rgb(0,0,0,0.3),
-      xlab = "Median time (jittered)",
-      ylab = "Sqrt of absolute residual time")
+ggplot(df1, aes(x=med, y=res)) + geom_jitter(alpha=0.4,width=0.2) +
+  geom_line(data=sl.line,aes(x=location,y=res.med), col="red") +
+  annotate("text", x=sl.line$location, y=1.75, label=sl.line$dimension)
 
-# Connect the residual medians
-lines( sl.line$location, sl.line$res.med, col="red")
-
-# Add group labels to batches
-mtext(sl.line$dimension, side=3, at=sl.line$location)
 ```
 
 A monotonic spread is apparent in this dataset too, i.e. as the median chain length increases, so does the spread.
@@ -101,7 +90,7 @@ A monotonic spread is apparent in this dataset too, i.e. as the median chain len
 
 In this next example, we will compare water temperature spreads with median temperatures across 12 months using Gulf of Maine buoy data. Since we have many categories to work with, we will do without the jitter and stack the points within each month.
 
-```{r, fig.height=4,fig.width=8}
+```{r, fig.height=3,fig.width=8}
 df <- read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", header=T)
 
 # Create two new columns: group median and group residual
@@ -121,15 +110,10 @@ sl.line <- df1 %>%
                      res.med  = median(res))
 
 # Generate the s-l plot
-plot( res ~ med, dat=df1, pch=20, col=rgb(0,0,0,0.1),
-      xlab = "Median water temperature (jittered)",
-      ylab = "Sqrt of absolute water temperature")
+ggplot(df1, aes(x=med, y=res)) + geom_jitter(alpha=0.2,width=0.1) +
+  geom_line(data=sl.line,aes(x=location,y=res.med), col="red") +
+  annotate("text", x=sl.line$location, y=2.5, label=sl.line$MM, cex=3)
 
-# Connect the residual medians
-lines( sl.line$location, sl.line$res.med, col="red")
-
-# Add group labels to batches
-mtext(sl.line$MM, side=3, at=sl.line$location, cex=0.5)
 ```
 
 Note that the discrete appearance of the values reflects the level of precision used to record  water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread is not immediately apparent.
