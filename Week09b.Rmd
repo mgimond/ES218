@@ -7,20 +7,13 @@ output:
   word_document: default
 ---
 
-```{r echo = FALSE, message = FALSE}
-knitr::knit_hooks$set(small.mar = function(before, options, envir) {
-    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
-})
-
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8")
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**, **`lubridate`** and **`ggplot2`**.
+</div>
 
 # Introduction
 
@@ -218,7 +211,6 @@ lo <- loess(AvgTemp ~ Year,df2, span=1/3)
 # Fit a robust loess model
 wt <- rep(1,length(df2$Year))
 
-
 for(i in 1:10){
   lo2 <- loess(AvgTemp ~ Year,df2, weights = wt, span=1/3)
   wt <- wt.bisquare( lo2$res/ median(abs(lo2$res)), c=6 )
@@ -242,8 +234,9 @@ The R base `loess` function and `ggplot2`'s `stat_smooth` function have the abil
 ```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
 library(ggplot2)
 ggplot(df2) + aes(x=Year, y=AvgTemp) + geom_point() + 
-              stat_smooth(family="symmetric", se=FALSE, span=1/3, col="red") +  # Robust loess
-              stat_smooth( se=FALSE, span=1/3,col="grey50", lty=2)              # Regular loess
+              stat_smooth(method.args = list(family="symmetric"),    # Robust loess
+                          se=FALSE, span=1/3, col="red") +  
+              stat_smooth( se=FALSE, span=1/3,col="grey50", lty=2)   # Regular loess           
 ```
 
 The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.

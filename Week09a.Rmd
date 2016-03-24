@@ -7,20 +7,14 @@ output:
   word_document: default
 ---
 
-```{r echo = FALSE, message = FALSE}
-knitr::knit_hooks$set(small.mar = function(before, options, envir) {
-    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
-})
 
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8")
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`ggplot2`**.
+</div>
 
 Bivariate data are datasets that store two variables measured from a same observation (e.g. wind speed **and** temperature at a single location). This differs from univariate data where only one variable is measured for each observation (e.g. temperature at a single location). 
 
@@ -154,7 +148,7 @@ In `ggplot2` simply pass the `method="loess"` parameter to the `stat_smooth` fun
 
 ```{r fig.width=2.5, fig.height=2.5}
 ggplot(df) + aes(x=area, y=cp.ratio) + geom_point() + 
-             stat_smooth(method="loess", se=FALSE, span=0.5, degree=1 )
+             stat_smooth(method="loess", se=FALSE, span=0.5)
 ```
 
 # Residuals
@@ -175,7 +169,7 @@ We'll create a **residual dependence plot** to plot the residuals as a function 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res1 <- data.frame( area = df$area, residuals = residuals(M))
 ggplot(res1) + aes(x=area, y=residuals) + geom_point() +
-               stat_smooth(method="loess", se=FALSE, span=1, degree=1 )
+               stat_smooth(method="loess", se=FALSE, span=1)
 ```
 
 We are interested in identifying any pattern in the residuals. If the model does a good job in fitting the data, the points should be uniformly distributed across the plot and the loess fit should approximate a horizontal line. With the linear model `M`, we observe a convex pattern in the residuals suggesting that the linear model is not a good fit. We say that the residuals show *dependence* on the x values. 
@@ -185,7 +179,7 @@ Next, we'll look at the residuals from the second order polynomial model `M2`.
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res2 <- data.frame( area = df$area, residuals = residuals(M2))
 ggplot(res2) + aes(x=area, y=residuals) + geom_point() +
-               stat_smooth(method="loess", se=FALSE, span=1, degree=1 )
+               stat_smooth(method="loess", se=FALSE, span=1)
 ```
 
 There is no indication of dependency between the residual and the `area` values. The second order polynomial is an improvement over the first order polynomial. Let's look at the loess model.
@@ -194,7 +188,7 @@ There is no indication of dependency between the residual and the `area` values.
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res2 <- data.frame( area = df$area, residuals = residuals(lo))
 ggplot(res2) + aes(x=area, y=residuals) + geom_point() +
-               stat_smooth(method="loess", se=FALSE, span=1, degree=1 )
+               stat_smooth(method="loess", se=FALSE, span=1)
 ```
 
 The loess model also seems to do a good job in smoothing out any overall pattern in the data.
@@ -209,7 +203,7 @@ The `M2` and `lo` models do a good job in eliminating any dependence between res
 sl2 <- data.frame( std.res = sqrt(abs(residuals(M2))), 
                    fit     = predict(M2) )
 ggplot(sl2) + aes(x=fit, y=std.res) + geom_point() +
-              stat_smooth(method="loess", se=FALSE, span=2, degree=1 )
+              stat_smooth(method="loess", se=FALSE, span=2)
 ```
 
 The function `predict()` extracts the y-values from the fitted model `M2` and is plotted along the x-axis. It's clear from this plot that the residuals are not homogeneous; they increase as a function of increasing *fitted* CP ratio. Note that we would observe this monotone spread with our loess model as well. AT this point, we should look into re-expressing the data.
@@ -235,7 +229,7 @@ At first glance, the log transformation seems to have done a good job at straigh
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res3 <- data.frame( area = df.log$area, residuals = residuals(M3))
 ggplot(res3) + aes(x=area, y=residuals) + geom_point() +
-               stat_smooth(method="loess", se=FALSE, span=2, degree=1 )
+               stat_smooth(method="loess", se=FALSE, span=2)
 ```
 
 Logging the y values has eliminated the residual's dependence on `area`. Next, let's assess homogeneity in the residuals using the s-l plot.
@@ -244,7 +238,7 @@ Logging the y values has eliminated the residual's dependence on `area`. Next, l
 sl3 <- data.frame( std.res = sqrt(abs(residuals(M3))), 
                    fit     = predict(M3))
 ggplot(sl3) + aes(x=fit, y=std.res) + geom_point() +
-               stat_smooth(method="loess", se=FALSE, span=2, degree=1 )
+               stat_smooth(method="loess", se=FALSE, span=2)
 ```
 
 We do not observe a systematic increase in spread, the log transformation seems to have removed the monotone spread as well as *straighten* the relationship between variables.. 
