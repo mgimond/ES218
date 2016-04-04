@@ -7,13 +7,14 @@ output:
   word_document: default
 ---
 
-
 ```{r echo=FALSE}
 source("libs/Common.R")
 ```
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
 This tutorial makes use of the following R package(s): **`ggplot2`**.
+
+This material is intended to supplement **pages 87 to 105** of **Cleveland's book**.
 </div>
 
 Bivariate data are datasets that store two variables measured from a same observation (e.g. wind speed **and** temperature at a single location). This differs from univariate data where only one variable is measured for each observation (e.g. temperature at a single location). 
@@ -33,7 +34,7 @@ Or, using `ggplot2`, as follows:
 
 ```{r fig.width=2.5, fig.height=2.5}
 library(ggplot2)
-ggplot(df) + aes(x=area, y=cp.ratio) + geom_point()
+ggplot(df, aes(x=area, y=cp.ratio)) + geom_point()
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
@@ -69,7 +70,7 @@ In the `ggplot2` plotting environment, we can make use of the `stat_smooth` func
 
 ```{r fig.width=2.5, fig.height=2.5}
 library(ggplot2)
-ggplot(df) + aes(x=area, y=cp.ratio) + geom_point() + 
+ggplot(df, aes(x=area, y=cp.ratio)) + geom_point() + 
              stat_smooth(method="lm", se=FALSE)
 ```
 
@@ -116,7 +117,7 @@ lines(x.pred$area,y.pred, col="red")
 To do this in `ggplot2` simply pass the formula as an argument to `stat_smooth`:
 
 ```{r fig.width=2.5, fig.height=2.5}
-ggplot(df) + aes(x=area, y=cp.ratio) + geom_point() + stat_smooth(method="lm", se=FALSE, formula= y ~  x + I(x^2) )
+ggplot(df, aes(x=area, y=cp.ratio)) + geom_point() + stat_smooth(method="lm", se=FALSE, formula= y ~  x + I(x^2) )
 ```
 
 
@@ -147,7 +148,14 @@ lines(lo.x, lo.y, col="red")
 In `ggplot2` simply pass the `method="loess"` parameter to the `stat_smooth` function.
 
 ```{r fig.width=2.5, fig.height=2.5}
-ggplot(df) + aes(x=area, y=cp.ratio) + geom_point() + 
+ggplot(df, aes(x=area, y=cp.ratio)) + geom_point() + 
+             stat_smooth(method="loess", se=FALSE, span=0.5, method.args = list(degree=1))
+```
+
+Here the `degree=1` parameter must be called via a `method.args` parameter, however, since the `default` degree is `1`, this option can be omitted from the syntax as follows:
+
+```{r eval=FALSE}
+ggplot(df, aes(x=area, y=cp.ratio)) + geom_point() + 
              stat_smooth(method="loess", se=FALSE, span=0.5)
 ```
 
@@ -168,7 +176,7 @@ We'll create a **residual dependence plot** to plot the residuals as a function 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res1 <- data.frame( area = df$area, residuals = residuals(M))
-ggplot(res1) + aes(x=area, y=residuals) + geom_point() +
+ggplot(res1, aes(x=area, y=residuals)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=1)
 ```
 
@@ -178,7 +186,7 @@ Next, we'll look at the residuals from the second order polynomial model `M2`.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res2 <- data.frame( area = df$area, residuals = residuals(M2))
-ggplot(res2) + aes(x=area, y=residuals) + geom_point() +
+ggplot(res2, aes(x=area, y=residuals)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=1)
 ```
 
@@ -187,13 +195,15 @@ There is no indication of dependency between the residual and the `area` values.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res2 <- data.frame( area = df$area, residuals = residuals(lo))
-ggplot(res2) + aes(x=area, y=residuals) + geom_point() +
+ggplot(res2, aes(x=area, y=residuals)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=1)
 ```
 
 The loess model also seems to do a good job in smoothing out any overall pattern in the data.
 
-Next we will look for any homogeneity in the residuals.
+You may ask "if the loess model does such a good job in fitting dat, why bother with polynomial fits?". If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematcially tractable model (like a polynomila model) should be sought. If the interest is simply in *seeing* a pattern in the data, then a loess fit is a good choice.
+
+You may ask *"if the loess model does such a good job in fitting data, why bother with polynomial fits?"*. If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in *seeing* a pattern in the data, then a loess fit is a good choice.
 
 ## Spread-location plot
 
@@ -202,7 +212,7 @@ The `M2` and `lo` models do a good job in eliminating any dependence between res
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 sl2 <- data.frame( std.res = sqrt(abs(residuals(M2))), 
                    fit     = predict(M2) )
-ggplot(sl2) + aes(x=fit, y=std.res) + geom_point() +
+ggplot(sl2, aes(x=fit, y=std.res)) + geom_point() +
               stat_smooth(method="loess", se=FALSE, span=2)
 ```
 
@@ -228,7 +238,7 @@ At first glance, the log transformation seems to have done a good job at straigh
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 res3 <- data.frame( area = df.log$area, residuals = residuals(M3))
-ggplot(res3) + aes(x=area, y=residuals) + geom_point() +
+ggplot(res3, aes(x=area, y=residuals)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=2)
 ```
 
@@ -237,7 +247,7 @@ Logging the y values has eliminated the residual's dependence on `area`. Next, l
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 sl3 <- data.frame( std.res = sqrt(abs(residuals(M3))), 
                    fit     = predict(M3))
-ggplot(sl3) + aes(x=fit, y=std.res) + geom_point() +
+ggplot(sl3, aes(x=fit, y=std.res)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=2)
 ```
 
