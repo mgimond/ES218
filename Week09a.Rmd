@@ -7,7 +7,6 @@ output:
   word_document: default
 ---
 
-
 ```{r echo=FALSE}
 source("libs/Common.R")
 ```
@@ -15,7 +14,7 @@ source("libs/Common.R")
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
 This tutorial makes use of the following R package(s): **`ggplot2`**.
 
-This material is intended to supplement pages 87 to 105 of Cleveland’s book.
+This material is intended to supplement **pages 87 to 105** of **Cleveland's book**.
 </div>
 
 Bivariate data are datasets that store two variables measured from a same observation (e.g. wind speed **and** temperature at a single location). This differs from univariate data where only one variable is measured for each observation (e.g. temperature at a single location). 
@@ -150,6 +149,14 @@ In `ggplot2` simply pass the `method="loess"` parameter to the `stat_smooth` fun
 
 ```{r fig.width=2.5, fig.height=2.5}
 ggplot(df, aes(x=area, y=cp.ratio)) + geom_point() + 
+             stat_smooth(method="loess", se=FALSE, span=0.5, 
+                         method.args = list(degree=1))
+```
+
+Here the `degree=1` parameter must be called via a `method.args` parameter, however, since the `default` degree is `1`, this option can be omitted from the syntax as follows:
+
+```{r eval=FALSE}
+ggplot(df, aes(x=area, y=cp.ratio)) + geom_point() + 
              stat_smooth(method="loess", se=FALSE, span=0.5)
 ```
 
@@ -181,6 +188,7 @@ res1 <- data.frame( area = df$area, residuals = residuals(M))
 ggplot(res1, aes(x=area, y=residuals)) + geom_point() +
              stat_smooth(method="loess", se=FALSE, span=1, 
                          method.args=list(degree=1) )
+
 ```
 
 We are interested in identifying any pattern in the residuals. If the model does a good job in fitting the data, the points should be uniformly distributed across the plot and the loess fit should approximate a horizontal line. With the linear model `M`, we observe a convex pattern in the residuals suggesting that the linear model is not a good fit. We say that the residuals show *dependence* on the x values. 
@@ -192,6 +200,7 @@ res2 <- data.frame( area = df$area, residuals = residuals(M2))
 ggplot(res2, aes(x=area, y=residuals)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=1, 
                            method.args=list(degree=1) )
+
 ```
 
 There is no indication of dependency between the residual and the `area` values. The second order polynomial is an improvement over the first order polynomial. Let's look at the loess model.
@@ -202,6 +211,7 @@ res2 <- data.frame( area = df$area, residuals = residuals(lo))
 ggplot(res2, aes(x=area, y=residuals)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=1, 
                            method.args=list(degree=1) )
+
 ```
 
 The loess model also seems to do a good job in smoothing out any overall pattern in the data.
@@ -209,6 +219,7 @@ The loess model also seems to do a good job in smoothing out any overall pattern
 You may ask *“if the loess model does such a good job in fitting dat, why bother with polynomial fits?”* If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in seeing a pattern in the data, then a loess fit is a good choice.
 
 Next we will look for any homogeneity in the residuals.
+
 
 ## Spread-location plot
 
