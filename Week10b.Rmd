@@ -7,20 +7,13 @@ output:
   word_document: default
 ---
 
-```{r echo = FALSE, message = FALSE}
-knitr::knit_hooks$set(small.mar = function(before, options, envir) {
-    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
-})
-
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8")
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`tidyr`**, **`dplyr`** and **`ggplot2`**.
+</div>
 
 # Introduction
 
@@ -57,7 +50,7 @@ The residuals do not appear uniformly distributed across the range of x-values. 
 
 ```{r fig.width=5, fig.height=3}
 library(ggplot2)
-ggplot(df) + aes(x=x,y=residuals(M1)) +geom_point() +stat_smooth(span=1/2, se=FALSE)
+ggplot(df, aes(x=x,y=residuals(M1))) +geom_point() +stat_smooth(span=1/2, se=FALSE)
 ```
 
 The *kinks* in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slope and intercept)..
@@ -69,7 +62,7 @@ Sometimes, the data may represent outcomes from different processes given differ
 library(dplyr)
 df3 <- df %>% mutate(grp = cut(x,c(-Inf,95,106,Inf), labels = c(1,2,3)) )
 
-ggplot(df3) + aes(x=x,y=y) + geom_point(col="grey") +
+ggplot(df3, aes(x=x,y=y)) + geom_point(col="grey") +
               stat_smooth(se=F) + facet_grid(.~grp)
 ```
 
@@ -114,14 +107,14 @@ d1.l <- gather(d1, key=Temp, value=Percent, -Year)
 Let's plot the data and fit a straight line to the points.
 
 ```{r fig.width=6, fig.height=3}
-ggplot(d1.l) + aes(x=Year, y=Percent) + geom_point() +
+ggplot(d1.l, aes(x=Year, y=Percent)) + geom_point() +
                stat_smooth(method="lm", se=F) +facet_grid( . ~ Temp)
 ```
 
 The plot on the left is for percent cold nights and the one on the right is for percent hot nights. At first glance, the trends seem real and monotonic. Let's fit a loess to see if the trend are indeed monotonic.
 
 ```{r fig.width=6, fig.height=3}
-ggplot(d1.l) + aes(x=Year, y=Percent) + geom_point() +
+ggplot(d1.l, aes(x=Year, y=Percent)) + geom_point() +
                stat_smooth(method="loess", se=F) +facet_grid( . ~ Temp)
 ```
 
@@ -140,7 +133,7 @@ dpo <- d1 %>%
        group_by(YEAR) %>%
        summarise(DPO = median(DPO) )
 
-ggplot(dpo) + aes(x=YEAR, y=DPO) + geom_line() + stat_smooth(se=F, span=1/4) + 
+ggplot(dpo, aes(x=YEAR, y=DPO)) + geom_line() + stat_smooth(se=F, span=1/4) + 
              geom_vline(xintercept =c(1960, 1976,2000), lty=3)
 ```
 
@@ -156,7 +149,7 @@ d2.l  <- d1.l  %>%
 Next, we'll plot the data across four facets:
 
 ```{r fig.width=6, fig.height=5}
-ggplot(d2.l) + aes(x=Year, y=Percent) + geom_point() +
+ggplot(d2.l, aes(x=Year, y=Percent)) + geom_point() +
                stat_smooth(method="lm", se=F) + facet_grid( seg ~ Temp)
 ```
 
