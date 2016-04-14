@@ -7,21 +7,13 @@ output:
   word_document: default
 ---
 
-```{r echo = FALSE, message = FALSE}
-knitr::knit_hooks$set(small.mar = function(before, options, envir) {
-    if (before) par(mar = c(4, 4, 1, 1))  # smaller margin on top and right
-})
-
-knitr::opts_chunk$set(
-  comment = "",
-  message = FALSE,
-  tidy = FALSE,
-#  dev=c('CairoPNG', 'CairoPDF'),
-  cache = FALSE,
-  warning = FALSE,
-  encoding = "UTF-8",
-  scipen=3)
+```{r echo=FALSE}
+source("libs/Common.R")
 ```
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`tidyr`** and **`dplyr`**.
+</div>
 
 # Introduction
 
@@ -153,7 +145,8 @@ library(dplyr)
 
 df.l <- df %>%
   mutate(Region = as.factor(row.names(.)) )  %>%
-  gather(key=Edu, value = Deaths, -Region)
+  gather(key=Edu, value = Deaths, -Region) %>% 
+  mutate(Edu = as.factor(Edu))
 
 # side-by-side plot
 OP <- par(mfrow=c(1,2))
@@ -369,13 +362,13 @@ The procedure is similar with some notable differences. First, we compute the gl
 
 ![A 2-way table](img/twoway_11.png)
 
-The results differ slightly from the those produced using the median polish. Recall that the mean is sensitive to outliers and medians are not. If a robust estimate of the effects is sought, stick with the median polish.
+The results differ slightly from those produced using the median polish. Recall that the mean is sensitive to outliers and medians are not. If a robust estimate of the effects is sought, stick with the median polish.
 
 So what can we gain from the "mean" polish? Well, as it turns out, it serves as the basis of the **two-way ANOVA**. 
 
 ## Two-way ANOVA
 
-A two-way ANOVA assesses whether the factors (categories) have a significant effect on the outcome. It's implementation can be conceptualized as a regression analysis where each row and column level is treated as a dummy variable. The computed regression coefficients are the same as the levels computed using the "mean" polish outlined in the previous step except for one notable difference: the ANOVA adds one of the column level values and one of the row level values to the grand mean then subtracts those values from their respective row/column effects.
+A two-way ANOVA assesses whether the factors (categories) have a significant effect on the outcome. Its implementation can be conceptualized as a regression analysis where each row and column level is treated as a dummy variable. The computed regression coefficients are the same as the levels computed using the "mean" polish outlined in the previous step except for one notable difference: the ANOVA adds one of the column level values and one of the row level values to the grand mean then subtracts those values from their respective row/column effects.
 
 ![A 2-way table](img/twoway_12.png)
 
