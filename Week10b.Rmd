@@ -20,42 +20,31 @@ This tutorial makes use of the following R package(s): **`tidyr`**, **`dplyr`** 
 Let's start off by downloading a sample dataset.
 
 ```{r}
+library(ggplot2)
+
 df <- read.csv("http://mgimond.github.io/ES218/Data/Sample1.csv")
 ```
 
-Next, we'll plot the data.
+Next, we'll plot the data and fit a straight line.
 
 ```{r fig.width=5, fig.height=3, small.mar=TRUE}
-plot(y ~ x, df, pch=20, col=rgb(0,0,0,.3))
+ggplot(df, aes(x=x,y=y)) + geom_point(alpha=0.3) + stat_smooth(method="lm", se=FALSE)
 ```
 
-The points *appear* to follow a linear pattern. Let's run a regression model then add the modeled line to the data.
+The line seems to do a decent job in depicting the *overall* trend but the relationship does not appear perfectly linear. Let's check the residuals via a residual-dependence plot.
 
 ```{r fig.width=5, fig.height=3, small.mar=TRUE}
-M1 <- lm( y ~ x, df)
-plot(y ~ x, df, pch=20, col=rgb(0,0,0,.3))
-abline(M1, col="red")
+M1    <- lm( y ~ x, df)
+df$R1 <- residuals(M1)
+
+ggplot(df, aes(x=x,y=R1)) + geom_point(alpha=0.3) + 
+           stat_smooth(method="loess", se=FALSE, span=0.2, 
+                       method.args=list(degree=1))
 ```
 
-The line seems to do a decent job in depicting the *overall* trend but the relationship does not appear perfectly linear. Let's check the residuals.
+There appears to be a dip in residual values between ~95 and ~107 followed by an increase beyond ~107. The *kinks* in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slopes and intercepts). Note the use of a small loess span in the above code to reveal the kinks in the pattern.
 
-```{r fig.width=5, fig.height=3, small.mar=TRUE}
-R1 <- residuals(M1)
-plot(R1 ~ df$x , pch=20, col=rgb(0,0,0,.3))
-abline(h=0, lty=2)
-```
-
-The residuals do not appear uniformly distributed across the range of x-values. There appears to be a dip in residual values between ~95 and ~107 followed by an increase beyond ~107. Let's plot the residuals using `ggplot` so as to take advantage of the built-in loess fitting function `stat_smooth`.
-
-
-```{r fig.width=5, fig.height=3}
-library(ggplot2)
-ggplot(df, aes(x=x,y=residuals(M1))) +geom_point() +stat_smooth(span=1/2, se=FALSE)
-```
-
-The *kinks* in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slope and intercept)..
-
-Sometimes, the data may represent outcomes from different processes given different ranges in independent (x) values. Since the residual plot seems to suggest that the kinks occur are `x=95` and `x=106`, we'll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled `1`, `2`, and `3` and will be assigned to a new column called `grp`. This new column will then be used to facet the scatter plots and associated loess curve. We'll use the `cut()` function to perform this task (note that we could have also used the `ifesle()` function used earlier in the course).
+Sometimes, the data may represent outcomes from different processes given different ranges in independent (x) values. Since the residual plot seems to suggest that the kinks occur are `x=95` and `x=106`, we'll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled `1`, `2`, and `3` and will be assigned to a new column called `grp`. This new column will then be used to facet the scatter plots and associated loess curve. We'll use the `cut()` function to perform this task (note that we could have also used the `ifelse()` function used earlier in the course).
 
 
 ```{r fig.width=7, fig.height=3}
@@ -63,7 +52,7 @@ library(dplyr)
 df3 <- df %>% mutate(grp = cut(x,c(-Inf,95,106,Inf), labels = c(1,2,3)) )
 
 ggplot(df3, aes(x=x,y=y)) + geom_point(col="grey") +
-              stat_smooth(se=F) + facet_grid(.~grp)
+              stat_smooth(method="loess", se=FALSE) + facet_grid(.~grp)
 ```
 
 The segmented plots seem to confirm our earlier suspicion that the data followed three separate linear processes. We can extract the slope and intercept for each segment using the following chunk of code:
@@ -87,8 +76,6 @@ The following data are pulled from the paper titled "*Observed Trends in Indices
 
 ```{r message=FALSE}
 library(tidyr)
-library(ggplot2)
-library(dplyr)
 
 Year <- 1960:2000
 PerC <- c(11.69,9.33,14.35,10.73,14.15,11.16,13,12.13,14.25,10.01,11.94,14.35,
@@ -108,14 +95,17 @@ Let's plot the data and fit a straight line to the points.
 
 ```{r fig.width=6, fig.height=3}
 ggplot(d1.l, aes(x=Year, y=Percent)) + geom_point() +
-               stat_smooth(method="lm", se=F) +facet_grid( . ~ Temp)
+               stat_smooth(method="lm", se=FALSE) +facet_grid( . ~ Temp)
 ```
 
-The plot on the left is for percent cold nights and the one on the right is for percent hot nights. At first glance, the trends seem real and monotonic. Let's fit a loess to see if the trend are indeed monotonic.
+The plot on the left is for percent cold nights and the one on the right is for percent hot nights. At first glance, the trends seem real and monotonic. 
+
+Next we'll fit a loess to see if the trends are indeed monotonic. To minimize the undue influence of end values in the plot, we'll implement loess' bisquare estimation method via `family=symmetric`. We'll also use a small span to help identify any "kinks" in the patterns.
 
 ```{r fig.width=6, fig.height=3}
 ggplot(d1.l, aes(x=Year, y=Percent)) + geom_point() +
-               stat_smooth(method="loess", se=F) +facet_grid( . ~ Temp)
+             stat_smooth(method="loess", se=FALSE, span=0.5,
+             method.args=list(degree=1, family="symmetric"))  + facet_grid( . ~ Temp)
 ```
 
 The patterns seem to be segmented around the 1975-1980 period for both plots suggesting that the observed trends may not be monotonic. In fact, there appears to be a prominent kink in the percent cold data around the mid to late 1970`s. A similar, but not as prominent kink can also be observed in the percent hot data at around the same time period.
@@ -150,14 +140,14 @@ Next, we'll plot the data across four facets:
 
 ```{r fig.width=6, fig.height=5}
 ggplot(d2.l, aes(x=Year, y=Percent)) + geom_point() +
-               stat_smooth(method="lm", se=F) + facet_grid( seg ~ Temp)
+               stat_smooth(method="lm", se=FALSE) + facet_grid( seg ~ Temp)
 ```
  
 To test for "straightness" in the fits, we'll fit a loess to the points.
 
 ```{r fig.width=6, fig.height=5}
 ggplot(d2.l, aes(x=Year, y=Percent)) + geom_point() +
-             stat_smooth(method="loess", se=F,
+             stat_smooth(method="loess", se=FALSE,
                          method.args=list(degree=1)) + 
              facet_grid( seg ~ Temp)
 ```
