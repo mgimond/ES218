@@ -44,10 +44,11 @@ cnty <- map_data("county")
 # Plot the counties
 ggplot(cnty, aes(long,lat, group = group)) + 
   geom_polygon(aes(fill = region), colour = rgb(1,1,1,0.2)) + 
-  coord_equal(1.3) + theme(legend.position="none")
+  theme(legend.position="none") +
+  coord_quickmap()
 ```
 
-The `x` and `y` values are assigned the `long` and `lat` columns that store the coordinate values for each vertex that delineates a county. The `group` parameter tells `ggplot` which polygon (county) a vertex is defining. The `geom_polygon()` function generates *filled* areas from those vertices. The `colour` parameter defines the polygon outline color. 
+The `x` and `y` values are assigned the `long` and `lat` columns that store the coordinate values for each vertex that delineates a county. The `group` parameter tells `ggplot` which polygon (county) a vertex is defining. The `geom_polygon()` function generates *filled* areas from those vertices. The `colour` parameter defines the polygon outline color. The option `legend.position="none"` prevents the legend from being displayed and the `coord_quickmap()` function forces the aspect ratio to approximate that of the Mercator projection.
 
 ## Joining income table to the map by county and state names
 
@@ -79,8 +80,8 @@ Next, we join the `st` look-up table to `df` then make the additional changes ne
 
 ```{r}
 df1 <- df %>% 
-  inner_join(., st, by="State") %>%
-  mutate( subregion = tolower(County))  %>%
+  inner_join(st, by="State") %>%
+  mutate(subregion = tolower(County))  %>%
   select(subregion, region, B20004001 )
 ```
 
@@ -95,7 +96,7 @@ Now let's map the income distribution.
 ```{r fig.width=7.5,fig.height=5}
 ggplot(cnty.df1, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
-  coord_equal(1.3)
+  coord_quickmap()
 ```
 
 You may notice that the counties map does not seem complete; most notable is the absence of *all* Louisiana counties. Let's look at the rows in `cnty.df1` associated with the state of Louisiana.
@@ -108,7 +109,7 @@ There are no rows returned. This suggests that the Louisiana counties did not pr
 
 ```{r}
 df1 %>% filter(region == "louisiana") %>% select(subregion)
-cnty %>% filter(region == "louisiana") %>% select(subregion) %>% unique(.)
+cnty %>% filter(region == "louisiana") %>% select(subregion) %>% unique()
 ```
 
 It turns out that Louisiana does not divide its administrative areas into *counties* but *parishes* instead. The income data (originally downloaded from the Census Bureau) follows through with that designation convention by adding the word "parish" to each of its administrative area names. We therefore need to remove all instances of `parish` in the `subregion` names associated with Louisiana. We will therefore need to recreate the `df1` object:
@@ -116,7 +117,7 @@ It turns out that Louisiana does not divide its administrative areas into *count
 ```{r}
 library(stringr)
 df1 <- df %>% 
-  inner_join(., st, by="State") %>%
+  inner_join(st, by="State") %>%
   mutate( subregion = tolower(County) ,
           subregion = ifelse(region=="louisiana", 
                              str_replace(subregion, " parish", ""), subregion))  %>%
@@ -130,7 +131,7 @@ cnty.df1 <- inner_join(cnty, df1, by=c("region", "subregion") )
 
 ggplot(cnty.df1, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
-  coord_equal(1.3)
+  coord_quickmap()
 ```
 
 Most of Louisiana's parishes are now mapped, but we are still missing a few parishes as well as a few counties. This is a result of differences in spelling for two-word county and parish names. For example, `df1` encodes St. Lucie county (Florida) as `st. lucie` whereas `cnty` omits the dot and encodes it as `st lucie`. Fixing these discrepancies will require additional labor. At this point, it may prove more fruitful to do away with state/county names as *joining* keys and use **FIPS** county codes instead. FIPS (Federal Information Processing Standards) codes assign each county/state a unique five number designation thus making it easier to join data to spatial features. However, neither our census data table nor the built-in counties map have FIPS codes. We will download another version of the income data (one that has FIPS codes). Note that FIPS codes are normally part of datasets provided by the Census Bureau. The `maps` package has a dataset called `county.fips` that can be used to match state/county names in the `county` map to FIPS codes.
@@ -167,7 +168,7 @@ cnty2.df1 <- inner_join(cnty2, df1, by=c("fips" = "FIPS") )
 
 ggplot(cnty2.df1, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
-  coord_equal(1.3)
+  coord_quickmap()
 ```
 
 This is an improvement over the last map. But there are still a few counties missing. After a closer scrutiny of the data, it seems that the `county.fips` table splits some counties into two or more sub-regions. For example, Accomack county (Virginia) is split into two regions (and thus into two different names):
@@ -215,8 +216,8 @@ Next we can append the income table to the new `cnty2` object.
 
 ```{r}
 cnty2.cs <- cnty2 %>%
-            inner_join(. , shapefile@data, by="id") %>%
-            inner_join(. , df1, by="FIPS")
+            inner_join(shapefile@data, by="id") %>%
+            inner_join(df1, by="FIPS")
 ```
 
 ## Generating a continuous color scheme
@@ -226,7 +227,7 @@ Now we can plot the income distribution map.
 ```{r fig.width=7.5,fig.height=5}
 ggplot(cnty2.cs, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = B20004001), colour = rgb(1,1,1,0.2))  +
-  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 )
+  coord_quickmap() + xlim(-125, - 67) + ylim( 25,50 )
 ```
 
 Depending on the size of your output extent, you might find the county outlines distracting--especially in the northeastern region where the county sizes are so small. We can omit the outline by setting the `colour` parameter to `NA`.
@@ -234,7 +235,7 @@ Depending on the size of your output extent, you might find the county outlines 
 ```{r fig.width=7.5,fig.height=5}
 ggplot(cnty2.cs, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = B20004001), colour = NA)  +
-  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) 
+  coord_quickmap() + xlim(-125, - 67) + ylim( 25,50 ) 
 ```
 
 `ggplot` defaults to a **continuous** color scheme that ranges from a dark blue to a light blue. Continuous color schemes can be modified in ggplot by using the `scale_fill_gradient` function. For example, to use a light yellow to dark green color scheme modify the above chunk of code as follows:
@@ -242,7 +243,7 @@ ggplot(cnty2.cs, aes(long, lat,group = group)) +
 ```{r fig.width=7.5,fig.height=5}
 ggplot(cnty2.cs, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = B20004001), colour = NA)  +
-  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) +
+  coord_quickmap() + xlim(-125, - 67) + ylim( 25,50 ) +
   scale_fill_gradient(low="lightyellow2", high="darkgreen")
 ```
 
@@ -275,7 +276,7 @@ library(RColorBrewer)
 
 ggplot(cnty2.cs, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = Income), colour = NA)  +
-  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) +
+  coord_quickmap() + xlim(-125, - 67) + ylim( 25,50 ) +
   scale_fill_brewer(palette = "YlGn")
 ```
 
@@ -303,7 +304,7 @@ library(RColorBrewer)
 
 ggplot(cnty2.cs, aes(long, lat,group = group)) + 
   geom_polygon(aes(fill = Income), colour = NA)  +
-  coord_equal(1.3) + xlim(-125, - 67) + ylim( 25,50 ) +
+  coord_quickmap() + xlim(-125, - 67) + ylim( 25,50 ) +
   scale_fill_brewer(palette = "RdYlGn")
 ```
 
