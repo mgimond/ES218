@@ -50,6 +50,24 @@ ggplot(cnty, aes(long,lat, group = group)) +
 
 The `x` and `y` values are assigned the `long` and `lat` columns that store the coordinate values for each vertex that delineates a county. The `group` parameter tells `ggplot` which polygon (county) a vertex is defining. The `geom_polygon()` function generates *filled* areas from those vertices. The `colour` parameter defines the polygon outline color. The option `legend.position="none"` prevents the legend from being displayed and the `coord_quickmap()` function forces the aspect ratio to approximate that of the Mercator projection.
 
+If you want to change the map projection, you can substitute `coord_quickmap()` with `coord_map()`. The latter accepts as parameter projections available in the the `mapproj` package. For example, to project the continental US into a Bonne projection modify the above chunk as follows:
+
+```{r fig.width=6.5,fig.height=5}
+ggplot(cnty, aes(long,lat, group = group)) + 
+  geom_polygon(aes(fill = region), colour = rgb(1,1,1,0.2)) + 
+  theme(legend.position="none") +
+  coord_map("bonne",  param=45) 
+```
+
+If we want to omit the background grid, we modify the chunk as follows (note that the  `theme()` options gets overridden by the `theme_void()` option requiring that we pass the `show.legend = FALSE` option to `geom_polygon`).
+
+```{r fig.width=6.5,fig.height=5}
+ggplot(cnty, aes(long,lat, group = group)) + 
+  geom_polygon(aes(fill = region), show.legend = FALSE, colour = rgb(1,1,1,0.2)) + 
+  coord_map("bonne",  param=45) +
+  theme_void()
+```
+
 ## Joining income table to the map by county and state names
 
 The next step is to *join* a dataset to the counties map. We will use the income-by-gender-education dataset used earlier in the course and limit the data to *median income per person* (`B20004001` column).
@@ -158,7 +176,7 @@ Note that the state and county names are aggregated into a single column; this d
 ```{r}
 cnty2 <- cnty %>%
         mutate(polyname = paste(region,subregion,sep=",")) %>%
-        left_join(.,county.fips, by="polyname")
+        left_join(county.fips, by="polyname")
 ```
 
 Now that the FIPS codes are part of the county map dataframe, let's join the income data table to the county map, then map the income values.
