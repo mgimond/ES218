@@ -1,9 +1,5 @@
 ---
 title: "Comparing data distributions"
-output:
-  html_document:
-    toc: yes
-    toc_depth: 3
 ---
 
 
@@ -15,7 +11,7 @@ source("libs/Common.R")
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
 This tutorial makes use of the following R package(s): **`dplyr`**, **`ggplot2`**, **`lattice`**.
 
-This material is intended to supplement **section 2.2** of **Cleveland's book**.
+This material can be read in conjunction with **section 2.2** of **Cleveland's book**.
 </div>
 
 
@@ -71,7 +67,7 @@ Leveling the boxplots certainly helps in assessing the difference in spreads. It
 
 A quantile-quantile plot (or Q-Q plot for short) combines two separate quantile plots from  different batches of values by pairing the point values by their common $f$-value.
 
-![QQ plot construcion](img/QQ_plot.png)
+![](img/QQ_plot.png)
 
 First, we need to compute the $f$-values for both batches of singer data (`Bass 2` and `Tenor 1`).
 
@@ -132,19 +128,18 @@ The output generates two columns: the 21 quantiles, `fi`, and the 21 `Bass 2` in
 
 Finally, we will combine the interpolated `Bass 2` values (which is already in an ascending order) with  **sorted** heights for the `Tenor 1` singers. Then, we will plot the paired values using `ggplot`. We will also add the 45° line to facilitate comparison.
 
-```{r, fig.width=3, fig.height=3}
+```{r , fig.width=3, fig.height=3}
 s.qq <- df.tenor %>% mutate(`Bass 2`  = b.hgt.interp$y) %>% 
-                     rename(`Tenor 1` = height) %>% 
-                     select(-voice.part)
+                     rename(`Tenor 1` = height) 
 
 ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) + geom_point() + geom_abline( intercept=0, slope=1)
 ```
 
 Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes. 
 
-```{r, fig.width=3, fig.height=3}
+```{r , fig.width=3, fig.height=3}
 # Get the range of both datasets
-xylim <- range( c(s.qq$Bass, s.qq$Tenor) )
+xylim <- range( c(s.qq$"Bass", s.qq$`Tenor 1`) )
 
 # Add a 5% buffer to the xy limits
 # (This avoids having the points plotted on the edge of the plot)

@@ -1,10 +1,5 @@
 ---
 title: "Week2: Working with Dates"
-output:
-  html_document:
-    toc: yes
-    toc_depth: 3
-  word_document: default
 ---
 
 ```{r echo=FALSE}
@@ -15,7 +10,7 @@ source("libs/Common.R")
 This tutorial makes use of the following R package(s): **`lubridate`**
 </div>
 
-Date values can be represented in tables as numbers or characters. But to be properly interpreted by R as dates, date values should be converted to an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier.
+Date values can be represented in tables as numbers or characters. But to be properly interpreted by R as dates, date values should be converted to an R **date** object class or a `POSIXct`/`POSIXt` object class. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier.
 
 # Creating date/time objects
 
@@ -25,6 +20,7 @@ You can convert many representations of date and time to date objects. For examp
 
 ```{r}
 x <- c("06/23/2013", "06/30/2013", "07/12/2014")
+class(x)
 ```
 
 At this point, R treats the vector `x` as characters. To force R to interpret these as dates, use `lubridate`'s `mdy` function. `mdy` will convert date strings where the date elements are ordered as month, day and year.
@@ -32,8 +28,10 @@ At this point, R treats the vector `x` as characters. To force R to interpret th
 ```{r}
 library(lubridate)
 x.date <- mdy(x)
-x.date
+class(x.date)
 ```
+
+Note that using the `mode` or `typeof` functions will not help us determine if the object is an R *date* object. This is because a date is stored as a `numeric` (double) internally. Use the `class` function instead as shown in the above code chunk. 
 
 If you need to specify the time zone, add the parameter `tz=`. For example, to specify *Eastern Standard Time*, type:
 
@@ -42,7 +40,7 @@ x.date <- mdy(x, tz="EST")
 x.date
 ```
 
-R does not maintain its own list of timezone names instead, it relies on the operating system's naming convention. To list the supported timezone names for your particular R environment, type:
+R does not maintain its own list of timezone names, instead, it relies on the operating system's naming convention. To list the supported timezone names for your particular R environment, type:
 
 ```{r eval=FALSE}
 OlsonNames()
@@ -50,19 +48,11 @@ OlsonNames()
 
 For example, to select Daylight Savings Time type `tz="EST5DST"`.
 
-The telltale sign that the element is recognized as a date is to run the element through `str()`:
-
-```{r}
-str(x.date)
-```
-
-The keywords you are looking for are `POSIXct` or `POSIXt` which define the object's **class**. Note that R stores the date object as a number (double precision)--in fact, if you run the date object though the functions `typeof()` or `mode()` you'll see that the dates are indeed stored as numbers. An object's *class* is a wrapper around that object that helps R figure out what to do with it. You can find an object's class by wrapping it with the `class` function.
+Adding the timezone converts the R date object into another date object class called `POSIXt` or `POSIXct`. 
 
 ```{r}
 class(x.date)
 ```
-
-So even though the dates are stored as numbers R will know to treat them as dates.
 
 Turning our attention back to the function `mdy`, note that it can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same so long as the order remains month/day/year.
 
@@ -88,6 +78,12 @@ The characters `_h`, `_hm` or `_hms` can be appended to any of the four date fun
 mdy_h("6/23/2013 3", tz="EST") 
 dmy_hm("23/6/2013 3:15", tz="EST5EDT")
 ymd_hms("2013/06/23 3:15:7", tz="UTC")
+```
+
+Note that adding a time element to the date object will also create `POSIXct` and `POSIXt` object classes.
+
+```{r}
+class(x.date)
 ```
 
 ## From separate date elements
@@ -132,7 +128,7 @@ or you could type,
 class(dat1$Date)
 ```
 
-Note the POSIX class designation in both outputs.
+Note the `Date` class designation (as opposed to the `POSIX...` class) since we did not add a timezone or time component to the date object.
 
 # Extracting date information
 
@@ -145,10 +141,10 @@ wday(x.date)
 If you want the day of the week displayed as its three letter designation, add the `label=TRUE` parameter.
 
 ```{r}
-wday(x.date, label = TRUE)
+wday(x.date, label=TRUE)
 ```
 
-You'll note that this last call not only returns the day of the week for each element (`r as.character(wday(x.date, label = TRUE))`) but it also returns `levels` information along with its hierarchy.
+You'll note that this last call not only returns the day of the week for each element (`r as.character(lubridate::wday(x.date, label = TRUE))`) but it also returns `levels` information along with its hierarchy.
 
 The following table lists functions that extract different elements of a date object.
 

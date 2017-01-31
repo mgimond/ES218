@@ -1,9 +1,5 @@
 ---
 title: "Week 3: Manipulating data tables with dplyr"
-output:
-  html_document:
-    toc: yes
-    toc_depth: 3
 ---
 
 ```{r echo=FALSE}
@@ -216,23 +212,6 @@ plot( NormYield ~ Year, dat2[dat2$Crop == "Barley",] )
 abline(h = 0, col="red")
 ```
 
-The relative distribution of  points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.
+The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.
 
-## Computing the residuals after fitting a linear regression model for each group
-
-(Note that this example covers topics best suited for advanced users)
-
-This is an extension of the last example where, instead of fitting a constant (median) value to the yield values within each crop group, we fit a linear regression line to crop yield vs. year within each crop group, then compute the differences between the line and the values thus giving us the *residuals*.
-
-```{r}
-dat2 <- dat %>% 
-  filter(Information == "Yield (Hg/Ha)",
-         Country =="United States of America") %>%
-  select(Crop, Year, Value)                    %>%
-  group_by(Crop)                               %>%
-  mutate(Residuals = Value - predict(lm(deparse(substitute(Value ~ Year))),
-                                     data.frame(Year)) )   
-```
-
-The `deparse(substitute(...))` functions are necessary in the piping operations for `dplyr` to properly interpret the formula. The `predict()` function extracts predicted values from the regression model by passing one or many values as a dataframe (even if we are only predicting the crop yield for a single year by row).  
 
