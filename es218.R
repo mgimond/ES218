@@ -87,10 +87,10 @@ lsum <- function (x, l = 5, all = TRUE)
 #  y  = value column
 #  
 
-sl <- function(x,y,df) {
+sl <- function(x,y,dat) {
   require(dplyr)
-  xx <- eval(substitute(x), df)
-  yy <- eval(substitute(y), df)
+  xx <- eval(substitute(x), dat)
+  yy <- eval(substitute(y), dat)
   
   df1 <- data.frame(grp=xx,y=yy)
   df2 <- df1 %>%
