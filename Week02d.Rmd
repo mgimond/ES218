@@ -164,7 +164,7 @@ Note that the operation `a == 2 | 4` is not the same as `a == 2 | a == 4`! The f
 
 It's usually best to assign `NA` values the moment a data file is loaded into R. For example, had all `NA` values been flagged as `-9999`, we could have added the parameter `na.strings="-9999"` to the `read.table()` function. But our dataset contains missing values flagged as 99, 999 *and* 9999 requiring that we combine the missing string values such as `na.strings = c("99", "999", "9999")` however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as `NA` would be sensible, but a wind direction of 99 degrees would make sense and flagging such value as `NA` would not be appropriate. Had we set *all* values of 99 to `NA` the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as `NA` in our dataset will require column level intervention.
 
-Let's review the data summary to identify each column's nodata numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the `dat1` dataframe and not the orginal `dat`.
+Let's review the data summary to identify each column's no data numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the `dat1` dataframe and not the original `dat`.
 
 ```{r}
 summary(dat1)
@@ -225,6 +225,34 @@ d.complete
 ```
 
 All rows with at least one `NA` value have been removed. Note that the table's dimension has changed from seven rows to four.
+
+# Checking if a value is `NA`
+
+When assessing if a value is equal to `NA` the following evaluation may behave unexpectedly.
+
+```{r}
+a <- c (3, 67, 4, NA, 10)
+a == NA
+```
+
+The output is not a logical datatype we would expect from an evaluation. Instead, you must make use of the `is.na()` function:
+
+```{r}
+is.na(a)
+```
+
+As another example, if we want to keep all rows in dataframe `d` where `z` = `NA`, we would type:
+
+```{r}
+d[ is.na(d$z), ]
+```
+
+You can, of course, use the `!` operator to reverse the evaluation and *omit* all rows where `z` = `NA`,
+
+```{r}
+d[ !is.na(d$z), ]
+```
+
 
 # Is there an easier way?
 
