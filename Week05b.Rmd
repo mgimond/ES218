@@ -75,14 +75,14 @@ First, we need to compute the $f$-values for both batches of singer data (`Bass 
 df.qq <- df2 %>% 
          group_by(voice.part) %>%
          arrange(voice.part, height) %>%
-         mutate( f.val = (1:length(height) - 0.5 ) / n())
+         mutate( f.val = (row_number() - 0.5 ) / n())
 ```
 
 Now let's generate quantile plots for both batches.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(df.qq, aes(x=f.val, y = height)) + geom_point() +
-              geom_line(col="grey") + facet_grid( voice.part ~ .) 
+ggplot(df.qq, aes(x=f.val, y = height)) + geom_line(col="grey") +
+              geom_point() + facet_grid( voice.part ~ .) 
 ```
 
 While the geometric structure of a boxplot lends itself well to side-by-side comparison, the same cannot be said for side-by-side quantile plot comparison hence the need for an amalgamation of these two plots into a single plot called a  **quantile-quantile** (**q-q**) plot.  If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs. the other batch (see schematic at the beginning of this section)
@@ -105,7 +105,7 @@ To find the matching singer height values in `Bass2`, we need to interpolate the
 
 We will explore two methods: a **manual** approach to constructing a q-q plot and the `qqplot()` function approach. **Note that both methods can produce slightly different q-q plots**--this is to be expected since they may adopt different quantile algorithms. 
 
-In all cases, we will add a 45° line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
+In all cases, we will add a 45&deg; line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
 
 ### Manual construction of a q-q plot 
 
@@ -124,9 +124,9 @@ Next, we will interpolate a new set of height values for `Bass 2` that match the
 b.hgt.interp <- approx(df.bass$f.val, df.bass$height, fi)
 ```
 
-The output generates two columns: the 21 quantiles, `fi`, and the 21 `Bass 2` interpolated height values.
+The output generates two columns: the 21 quantiles, `fi`, and the 21 `Bass 2` interpolated height values. Note that we could have substituted `fi` with `df.tenor$f.val`. The approach shown here is used to reinforce the idea that we are interpolating height values based on a *new* set of f-values.
 
-Finally, we will combine the interpolated `Bass 2` values (which is already in an ascending order) with  **sorted** heights for the `Tenor 1` singers. Then, we will plot the paired values using `ggplot`. We will also add the 45° line to facilitate comparison.
+Finally, we will combine the interpolated `Bass 2` values (which is already in an ascending order) with  **sorted** heights for the `Tenor 1` singers (these were sorted in `df.qq`). Then, we will plot the paired values using `ggplot`. We will also add the 45&deg; line to facilitate comparison.
 
 ```{r , fig.width=3, fig.height=3}
 s.qq <- df.tenor %>% mutate(`Bass 2`  = b.hgt.interp$y) %>% 
@@ -154,7 +154,7 @@ ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) +
 
 ### Using the base `qqplot`
 
-This approach is quicker and requires fewer lines of code, but it does not afford the insight into the inner workings of a q-q plot as does the manual approach from the previous sub-section.
+This approach is quicker and requires fewer lines of code, but it does not afford the insight into the inner workings of a q-q plot as does the manual approach from the previous section.
 
 `qqplot` is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects. 
 
@@ -168,7 +168,7 @@ abline( c(0,1))
 par(OP)
 ```
 
-`qqplot` offers the option to output the q-q plot values (this includes the interpolated values) as a **list**  by setting the parameter `plot.it=FALSE`. We then need to convert this list object to a dataframe using `as.data.frame`. The output can then be used in a call to `ggplot`.
+`qqplot` offers the option to output the q-q plot values (including the interpolated values) as a **list**  by setting the parameter `plot.it=FALSE`. We then need to convert this list object to a dataframe using `as.data.frame`. The output can then be used in a call to `ggplot`.
 
 ```{r fig.height=3, fig.width=3}
 qq.out <- qqplot(x=Tenor$height, y=Bass$height, plot.it=FALSE)
@@ -183,15 +183,86 @@ ggplot(qq.out, aes( x= x, y = y)) +
                xlab("Tenor") + ylab("Bass")
 ```
 
-
 ## q-q plots are *not* scatter plots
 
 It's important to note the difference between a quantile-quantile plot and a [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot). The latter is used when the pairing of values between variables is explicit  (for example average male and female incomes for a specific US county). The q-q plot does not assume any pairing of observations (e.g. the height measurement for a singer in `Bass 2` is not linked to a height measurement in `Tenor 2`).  This is made more evident with our working example which has unequal number of singers in both groups being compared since such a dataset could not be plotted using a scatter plot.
 
+## What can we learn from a q-q plot?
+
+A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e. all the points of a q-q plot fall on the 45&deg; line) then we could characterize the relationship as `batch1 = batch2`. If the points follow a pattern mimicking a line parallel to the 45&deg; line as in the following plot,
+
+```{r echo=FALSE, fig.width=2,fig.height=2}
+set.seed(132)
+batch1  <- sort(runif(10,10,20))
+batch2  <- sort(batch1 + 2 + rnorm(length(batch1), 0,1))
+s1 <- data.frame(batch1, batch2)
+ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+                       coord_fixed(xlim=c(10.5,22), ylim = c(10.5,22))
+```
+
+then we say that there is an **additive shift** between `batch1` and `batch2`. The shift can usually be eyeballed from the plot. In this example, the shift is around 2 or `batch2 = 2 * batch1`. 
+
+When the points follow a line at an angle to the 45&deg; line as in
+
+```{r echo=FALSE, fig.width=2,fig.height=2}
+set.seed(132)
+batch1  <- sort(runif(10,10,20))
+batch2  <- sort(batch1 * 1.5 + rnorm(length(batch1), 0,1))
+s1 <- data.frame(batch1, batch2)
+ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+                       coord_fixed(xlim=c(10,30), ylim = c(10,30))
+```
+
+then we say that there is a **multiplicative shift** between the batches. The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by the inverse of the suspected relationship. For example, if we believe that `batch2` is 1.5 times greater than `batch1`, we divide the former by 1.5 then plot the result to see if the points line up.
+ 
+```{r echo=FALSE, fig.width=2,fig.height=2}
+ggplot(s1, aes(batch1,batch2 / 1.5)) + geom_point() + geom_abline( intercept=0, slope=1) +
+                       coord_fixed(xlim=c(10,30), ylim = c(10,30))
+```
+
+In many cases, you might encounter a relationship that is both additive *and* multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to parallel to the 45&deg; line, then resolve the additive portion. For example, the following plot
+
+```{r echo=FALSE, fig.width=2,fig.height=2}
+set.seed(132)
+batch1  <- sort(runif(10,10,20))
+batch2  <- sort(batch1 * 1.5 + 4 + rnorm(length(batch1), 0,1))
+s1 <- data.frame(batch1, batch2)
+ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+                                 coord_fixed(xlim=c(10,34), ylim = c(10,34))
+```        
+
+can be decomposed into its multiplicative component (divide by ~ 1.5),
+
+```{r echo=FALSE, fig.width=2,fig.height=2}
+ggplot(s1, aes(batch1,batch2 / 1.5)) + geom_point() + geom_abline( intercept=0, slope=1) +
+                                 coord_fixed(xlim=c(10,32), ylim = c(10,32))
+``` 
+
+then by its additive component (subtract by ~ 3.5),
+ 
+```{r echo=FALSE, fig.width=2,fig.height=2}
+ggplot(s1, aes(batch1,batch2 / 1.5 - 3.5)) + geom_point() + geom_abline( intercept=0, slope=1) +
+                                 coord_fixed(xlim=c(10,32), ylim = c(10,32))
+``` 
+
+to get the approximate relationship of `batch2 = batch1 * 1.5 + 3.5`.
+
+### Is the relationship between tenor and bass additive or multiplicative?
+
+Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we'll subtract the `Bass 2` value by about 2.5.
+
+```{r , fig.width=3, fig.height=3}
+ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`  - 2.5)) + 
+             geom_point() + 
+             geom_abline( intercept=0, slope=1) +
+             coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) + ylab("Bass 2 - 2.5")
+```
+
+The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here. 
 
 ## The Tukey mean-difference plot
 
-Cleveland notes on page 23 that our eyes are better suited at judging deviations from a horizontal line than from a 45° line.  All that is required is to subtract the y-value, `Bass2`, from the x-value, `Tenor 2`, then compare the difference to the mean of the two values:
+Cleveland notes on page 23 that our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line.  All that is required is to subtract the y-value, `Bass2`, from the x-value, `Tenor 2`, then compare the difference to the mean of the two values:
 
 $$
 Y = Bass- Tenor 
@@ -200,7 +271,7 @@ $$
 X = \frac{Bass + Tenor}{2}
 $$
 
-This forces the 45° line in the previous q-q plots to a 0° slope. The final plot is a **Tukey mean-difference** plot or **m-d** for short.
+This forces the 45&deg; line in the previous q-q plots to a 0° slope. The final plot is a **Tukey mean-difference** plot or **m-d** for short.
 
 ### Generating an m-d plot using `ggplot`
 
