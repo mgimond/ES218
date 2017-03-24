@@ -278,11 +278,11 @@ $(document).ready(function () {
     <li>
       <a href="Week05a.html">Visualizing univariate data</a>
     </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 07</li>
     <li>
       <a href="Week05b.html">Comparing univariate data distributions</a>
     </li>
-    <li class="divider"></li>
-    <li class="dropdown-header">Week 07</li>
     <li>
       <a href="Week06a.html">Theoretical Q-Q plot</a>
     </li>
@@ -392,21 +392,26 @@ $(document).ready(function () {
 <p>This tutorial makes use of the following R package(s): <strong><code>ggplot2</code></strong>, <strong><code>dplyr</code></strong>, <strong><code>lattice</code></strong>.</p>
 <p>This material can be read in conjunction with <strong>pages 34 to 41</strong> of <strong>Cleveland’s book</strong>.</p>
 </div>
-<p>In previous lectures, we’ve determined that the <code>voice.part</code> singer groups differed only by location (central value) and not so much by spread. In this section, we will expand this analysis by <strong>fitting</strong> a model to our data then exploring the residuals.</p>
+<p>In previous lectures, we’ve determined that the <code>voice.part</code> singer groups differed only by location (central value) and not so much by spread. In this section, we will expand this analysis by <strong>fitting</strong> a model (the mean) to our data then exploring the residuals (i.e. the part of the data not explained by the fitted model). This exercise will tackle two objectives:</p>
+<ul>
+<li>To seek a simple <em>mathematical</em> model to characterize both the mean and spread of the data.</li>
+<li>To compare the influence of the voice part to that of the spread in characterizing the variation in height values (this to help address the question *“are the mean values of the voice parts significantly different?”).</li>
+</ul>
 <div id="fitting-the-data" class="section level1">
 <h1>Fitting the data</h1>
-<p>Univariate data can be characterized by their location and by their spread. The different groups of singers differed by their central values, we will therefore <strong>fit</strong> the group means to each group batch and compare the <strong>residuals</strong> between groups.</p>
+<p>Univariate data can be characterized by their location and by their spread. The different groups of singers differ by their central values, we will therefore <strong>fit</strong> the group means to each group batch and compare the <strong>residuals</strong> between groups.</p>
 <p>First, we’ll load the libraries that will be used in this exercise, then load the <code>singer</code> data into the object <code>df</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
 <span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(lattice)
 
-df &lt;-<span class="st"> </span>lattice::singer</code></pre></div>
+df &lt;-<span class="st"> </span>singer</code></pre></div>
 <p>Next, we’ll plot the singer values using jittered points, then add an orange point to each batch which will represent each group’s mean.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">y=</span>height, <span class="dt">x=</span>voice.part))         +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.1</span>, <span class="dt">height=</span><span class="dv">0</span>, <span class="dt">alpha=</span><span class="fl">0.1</span>) +
 <span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> <span class="st">&quot;mean&quot;</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">geom=</span><span class="st">&quot;point&quot;</span>, <span class="dt">cex=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">21</span>, <span class="dt">bg=</span><span class="st">&quot;orange&quot;</span>) </code></pre></div>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-3-1.png" width="576" /></p>
-<p>We’ve <strong>fitted</strong> each group with the <strong>mean</strong>–a mathematical description of the batches. Note that we could have used other measures of location such as the median, but since the data seem to follow a normal distribution, the mean is an adequate choice.</p>
+<p>We’ve <strong>fitted</strong> each group with the <strong>mean</strong>–a mathematical description of the batches. Note that we could have used other measures of location such as the median, but since the data seem to follow a symmetrical distribution, the mean is an adequate choice.</p>
 </div>
 <div id="computing-the-residuals" class="section level1">
 <h1>Computing the residuals</h1>
@@ -427,11 +432,10 @@ df2 &lt;-<span class="st"> </span>df %&gt;%<span class="st"> </span><span class=
 <p>The feature that interests us in the residuals is the <strong>spread</strong>. We’ve learned that a good way to compare spreads is to plot the quantiles of each batch against one another.</p>
 <div id="pairwise-q-q-plots-with-the-lattice-package" class="section level2">
 <h2>Pairwise q-q plots with the <code>lattice</code> package</h2>
-<p>If we want to compare <em>all</em> batches, we can create a pairwise q-q plot using the <code>lattice</code> package.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lattice)
-f.rng &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="kw">tapply</span>(df2$height, df2$voice.part, length))
+<p>If we want to compare <em>all</em> batches of residuals, we can create a pairwise q-q plot using the <code>lattice</code> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f.rng &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="kw">tapply</span>(df2$Height.res, df2$voice.part, length))
 fun1  &lt;-<span class="st"> </span>function(x,f.rng) {<span class="kw">approx</span>(<span class="dv">1</span>:<span class="kw">length</span>(x), <span class="kw">sort</span>(x), <span class="dt">n =</span> f.rng )$y}
-t1    &lt;-<span class="st"> </span><span class="kw">aggregate</span>(df2$height ~<span class="st"> </span>df2$voice.part, <span class="dt">FUN=</span>fun1, <span class="dt">f.rng=</span>f.rng )
+t1    &lt;-<span class="st"> </span><span class="kw">aggregate</span>(df2$Height.res ~<span class="st"> </span>df2$voice.part, <span class="dt">FUN=</span>fun1, <span class="dt">f.rng=</span>f.rng )
 t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(t1[,-<span class="dv">1</span>]))
 <span class="kw">names</span>(t2) &lt;-<span class="st"> </span>t1[,<span class="dv">1</span>]
 <span class="kw">splom</span>(~t2,  <span class="dt">axis.text.cex=</span><span class="fl">0.4</span>, <span class="dt">pch =</span> <span class="dv">20</span>,
@@ -444,11 +448,11 @@ t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span 
         <span class="kw">panel.abline</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">col=</span><span class="st">&quot;grey&quot;</span>)
       })</code></pre></div>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-6-1.png" width="480" /></p>
-<p>Note that the plots are symmetrical about the diagonal.</p>
+<p>Note that the plots are symmetrical about the diagonal. The q-q plots suggest that the spreads are very similar across singer heights given that the points fall almost perfectly along the one-to-one line.</p>
 </div>
 <div id="comparing-batches-to-pooled-residuals" class="section level2">
 <h2>Comparing batches to pooled residuals</h2>
-<p>In earlier analyses, it was determined that the spread of the data was homogeneous across the batches, this allows us to combine the residuals and compare the residuals of each batch to the <strong>pooled</strong> residuals.</p>
+<p>Since the spreads are homogeneous across the batches, we may choose to combine (pool) the residuals and compare the residuals of each batch to the <strong>pooled</strong> residuals. The advantage with this approach is that we are increasing the <em>size</em> of the reference residual distribution thus reducing uncertainty that results from a relatively small sample size.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df3 &lt;-<span class="st"> </span>df2 %&gt;%
 <span class="st">       </span><span class="kw">group_by</span>(voice.part)                     %&gt;%
 <span class="st">       </span><span class="kw">mutate</span>(<span class="dt">H.sorted =</span> <span class="kw">sort</span>(Height.res),
@@ -466,7 +470,7 @@ t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span 
 </div>
 <div id="comparing-pooled-residuals-to-the-normal-distribution" class="section level1">
 <h1>Comparing pooled residuals to the normal distribution</h1>
-<p>If we’ve established that the residuals are homogeneous, we can pool the residual values to give us a larger sample size that is then compared with the normal distribution (thus increasing our confidence that the pattern we observe in the plot is real and not subject to random noise that plagues smaller sample sizes).</p>
+<p>We can also take advantage of the pooled residuals to give us a larger sample size when comparing it with the normal distribution.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Find the equation for the line</span>
 y     &lt;-<span class="st"> </span><span class="kw">quantile</span>(df3$Pooled.res, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))
 x     &lt;-<span class="st"> </span><span class="kw">qnorm</span>( <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))        
@@ -476,7 +480,8 @@ int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] -<span class="s
 <span class="kw">ggplot</span>(df3, <span class="kw">aes</span>(<span class="dt">sample=</span>Pooled.res)) +<span class="kw">stat_qq</span>() +<span class="kw">geom_abline</span>(<span class="dt">intercept =</span> int, <span class="dt">slope=</span>slope)</code></pre></div>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-8-1.png" width="288" /></p>
 <p>This dataset has behaved quite well. Its batches differed only by location, yet its spread remained homogeneous (enough) across the batches to pool them and enable us to confirm, with greater confidence, that the spread follows a normal distribution.</p>
-<p>The pooled value gives a more accurate measure of spread. We can compute the standard deviation as:</p>
+<p>This <em>well behaved</em> dataset allows us to model its spread using the sample <strong>standard deviation</strong>. It’s important to note that had the data not followed a normal distribution, then characterizing its spread using the standard deviation would have been inappropriate. Unfortunately, many ancillary data analysts seldom check the distribution requirements of their data before choosing to characterize its distribution using the standard deviation. In such a situation, you would have to revert to a far less succinct characterization of spread: the quantile.</p>
+<p>You can compute the standard deviation as:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(df3$H.sorted)</code></pre></div>
 <pre><code>[1] 2.465049</code></pre>
 <p>We can now model singer height by both <code>voice.part</code> means, and the group standard deviation of 2.47.</p>
@@ -485,23 +490,22 @@ int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] -<span class="s
 <h1>Residual-fit spread plot</h1>
 <div id="a-simple-example" class="section level2">
 <h2>A simple example</h2>
-<p>So far, we’ve learned how to fit a model to the data then examine the residuals for homogeneity and normality. But we haven’t assessed if the differences in location (means) between batches is a significant contributor to overall variability in the data. This begs the question, what constitutes significant?</p>
+<p>So far, we’ve learned how to fit a model to the data then examine the residuals for homogeneity and normality with the added bonus of characterizing the spread with the standard deviation. But we haven’t assessed if the differences in location (means) between batches is a significant contributor to overall variability in the data. This begs the question, what constitutes <em>“significant”</em>?</p>
 <p>To answer this question, let’s compare the following two plots. Both plots show two batches side-by-side. The difference in location is nearly the same in both plots (group <code>a</code> and <code>b</code> have a mean of 10 and 11 respectively), but the difference in spreads are not.</p>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-10-1.png" width="480" /></p>
 <p>The left-side plot does not allow us to say, with confidence, that the two batches differ significantly despite both means being different. The right-side plot, on the other hand, shows a significant difference in batch locations. So the answer to the question is one of relative spread of the means vs the residuals.</p>
 <p>For example, on the right-hand side plot, the <em>spread</em> (or difference) in mean values is relatively large compared to the spread of the residuals for each group (note that the spreads are nearly identical between both batches <code>a</code> and <code>b</code>). The difference in means spans one unit while the spread of each sets of residuals spans about the same amount. So the difference in location is significant.</p>
-<p>If we split each batch in the right-side plot into its location component and its pooled residual component and plot those values against a quantile, we get a <strong>residual-fit spread</strong> plot, or <strong>r-f spread</strong> plot for short.</p>
+<p>If we split each batch in the right-side plot into a location component plot (normalized to the overall mean) and a pooled residual component plot then compare those values against a quantile, we get a <strong>residual-fit spread</strong> plot, or <strong>r-f spread</strong> plot for short.</p>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-11-1.png" width="768" /></p>
-<p>It’s clear from this r-f plot that the spread of the mean distribution (between batches <code>a</code> and <code>b</code> on the right-side plot) is important compared to that of its residuals.</p>
+<p>It’s clear from this r-f plot that the spread of the mean distribution (between batches <code>a</code> and <code>b</code> of the right-side plot) is important compared to that of its residuals.</p>
 <p>For the left-side plot, the difference in mean values is also one unit, but the spread of residuals spans almost 5 units. An r-f plot makes this difference quite clear.</p>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-12-1.png" width="768" /></p>
-<p>The spread between each batch’s fitted mean is small compared to that of the combined residuals. But this is not to say that the difference in mean values is not real, in fact they are: these data were randomly generated following a normal distribution using <em>different</em> means.</p>
+<p>The spread between each batch’s fitted mean is small compared to that of the combined residuals.</p>
 </div>
 <div id="are-the-fitted-voice-part-values-significantly-different" class="section level2">
 <h2>Are the fitted voice part values significantly different?</h2>
-<p>We’ll use <code>lattice</code>’s <code>rfs</code> function to generate our r-f plot.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lattice)
-<span class="kw">rfs</span>(<span class="kw">oneway</span>(height~voice.part, <span class="dt">data =</span> singer, <span class="dt">spread =</span> <span class="dv">1</span>), 
+<p>We’ll use <code>lattice</code>’s <code>rfs</code> and <code>oneway</code> functions to generate the r-f plot.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rfs</span>(<span class="kw">oneway</span>(height~voice.part, <span class="dt">data =</span> singer, <span class="dt">spread =</span> <span class="dv">1</span>), 
     <span class="dt">aspect=</span><span class="dv">1</span>, 
     <span class="dt">ylab =</span> <span class="st">&quot;Height (inches)&quot;</span>)</code></pre></div>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-13-1.png" width="768" /></p>
