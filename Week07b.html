@@ -278,11 +278,11 @@ $(document).ready(function () {
     <li>
       <a href="Week05a.html">Visualizing univariate data</a>
     </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 07</li>
     <li>
       <a href="Week05b.html">Comparing univariate data distributions</a>
     </li>
-    <li class="divider"></li>
-    <li class="dropdown-header">Week 07</li>
     <li>
       <a href="Week06a.html">Theoretical Q-Q plot</a>
     </li>
@@ -380,7 +380,7 @@ $(document).ready(function () {
 <li><a href="#clevelands-food-web-data">Cleveland’s food web data</a></li>
 <li><a href="#buoy-data">Buoy data</a></li>
 </ul></li>
-<li><a href="#variations-of-the-s-l-plots">Variations of the S-L plots</a><ul>
+<li><a href="#variations-of-the-s-l-plot">Variations of the S-L plot</a><ul>
 <li><a href="#accessing-the-custom-es218-s-l-function">Accessing the custom ES218 S-L function</a></li>
 </ul></li>
 </ul>
@@ -418,14 +418,14 @@ sl.line &lt;-<span class="st"> </span>df1 %&gt;%
 <span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) +<span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.2</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-2-1.png" width="288" /></p>
-<p>The red line in the plot helps identify the type of relationship between spread and location. If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.</p>
+<p>The red line in the plot helps identify the type of relationship between spread and location (defined by the group median in this plot). If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.</p>
 <p>In the data fusion example, there is an obvious increase in spread as a function of location.</p>
 </div>
 <div id="other-examples" class="section level1">
 <h1>Other examples</h1>
 <div id="clevelands-food-web-data" class="section level2">
 <h2>Cleveland’s food web data</h2>
-<p>On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the number of hierarchical prey-predator links in the web) for the three different ecosystem types. We will modify the chunk of code used in generating the s-l plot in the last section to sort the ecosystem dimensions by group median (i.e. we want the batches to be ordered from smallest median to largest median along the x-axis); this is done in the last three lines of the piping operation. We would normally not need to sort numeric values (recall that the x-axis represents the median of each batch, hence a number), but we do so to facilitate the plotting of the connecting lines.</p>
+<p>On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the number of hierarchical prey-predator links in the web) for the three different ecosystem types.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Food_web.csv&quot;</span>)
 
 <span class="co"># Create two new columns: group median and group residual</span>
@@ -434,7 +434,6 @@ df1 &lt;-<span class="st"> </span>df %&gt;%
 <span class="st">       </span><span class="kw">mutate</span>( <span class="dt">med =</span> <span class="kw">median</span>(mean.length),
                <span class="dt">res =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( mean.length -<span class="st"> </span>med)))  %&gt;%
 <span class="st">       </span><span class="kw">ungroup</span>()                                      %&gt;%
-<span class="st">       </span><span class="kw">arrange</span>(med)                                   %&gt;%
 <span class="st">       </span><span class="kw">mutate</span>( <span class="dt">dimension =</span> <span class="kw">factor</span>(dimension, <span class="dt">levels=</span><span class="kw">unique</span>(dimension)))
 
 
@@ -445,7 +444,7 @@ sl.line &lt;-<span class="st"> </span>df1 %&gt;%
                      <span class="dt">res.med  =</span> <span class="kw">median</span>(res))
 
 <span class="co"># Generate the s-l plot</span>
-<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) +<span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.2</span>) +
+<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) +<span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.05</span>,<span class="dt">height=</span><span class="dv">0</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x=</span>sl.line$location, <span class="dt">y=</span><span class="fl">1.75</span>, <span class="dt">label=</span>sl.line$dimension)</code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-3-1.png" width="336" /></p>
@@ -453,7 +452,7 @@ sl.line &lt;-<span class="st"> </span>df1 %&gt;%
 </div>
 <div id="buoy-data" class="section level2">
 <h2>Buoy data</h2>
-<p>In this next example, we will compare water temperature spreads with median temperatures across 12 months using Gulf of Maine buoy data. Since we have many categories to work with, we will do without the jitter and stack the points within each month.</p>
+<p>In this next example, we will compare water temperature spreads with median temperatures across 12 months using Gulf of Maine buoy data. Since we have many categories to work with, we will do without the jitter and stack the points within each month group.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;</span>, <span class="dt">header=</span>T)
 
 <span class="co"># Create two new columns: group median and group residual</span>
@@ -473,16 +472,16 @@ sl.line &lt;-<span class="st"> </span>df1 %&gt;%
                      <span class="dt">res.med  =</span> <span class="kw">median</span>(res))
 
 <span class="co"># Generate the s-l plot</span>
-<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) +<span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.2</span>,<span class="dt">width=</span><span class="fl">0.1</span>) +
+<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.1</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x=</span>sl.line$location, <span class="dt">y=</span><span class="fl">2.5</span>, <span class="dt">label=</span>sl.line$MM, <span class="dt">cex=</span><span class="dv">3</span>)</code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-4-1.png" width="768" /></p>
-<p>Note that the discrete appearance of the values reflects the level of precision used to record water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread is not immediately apparent.</p>
+<p>Note that the discrete appearance of the values reflects the level of precision used to record water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread as a function of increasing water temperature is not immediately apparent.</p>
 </div>
 </div>
-<div id="variations-of-the-s-l-plots" class="section level1">
-<h1>Variations of the S-L plots</h1>
-<p>Another version of the S-L plot (and one that seems to be the most popular) pits the log of the “hinges” spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0). This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation.</p>
+<div id="variations-of-the-s-l-plot" class="section level1">
+<h1>Variations of the S-L plot</h1>
+<p>Another version of the S-L plot (and one that seems to be the most popular) pits the log of the “hinges” spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0). This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week).</p>
 <p>The hinges spread is similar to the interquartile range but because it is computed differently, it can take on slightly different values. The hinge is the half-way point between the most extreme value of a batch and the median. As such, there is a left hinge and a right hinge. Hinges (and other depths) are discussed in another section titled “Letter value summaries”.</p>
 <p>The aforementioned s-l plot can be computed in R as follows (we will use the buoy data as an example).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sl &lt;-<span class="st"> </span>df %&gt;%<span class="st"> </span>
@@ -519,7 +518,7 @@ Multiple R-squared:  0.2192,    Adjusted R-squared:  0.1411
 F-statistic: 2.807 on 1 and 10 DF,  p-value: 0.1248</code></pre>
 <div id="accessing-the-custom-es218-s-l-function" class="section level2">
 <h2>Accessing the custom ES218 S-L function</h2>
-<p>A custom s-l function is available in the course <code>ES218.R</code> script file and can be invoked via a call to <code>source(&quot;http://mgimond.github.io/ES218/es218.R&quot;)</code>.</p>
+<p>Note that a custom s-l function is available in the course <code>ES218.R</code> script file and can be invoked via a call to <code>source(&quot;http://mgimond.github.io/ES218/es218.R&quot;)</code>.</p>
 <p>We can simplify the last chunk of code as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;http://mgimond.github.io/ES218/es218.R&quot;</span>)
 

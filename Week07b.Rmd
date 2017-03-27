@@ -48,7 +48,7 @@ ggplot(df1, aes(x=med, y=res)) + geom_jitter(alpha=0.4,width=0.2) +
 
 ```
 
-The red line in the plot helps identify the type of relationship between spread and location. If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.
+The red line in the plot helps identify the type of relationship between spread and location (defined by the group median in this plot). If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.
 
 In the data fusion example, there is an obvious increase in spread as a function of location.
 
@@ -56,7 +56,7 @@ In the data fusion example, there is an obvious increase in spread as a function
 
 ## Cleveland's food web data
 
-On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the  number of hierarchical prey-predator links in the web) for the three different ecosystem types. We will modify the chunk of code used in generating the s-l plot in the last section to sort the ecosystem dimensions by group median (i.e. we want the batches to be ordered from smallest median to largest median along the x-axis); this is done in the last three lines of the piping operation. We would normally not need to sort numeric values (recall that the x-axis represents the median of each batch, hence a number), but we do so to facilitate the plotting of the connecting lines.
+On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the  number of hierarchical prey-predator links in the web) for the three different ecosystem types. 
 
 ```{r, fig.height=3,fig.width=3.5}
 df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
@@ -67,7 +67,6 @@ df1 <- df %>%
        mutate( med = median(mean.length),
                res = sqrt( abs( mean.length - med)))  %>%
        ungroup()                                      %>%
-       arrange(med)                                   %>%
        mutate( dimension = factor(dimension, levels=unique(dimension)))
 
 
@@ -78,7 +77,7 @@ sl.line <- df1 %>%
                      res.med  = median(res))
 
 # Generate the s-l plot
-ggplot(df1, aes(x=med, y=res)) + geom_jitter(alpha=0.4,width=0.2) +
+ggplot(df1, aes(x=med, y=res)) + geom_jitter(alpha=0.4,width=0.05,height=0) +
   geom_line(data=sl.line,aes(x=location,y=res.med), col="red") +
   annotate("text", x=sl.line$location, y=1.75, label=sl.line$dimension)
 
@@ -88,7 +87,7 @@ A monotonic spread is apparent in this dataset too, i.e. as the median chain len
 
 ## Buoy data
 
-In this next example, we will compare water temperature spreads with median temperatures across 12 months using Gulf of Maine buoy data. Since we have many categories to work with, we will do without the jitter and stack the points within each month.
+In this next example, we will compare water temperature spreads with median temperatures across 12 months using Gulf of Maine buoy data. Since we have many categories to work with, we will do without the jitter and stack the points within each month group.
 
 ```{r, fig.height=3,fig.width=8}
 df <- read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", header=T)
@@ -110,17 +109,17 @@ sl.line <- df1 %>%
                      res.med  = median(res))
 
 # Generate the s-l plot
-ggplot(df1, aes(x=med, y=res)) + geom_jitter(alpha=0.2,width=0.1) +
+ggplot(df1, aes(x=med, y=res)) + geom_point(alpha=0.1) +
   geom_line(data=sl.line,aes(x=location,y=res.med), col="red") +
   annotate("text", x=sl.line$location, y=2.5, label=sl.line$MM, cex=3)
 
 ```
 
-Note that the discrete appearance of the values reflects the level of precision used to record  water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread is not immediately apparent.
+Note that the discrete appearance of the values reflects the level of precision used to record  water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread as a function of increasing water temperature is not immediately apparent.
 
-# Variations of the S-L plots
+# Variations of the S-L plot
 
-Another version of the S-L plot (and one that seems to be the most popular) pits the log of the "hinges" spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).  This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation. 
+Another version of the S-L plot (and one that seems to be the most popular) pits the log of the "hinges" spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).  This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week). 
 
 The hinges spread is similar to the interquartile range but because it is computed differently, it can take on slightly different values. The hinge is the half-way point between the most extreme value of a batch and the median. As such, there is a left hinge and a right hinge. Hinges (and other depths) are discussed in another section titled "Letter value summaries".
 
@@ -151,7 +150,7 @@ summary(M)
 
 ## Accessing the custom ES218 S-L function
 
-A custom s-l function is available in the course `ES218.R` script file and can be invoked via a call to `source("http://mgimond.github.io/ES218/es218.R")`.
+Note that a custom s-l function is available in the course `ES218.R` script file and can be invoked via a call to `source("http://mgimond.github.io/ES218/es218.R")`.
 
 We can simplify the last chunk of code as follows:
 
