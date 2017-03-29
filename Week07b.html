@@ -380,9 +380,7 @@ $(document).ready(function () {
 <li><a href="#clevelands-food-web-data">Cleveland’s food web data</a></li>
 <li><a href="#buoy-data">Buoy data</a></li>
 </ul></li>
-<li><a href="#variations-of-the-s-l-plot">Variations of the S-L plot</a><ul>
-<li><a href="#accessing-the-custom-es218-s-l-function">Accessing the custom ES218 S-L function</a></li>
-</ul></li>
+<li><a href="#variations-of-the-s-l-plot">Variations of the S-L plot</a></li>
 </ul>
 </div>
 
@@ -481,28 +479,25 @@ sl.line &lt;-<span class="st"> </span>df1 %&gt;%
 </div>
 <div id="variations-of-the-s-l-plot" class="section level1">
 <h1>Variations of the S-L plot</h1>
-<p>Another version of the S-L plot (and one that seems to be the most popular) pits the log of the “hinges” spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0). This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week).</p>
-<p>The hinges spread is similar to the interquartile range but because it is computed differently, it can take on slightly different values. The hinge is the half-way point between the most extreme value of a batch and the median. As such, there is a left hinge and a right hinge. Hinges (and other depths) are discussed in another section titled “Letter value summaries”.</p>
-<p>The aforementioned s-l plot can be computed in R as follows (we will use the buoy data as an example).</p>
+<p>Another version of the S-L plot (and one that seems to be the most popular) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0). This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week’s lecture).</p>
+<p>This variant of the s-l plot can be computed in R as follows (we will use the buoy data as an example).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sl &lt;-<span class="st"> </span>df %&gt;%<span class="st"> </span>
 <span class="st">      </span><span class="kw">group_by</span>(MM)  %&gt;%
 <span class="st">      </span><span class="kw">summarise</span> (<span class="dt">level  =</span> <span class="kw">log</span>(<span class="kw">median</span>(WTMP)),
-                 <span class="dt">frth   =</span> (<span class="kw">floor</span>( (<span class="kw">n</span>()+<span class="dv">1</span>)/<span class="dv">2</span>) +<span class="st"> </span><span class="dv">1</span>)/<span class="dv">2</span>,
-                 <span class="dt">lower  =</span> <span class="kw">sort</span>(WTMP)[<span class="kw">floor</span>(frth)] ,
-                 <span class="dt">upper  =</span> <span class="kw">sort</span>(WTMP)[<span class="kw">ceiling</span>(<span class="kw">n</span>() +<span class="st"> </span><span class="dv">1</span> -<span class="st"> </span>frth)],
-                 <span class="dt">sprd   =</span> <span class="kw">log</span>(upper -<span class="st"> </span>lower) )
+                    <span class="dt">IQR =</span> <span class="kw">diff</span>(<span class="kw">quantile</span>(WTMP, <span class="kw">c</span>(.<span class="dv">25</span>,.<span class="dv">75</span>))),
+                 <span class="dt">spread =</span> <span class="kw">log</span>(IQR))
 
-<span class="kw">plot</span>(sprd ~<span class="st"> </span>level, sl, <span class="dt">pch=</span><span class="dv">16</span>, <span class="dt">xlab=</span><span class="st">&quot;Median (log)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Spread (log)&quot;</span>)
-M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd ~<span class="st"> </span>level, sl) 
-<span class="kw">abline</span>( M, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)
-<span class="kw">text</span>(sl$level,sl$sprd, <span class="dt">labels=</span>sl$MM, <span class="dt">pos=</span><span class="dv">4</span>, <span class="dt">cex=</span><span class="fl">0.6</span>)</code></pre></div>
-<p><img src="Week07b_files/figure-html/unnamed-chunk-5-1.png" width="384" /></p>
+<span class="kw">ggplot</span>(sl, <span class="kw">aes</span>(<span class="dt">x=</span>level, <span class="dt">y=</span>spread)) +<span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">stat_smooth</span>(<span class="dt">method=</span><span class="st">&quot;lm&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Median (log)&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Spread (log)&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x=</span>level, <span class="dt">y=</span>spread, <span class="dt">label=</span>MM), <span class="dt">vjust=</span><span class="fl">1.21</span>, <span class="dt">cex=</span><span class="fl">2.8</span>)</code></pre></div>
+<p><img src="Week07b_files/figure-html/unnamed-chunk-5-1.png" width="268.8" /></p>
 <p>Note how this plot differs from Cleveland’s plot in that we are only displaying each month’s median spread value and we are fitting a straight line to the points.</p>
-<p>The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression line indicates that the slope may not be significantly different from 0.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(M)</code></pre></div>
+<p>The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression model indicates that the slope may not be significantly different from 0 (the p-value indicates that there is a 12% chance that the computed slope is consistent with a slope we would expect to get if there was no linear relationship between spread and location values).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(<span class="kw">lm</span>(spread ~<span class="st"> </span>level, sl) )</code></pre></div>
 <pre><code>
 Call:
-lm(formula = sprd ~ level, data = sl)
+lm(formula = spread ~ level, data = sl)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
@@ -516,20 +511,6 @@ level         0.9896     0.5907   1.675    0.125
 Residual standard error: 0.8912 on 10 degrees of freedom
 Multiple R-squared:  0.2192,    Adjusted R-squared:  0.1411 
 F-statistic: 2.807 on 1 and 10 DF,  p-value: 0.1248</code></pre>
-<div id="accessing-the-custom-es218-s-l-function" class="section level2">
-<h2>Accessing the custom ES218 S-L function</h2>
-<p>Note that a custom s-l function is available in the course <code>ES218.R</code> script file and can be invoked via a call to <code>source(&quot;http://mgimond.github.io/ES218/es218.R&quot;)</code>.</p>
-<p>We can simplify the last chunk of code as follows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;http://mgimond.github.io/ES218/es218.R&quot;</span>)
-
-df.sl &lt;-<span class="st"> </span><span class="kw">sl</span>( <span class="dt">x=</span>MM, <span class="dt">y =</span>WTMP, <span class="dt">dat=</span>df)
-
-<span class="kw">plot</span>(sprd ~<span class="st"> </span>med, df.sl, <span class="dt">pch=</span><span class="dv">16</span>, <span class="dt">xlab=</span><span class="st">&quot;Median (log)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Spread (log)&quot;</span>)
-M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd ~<span class="st"> </span>med, df.sl) 
-<span class="kw">abline</span>( M, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)
-<span class="kw">text</span>(df.sl$med, df.sl$sprd, <span class="dt">labels=</span>df.sl$grp, <span class="dt">pos=</span><span class="dv">4</span>, <span class="dt">cex=</span><span class="fl">0.6</span>)</code></pre></div>
-<p><img src="Week07b_files/figure-html/unnamed-chunk-7-1.png" width="384" /></p>
-</div>
 </div>
 
 

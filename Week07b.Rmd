@@ -119,48 +119,28 @@ Note that the discrete appearance of the values reflects the level of precision 
 
 # Variations of the S-L plot
 
-Another version of the S-L plot (and one that seems to be the most popular) pits the log of the "hinges" spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).  This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week). 
+Another version of the S-L plot (and one that seems to be the most popular) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).  This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week's lecture). 
 
-The hinges spread is similar to the interquartile range but because it is computed differently, it can take on slightly different values. The hinge is the half-way point between the most extreme value of a batch and the median. As such, there is a left hinge and a right hinge. Hinges (and other depths) are discussed in another section titled "Letter value summaries".
+This variant of the s-l plot can be computed in R as follows (we will use the buoy data as an example).
 
-The aforementioned s-l plot can be computed in R as follows (we will use the buoy data as an example).
-
-```{r fig.height=4, fig.width=4}
+```{r fig.height=2.8, fig.width=2.8}
 sl <- df %>% 
       group_by(MM)  %>%
       summarise (level  = log(median(WTMP)),
-                 frth   = (floor( (n()+1)/2) + 1)/2,
-                 lower  = sort(WTMP)[floor(frth)] ,
-                 upper  = sort(WTMP)[ceiling(n() + 1 - frth)],
-                 sprd   = log(upper - lower) )
+                    IQR = diff(quantile(WTMP, c(.25,.75))),
+                 spread = log(IQR))
 
-plot(sprd ~ level, sl, pch=16, xlab="Median (log)", ylab="Spread (log)")
-M <- lm(sprd ~ level, sl) 
-abline( M, col="red")
-text(sl$level,sl$sprd, labels=sl$MM, pos=4, cex=0.6)
+ggplot(sl, aes(x=level, y=spread)) +geom_point() + 
+  stat_smooth(method="lm", se=FALSE) +
+  xlab("Median (log)") + ylab("Spread (log)") +
+  geom_text(aes(x=level, y=spread, label=MM), vjust=1.21, cex=2.8)
 ```
 
 Note how this plot differs from Cleveland's plot in that we are only displaying each month's median spread value and we are fitting a straight line to the points.
 
-The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression line indicates that the slope may not be significantly different from 0.
+The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression model indicates that the slope may not be significantly different from 0 (the p-value indicates that there is a 12% chance that the computed slope is consistent with a slope we would expect to get if there was no linear relationship between spread and location values).
 
 ```{r}
-summary(M)
+summary(lm(spread ~ level, sl) )
 ```
 
-## Accessing the custom ES218 S-L function
-
-Note that a custom s-l function is available in the course `ES218.R` script file and can be invoked via a call to `source("http://mgimond.github.io/ES218/es218.R")`.
-
-We can simplify the last chunk of code as follows:
-
-```{r fig.height=4, fig.width=4}
-source("http://mgimond.github.io/ES218/es218.R")
-
-df.sl <- sl( x=MM, y =WTMP, dat=df)
-
-plot(sprd ~ med, df.sl, pch=16, xlab="Median (log)", ylab="Spread (log)")
-M <- lm(sprd ~ med, df.sl) 
-abline( M, col="red")
-text(df.sl$med, df.sl$sprd, labels=df.sl$grp, pos=4, cex=0.6)
-```
