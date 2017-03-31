@@ -278,11 +278,11 @@ $(document).ready(function () {
     <li>
       <a href="Week05a.html">Visualizing univariate data</a>
     </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 07</li>
     <li>
       <a href="Week05b.html">Comparing univariate data distributions</a>
     </li>
-    <li class="divider"></li>
-    <li class="dropdown-header">Week 07</li>
     <li>
       <a href="Week06a.html">Theoretical Q-Q plot</a>
     </li>
@@ -431,12 +431,12 @@ mean of x mean of y
 <p>The test suggests that there is just a small chance (<strong>7.5%</strong>) that the two batches of concentrations are the same. The test outputs the means of each batch: <strong>3.9 ppb</strong> for the contaminated site and <strong>0.6 ppb</strong> for the reference site.</p>
 <p>Many ancillary data analysts may stop here and proceed with the decision making process. This is not good practice. To see why, let’s deconstruct the t-test.</p>
 <p>First, we need to find out how the test is representing the batches of numbers. The t-test characterizes the <em>location</em> of the batch using the <strong>mean</strong>, and the <em>spread</em> using the <strong>standard deviation</strong>. Nothing more. In essence, the test is reducing the complexity of the batches down to two pairs of numbers.</p>
-<p>The t-test uses these pairs of numbers to reconstruct, then compare the distributions. These are the distributions the t-test <em>thinks</em> it’s comparing:</p>
+<p>The t-test uses these pairs of numbers to reconstruct, then compare the distributions. Here are the distributions the t-test <em>thinks</em> it’s comparing:</p>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
 <p>The red line is the distribution of TCB values for the contaminated site (standard deviation = 20.02) and the black line is the concentration of TCB values for the reference site (standard deviation = 0.28). The red vertical line is the mean concentration of the contaminated site which falls well outside the range of concentrations observed at the reference site.</p>
-<ul>
-<li><em>As an aside, it’s worth mentioning that the variances are clearly unequal thus violating a basic requirement for the t-test however, R invokes the Welch’s t-test by default to mitigate for unequal variance and sample size. But, Welch’s test does require that the distributions follow a normal theoretical distribution (i.e. they can be different in size but must be normal in shape).</em></li>
-</ul>
+<blockquote>
+<p>As an aside, it’s worth mentioning that the variances are clearly unequal thus violating a basic requirement for the t-test however, R invokes the Welch’s t-test by default to mitigate for unequal variance and sample size. But, Welch’s test does require that the distributions follow a normal theoretical distribution (i.e. they can be different in size but must be normal in shape).</p>
+</blockquote>
 <p>The spread for the contaminated site is several orders of magnitude greater than that of the reference site. But are these reconstructed distributions really representative of the data?</p>
 <p>Let’s plot the density distributions for both batches:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">2</span>))
@@ -472,7 +472,7 @@ mean of x mean of y
 <span class="kw">qqline</span>(Cont)
 <span class="kw">par</span>(OP)</code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-9-1.png" width="576" /></p>
-<p>These batches do not follow the straight line suggesting skewness in the distribution (as was noted with the boxplots). A workaround to this problem is to re-express the batches of values since in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation. Let’s compare</p>
+<p>These batches do not follow the straight line suggesting skewness in the distribution (as was noted with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))
 <span class="kw">qqnorm</span>(<span class="kw">log</span>(Ref), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))
 <span class="kw">qqline</span>(<span class="kw">log</span>(Ref))
@@ -493,13 +493,13 @@ alternative hypothesis: true difference in means is greater than 0
 sample estimates:
  mean of x  mean of y 
 -0.5474262 -0.6195712 </code></pre>
-<p>Note that the result differs significantly from that with the raw data. This last run gives us a p-value of <strong>0.34</strong> (suggesting little difference in overall concentrations) whereas the first run gave us a p-value of <strong>0.075</strong> (suggesting that the contaminated site may have, overall, had greater concentration values).</p>
+<p>Note that the result differs significantly from that with the raw data. This last run gives us a p-value of <strong>0.34</strong> (suggesting little difference in overall concentrations) whereas the first run gave us a p-value of <strong>0.075</strong> (suggesting that the contaminated site may have had, overall, greater concentration values).</p>
 <p>At this point, it’s important to remind ourselves what we are comparing after having log-transformed the data; we are no longer comparing means but the <strong>log of means</strong> instead. More specifically, via mathematical construct, it can be shown that a log-transformation of the data results in testing the hypothesis that the <strong>ratio of mean concentrations are equal to 1</strong>.</p>
 </div>
 <div id="fine-tuning-the-re-expression" class="section level1">
 <h1>Fine-tuning the re-expression</h1>
-<p>The log transformation is one of many re-expression that can be applied to the data. Let’s explore the skewness across different “depths” of the <code>Cont</code> values to see if the skewness is systematic. We’ll use letter value summary plots to help guide us to a reasonable re-expression.</p>
-<p>First, we’ll look at raw contaminated site data:</p>
+<p>The log transformation is one of many re-expressions that can be applied to the data. Let’s explore the skewness across different “depths” of the <code>Cont</code> values to see if the skewness is systematic. We’ll use letter value summary plots to help guide us to a reasonable re-expression.</p>
+<p>First, we’ll look at the raw contaminated site data:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;http://mgimond.github.io/ES218/es218.R&quot;</span>) <span class="co"># Needed to run the lsum() function</span>
 <span class="kw">library</span>(ggplot2)
 
@@ -550,7 +550,7 @@ df  %&gt;%<span class="st"> </span>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-17-1.png" width="480" /></p>
 <p>The distributions do not look too bad when viewed in a q-q plot. Note how the letter values summary plot can pick up on subtle skewness that may not be apparent in a q-q plot. But is the observed skewed distribution after applying a power transformation really significant? I.e. is it small enough not to bias our t-test results?</p>
 <p>Let’s run the t-test.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t.test</span>(<span class="kw">bc</span>(Cont,-<span class="fl">0.35</span>), <span class="kw">bc</span>(Ref,-<span class="fl">0.35</span>), <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>,<span class="dt">var.equal=</span><span class="ot">FALSE</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t.test</span>(<span class="kw">bc</span>(Cont,-<span class="fl">0.35</span>), <span class="kw">bc</span>(Ref,-<span class="fl">0.35</span>), <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>)</code></pre></div>
 <pre><code>
     Welch Two Sample t-test
 
@@ -562,8 +562,7 @@ alternative hypothesis: true difference in means is greater than 0
 sample estimates:
  mean of x  mean of y 
 -0.9264188 -0.7386209 </code></pre>
-<p>Note that the result differs significantly from that with the raw data. This last run gives us a p-value of <strong>0.85</strong> whereas the first run gave us a p-value of <strong>0.075</strong> and the log-transformed run gave us a p-value of <strong>0.34</strong>.</p>
-<p>If you tweak the power transformation ever so slightly, you will note that the p-value can change measurably, but not enough to alter the conclusion that there is no significant difference in concentrations between both sites when comparing the batches using the mean <strong>raised to the -0.35<sup>th</sup></strong> power.</p>
+<p>Note that the result differs significantly from that with the raw data. This last run gives us a p-value of <strong>0.85</strong> whereas the first run gave us a p-value of <strong>0.075</strong> and the log-transformed run gave us a p-value of <strong>0.34</strong>. If you tweak the power transformation ever so slightly, you will note that the p-value can change measurably, but fortunately not enough to alter the conclusion that there is no significant difference in concentrations between both sites when comparing the batches using the mean <strong>raised to the -0.35<sup>th</sup></strong> power.</p>
 </div>
 <div id="robust-tests" class="section level1">
 <h1>Robust tests</h1>
@@ -594,23 +593,26 @@ for (i in <span class="dv">1</span>:<span class="dv">999</span>){
 <span class="co"># Now let&#39;s see where our observed difference in median concentration lies</span>
 <span class="kw">abline</span>(<span class="dt">v =</span> <span class="kw">median</span>(Cont) -<span class="st"> </span><span class="kw">median</span>(Ref), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lw=</span><span class="dv">2</span>)</code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-19-1.png" width="384" /></p>
-<p>We can compute a <em>pseudo</em> p-value from the above. Note that we are interested in the number of simulated differences that are greater than our observed difference:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="dv">1</span> -<span class="st"> </span><span class="kw">mean</span>( (<span class="kw">median</span>(Cont) -<span class="st"> </span><span class="kw">median</span>(Ref)) &gt;=<span class="st"> </span>med.dif)
+<p>We can compute a <em>pseudo</em> p-value from the above. Note that we are interested in the number of simulated values that are <em>different</em> than our observed value (i.e. we’re not concerned with the direction of our value), we are therefore conducting a <em>two-side</em> test whose p-value can be computed as:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">N.greater &lt;-<span class="st"> </span><span class="kw">sum</span>( (<span class="kw">median</span>(Cont) -<span class="st"> </span><span class="kw">median</span>(Ref)) &gt;=<span class="st"> </span>med.dif) <span class="co"># Number of simulated differences</span>
+                                                           <span class="co"># greater than the observed value</span>
+n &lt;-<span class="st"> </span><span class="kw">length</span>(med.dif) <span class="co">#number of simulated values</span>
+p &lt;-<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span><span class="kw">min</span>(N.greater +<span class="st"> </span><span class="dv">1</span>, n +<span class="st"> </span><span class="dv">1</span> -<span class="st"> </span>N.greater) /<span class="st"> </span>(n +<span class="dv">1</span>)
 p</code></pre></div>
-<pre><code>[1] 0.9299299</code></pre>
-<p>The value <code>p</code> gives us the fraction of simulated values that are greater than our observed difference. Here the large <code>p</code> value suggests that at least half of the concentrations in <code>Cont</code> are below those in the reference site (this is in agreement with the boxplot visual in an earlier plot). The advantage of this permutation test is that it can be implemented with any measure of location (e.g. mean, median, upper quartile, etc …)</p>
+<pre><code>[1] 0.202</code></pre>
+<p>Here, the p-value gives us the probability that our observed difference in median concentration value is consistent with the expected difference if the two sites were identical. In our example, that probability is around 0.2 suggesting that <em>overall</em>, the concentrations at both sites are relatively the same.</p>
 </div>
 <div id="wilcoxon-rank-sum-test" class="section level2">
 <h2>Wilcoxon rank sum test</h2>
-<p>This is another popular alternative to the t-Test. The technical implementation and interpretation is identical to that of the t-Test. It differs from the t-Test in that it is based on the ranks the observations as opposed to the observation means.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wilcox.test</span>(Cont, Ref, <span class="dt">alternative =</span> <span class="st">&quot;greater&quot;</span>)</code></pre></div>
+<p>This is another popular alternative to the t-Test. The technical implementation and interpretation is identical to that of the t-Test. It differs from the t-Test in that it is based on the observation ranks as opposed to the observation means. Here, we implement a two-sided test addressing the question <em>“are the differences in concentrations between the sites significant”</em>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wilcox.test</span>(Cont, Ref, <span class="dt">alternative =</span> <span class="st">&quot;two.sided&quot;</span>)</code></pre></div>
 <pre><code>
     Wilcoxon rank sum test with continuity correction
 
 data:  Cont and Ref
-W = 1582, p-value = 0.8799
-alternative hypothesis: true location shift is greater than 0</code></pre>
-<p>As with the permutation test, the p-value is big indicating that a good proportion of the <code>Cont</code> site has concentrations lower than that at the <code>Ref</code> site.</p>
+W = 1582, p-value = 0.2423
+alternative hypothesis: true location shift is not equal to 0</code></pre>
+<p>The p-value (which is similar to that found via the permutation technique) suggests that the difference in <em>overall</em> concentrations is not that great between both sites… despite the presence of a few outliers!</p>
 </div>
 </div>
 <div id="dont-forget-the-outliers" class="section level1">

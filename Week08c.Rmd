@@ -59,7 +59,7 @@ Cont.mean <- mean(Cont) # Contaminated site mean
 Cont.sd   <- sd(Cont)   # Contaminated site standard deviation
 ```
 
-The t-test uses these pairs of numbers to reconstruct, then compare the distributions. These are the distributions the t-test *thinks* it's comparing:
+The t-test uses these pairs of numbers to reconstruct, then compare the distributions. Here are the distributions the t-test *thinks* it's comparing:
 
 ```{r fig.width=5, fig.height=1.5, echo=FALSE}
 OP <- par(mar=c(2,0,0,0))
@@ -80,7 +80,7 @@ par(OP)
 
 The red line is the distribution of TCB values for the contaminated site (standard deviation = `r round(Cont.sd,2)`) and the black line is the concentration of TCB values for the reference site (standard deviation = `r round(Ref.sd,2)`). The red vertical line is the mean concentration of the contaminated site which falls well outside the range of concentrations observed at the reference site.
 
-* *As an aside, it's worth mentioning that the variances are clearly unequal thus violating a basic requirement for the t-test however, R invokes the Welch's t-test by default to mitigate for unequal variance and sample size. But, Welch's test does require that the distributions follow a normal theoretical distribution (i.e. they can be different in size but must be normal in shape).*
+> As an aside, it's worth mentioning that the variances are clearly unequal thus violating a basic requirement for the t-test however, R invokes the Welch's t-test by default to mitigate for unequal variance and sample size. But, Welch's test does require that the distributions follow a normal theoretical distribution (i.e. they can be different in size but must be normal in shape).
 
 The spread for the contaminated site is several orders of magnitude greater than that of the reference site. But are these reconstructed distributions really representative of the data?
 
@@ -136,7 +136,7 @@ qqline(Cont)
 par(OP)
 ```
 
-These batches do not follow the straight line suggesting skewness in the distribution (as was noted with the boxplots). A workaround to this problem is to re-express the batches of values since in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation. Let's compare
+These batches do not follow the straight line suggesting skewness in the distribution (as was noted with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation:
 
 ```{r fig.width=6, fig.height=3, fig.show='hold'}
 OP <- par(mfrow=c(1,2), mar=c(2,2,1,1))
@@ -153,16 +153,16 @@ Log-transforming the concentrations seems to have done a good job in creating no
 t.test(log(Cont), log(Ref), alt="greater")
 ```
 
-Note that the result differs significantly from that with the raw data. This last run gives us a p-value of **0.34** (suggesting little difference in overall concentrations) whereas the first run gave us a p-value of **0.075** (suggesting that the contaminated site may have, overall, had greater concentration values).
+Note that the result differs significantly from that with the raw data. This last run gives us a p-value of **0.34** (suggesting little difference in overall concentrations) whereas the first run gave us a p-value of **0.075** (suggesting that the contaminated site may have had, overall, greater concentration values).
 
 At this point, it's important to remind ourselves what we are comparing after having log-transformed the data; we are no longer comparing means but the **log of means** instead. More specifically, via mathematical construct, it can be shown that a log-transformation of the data results in testing the hypothesis that the **ratio of mean concentrations are equal to 1**.
 
 
 # Fine-tuning the re-expression
 
-The log transformation is one of many re-expression that can be applied to the data. Let's explore the skewness across different "depths" of the `Cont` values to see if the skewness is systematic. We'll use letter value summary plots to help guide us to a reasonable re-expression.
+The log transformation is one of many re-expressions that can be applied to the data. Let's explore the skewness across different "depths" of the `Cont` values to see if the skewness is systematic. We'll use letter value summary plots to help guide us to a reasonable re-expression.
 
-First, we'll look at raw contaminated site data:
+First, we'll look at the raw contaminated site data:
 
 ```{r fig.width=4, fig.height=3}
 source("http://mgimond.github.io/ES218/es218.R") # Needed to run the lsum() function
@@ -238,12 +238,11 @@ The distributions do not look too bad when viewed in a q-q plot. Note how the le
 Let's run the t-test.
 
 ```{r}
-t.test(bc(Cont,-0.35), bc(Ref,-0.35), alt="greater",var.equal=FALSE)
+t.test(bc(Cont,-0.35), bc(Ref,-0.35), alt="greater")
 ```
 
 Note that the result differs significantly from that with the raw data. This last run gives us a p-value of **0.85**  whereas the first run gave us a p-value of **0.075** and the log-transformed run gave us a p-value of **0.34**. 
-
-If you tweak the power transformation ever so slightly, you will note that the p-value can change measurably, but not enough to alter the conclusion that there is no significant difference in concentrations between both sites when comparing the batches using the mean **raised to the -0.35^th^** power.
+If you tweak the power transformation ever so slightly, you will note that the p-value can change measurably, but fortunately not enough to alter the conclusion that there is no significant difference in concentrations between both sites when comparing the batches using the mean **raised to the -0.35^th^** power.
 
 # Robust tests
 
@@ -278,24 +277,27 @@ hist(med.dif)
 abline(v = median(Cont) - median(Ref), col="red", lw=2)
 ```
 
-We can compute a *pseudo* p-value from the above. Note that we are interested in the number of simulated differences that are greater than our observed difference:
+We can compute a *pseudo* p-value from the above. Note that we are interested in the number of simulated values that are *different* than our observed value (i.e. we're not concerned with the direction of our value), we are therefore conducting a *two-side* test whose p-value can be computed as:
 
 ```{r}
-p <- 1 - mean( (median(Cont) - median(Ref)) >= med.dif)
+N.greater <- sum( (median(Cont) - median(Ref)) >= med.dif) # Number of simulated differences
+                                                           # greater than the observed value
+n <- length(med.dif) #number of simulated values
+p <- 2 * min(N.greater + 1, n + 1 - N.greater) / (n +1)
 p
 ```
 
-The value `p` gives us the fraction of simulated values that are greater than our observed difference. Here the large `p` value suggests that at least half of the concentrations in `Cont` are below those in the reference site (this is in agreement with the boxplot visual in an earlier plot). The advantage of this permutation test is that it can be implemented with any measure of location (e.g. mean, median, upper quartile, etc ...)
+Here, the p-value gives us the probability that our observed difference in median concentration value is consistent with the expected difference if the two sites were identical. In our example, that probability is around `r round(p,2)` suggesting that *overall*, the concentrations at both sites are relatively the same.
 
 ## Wilcoxon rank sum test
 
-This is another popular alternative to the t-Test. The technical implementation and interpretation is identical to that of the t-Test. It differs from the t-Test in that it is based on the ranks the observations as opposed to the observation means.
+This is another popular alternative to the t-Test. The technical implementation and interpretation is identical to that of the t-Test. It differs from the t-Test in that it is based on the observation ranks as opposed to the observation means. Here, we implement a two-sided test addressing the question *"are the differences in concentrations between the sites significant"*.
 
 ```{r}
-wilcox.test(Cont, Ref, alternative = "greater")
+wilcox.test(Cont, Ref, alternative = "two.sided")
 ```
 
-As with the permutation test, the p-value is big indicating that a good proportion of the `Cont` site has concentrations lower than that at the `Ref` site.
+The p-value (which is similar to that found via the permutation technique) suggests that the difference in *overall* concentrations is not that great between both sites... despite the presence of a few outliers!
 
 # Don't forget the outliers!
 
