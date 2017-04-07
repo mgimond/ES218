@@ -16,7 +16,7 @@ Bivariate data are datasets that store two variables measured from a same observ
 
 # Scatter plot
 
-A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed *dependent* on another variable; the latter being the *independent* variable. Cleveland refers to the former as the *response*  and the latter as the *factor*. The dependent variable is usually plotted on the y-axis and the dependent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between them.
+A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed *dependent* on another variable; the latter being the *independent* variable. Cleveland refers to the former as the *response*  and the latter as the *factor*. The dependent variable is usually plotted on the y-axis and the independent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between them.
 
 A scatter plot can be generated using the base plotting environment as follows:
 
@@ -32,16 +32,7 @@ library(ggplot2)
 ggplot(df, aes(x=area, y=cp.ratio)) + geom_point()
 ```
 
-```{r, echo=FALSE, eval=FALSE}
-## Optimizing the aspect ratio
-bank <- function(x,y,deg=45) {
-  seg.ang <- atan( diff(y) / diff(x) ) * 180/pi
-  seg.len <- sqrt( diff(y)^2 + diff(x)^2 )
-  WMD <- sum(abs(seg.ang) * seg.len) /  sum(seg.len)  
-  aspect <- tan(abs(deg) * pi/180) / tan(WMD * pi/180)
-  return(aspect)
-}
-```
+The data represent, on the y-axis,  the ratio between the ganglion cell density of a cat's central retina to that of its peripheral density (variable `cp.ratio`) and, on the x-axis, the cat's retina surface area (`area`) during its early development (ranging from 35 to 62 days of gestation).
 
 # Fitting the data
 
@@ -120,7 +111,7 @@ ggplot(df, aes(x=area, y=cp.ratio)) + geom_point() + stat_smooth(method="lm", se
 
 ### LOESS
 
-A more flexible curve fitting option is the LOESS curve (short for **local regression**). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the smooth curve. The range of x-values that contribute to each localized regression lines is defined by the $\alpha$ parameter which usually ranges from 0.2 to 1. The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a LOESS curve is $\lambda$: it defines the polynomial order of the localized regression line. This is usually set to 1.
+A more flexible curve fitting option is the LOESS curve (short for **local regression**). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the smooth curve. The range of x-values that contribute to each localized regression lines is defined by the $\alpha$ parameter which usually ranges from 0.2 to 1. The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a LOESS curve is $\lambda$: it defines the polynomial order of the localized regression line. This is usually set to 1 (though `ggplot2`'s implementation of the loess defaults to a 2^nd^ order polynomial).
 
 The LOESS fit can be computed using the `loess()` function. It takes as arguments  `span` ($\alpha$), and `degree` ($\lambda$).
 
@@ -203,14 +194,13 @@ ggplot(res2, aes(x=area, y=residuals)) + geom_point() +
 
 The loess model also seems to do a good job in smoothing out any overall pattern in the data.
 
-You may ask *“if the loess model does such a good job in fitting dat, why bother with polynomial fits?”* If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in seeing a pattern in the data, then a loess fit is a good choice.
+You may ask *“if the loess model does such a good job in fitting the data, why bother with polynomial fits?”* If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in identifying a pattern in the data, then a loess fit is a good choice.
 
 Next we will look for any homogeneity in the residuals.
 
-
 ## Spread-location plot
 
-The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that the residuals do not show a dependence with *fitted* y-values. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across factors. Here we will compare residuals to the fitted `CP.ratio` values (think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help identify any patterns (this reproduces fig 3.14 in Cleveland's book).
+The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that the residuals do not show a dependence with *fitted* y-values. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across factors. Here we will compare residuals to the fitted `CP.ratio` values (think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot (this reproduces fig 3.14 in Cleveland's book).
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 sl2 <- data.frame( std.res = sqrt(abs(residuals(M2))), 
