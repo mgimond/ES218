@@ -40,7 +40,7 @@ M <- lm(y ~ x)
 abline( M , col="red")
 ```
 
-Note the significant change in the line's characteristics, it's intercept and slope are now:
+Note the significant change in the line's characteristics, its intercept and slope are now:
 
 ```{r}
 coef(M)
@@ -195,6 +195,30 @@ abline( M1 , col="grey50", lty=2)
 ```
 
 Note the difference in slopes: The robust regression method computes a slope of `r round(coef(M2)[2],4)` while the original regression model computes a slope of `r round(coef(M1)[2],4)`.
+
+### Built-in implementation of the bisquare
+
+The `MASS` package has a robust linear modeling function called `rlm` that will implement a variation of the aforementioned bisquare estimation technique. Its results may differ slightly from those presented here, but the difference will be insignificant for the most part. An example of its use follows.
+
+```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
+library(MASS)
+M2.r <- rlm( AvgTemp ~ Year, dat=df2, psi="psi.bisquare")
+plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
+# Add the robust line
+abline( M2.r, col="red")
+# Add the default regression line
+abline( M1 , col="grey50", lty=2)
+```
+
+The function `rlm` can also be called directly from within `ggplot`.
+
+```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
+library(MASS)
+ggplot(df2, aes(x=Year, y=AvgTemp)) + geom_point() + 
+        geom_smooth(method="lm", se=FALSE, col="grey50", lty=2) +
+       geom_smooth(method="rlm", se=FALSE, col="red",
+                   method.args=list(psi="psi.bisquare"))
+``` 
 
 # Robust loess
 

@@ -379,6 +379,7 @@ $(document).ready(function () {
 <li><a href="#tukeys-3-point-summary">Tukey’s 3-point summary</a></li>
 <li><a href="#bisquare">Bisquare</a><ul>
 <li><a href="#sample-data">Sample data</a></li>
+<li><a href="#built-in-implementation-of-the-bisquare">Built-in implementation of the bisquare</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#robust-loess">Robust loess</a></li>
@@ -408,7 +409,7 @@ M &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> 
 M &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x)
 <span class="kw">abline</span>( M , <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
 <p><img src="Week09b_files/figure-html/unnamed-chunk-4-1.png" width="288" /></p>
-<p>Note the significant change in the line’s characteristics, it’s intercept and slope are now:</p>
+<p>Note the significant change in the line’s characteristics, its intercept and slope are now:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coef</span>(M)</code></pre></div>
 <pre><code>(Intercept)           x 
   9.5454545   0.8636364 </code></pre>
@@ -496,6 +497,25 @@ for(i in <span class="dv">1</span>:<span class="dv">10</span>){
 <p><img src="Week09b_files/figure-html/unnamed-chunk-13-1.png" width="576" /></p>
 <p>Note the difference in slopes: The robust regression method computes a slope of 0.0298 while the original regression model computes a slope of 0.0197.</p>
 </div>
+<div id="built-in-implementation-of-the-bisquare" class="section level3">
+<h3>Built-in implementation of the bisquare</h3>
+<p>The <code>MASS</code> package has a robust linear modeling function called <code>rlm</code> that will implement a variation of the aforementioned bisquare estimation technique. Its results may differ slightly from those presented here, but the difference will be insignificant for the most part. An example of its use follows.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MASS)
+M2.r &lt;-<span class="st"> </span><span class="kw">rlm</span>( AvgTemp ~<span class="st"> </span>Year, <span class="dt">dat=</span>df2, <span class="dt">psi=</span><span class="st">&quot;psi.bisquare&quot;</span>)
+<span class="kw">plot</span>(AvgTemp ~<span class="st"> </span>Year,df2, <span class="dt">pch=</span><span class="dv">16</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.2</span>))
+<span class="co"># Add the robust line</span>
+<span class="kw">abline</span>( M2.r, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)
+<span class="co"># Add the default regression line</span>
+<span class="kw">abline</span>( M1 , <span class="dt">col=</span><span class="st">&quot;grey50&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>)</code></pre></div>
+<p><img src="Week09b_files/figure-html/unnamed-chunk-14-1.png" width="576" /></p>
+<p>The function <code>rlm</code> can also be called directly from within <code>ggplot</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MASS)
+<span class="kw">ggplot</span>(df2, <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>AvgTemp)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">        </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span><span class="st">&quot;lm&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>, <span class="dt">col=</span><span class="st">&quot;grey50&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>) +
+<span class="st">       </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span><span class="st">&quot;rlm&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>,
+                   <span class="dt">method.args=</span><span class="kw">list</span>(<span class="dt">psi=</span><span class="st">&quot;psi.bisquare&quot;</span>))</code></pre></div>
+<p><img src="Week09b_files/figure-html/unnamed-chunk-15-1.png" width="576" /></p>
+</div>
 </div>
 </div>
 <div id="robust-loess" class="section level1">
@@ -520,7 +540,7 @@ for(i in <span class="dv">1</span>:<span class="dv">10</span>){
 
 <span class="co"># Add the default loess</span>
 <span class="kw">lines</span>(df2$Year, <span class="kw">predict</span>(lo), <span class="dt">col=</span><span class="st">&quot;grey50&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>)</code></pre></div>
-<p><img src="Week09b_files/figure-html/unnamed-chunk-14-1.png" width="576" /></p>
+<p><img src="Week09b_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
 <p>The two curves overlap for most of the data range except between the years 2000 and 2010 where the un-corrected loess curve is unduly influenced by one or two rogue points incorrectly suggesting that a <em>hump</em> in water temperature occurred between the years 2000 and 2010.</p>
 <p>The R base <code>loess</code> function and <code>ggplot2</code>’s <code>stat_smooth</code> function have the ability to compute a robust version of the loess by invoking the <code>family = &quot;symmetric&quot;</code> parameter as in,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
@@ -528,7 +548,7 @@ for(i in <span class="dv">1</span>:<span class="dv">10</span>){
 <span class="st">              </span><span class="kw">stat_smooth</span>(<span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family=</span><span class="st">&quot;symmetric&quot;</span>),    <span class="co"># Robust loess</span>
                           <span class="dt">se=</span><span class="ot">FALSE</span>, <span class="dt">span=</span><span class="dv">1</span>/<span class="dv">3</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +<span class="st">  </span>
 <span class="st">              </span><span class="kw">stat_smooth</span>( <span class="dt">se=</span><span class="ot">FALSE</span>, <span class="dt">span=</span><span class="dv">1</span>/<span class="dv">3</span>,<span class="dt">col=</span><span class="st">&quot;grey50&quot;</span>, <span class="dt">lty=</span><span class="dv">2</span>)   <span class="co"># Regular loess           </span></code></pre></div>
-<p><img src="Week09b_files/figure-html/unnamed-chunk-15-1.png" width="576" /></p>
+<p><img src="Week09b_files/figure-html/unnamed-chunk-17-1.png" width="576" /></p>
 <p>The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.</p>
 </div>
 
