@@ -385,8 +385,9 @@ $(document).ready(function () {
 </ul></li>
 </ul></li>
 <li><a href="#residuals">Residuals</a><ul>
-<li><a href="#residual-dependence-plot">Residual dependence plot</a></li>
+<li><a href="#residual-dependence-plot">Residual-dependence plot</a></li>
 <li><a href="#spread-location-plot">Spread-location plot</a></li>
+<li><a href="#checking-residuals-for-normality">Checking residuals for normality</a></li>
 </ul></li>
 <li><a href="#re-expressing-the-data">Re-expressing the data</a></li>
 </ul>
@@ -498,7 +499,7 @@ lo.y &lt;-<span class="st"> </span><span class="kw">predict</span>(lo, lo.x)</co
         11         12         13         14 
 -0.5788861  0.4484394 -1.0727624  3.1602905 </code></pre>
 <div id="residual-dependence-plot" class="section level2">
-<h2>Residual dependence plot</h2>
+<h2>Residual-dependence plot</h2>
 <p>We’ll create a <strong>residual dependence plot</strong> to plot the residuals as a function of the x-values. We’ll do this using <code>ggplot</code> so that we can also fit a loess curve to help discern any pattern in the residuals (the <code>ggplot</code> function makes it easier to add a loess fit than the traditional plotting environment).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res1 &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">area =</span> df$area, <span class="dt">residuals =</span> <span class="kw">residuals</span>(M))
 <span class="kw">ggplot</span>(res1, <span class="kw">aes</span>(<span class="dt">x=</span>area, <span class="dt">y=</span>residuals)) +<span class="st"> </span><span class="kw">geom_point</span>() +
@@ -533,6 +534,14 @@ lo.y &lt;-<span class="st"> </span><span class="kw">predict</span>(lo, lo.x)</co
 <p><img src="Week09a_files/figure-html/unnamed-chunk-18-1.png" width="240" /></p>
 <p>The function <code>predict()</code> extracts the y-values from the fitted model <code>M2</code> and is plotted along the x-axis. It’s clear from this plot that the residuals are not homogeneous; they increase as a function of increasing <em>fitted</em> CP ratio. Note that we would observe this monotone spread with our loess model as well. At this point, we should look into re-expressing the data.</p>
 </div>
+<div id="checking-residuals-for-normality" class="section level2">
+<h2>Checking residuals for normality</h2>
+<p>If you are interested in conducting a hypothesis test (i.e. addressing the question <em>“is the slope significantly different from 0”</em>) you will likely want to check the residuals for normality since this is an assumption made when computing a confidence interval and a p-value. Here, we’ll use the built-in <code>qqnorm</code> and <code>qqline</code> functions.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qqnorm</span>(M2$residuals)
+<span class="kw">qqline</span>(M2$residuals)</code></pre></div>
+<p><img src="Week09a_files/figure-html/unnamed-chunk-19-1.png" width="240" /></p>
+<p>Here, the residuals seem to stray a little from a normal distribution.</p>
+</div>
 </div>
 <div id="re-expressing-the-data" class="section level1">
 <h1>Re-expressing the data</h1>
@@ -542,21 +551,26 @@ M3     &lt;-<span class="st"> </span><span class="kw">lm</span>(cp.ratio.log ~<s
 <p>Next, let’s plot the transformed data and add the fitted line.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(cp.ratio.log ~<span class="st"> </span>area, <span class="dt">dat=</span>df.log)
 <span class="kw">abline</span>(M3, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="Week09a_files/figure-html/unnamed-chunk-20-1.png" width="240" /></p>
+<p><img src="Week09a_files/figure-html/unnamed-chunk-21-1.png" width="240" /></p>
 <p>At first glance, the log transformation seems to have done a good job at straightening the batch of values. Next, let’s look at the residual dependence plot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res3 &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">area =</span> df.log$area, <span class="dt">residuals =</span> <span class="kw">residuals</span>(M3))
 <span class="kw">ggplot</span>(res3, <span class="kw">aes</span>(<span class="dt">x=</span>area, <span class="dt">y=</span>residuals)) +<span class="st"> </span><span class="kw">geom_point</span>() +
 <span class="st">               </span><span class="kw">stat_smooth</span>(<span class="dt">method=</span><span class="st">&quot;loess&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>, <span class="dt">span=</span><span class="dv">2</span>, 
                            <span class="dt">method.args=</span><span class="kw">list</span>(<span class="dt">degree=</span><span class="dv">1</span>) )</code></pre></div>
-<p><img src="Week09a_files/figure-html/unnamed-chunk-21-1.png" width="240" /></p>
+<p><img src="Week09a_files/figure-html/unnamed-chunk-22-1.png" width="240" /></p>
 <p>Logging the y values has eliminated the residual’s dependence on <code>area</code>. Next, let’s assess homogeneity in the residuals using the s-l plot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sl3 &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">std.res =</span> <span class="kw">sqrt</span>(<span class="kw">abs</span>(<span class="kw">residuals</span>(M3))), 
                    <span class="dt">fit     =</span> <span class="kw">predict</span>(M3))
 <span class="kw">ggplot</span>(sl3, <span class="kw">aes</span>(<span class="dt">x=</span>fit, <span class="dt">y=</span>std.res)) +<span class="st"> </span><span class="kw">geom_point</span>() +
 <span class="st">               </span><span class="kw">stat_smooth</span>(<span class="dt">method=</span><span class="st">&quot;loess&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>, <span class="dt">span=</span><span class="dv">2</span>, 
                            <span class="dt">method.args=</span><span class="kw">list</span>(<span class="dt">degree=</span><span class="dv">1</span>) )</code></pre></div>
-<p><img src="Week09a_files/figure-html/unnamed-chunk-22-1.png" width="240" /></p>
+<p><img src="Week09a_files/figure-html/unnamed-chunk-23-1.png" width="240" /></p>
 <p>We do not observe a systematic increase in spread, the log transformation seems to have removed the monotone spread as well as <em>straighten</em> the relationship between variables.</p>
+<p>Finally, we’ll check for normality of the residuals.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">qqnorm</span>(M3$residuals)
+  <span class="kw">qqline</span>(M3$residuals)</code></pre></div>
+<p><img src="Week09a_files/figure-html/unnamed-chunk-24-1.png" width="240" /></p>
+<p>An added benefit of re-expressing the data seems to be a slight improvement in the normality of the residuals.</p>
 </div>
 
 

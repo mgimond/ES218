@@ -156,7 +156,7 @@ The residuals can be computed using the `residuals()` function. It takes as argu
 residuals(M)
 ```
 
-## Residual dependence plot
+## Residual-dependence plot
 
 We'll create a **residual dependence plot** to plot the residuals as a function of the x-values. We'll do this using `ggplot` so that we can also fit a loess curve to help discern any pattern in the residuals (the `ggplot` function makes it easier to add a loess fit than the traditional plotting environment).
 
@@ -212,6 +212,19 @@ ggplot(sl2, aes(x=fit, y=std.res)) + geom_point() +
 
 The function `predict()` extracts the y-values from the fitted model `M2` and is plotted along the x-axis. It's clear from this plot that the residuals are not homogeneous; they increase as a function of increasing *fitted* CP ratio. Note that we would observe this monotone spread with our loess model as well. At this point, we should look into re-expressing the data.
 
+## Checking residuals for normality
+
+If you are interested in conducting a hypothesis test (i.e. addressing the question *"is the slope significantly different from 0"*) you will likely want to check the residuals for normality since this is an assumption made when computing a confidence interval and a p-value. Here, we'll use the built-in `qqnorm` and `qqline` functions.
+
+```{r fig.height=2.5, fig.width=2.5, echo=2:3}
+OP <- par(mar=c(4,4,1,1))
+qqnorm(M2$residuals)
+qqline(M2$residuals)
+par(OP)
+```
+
+Here, the residuals seem to stray a little from a normal distribution.
+
 # Re-expressing the data
 
 The monotone spread can be problematic if we are to characterize the spread of `cp.ratio` as being the same across all values of `area`. To remedy this, we can re-express the `cp.ratio` values. Ratios are good candidates for log transformation. We will therefore fit a new linear model to the data after transforming the y-value.
@@ -248,3 +261,14 @@ ggplot(sl3, aes(x=fit, y=std.res)) + geom_point() +
 ```
 
 We do not observe a systematic increase in spread, the log transformation seems to have removed the monotone spread as well as *straighten* the relationship between variables.
+
+Finally, we'll check for normality of the residuals.
+
+```{r fig.height=2.5, fig.width=2.5, echo=2:3}
+OP <- par(mar=c(4,4,1,1))
+  qqnorm(M3$residuals)
+  qqline(M3$residuals)
+par(OP)
+```
+
+An added benefit of re-expressing the data seems to be a slight improvement in the normality of the residuals.
