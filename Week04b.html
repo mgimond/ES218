@@ -385,10 +385,7 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
-<li><a href="#data">Data</a><ul>
-<li><a href="#dataset-dat1">Dataset <code>dat1</code></a></li>
-<li><a href="#dataset-dat2">Dataset <code>dat2</code></a></li>
-</ul></li>
+<li><a href="#data">Data</a></li>
 <li><a href="#the-lattice-package">The <code>lattice</code> package</a></li>
 <li><a href="#displaying-univariate-distributions">Displaying univariate distributions</a></li>
 <li><a href="#visualizing-multivariate-data">Visualizing multivariate data</a><ul>
@@ -404,130 +401,36 @@ $(document).ready(function () {
 </div>
 <div id="data" class="section level1">
 <h1>Data</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)
-dat2 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</code></pre></div>
-<div id="dataset-dat1" class="section level2">
-<h2>Dataset <code>dat1</code></h2>
-<p><code>dat1</code> consists of grain yields by north american countries and by year. The data set was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
-<p>A subset of <code>dat1</code> will be used in this tutorial in both a <em>wide</em> form and a <em>long</em> form. The wide form will be called <code>dat1w</code> and will be a table of year vs. crop yields.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-<span class="kw">library</span>(tidyr)
-dat1w &lt;-<span class="st"> </span>dat1 %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(Information ==<span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, 
-         Country     ==<span class="st">&quot;United States of America&quot;</span>, 
-         Crop       %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) %&gt;%
-<span class="st">  </span><span class="kw">select</span>(Year, Crop, Value)   %&gt;%
-<span class="st">  </span><span class="kw">spread</span>(<span class="dt">key =</span> Crop, <span class="dt">value=</span><span class="st">&quot;Value&quot;</span>)
-<span class="kw">head</span>(dat1w)</code></pre></div>
+<p>The data files used in this tutorial were created in an <a href="Week03ab_examples.html">earlier exercise</a>. Type the following command to download the objects</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="kw">url</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/dat1_2.RData&quot;</span>))</code></pre></div>
+<p>This should load several data frame objects into your R session (note that not all are used in this exercise). The first three lines of data frames used in the following sections are shown below:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1l, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  Year   Crop    Yield
+1 1961 Barley 16488.52
+2 1962 Barley 18839.00
+3 1963 Barley 18808.27</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1w, <span class="dv">3</span>)</code></pre></div>
 <pre><code>  Year   Barley Buckwheat    Maize     Oats      Rye
 1 1961 16488.52  10886.67 39183.63 15171.26 11121.79
 2 1962 18839.00  11737.50 40620.80 16224.60 12892.77
-3 1963 18808.27  11995.00 42595.55 16253.04 11524.11
-4 1964 20208.88  11566.50 39498.36 15471.55 12026.24
-5 1965 23070.58  11875.00 46492.14 18001.04 14192.91
-6 1966 20581.66  11956.52 45891.88 16117.92 13670.75</code></pre>
-<p>The <em>long</em> form version of the subset will be called <code>dat1l</code> and will be a <em>long</em> form representation of <code>dat1w</code> (yield by crop and year).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1l &lt;-<span class="st"> </span><span class="kw">gather</span>(dat1w, <span class="dt">key =</span> <span class="st">&quot;Crop&quot;</span>, <span class="dt">value =</span> <span class="st">&quot;Yield&quot;</span>, <span class="dv">2</span>:<span class="dv">6</span>)
-<span class="kw">head</span>(dat1l,<span class="dv">10</span>)</code></pre></div>
-<pre><code>   Year   Crop    Yield
-1  1961 Barley 16488.52
-2  1962 Barley 18839.00
-3  1963 Barley 18808.27
-4  1964 Barley 20208.88
-5  1965 Barley 23070.58
-6  1966 Barley 20581.66
-7  1967 Barley 21785.30
-8  1968 Barley 23557.07
-9  1969 Barley 24039.46
-10 1970 Barley 23048.77</code></pre>
-</div>
-<div id="dataset-dat2" class="section level2">
-<h2>Dataset <code>dat2</code></h2>
-<p><code>dat2</code> consists of county income and educational attainment for both the male and female population. A codebook, <a href="http://mgimond.github.io/ES218/Data/Income_education_codebook.csv">available here</a>, provides descriptions for the different codes. We will remove the cases (rows) from <code>dat2</code> for which values are missing (i.e. cases having a <code>NA</code> designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2 &lt;-<span class="st"> </span><span class="kw">na.omit</span>(dat2)</code></pre></div>
-<p>As with <code>dat1</code>, we will create long forms of <code>dat2</code> for use with <code>lattice</code> plotting routines.</p>
-<p>The <code>dat2</code> dataset has income data broken down by educational attainment and gender. It would therefore be convenient for subsequent plot operations if two variables, <code>Gender</code> and (educational) <code>Level</code>, were added to the long table version of <code>dat2</code>.</p>
-<p>We will first generate five educational category vectors whose values are the census data variable names (see the codebook for census variable name descriptions). These category vectors will then be used in the chain operation’s <code>ifelse</code> functions. We then generate two category vectors for male and female groups–note the use of the <code>paste()</code> function in lieu of the combine function <code>c()</code> (which could have been used as well). Also note that <code>dat2</code> has income values for <em>all</em> sexes and <em>all</em> educational attainments. We did not create categories for this since they present the “else” option in the <code>ifelse</code> function. In other words, if a variable such as <code>B20004001</code> is not in any of the educational category vectors (e.g. <code>NoHS</code>, <code>HS</code>, etc…), then its <code>Level</code> value will be <code>&quot;All&quot;</code>. Likewise, if the variable is not in either <code>Male</code> or <code>Female</code> vectors, then the value <code>&quot;All&quot;</code> will be assigned to <code>Gender</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create list of variable names associated with each level</span>
-<span class="co"># of educational attainment</span>
-NoHS &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;B20004002&quot;</span>, <span class="st">&quot;B20004008&quot;</span>, <span class="st">&quot;B20004014&quot;</span>)  <span class="co"># Less than High School</span>
-HS   &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;B20004003&quot;</span>, <span class="st">&quot;B20004009&quot;</span>, <span class="st">&quot;B20004015&quot;</span>)  <span class="co"># High School</span>
-AD   &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;B20004004&quot;</span>, <span class="st">&quot;B20004010&quot;</span>, <span class="st">&quot;B20004016&quot;</span>)  <span class="co"># Some college or associates degree</span>
-BD   &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;B20004005&quot;</span>, <span class="st">&quot;B20004011&quot;</span>, <span class="st">&quot;B20004017&quot;</span>)  <span class="co"># Bachelor&#39;s degree</span>
-Grad &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;B20004006&quot;</span>, <span class="st">&quot;B20004012&quot;</span>, <span class="st">&quot;B20004018&quot;</span>)  <span class="co"># Graduate or professional degree</span>
-
-<span class="co"># Create list of variable names associated with each gender</span>
-Male   &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;B200040&quot;</span>, <span class="kw">sprintf</span>(<span class="st">&quot;%02i&quot;</span>, <span class="dv">7</span>:<span class="dv">12</span>), <span class="dt">sep =</span> <span class="st">&quot;&quot;</span>)
-Female &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;B200040&quot;</span>, <span class="kw">sprintf</span>(<span class="st">&quot;%02i&quot;</span>, <span class="dv">13</span>:<span class="dv">18</span>), <span class="dt">sep =</span> <span class="st">&quot;&quot;</span>)
-
-<span class="co"># Create a long form of the data, and add </span>
-<span class="co"># descriptive columns for level attained and gender</span>
-dat2b &lt;-<span class="st"> </span>dat2 %&gt;%
-<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> <span class="st">&quot;variable&quot;</span>, <span class="dt">value =</span> <span class="st">&quot;value&quot;</span>, -<span class="dv">1</span>:-<span class="dv">2</span>)  %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Level =</span> <span class="kw">ifelse</span>(variable %in%<span class="st"> </span>NoHS, <span class="st">&quot;NoHS&quot;</span>, 
-                        <span class="kw">ifelse</span>(variable %in%<span class="st"> </span>HS, <span class="st">&quot;HS&quot;</span>,
-                               <span class="kw">ifelse</span>(variable %in%<span class="st"> </span>AD, <span class="st">&quot;AD&quot;</span>,
-                                      <span class="kw">ifelse</span>(variable %in%<span class="st"> </span>BD, <span class="st">&quot;BD&quot;</span>,
-                                             <span class="kw">ifelse</span>(variable %in%<span class="st"> </span>Grad, <span class="st">&quot;Grad&quot;</span>, <span class="st">&quot;All&quot;</span>)))))) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Gender =</span> <span class="kw">ifelse</span>(variable %in%<span class="st"> </span>Male, <span class="st">&quot;M&quot;</span>, 
-                         <span class="kw">ifelse</span>(variable %in%<span class="st"> </span>Female, <span class="st">&quot;F&quot;</span>, <span class="st">&quot;All&quot;</span>)))                         %&gt;%
-<span class="st">  </span><span class="kw">select</span>(State, County, Level, Gender, value)
-<span class="kw">head</span>(dat2b)</code></pre></div>
-<pre><code>  State  County Level Gender value
-1    al Autauga   All    All 35881
-2    al Baldwin   All    All 31439
-3    al Barbour   All    All 25201
-4    al    Bibb   All    All 29016
-5    al  Blount   All    All 32035
-6    al Bullock   All    All 26408</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(dat2b)</code></pre></div>
-<pre><code>      State     County Level Gender value
-55201    wy   Sublette  Grad      F 59683
-55202    wy Sweetwater  Grad      F 63681
-55203    wy      Teton  Grad      F 48357
-55204    wy      Uinta  Grad      F 52321
-55205    wy   Washakie  Grad      F 50341
-55206    wy     Weston  Grad      F 56765</code></pre>
-<p>Note that we have eliminated references to variable names such as “B20004001” from <code>dat2b</code> making it easier to interpret the variable names/values.</p>
-<p>In <code>dat2b</code> the genders are lumped under a single <code>Gender</code> variable. We may wish to have male and female incomes assigned their own columns so we will need to <em>widen</em> <code>dat2b</code> so that each gender value is given its own column. We will use the <code>spread</code> function from the <code>tidyr</code> package to create a new data frame called <code>dat2.gender</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">spread</span>(dat2b, <span class="dt">key =</span> Gender, <span class="dt">value =</span> value )</code></pre></div>
-<p>We will also take this opportunity to add a new field to <code>dat2c</code> called <code>Region</code> which will associated each state with a region. R has a built-in vector called <code>state.region</code> that assigns a region to each state.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">state.region</code></pre></div>
-<pre><code> [1] South         West          West          South         West          West          Northeast     South        
- [9] South         South         West          West          North Central North Central North Central North Central
-[17] South         South         Northeast     South         Northeast     North Central North Central South        
-[25] North Central West          North Central West          Northeast     Northeast     West          Northeast    
-[33] South         North Central North Central South         West          Northeast     Northeast     South        
-[41] North Central South         South         West          Northeast     South         West          South        
-[49] North Central West         
-Levels: Northeast South North Central West</code></pre>
-<p>However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called <code>state.abb</code> or <code>state.name</code>. We will combine <code>state.abb</code> with <code>state.region</code> to create a data frame “lookup table”. We will also need to convert the uppercase state abbreviations to lower case using <code>tolower</code> so that they match the <code>dat2b</code>’s lowercase state abbreviations.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st.reg &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">State =</span> <span class="kw">tolower</span>(state.abb), <span class="dt">Region =</span> state.region)</code></pre></div>
-<p>Our income dataset has data for all 50 states as well as the District of Columbia (D.C.) as shown in the following output:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(dat2c$State)</code></pre></div>
-<pre><code> [1] ak al ar az ca co ct dc de fl ga hi ia id il in ks ky la ma md me mi mn mo ms mt nc nd ne nh nj nm nv ny oh ok or
-[39] pa ri sc sd tn tx ut va vt wa wi wv wy
-51 Levels: ak al ar az ca co ct dc de fl ga hi ia id il in ks ky la ma md me mi mn mo ms mt nc nd ne nh nj nm nv ... wy</code></pre>
-<p>But D.C. is not included in the built-in states dataset, so we will add this record the the <code>st.reg</code> table and assign D.C. to the <code>South</code> region.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st.reg &lt;-<span class="st"> </span><span class="kw">rbind</span>(st.reg , <span class="kw">data.frame</span>(<span class="dt">State=</span><span class="st">&quot;dc&quot;</span>, <span class="dt">Region=</span><span class="st">&quot;South&quot;</span>) )</code></pre></div>
-<p>Now we’ll join this look-up table to the <code>dat2c</code> data frame. We’ll use <code>dplyr</code>s <code>inner_join</code> function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">inner_join</span>(dat2c, st.reg, <span class="dt">by =</span> <span class="st">&quot;State&quot;</span>)
-<span class="kw">head</span>(dat2c)</code></pre></div>
-<pre><code>  State                 County Level   All     F     M Region
-1    ak Aleutians East Borough    AD 26383 26750 26352   West
-2    ak Aleutians East Borough   All 21953 20164 22940   West
-3    ak Aleutians East Borough    BD 22431 19592 27875   West
-4    ak Aleutians East Borough  Grad 74000 74000 71250   West
-5    ak Aleutians East Borough    HS 20770 19671 21192   West
-6    ak Aleutians East Borough  NoHS 21953 19250 22885   West</code></pre>
-</div>
+3 1963 18808.27  11995.00 42595.55 16253.04 11524.11</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat2b, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  State  County Level Gender value Region
+1    al Autauga   All    All 35881  South
+2    al Baldwin   All    All 31439  South
+3    al Barbour   All    All 25201  South</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat2c, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  State                 County Level Region   All     F     M
+1    ak Aleutians East Borough   All   West 21953 20164 22940
+2    ak Aleutians East Borough  NoHS   West 21953 19250 22885
+3    ak Aleutians East Borough    HS   West 20770 19671 21192</code></pre>
 </div>
 <div id="the-lattice-package" class="section level1">
 <h1>The <code>lattice</code> package</h1>
 <p>The <code>lattice</code> package is an implementation of the <strong>Trellis</strong> display (or multi-panel display) used to visualize multivariate data or, more specifically, to visualize the dependencies and interactions between multiple variables. For example, the following lattice (or Trellis) plot displays the counts of people (grouped by gender, adult/child and economic status or crew) who perished on the Titanic.</p>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-13-1.png" width="480" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-3-1.png" width="480" /></p>
 <p>In the following example, a scatter plot is produced for different crime types by US region.</p>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-14-1.png" width="480" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
 <p>Examples of some of the most common lattice plot types follow. Note that you will need to load the <code>lattice</code> package to run the following chunks of code.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lattice)</code></pre></div>
 </div>
@@ -535,30 +438,30 @@ Levels: Northeast South North Central West</code></pre>
 <h1>Displaying univariate distributions</h1>
 <p>Let’s look at a simple example where the density distribution of yields (across all years) is conditioned on crop type.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">densityplot</span>( ~<span class="st"> </span>Yield |<span class="st"> </span>Crop, dat1l, <span class="dt">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>The <code>layout=c(5,1)</code> parameter instructs the lattice function to layout the panels along 5 column and 1 row. If you wanted the plots to be displayed in 5 rows and 1 column you would simply type <code>layout=c(1,5)</code>.</p>
 <p>The first thing to note is that the x-scale axis range is the same for all five plots. At first, this may seem as an inefficient use of the range of x values–for example, the buckwheat density plot is squeezed in the left-hand side of the plot, but it is important to understand the purpose of a trellis plot: <strong>to facilitate comparison of plots</strong>. By ensuring that all scale ranges remain the same, we can easily compare the plot shape. In the above plot, it is clear that the yield of buckwheat remains consistent across the years compared to Maize which displays the greatest variability across the years.</p>
 <p>The <code>lattice</code> package also has a histogram function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">histogram</span>( ~<span class="st"> </span>Yield |<span class="st"> </span>Crop, dat1l, <span class="dt">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="dt">nint =</span> <span class="dv">20</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>Note the importance of having a table shaped in “long form”. The density plots are conditioned on <em>crop type</em> which requires that crop type be treated as different values of a same variable (i.e. column <code>Crop</code> in <code>dat1l</code>). The above plot could not be generated had crop types been treated as variables (i.e. columns) as in <code>dat1w</code>.</p>
 <p>You can also compare the distributions to a <em>normal</em> distribution (i.e. a Q-Q plot):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qqmath</span>( ~<span class="st"> </span>Yield |<span class="st"> </span>Crop, dat1l, <span class="dt">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>Boxplots are another popular way to view the distribution of values. In the following example, we create boxplots of income values as a function of gender (<code>value ~ Gender</code>) and condition this comparison on educational levels (<code>| Level</code>). Since the variable <code>Gender</code> contains three unique values (<code>M</code>, <code>F</code> and <code>All</code>) we will remove all records tied to the whole population (<code>All</code>) by passing a condition, <code>dat2b$Gender != &quot;All&quot;</code> (where <code>!=</code> is interpreted as “not equal to”), to the <code>dat2b</code> index.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">bwplot</span>(value ~<span class="st"> </span>Gender |<span class="st"> </span>Level, dat2b[dat2b$Gender !=<span class="st"> &quot;All&quot;</span>,] , <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>The <code>bwplot</code> automatically orders the conditional variable lexicographically which makes little sense here. It would be best to sort the attainment values based on their educational hierarchy. This will require two steps: converting the <code>Level</code> field to a factor using the <code>factor()</code> function, then ordering the elements of the factor using the <code>levels</code> parameter.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2b$Level &lt;-<span class="st"> </span><span class="kw">factor</span>(dat2b$Level, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;NoHS&quot;</span>, <span class="st">&quot;HS&quot;</span>, <span class="st">&quot;AD&quot;</span>, <span class="st">&quot;BD&quot;</span>, <span class="st">&quot;Grad&quot;</span> )) 
 
 <span class="kw">bwplot</span>(value ~<span class="st"> </span>Gender |<span class="st"> </span>Level, dat2b[dat2b$Gender !=<span class="st"> &quot;All&quot;</span>,] , <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>We may remove the outliers by passing the <code>do.out = FALSE</code> parameter to <code>bwplot</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">bwplot</span>(value ~<span class="st"> </span>Gender |<span class="st"> </span>Level, dat2b[dat2b$Gender !=<span class="st"> &quot;All&quot;</span>,] , <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>), <span class="dt">do.out =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>But note that the y-axis range still reflects the outlier values. We will need to explicitly define the y limits using the <code>ylim=</code> parameter.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">bwplot</span>(value ~<span class="st"> </span>Gender |<span class="st"> </span>Level, dat2b[dat2b$Gender !=<span class="st"> &quot;All&quot;</span>,] , <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>), <span class="dt">do.out =</span> <span class="ot">FALSE</span>, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">125000</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
 <div id="visualizing-multivariate-data" class="section level1">
 <h1>Visualizing multivariate data</h1>
@@ -568,12 +471,12 @@ Levels: Northeast South North Central West</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">xyplot</span>(Barley +<span class="st"> </span>Buckwheat +<span class="st"> </span>Maize +<span class="st"> </span>Oats +<span class="st"> </span>Rye ~<span class="st"> </span>Year , dat1w, <span class="dt">type =</span> <span class="st">&quot;o&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>,
         <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">lines =</span> <span class="ot">TRUE</span>, <span class="dt">space =</span> <span class="st">&quot;right&quot;</span>),
         <span class="dt">main =</span> <span class="st">&quot;Grain yield&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;Yield&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Year&quot;</span>)</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-23-1.png" width="576" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-13-1.png" width="576" /></p>
 <p>Note the use of the wide version (<code>dat1w</code>) of the original <code>dat1</code> dataset. Each crop is treated as its own variable (column) and is added to the plot using the <code>+</code> symbol.</p>
 <p>We can also split the plots across a Trellis system by conditioning yields on crop type. But this now requires the use of the long form of the data (i.e. <code>dat1l</code>). The next plot also differs from the previous plot in that we substitute a point-line symbol (<code>type=&quot;o&quot;</code>) with a line symbol only (<code>type=&quot;l&quot;</code>).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">xyplot</span>(Yield ~<span class="st"> </span>Year |<span class="st"> </span>Crop, dat1l, <span class="dt">type =</span> <span class="st">&quot;l&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">5</span>,<span class="dv">1</span>),
        <span class="dt">main =</span> <span class="st">&quot;Grain yield&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;Yield&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Year&quot;</span>)</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 </div>
 <div id="scatter-plots" class="section level2">
 <h2>Scatter plots</h2>
@@ -583,7 +486,7 @@ Levels: Northeast South North Central West</code></pre>
 <span class="kw">xyplot</span>( M ~<span class="st"> </span>F |<span class="st"> </span>Level, dat2c, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.6</span>,
         <span class="dt">col.symbol=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="dt">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="dt">abline=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>),
         <span class="dt">xlab=</span><span class="st">&quot;Female income ($)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Male income($)&quot;</span>)</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-25-1.png" width="768" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-15-1.png" width="768" /></p>
 <p>The <code>xyplot</code> function is passed several parameters. The parameter <code>type = c(&quot;p&quot;,&quot;g&quot;)</code> instructs the function to generate both points, <code>&quot;p&quot;</code>, and a background grid ,<code>&quot;g&quot;</code>. Parameter <code>type</code> can accept many other options, a few are listed in the following table:</p>
 <table>
 <thead>
@@ -632,13 +535,13 @@ Levels: Northeast South North Central West</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">xyplot</span>( <span class="kw">log</span>(M) ~<span class="st"> </span><span class="kw">log</span>(F) |<span class="st"> </span>Level, dat2c, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.6</span>,
         <span class="dt">col.symbol=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="dt">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="dt">abline=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>),
         <span class="dt">xlab=</span><span class="st">&quot;Log of female income ($)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Log of male income($)&quot;</span>)</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-26-1.png" width="768" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-16-1.png" width="768" /></p>
 <p>We can take this a step further. We could condition the relationship in income between male and female on both educational attainment and states or regions. We won’t condition the scatterplot on states as this would generate 50 x 6 separate plots, so we will condition the plots on region.</p>
 <p>Note that since the output will consist of 6 (levels) x 4 (regions) we will need to modify the <code>layout</code> parameter to <code>layout=c(6,4)</code>. We will also stick with the log transformation of income since it seems to do a good job in helping reveal the relationship between both income values.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">xyplot</span>( M ~<span class="st"> </span>F |<span class="st"> </span>Level +<span class="st"> </span>Region, dat2c, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.6</span>,
         <span class="dt">col.symbol=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="dt">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="dt">abline=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">4</span>),
         <span class="dt">xlab=</span><span class="st">&quot;Log of female income ($)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Log of male income($)&quot;</span>)</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-27-1.png" width="768" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-17-1.png" width="768" /></p>
 </div>
 </div>
 <div id="customizing-trellis-plots" class="section level1">
@@ -678,12 +581,12 @@ col.grey &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st
 <span class="kw">barchart</span>(Class ~<span class="st"> </span>Freq |<span class="st"> </span>Sex +<span class="st"> </span>Age, <span class="dt">data =</span> <span class="kw">as.data.frame</span>(Titanic), 
          <span class="dt">groups =</span> Survived, <span class="dt">stack =</span> <span class="ot">TRUE</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">1</span>),
          <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">title =</span> <span class="st">&quot;Survived&quot;</span>, <span class="dt">columns =</span> <span class="dv">2</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 <p>You’ll note that some of the elements are composed of more than one value such as <code>strip.background</code>’s <code>col</code> element which takes on 7 distinct color values. We did not need to modify all seven since only the first two were used (one for age group and the other for gender). Had we conditioned the plot on a third parameter, a third strip would have been added and the third color in <code>col.grey</code> would have been used. For example:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">barchart</span>(Class ~<span class="st"> </span>Freq |<span class="st"> </span>Sex +<span class="st"> </span>Age +<span class="st"> </span>Survived, <span class="dt">data =</span> <span class="kw">as.data.frame</span>(Titanic), 
          <span class="dt">groups =</span> Survived, <span class="dt">stack =</span> <span class="ot">TRUE</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">2</span>),
          <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">title =</span> <span class="st">&quot;Survived&quot;</span>, <span class="dt">columns =</span> <span class="dv">2</span>))</code></pre></div>
-<p><img src="Week04b_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<p><img src="Week04b_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 <p>Note the third strip (Yes vs No) with the third background color (#9F9F9F) in the color array <code>col.grey</code>.</p>
 </div>
 

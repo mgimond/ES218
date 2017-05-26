@@ -13,118 +13,21 @@ This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**,
 
 # Data
 
+The data files used in this tutorial were created in an [earlier exercise](Week03ab_examples.html). Type the following command to download the objects
 
-```{r cache=TRUE}
-dat1 <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=TRUE)
-dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", header=TRUE)
+```{r download_data}
+load(url("http://mgimond.github.io/ES218/Data/dat1_2.RData"))
 ```
 
-## Dataset `dat1`
-
-`dat1` consists of grain yields by north american countries and by year. The data set was downloaded from http://faostat3.fao.org/ in June of 2014.
-
-A subset of `dat1` will be used in this tutorial in both a *wide* form and a *long* form. The wide form will be called `dat1w` and will be a table of year vs. crop yields.
-
-```{r message =FALSE}
-library(dplyr)
-library(tidyr)
-dat1w <- dat1 %>%
-  filter(Information == "Yield (Hg/Ha)", 
-         Country     =="United States of America", 
-         Crop       %in% c("Oats", "Maize", "Barley", "Buckwheat","Rye")) %>%
-  select(Year, Crop, Value)   %>%
-  spread(key = Crop, value="Value")
-head(dat1w)
-```
-
-The *long* form version of the subset will be called `dat1l` and will be a *long* form representation of `dat1w` (yield by crop and year).
-
-```{r message =FALSE}
-dat1l <- gather(dat1w, key = "Crop", value = "Yield", 2:6)
-head(dat1l,10)
-```
-
-## Dataset `dat2` 
-
-`dat2` consists of county income and educational attainment for both the male and female population. A codebook, [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv), provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
+This should load several data frame objects into your R session (note that not all are used in this exercise). The first three lines of data frames used in the following sections are shown below:
 
 ```{r}
-dat2 <- na.omit(dat2)
+head(dat1l, 3)
+head(dat1w, 3)
+head(dat2b, 3)
+head(dat2c, 3)
 ```
 
-As with `dat1`, we will create long forms of `dat2` for use with `lattice` plotting routines. 
-
-The `dat2` dataset has income data broken down by educational attainment and gender. It would therefore be convenient for subsequent plot operations if two variables, `Gender` and (educational) `Level`, were added to the long table version of `dat2`.
-
-We will first generate five educational category vectors whose values are the census data variable names (see the codebook for census variable name descriptions). These category vectors will then be used in the chain operation's `ifelse` functions. We then generate two category vectors for male and female groups--note the use of the `paste()` function in lieu of the combine function `c()` (which could have been used as well). Also note that `dat2` has income values for *all* sexes and *all* educational attainments. We did not create categories for this since they present the "else" option in the `ifelse` function. In other words, if a variable such as `B20004001` is not in any of the educational category vectors (e.g. `NoHS`, `HS`, etc...), then its `Level` value will be `"All"`. Likewise, if the variable is not in either `Male` or `Female` vectors, then the value `"All"` will be assigned to `Gender`.
-
-```{r message =FALSE}
-# Create list of variable names associated with each level
-# of educational attainment
-NoHS <- c("B20004002", "B20004008", "B20004014")  # Less than High School
-HS   <- c("B20004003", "B20004009", "B20004015")  # High School
-AD   <- c("B20004004", "B20004010", "B20004016")  # Some college or associates degree
-BD   <- c("B20004005", "B20004011", "B20004017")  # Bachelor's degree
-Grad <- c("B20004006", "B20004012", "B20004018")  # Graduate or professional degree
-
-# Create list of variable names associated with each gender
-Male   <- paste("B200040", sprintf("%02i", 7:12), sep = "")
-Female <- paste("B200040", sprintf("%02i", 13:18), sep = "")
-
-# Create a long form of the data, and add 
-# descriptive columns for level attained and gender
-dat2b <- dat2 %>%
-  gather(key = "variable", value = "value", -1:-2)  %>%
-  mutate(Level = ifelse(variable %in% NoHS, "NoHS", 
-                        ifelse(variable %in% HS, "HS",
-                               ifelse(variable %in% AD, "AD",
-                                      ifelse(variable %in% BD, "BD",
-                                             ifelse(variable %in% Grad, "Grad", "All")))))) %>%
-  mutate(Gender = ifelse(variable %in% Male, "M", 
-                         ifelse(variable %in% Female, "F", "All")))                         %>%
-  select(State, County, Level, Gender, value)
-head(dat2b)
-tail(dat2b)
-```
-
-Note that we have eliminated references to variable names such as "B20004001" from `dat2b` making it easier to interpret the variable names/values.
-
-In `dat2b` the genders are lumped under a single `Gender` variable. We may wish to have male and female incomes assigned their own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
-
-```{r}
-dat2c <- spread(dat2b, key = Gender, value = value )
-```
-
-We will also take this opportunity to add a new field to `dat2c` called `Region` which will associated each state with a region. R has a built-in vector called `state.region` that assigns a region to each state. 
-
-```{r}
-state.region
-```
-
-However, you'll note that this vector only has region names but makes no reference to states. It's intended to be used with another built-in data vector called `state.abb` or `state.name`. We will combine `state.abb` with `state.region` to create a data frame "lookup table". We will also need to convert the uppercase state abbreviations to lower case using `tolower` so that they match the `dat2b`'s lowercase state abbreviations.
-
-```{r}
-st.reg <- data.frame(State = tolower(state.abb), Region = state.region)
-```
-
-Our income dataset has data for all 50 states as well as the District of Columbia (D.C.) as shown in the following output:
-
-```{r}
-unique(dat2c$State)
-```
-
-But D.C. is not included in the built-in states dataset, so we will add this record the the `st.reg` table and assign D.C. to the `South` region.
-
-```{r}
-st.reg <- rbind(st.reg , data.frame(State="dc", Region="South") )
-```
-
-Now we'll join this look-up table to the `dat2c` data frame. We'll use `dplyr`s `inner_join` function.
-
-```{r}
-dat2c <- inner_join(dat2c, st.reg, by = "State")
-head(dat2c)
-```
 
 # The `lattice` package
 
