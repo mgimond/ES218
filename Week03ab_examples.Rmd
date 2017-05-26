@@ -67,7 +67,7 @@ As with `dat1`, we will create a tidy version of `dat2` for use with packages su
 
 The `dat2` dataset has income data broken down by educational attainment and gender aggregated at the county level. It would therefore be convenient for plot operations if two variables, `Gender` and (educational) `Level`, were added to the long table version of `dat2`.
 
-![Census Table](img/Census_table_1.png)
+![](img/Census_table_1.png)
 
 We will first generate a lookup table, `Edu.Gend`, of variable elements that will match each census category (e.g. `B20004001`, `B20004002`, ...) to its matching pair of `Level` and `Gender` types. 
 
@@ -106,4 +106,39 @@ In `dat2b` the gender values are lumped under the variable called `Gender`. We m
 ```{r}
 dat2c <- spread(dat2b, key = Gender, value = value )
 ```
+
+We will also take this opportunity to add a new field to dat2c called `Region` which will associate each state with a region. R has a built-in vector called `state.region` that assigns a region to each state.
+
+```{r}
+state.region
+```
+
+However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called `state.abb` or `state.name`. We will combine `state.abb` with `state.region` to create a data frame “lookup table”. We will also need to convert the uppercase state abbreviations to lower case using `tolower` so that they match the `dat2b`’s lowercase state abbreviations.
+
+```{r}
+st.reg <- data.frame(State = tolower(state.abb), Region = state.region)
+```
+
+Our income dataset has data for all 50 states as well as the District of Columbia (D.C.) as shown in the following output:
+
+```{r}
+unique(dat2c$State)
+```
+
+But D.C. is not included in the built-in states dataset, so we will add this record the the `st.reg` table and assign D.C. to the `South` region.
+
+```{r}
+st.reg <- rbind(st.reg , data.frame(State="dc", Region="South") )
+```
+
+Now we’ll join this look-up table to the dat2c data frame. We’ll use dplyrs inner_join function.
+
+```{r}
+dat2c <- inner_join(dat2c, st.reg, by = "State")
+head(dat2c)
+```
+
+
+
+
 

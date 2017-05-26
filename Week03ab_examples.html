@@ -462,8 +462,8 @@ dat1w &lt;-<span class="st"> </span>dat1 %&gt;%
 <p>As with <code>dat1</code>, we will create a tidy version of <code>dat2</code> for use with packages such as <code>ggplot2</code>.</p>
 <p>The <code>dat2</code> dataset has income data broken down by educational attainment and gender aggregated at the county level. It would therefore be convenient for plot operations if two variables, <code>Gender</code> and (educational) <code>Level</code>, were added to the long table version of <code>dat2</code>.</p>
 <div class="figure">
-<img src="img/Census_table_1.png" alt="Census Table" />
-<p class="caption">Census Table</p>
+<img src="img/Census_table_1.png" />
+
 </div>
 <p>We will first generate a lookup table, <code>Edu.Gend</code>, of variable elements that will match each census category (e.g. <code>B20004001</code>, <code>B20004002</code>, …) to its matching pair of <code>Level</code> and <code>Gender</code> types.</p>
 <p>We will also create a State/Region lookup table, <code>st.reg</code>, that will store two variables: the two letter state abbreviation variable <code>State</code> and its matching region variable <code>Region</code>. R has a built-in vector called <code>state.region</code> that assigns a region to each state. However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called <code>state.abb</code> or <code>state.name</code>. We will combine <code>state.abb</code> with <code>state.region</code> to create <code>st.reg</code>. We will also need to convert the uppercase state abbreviations to lower case using <code>tolower</code> so that they match the <code>dat2</code>’s lowercase state abbreviations. Note that D.C. is not included in the built-in states dataset, so we will add this record the <code>st.reg</code> table and assign D.C. to the <code>South</code> region.</p>
@@ -506,6 +506,35 @@ dat2b &lt;-<span class="st"> </span>dat2 %&gt;%
 <p>Note that we have eliminated references to variable names such as “B20004001” from <code>dat2b</code> making it easier to interpret the variable names/values.</p>
 <p>In <code>dat2b</code> the gender values are lumped under the variable called <code>Gender</code>. We may wish to have male and female incomes assigned their own columns so we will need to <em>widen</em> <code>dat2b</code> so that each gender value is given its own column. We will use the <code>spread</code> function from the <code>tidyr</code> package to create a new data frame called <code>dat2.gender</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">spread</span>(dat2b, <span class="dt">key =</span> Gender, <span class="dt">value =</span> value )</code></pre></div>
+<p>We will also take this opportunity to add a new field to dat2c called <code>Region</code> which will associate each state with a region. R has a built-in vector called <code>state.region</code> that assigns a region to each state.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">state.region</code></pre></div>
+<pre><code> [1] South         West          West          South         West          West          Northeast     South        
+ [9] South         South         West          West          North Central North Central North Central North Central
+[17] South         South         Northeast     South         Northeast     North Central North Central South        
+[25] North Central West          North Central West          Northeast     Northeast     West          Northeast    
+[33] South         North Central North Central South         West          Northeast     Northeast     South        
+[41] North Central South         South         West          Northeast     South         West          South        
+[49] North Central West         
+Levels: Northeast South North Central West</code></pre>
+<p>However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called <code>state.abb</code> or <code>state.name</code>. We will combine <code>state.abb</code> with <code>state.region</code> to create a data frame “lookup table”. We will also need to convert the uppercase state abbreviations to lower case using <code>tolower</code> so that they match the <code>dat2b</code>’s lowercase state abbreviations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st.reg &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">State =</span> <span class="kw">tolower</span>(state.abb), <span class="dt">Region =</span> state.region)</code></pre></div>
+<p>Our income dataset has data for all 50 states as well as the District of Columbia (D.C.) as shown in the following output:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(dat2c$State)</code></pre></div>
+<pre><code> [1] &quot;ak&quot; &quot;al&quot; &quot;ar&quot; &quot;az&quot; &quot;ca&quot; &quot;co&quot; &quot;ct&quot; &quot;dc&quot; &quot;de&quot; &quot;fl&quot; &quot;ga&quot; &quot;hi&quot; &quot;ia&quot; &quot;id&quot; &quot;il&quot; &quot;in&quot; &quot;ks&quot; &quot;ky&quot; &quot;la&quot; &quot;ma&quot; &quot;md&quot; &quot;me&quot; &quot;mi&quot;
+[24] &quot;mn&quot; &quot;mo&quot; &quot;ms&quot; &quot;mt&quot; &quot;nc&quot; &quot;nd&quot; &quot;ne&quot; &quot;nh&quot; &quot;nj&quot; &quot;nm&quot; &quot;nv&quot; &quot;ny&quot; &quot;oh&quot; &quot;ok&quot; &quot;or&quot; &quot;pa&quot; &quot;ri&quot; &quot;sc&quot; &quot;sd&quot; &quot;tn&quot; &quot;tx&quot; &quot;ut&quot; &quot;va&quot;
+[47] &quot;vt&quot; &quot;wa&quot; &quot;wi&quot; &quot;wv&quot; &quot;wy&quot;</code></pre>
+<p>But D.C. is not included in the built-in states dataset, so we will add this record the the <code>st.reg</code> table and assign D.C. to the <code>South</code> region.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st.reg &lt;-<span class="st"> </span><span class="kw">rbind</span>(st.reg , <span class="kw">data.frame</span>(<span class="dt">State=</span><span class="st">&quot;dc&quot;</span>, <span class="dt">Region=</span><span class="st">&quot;South&quot;</span>) )</code></pre></div>
+<p>Now we’ll join this look-up table to the dat2c data frame. We’ll use dplyrs inner_join function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">inner_join</span>(dat2c, st.reg, <span class="dt">by =</span> <span class="st">&quot;State&quot;</span>)
+<span class="kw">head</span>(dat2c)</code></pre></div>
+<pre><code>  State                 County Level Region.x   All     F     M Region.y
+1    ak Aleutians East Borough   All     West 21953 20164 22940     West
+2    ak Aleutians East Borough  NoHS     West 21953 19250 22885     West
+3    ak Aleutians East Borough    HS     West 20770 19671 21192     West
+4    ak Aleutians East Borough    AD     West 26383 26750 26352     West
+5    ak Aleutians East Borough    BD     West 22431 19592 27875     West
+6    ak Aleutians East Borough  Grad     West 74000 74000 71250     West</code></pre>
 </div>
 
 
