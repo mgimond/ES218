@@ -385,10 +385,7 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
-<li><a href="#data">Data</a><ul>
-<li><a href="#dataset-dat1">Dataset <code>dat1</code></a></li>
-<li><a href="#dataset-dat2">Dataset <code>dat2</code></a></li>
-</ul></li>
+<li><a href="#the-data">The data</a></li>
 <li><a href="#the-ggplot2-package">The <code>ggplot2</code> package</a></li>
 <li><a href="#geometries">Geometries</a><ul>
 <li><a href="#geom_line"><code>geom_line</code></a></li>
@@ -420,122 +417,40 @@ $(document).ready(function () {
 <div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
 <p>This tutorial makes use of the following R package(s): <strong><code>dplyr</code></strong>, <strong><code>tidyr</code></strong>, <strong><code>ggplot2</code></strong>, <strong><code>stringr</code></strong></p>
 </div>
-<div id="data" class="section level1">
-<h1>Data</h1>
-<p>Data used in this tutorial include grain harvest for north america and income/education census data for the US.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)
-dat2 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</code></pre></div>
-<div id="dataset-dat1" class="section level2">
-<h2>Dataset <code>dat1</code></h2>
-<p><code>dat1</code> consists of grain yields by north american countries and by year. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
-<p>A subset of <code>dat1</code> will be used in this tutorial in both a <em>wide</em> form and a <em>long</em> form. The wide form will be called <code>dat1w</code> and will be a table of year vs. crop yields.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-<span class="kw">library</span>(tidyr)
-
-dat1w &lt;-<span class="st"> </span>dat1 %&gt;%
-<span class="st">         </span><span class="kw">filter</span>(Information ==<span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, 
-                Country     ==<span class="st">&quot;United States of America&quot;</span>, 
-                Crop       %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) %&gt;%
-<span class="st">         </span><span class="kw">select</span>(Year, Crop, Value)                                          %&gt;%
-<span class="st">         </span><span class="kw">spread</span>(<span class="dt">key =</span> Crop, <span class="dt">value=</span><span class="st">&quot;Value&quot;</span>)
-<span class="kw">head</span>(dat1w)</code></pre></div>
+<div id="the-data" class="section level1">
+<h1>The data</h1>
+<p>The data files used in this tutorial were created in an <a href="Week03ab_examples.html">earlier exercise</a>. Type the following command to download the objects</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="kw">url</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/dat1_2.RData&quot;</span>))</code></pre></div>
+<p>This should load five data frame objects into your R session: <code>dat1l</code>, <code>dat1l2</code>, <code>dat1w</code>, <code>dat2</code> and <code>dat2c</code>. The first three lines of each data frame are shown below:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1l, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  Year   Crop    Yield
+1 1961 Barley 16488.52
+2 1962 Barley 18839.00
+3 1963 Barley 18808.27</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1l2, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  Year   Crop Country    Yield
+1 2012 Barley  Canada 38894.66
+2 2012  Maize  Canada 83611.49
+3 2012   Oats  Canada 24954.79</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1w, <span class="dv">3</span>)</code></pre></div>
 <pre><code>  Year   Barley Buckwheat    Maize     Oats      Rye
 1 1961 16488.52  10886.67 39183.63 15171.26 11121.79
 2 1962 18839.00  11737.50 40620.80 16224.60 12892.77
-3 1963 18808.27  11995.00 42595.55 16253.04 11524.11
-4 1964 20208.88  11566.50 39498.36 15471.55 12026.24
-5 1965 23070.58  11875.00 46492.14 18001.04 14192.91
-6 1966 20581.66  11956.52 45891.88 16117.92 13670.75</code></pre>
-<p>The <em>long</em> form version of the subset will be called <code>dat1l</code> and will be a <em>long</em> form representation of <code>dat1w</code> (yield by crop and year).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1l &lt;-<span class="st"> </span><span class="kw">gather</span>(dat1w, <span class="dt">key =</span> <span class="st">&quot;Crop&quot;</span>, <span class="dt">value =</span> <span class="st">&quot;Yield&quot;</span>, <span class="dv">2</span>:<span class="dv">6</span>)
-<span class="kw">head</span>(dat1l,<span class="dv">10</span>)</code></pre></div>
-<pre><code>   Year   Crop    Yield
-1  1961 Barley 16488.52
-2  1962 Barley 18839.00
-3  1963 Barley 18808.27
-4  1964 Barley 20208.88
-5  1965 Barley 23070.58
-6  1966 Barley 20581.66
-7  1967 Barley 21785.30
-8  1968 Barley 23557.07
-9  1969 Barley 24039.46
-10 1970 Barley 23048.77</code></pre>
-<p>Another subset will be used in this exercise and will consist of total yields for each year by crop and country.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1l2 &lt;-<span class="st"> </span>dat1 %&gt;%
-<span class="st">          </span><span class="kw">filter</span>(Information ==<span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, 
-                 Crop       %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) %&gt;%
-<span class="st">          </span><span class="kw">select</span>( Year, Crop, Country,  <span class="dt">Yield =</span> Value)  <span class="co"># Note that we are renaming the Value field</span>
-
-<span class="kw">head</span>(dat1l2,<span class="dv">15</span>)</code></pre></div>
-<pre><code>   Year      Crop                  Country    Yield
-1  2012    Barley                   Canada 38894.66
-2  2012     Maize                   Canada 83611.49
-3  2012      Oats                   Canada 24954.79
-4  2012       Rye                   Canada 38056.86
-5  2012    Barley United States of America 36533.24
-6  2012 Buckwheat United States of America 10445.86
-7  2012     Maize United States of America 77441.67
-8  2012      Oats United States of America 21974.70
-9  2012       Rye United States of America 17575.73
-10 2011    Barley                   Canada 32796.43
-11 2011     Maize                   Canada 88946.49
-12 2011      Oats                   Canada 29109.36
-13 2011       Rye                   Canada 24676.81
-14 2011    Barley United States of America 37431.96
-15 2011 Buckwheat United States of America 10299.05</code></pre>
-</div>
-<div id="dataset-dat2" class="section level2">
-<h2>Dataset <code>dat2</code></h2>
-<p><code>dat2</code> consists of county income and educational attainment for both the male and female population. A codebook <a href="http://mgimond.github.io/ES218/Data/Income_education_codebook.csv">available here</a> provides descriptions for the different codes. We will remove the cases (rows) from <code>dat2</code> for which values are missing (i.e. cases having a <code>NA</code> designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2 &lt;-<span class="st"> </span><span class="kw">na.omit</span>(dat2)</code></pre></div>
-<p>As with <code>dat1</code>, we will create a tidy version of <code>dat2</code> for use with <code>ggplot</code> plotting routines.</p>
-<p>The <code>dat2</code> dataset has income data broken down by educational attainment and gender aggregated at the county level. It would therefore be convenient for subsequent plot operations if two variables, <code>Gender</code> and (educational) <code>Level</code>, were added to the long table version of <code>dat2</code>.</p>
-<div class="figure">
-<img src="img/Census_table_1.png" alt="Census Table" />
-<p class="caption">Census Table</p>
-</div>
-<p>We will first generate a lookup table, <code>Edu.Gend</code>, of variable elements that will match each census category (e.g. <code>B20004001</code>, <code>B20004002</code>, …) to its matching pair of <code>Level</code> and <code>Gender</code> types.</p>
-<p>We will also create a State/Region lookup table, <code>st.reg</code>, that will store two variables: the two letter state abbreviation variable <code>State</code> and it matching region variable <code>Region</code>. R has a built-in vector called <code>state.region</code> that assigns a region to each state. However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called <code>state.abb</code> or <code>state.name</code>. We will combine <code>state.abb</code> with <code>state.region</code> to create <code>st.reg</code>. We will also need to convert the uppercase state abbreviations to lower case using <code>tolower</code> so that they match the <code>dat2</code>’s lowercase state abbreviations. Note that D.C. is not included in the built-in states dataset, so we will add this record the <code>st.reg</code> table and assign D.C. to the <code>South</code> region.</p>
-<p>Finally, the two tables, <code>Edu.gend</code> and <code>st.reg</code>, will be joined to the long version of <code>dat2</code> such that each observation will be assigned a <code>Level</code>, <code>Gender</code> and <code>Region</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
-<span class="co"># Create a variable/Level/Gender join table</span>
-Edu.Gend &lt;-<span class="st"> </span><span class="kw">data.frame</span>( 
-               <span class="dt">variable   =</span> <span class="kw">paste</span>(<span class="st">&quot;B200040&quot;</span>, <span class="kw">str_pad</span>(<span class="dv">1</span>:<span class="dv">18</span>, <span class="dt">width=</span><span class="dv">2</span> , <span class="dt">pad=</span><span class="st">&quot;0&quot;</span>),<span class="dt">sep=</span><span class="st">&quot;&quot;</span> ),
-               <span class="dt">Level      =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;NoHS&quot;</span>,<span class="st">&quot;HS&quot;</span>,<span class="st">&quot;AD&quot;</span>,<span class="st">&quot;BD&quot;</span>,<span class="st">&quot;Grad&quot;</span>), <span class="dt">times=</span><span class="dv">3</span>),
-               <span class="dt">Gender     =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;M&quot;</span>,<span class="st">&quot;F&quot;</span>), <span class="dt">each=</span><span class="dv">6</span>) )
-
-<span class="co"># Create a region/state join table</span>
-st.reg &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">State =</span> <span class="kw">tolower</span>(state.abb), <span class="dt">Region =</span> state.region)
-st.reg &lt;-<span class="st"> </span><span class="kw">rbind</span>(st.reg , <span class="kw">data.frame</span>(<span class="dt">State=</span><span class="st">&quot;dc&quot;</span>, <span class="dt">Region=</span><span class="st">&quot;South&quot;</span>) )
-
-<span class="co"># Start the piping operations</span>
-dat2b &lt;-<span class="st"> </span>dat2 %&gt;%
-<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> <span class="st">&quot;variable&quot;</span>, <span class="dt">value =</span> <span class="st">&quot;value&quot;</span>, -<span class="dv">1</span>:-<span class="dv">2</span>)  %&gt;%
-<span class="st">  </span><span class="kw">inner_join</span>(Edu.Gend, <span class="dt">by=</span><span class="st">&quot;variable&quot;</span> )              %&gt;%
-<span class="st">  </span><span class="kw">select</span>(State, County, Level, Gender, value)       %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Level =</span> <span class="kw">factor</span>(Level, 
-                        <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>,<span class="st">&quot;NoHS&quot;</span>,<span class="st">&quot;HS&quot;</span>, <span class="st">&quot;AD&quot;</span>, <span class="st">&quot;BD&quot;</span>, <span class="st">&quot;Grad&quot;</span>))) %&gt;%
-<span class="st">  </span><span class="kw">inner_join</span>(st.reg , <span class="dt">by=</span><span class="st">&quot;State&quot;</span>)
-<span class="kw">head</span>(dat2b)</code></pre></div>
-<pre><code>  State  County Level Gender value Region
-1    al Autauga   All    All 35881  South
-2    al Baldwin   All    All 31439  South
-3    al Barbour   All    All 25201  South
-4    al    Bibb   All    All 29016  South
-5    al  Blount   All    All 32035  South
-6    al Bullock   All    All 26408  South</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(dat2b)</code></pre></div>
-<pre><code>      State     County Level Gender value Region
-55201    wy   Sublette  Grad      F 59683   West
-55202    wy Sweetwater  Grad      F 63681   West
-55203    wy      Teton  Grad      F 48357   West
-55204    wy      Uinta  Grad      F 52321   West
-55205    wy   Washakie  Grad      F 50341   West
-55206    wy     Weston  Grad      F 56765   West</code></pre>
-<p>Note that we have eliminated references to variable names such as “B20004001” from <code>dat2b</code> making it easier to interpret the variable names/values.</p>
-<p>In <code>dat2b</code> the gender values are lumped under the variable called <code>Gender</code>. We may wish to have male and female incomes assigned their own columns so we will need to <em>widen</em> <code>dat2b</code> so that each gender value is given its own column. We will use the <code>spread</code> function from the <code>tidyr</code> package to create a new data frame called <code>dat2.gender</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">spread</span>(dat2b, <span class="dt">key =</span> Gender, <span class="dt">value =</span> value )</code></pre></div>
-</div>
+3 1963 18808.27  11995.00 42595.55 16253.04 11524.11</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat2, <span class="dv">3</span>)</code></pre></div>
+<pre><code>   County State B20004001 B20004002 B20004003 B20004004 B20004005 B20004006 B20004007 B20004008 B20004009 B20004010
+1 Autauga    al     35881     17407     30169     35327     54917     63317     46227     26055     36440     48243
+2 Baldwin    al     31439     16970     25414     31312     44940     54599     40662     20401     31553     42561
+3 Barbour    al     25201     15643     20946     24201     42629     48500     31623     20526     29966     32212
+  B20004011 B20004012 B20004013 B20004014 B20004015 B20004016 B20004017 B20004018
+1     64639     79750     27799     15634     23728     27430     42158     49829
+2     61454     70349     24694     11772     18670     24040     36010     51107
+3     61528     62788     19950     12878     16748     19479     32014     47833</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat2c, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  State                 County Level Region   All     F     M
+1    ak Aleutians East Borough   All   West 21953 20164 22940
+2    ak Aleutians East Borough  NoHS   West 21953 19250 22885
+3    ak Aleutians East Borough    HS   West 20770 19671 21192</code></pre>
 </div>
 <div id="the-ggplot2-package" class="section level1">
 <h1>The <code>ggplot2</code> package</h1>
@@ -557,23 +472,23 @@ dat2b &lt;-<span class="st"> </span>dat2 %&gt;%
 <p>From a grammatical perspective, a scientific graph is the conversion of <em>data</em> to <strong>aesthetic</strong> attributes and <strong>geometric</strong> objects. This is an important concept to grasp since it underlies the construction of all graphics in <code>ggplot2</code>.</p>
 <p>For example, if we want to generate a point plot of crop yield as a function of year using the <code>dat1l</code> data frame, we type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l , <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Yield)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-10-1.png" width="480" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
 <p>where the function, <code>ggplot()</code>, is passed the data frame name whose content will be mapped; the <code>aes()</code> function is given data-to-geometry mapping instructions (<code>Year</code> is mapped to the x-axis and <code>Yield</code> is mapped to the y-axis); and <code>geom_line()</code> is the geometry type.</p>
 <div class="figure">
-<img src="img/ggplot_1.png" alt="alt text" />
-<p class="caption">alt text</p>
+<img src="img/ggplot_1.png" />
+
 </div>
 <p>If we wanted to include a third variable, crop type, to the map, we would need to map its aesthetics: here we’ll map <code>Crop</code> to the color element of the geom.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l , <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Yield, <span class="dt">color=</span>Crop)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-11-1.png" width="480" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
 <p>The parameter <code>color</code> acts as a grouping parameter whereby the groups are assigned unique colors.</p>
 <div class="figure">
-<img src="img/ggplot_2.png" alt="alt text" />
-<p class="caption">alt text</p>
+<img src="img/ggplot_2.png" />
+
 </div>
 <p>If we want to plot lines instead of points, simply substitute the geometry type with the <code>geom_line()</code> geometry.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l , <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Yield, <span class="dt">color=</span>Crop)) +<span class="st"> </span><span class="kw">geom_line</span>()</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-12-1.png" width="480" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-6-1.png" width="480" /></p>
 <p>Note that the aesthetics are still mapped in the same way with <code>Year</code> mapped to the x coordinate, <code>Yield</code> mapped to the y coordinate and <code>Crop</code> mapped to the geom’s color.</p>
 <p>Note that the parameters <code>x=</code> and <code>y=</code> can be omitted from the syntax reducing the line of code to:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l , <span class="kw">aes</span>(Year, Yield, <span class="dt">color=</span>Crop)) +<span class="st"> </span><span class="kw">geom_line</span>()</code></pre></div>
@@ -585,56 +500,56 @@ dat2b &lt;-<span class="st"> </span>dat2 %&gt;%
 <h2><code>geom_line</code></h2>
 <p><code>geom_line</code> generates line geometries. We’ll use data from <code>dat1w</code> to generate a simple plot of oat yield as a function of year.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1w, <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Oats)) +<span class="st"> </span><span class="kw">geom_line</span>() </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-14-1.png" width="480" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-8-1.png" width="480" /></p>
 <p>Parameters such as color and linetype can be passed directly to the <code>geom_line()</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1w, <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Oats)) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="dt">linetype=</span><span class="dv">2</span>, <span class="dt">colour =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size=</span><span class="fl">0.4</span>) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-15-1.png" width="480" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-9-1.png" width="480" /></p>
 <p>Note the difference in how <code>colour=</code> is implemented here. It’s no longer <strong>mapping</strong> a variable’s levels to a range of colors as when it’s called inside of the <code>aes()</code> function, instead, it’s <strong>setting</strong> the line color to <code>blue</code>.</p>
 </div>
 <div id="geom_point" class="section level2">
 <h2><code>geom_point</code></h2>
 <p>This generates point geometries. This is often used in generating scatterplots. For example, to plot male income (variable <code>B20004013</code>) vs female income (variable <code>B20004007</code>), type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="dt">x=</span>B20004013, <span class="dt">y=</span>B20004007)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.3</span>) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-16-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-10-1.png" width="384" /></p>
 <p>We modify the point’s transparency by passing the <code>alpha=0.3</code> parameter to the <code>geom_point</code> function. Other parameters that can be passed to point geoms include <code>colour</code>, <code>pch</code> (point symbol type) and <code>cex</code> (point size as a fraction).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="dt">x=</span>B20004013, <span class="dt">y=</span>B20004007)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">colour=</span><span class="st">&quot;red&quot;</span>, <span class="dt">pch=</span><span class="dv">3</span> , <span class="dt">alpha=</span><span class="fl">0.3</span>, <span class="dt">cex=</span><span class="fl">0.6</span>) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-17-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-11-1.png" width="384" /></p>
 </div>
 <div id="geom_boxplot" class="section level2">
 <h2><code>geom_boxplot</code></h2>
 <p>In the following example, a boxplot of <code>Yield</code> is generated for each crop type.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l, <span class="kw">aes</span>(<span class="dt">x=</span>Crop, <span class="dt">y=</span>Yield)) +<span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="dt">fill=</span><span class="st">&quot;bisque&quot;</span>) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-18-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-12-1.png" width="384" /></p>
 <p>If we want to generate a single boxplot (for example for all yields irrespective of crop type) we need to pass a <em>dummy</em> variable to <code>x=</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l, <span class="kw">aes</span>(<span class="dt">x=</span><span class="st">&quot;&quot;</span>, <span class="dt">y=</span>Yield)) +<span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="dt">fill=</span><span class="st">&quot;bisque&quot;</span>) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;All crops&quot;</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-19-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-13-1.png" width="384" /></p>
 </div>
 <div id="geom_violin" class="section level2">
 <h2><code>geom_violin</code></h2>
 <p>A violin plot is a symmetrical version of a density plot which provides greater detail of a sample’s distribution than a boxplot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l, <span class="kw">aes</span>(<span class="dt">x=</span><span class="st">&quot;&quot;</span>, <span class="dt">y=</span>Yield)) +<span class="st"> </span><span class="kw">geom_violin</span>(<span class="dt">fill=</span><span class="st">&quot;bisque&quot;</span>) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-20-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-14-1.png" width="384" /></p>
 </div>
 <div id="geom_histogram" class="section level2">
 <h2><code>geom_histogram</code></h2>
 <p>Histograms can be plotted for single variables only (unless faceting is used) as can be noted by the absence of a <code>y=</code> parameter in <code>aes()</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1w, <span class="kw">aes</span>(<span class="dt">x=</span>Oats)) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">fill=</span><span class="st">&quot;grey50&quot;</span>) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-21-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-15-1.png" width="384" /></p>
 <p>The bin widths can be specified in terms of the value’s units. In our example, the unit is yield of oats (in Hg/Ha). So if we want to generate bin widths that cover 1000 Hg/Ha, we can type,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1w, <span class="kw">aes</span>(<span class="dt">x=</span>Oats)) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">fill=</span><span class="st">&quot;grey50&quot;</span>, <span class="dt">binwidth =</span> <span class="dv">1000</span>) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-22-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-16-1.png" width="384" /></p>
 </div>
 <div id="geom_bar" class="section level2">
 <h2><code>geom_bar</code></h2>
 <p>Bar plots are uses to summaries the counts of a categorical value. For example, to plot the number of counties in each state (note that each record in <code>dat2</code> is assigned a county):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(State)) +<span class="st"> </span><span class="kw">geom_bar</span>()</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-23-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-17-1.png" width="768" /></p>
 <p>To arrange the bars in ascending order we need to rearrange the <code>State</code> factor level order based on total count. We won’t be able to use the <code>reorder</code> function since we do not have a value field to summarize. Instead, we’ll make use of the <code>table</code> function to enumerate each instance of a record associated with each state, sort that vector, then extract the <code>sorted</code> state names. We’ll then create a copy of the <code>State</code> factor object to reflect the new level order.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">new.lev.ord     &lt;-<span class="st"> </span><span class="kw">names</span>( <span class="kw">sort</span>(<span class="kw">table</span>(dat2$State)) )
 dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat2$State, <span class="dt">levels =</span> new.lev.ord)</code></pre></div>
 <p>Now let’s recreate the bar plot with the new factor level order.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(State.ord)) +<span class="st"> </span><span class="kw">geom_bar</span>()</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-25-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-19-1.png" width="768" /></p>
 </div>
 <div id="dot-plot" class="section level2">
 <h2>dot plot</h2>
@@ -642,7 +557,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2.ct &lt;-<span class="st"> </span>dat2 %&gt;%<span class="st"> </span><span class="kw">group_by</span>(State) %&gt;%<span class="st"> </span>
 <span class="st">                </span><span class="kw">summarize</span>(<span class="dt">Counties =</span> <span class="kw">n</span>())
 <span class="kw">head</span>(dat2.ct)</code></pre></div>
-<pre><code># A tibble: 6 × 2
+<pre><code># A tibble: 6 x 2
    State Counties
   &lt;fctr&gt;    &lt;int&gt;
 1     ak       28
@@ -653,25 +568,25 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 6     co       62</code></pre>
 <p>Instead of mapping <code>State</code> to the x-axis, we’ll map it to the y-axis.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2.ct , <span class="kw">aes</span>(<span class="dt">x=</span>Counties, <span class="dt">y=</span>State)) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-27-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-21-1.png" width="384" /></p>
 <p>Dot plot graphics benefit from sorting–more so then bar plots. But instead of computing a new level order outside of the plotting function, we will make use of the <code>reorder</code> function <em>inside</em> of the <code>aes</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2.ct , <span class="kw">aes</span>(<span class="dt">x=</span>Counties, <span class="dt">y=</span><span class="kw">reorder</span>(State, Counties))) +<span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-28-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-22-1.png" width="384" /></p>
 </div>
 <div id="combining-geometries" class="section level2">
 <h2>Combining geometries</h2>
 <p>Geometries can be layered. For example, to overlay a linear regression line to the data we can add the <code>geom_smooth</code> layer:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="dt">x=</span>B20004013, <span class="dt">y=</span>B20004007)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.3</span>) +<span class="st"> </span>
 <span class="st">                                              </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-29-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-23-1.png" width="384" /></p>
 <p>The <code>geom_smooth</code> can be used to fit other <em>lines</em> such as a loess:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="dt">x=</span>B20004013, <span class="dt">y=</span>B20004007)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.3</span>) +
 <span class="st">                                              </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-30-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-24-1.png" width="384" /></p>
 <p>The confidence interval can be removed from the smooth geometry by specifying <code>se=FALSE</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="dt">x=</span>B20004013, <span class="dt">y=</span>B20004007)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.3</span>) +
 <span class="st">                                              </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-31-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-25-1.png" width="384" /></p>
 </div>
 </div>
 <div id="tweaking-a-ggplot2-graph" class="section level1">
@@ -680,7 +595,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <h2>Title</h2>
 <p>You can add a plot title using the <code>ggtile</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(State)) +<span class="st"> </span><span class="kw">geom_bar</span>() +<span class="kw">ggtitle</span>(<span class="st">&quot;Number of counties by state&quot;</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-32-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-26-1.png" width="768" /></p>
 </div>
 <div id="axes-labels" class="section level2">
 <h2>Axes labels</h2>
@@ -688,7 +603,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="dt">x=</span>B20004013, <span class="dt">y=</span>B20004007)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.3</span>) +
 <span class="st">               </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
 <span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Female income ($)&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Male income ($)&quot;</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-33-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-27-1.png" width="384" /></p>
 <p>To remove axis labels, simply pass <code>NULL</code> to the functions as in <code>xlab(NULL)</code> and <code>ylab(NULL)</code>.</p>
 </div>
 <div id="axes-limits" class="section level2">
@@ -698,7 +613,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <span class="st">               </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
 <span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Female income ($)&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Male income ($)&quot;</span>) +
 <span class="st">               </span><span class="kw">xlim</span>( <span class="kw">c</span>(<span class="dv">10000</span>, <span class="dv">75000</span>)) +<span class="st"> </span><span class="kw">ylim</span>( <span class="kw">c</span>(<span class="dv">10000</span>, <span class="dv">75000</span>)) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-34-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-28-1.png" width="384" /></p>
 </div>
 <div id="aspect-ratio" class="section level2">
 <h2>Aspect ratio</h2>
@@ -707,7 +622,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <span class="st">               </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
 <span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Female income ($)&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Male income ($)&quot;</span>) +
 <span class="st">               </span><span class="kw">coord_equal</span>(<span class="dt">ratio=</span><span class="dv">1</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-35-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-29-1.png" width="384" /></p>
 </div>
 <div id="colors" class="section level2">
 <h2>Colors</h2>
@@ -737,17 +652,17 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2.ct, <span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">reorder</span>(State, Counties), <span class="dt">y=</span>Counties, <span class="dt">fill=</span>Counties)) +<span class="st"> </span>
 <span class="st">                </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>) +<span class="st"> </span>
 <span class="st">                </span><span class="kw">scale_fill_gradient</span>(<span class="dt">low =</span> <span class="st">&quot;green&quot;</span>, <span class="dt">high =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-30-1.png" width="768" /></p>
 <p>The following chunk applies a divergent color scheme while allowing one to specify the central value of this scheme. Note that the colors are symmetrical about the midpoint which may result in only a partial range of the full possible gradient of colors.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2.ct, <span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">reorder</span>(State, Counties), <span class="dt">y=</span>Counties, <span class="dt">fill=</span>Counties)) +<span class="st"> </span>
 <span class="st">                </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>) +<span class="st"> </span>
 <span class="st">                </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">low =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">mid =</span> <span class="st">&quot;white&quot;</span>,  <span class="dt">high =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">midpoint =</span> <span class="dv">61</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-37-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-31-1.png" width="768" /></p>
 <p>In the last two chunk, we <em>filled</em> the bars with colors (note the use of functions with the string <code>_fill_</code>). When assigning color to point or line symbols, use the function with the <code>_colour_</code> string. For example:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2.ct , <span class="kw">aes</span>(<span class="dt">x=</span>Counties, <span class="dt">y=</span><span class="kw">reorder</span>(State, Counties), <span class="dt">col=</span>Counties)) +
 <span class="st">                 </span><span class="kw">geom_point</span>() +
 <span class="st">                 </span><span class="kw">scale_colour_gradient2</span>(<span class="dt">low =</span> <span class="st">&quot;darkblue&quot;</span>, <span class="dt">mid =</span> <span class="st">&quot;white&quot;</span>,  <span class="dt">high =</span> <span class="st">&quot;darkred&quot;</span>, <span class="dt">midpoint =</span> <span class="dv">61</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-38-1.png" width="384" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-32-1.png" width="384" /></p>
 </div>
 <div id="categorical-color-schemes" class="section level3">
 <h3>Categorical color schemes</h3>
@@ -755,12 +670,12 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l, <span class="kw">aes</span>(Year, Yield, <span class="dt">col=</span>Crop)) +<span class="st"> </span>
 <span class="st">              </span><span class="kw">geom_line</span>() +
 <span class="st">              </span><span class="kw">scale_colour_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;red&quot;</span>, <span class="st">&quot;orange&quot;</span>, <span class="st">&quot;green&quot;</span>, <span class="st">&quot;blue&quot;</span>, <span class="st">&quot;yellow&quot;</span>))</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-39-1.png" width="672" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-33-1.png" width="672" /></p>
 <p>The following chunk applies a predefined discrete color scheme named <code>Dark2</code> to each level.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l, <span class="kw">aes</span>(Year, Yield, <span class="dt">col=</span>Crop)) +<span class="st"> </span>
 <span class="st">              </span><span class="kw">geom_line</span>() +
 <span class="st">              </span><span class="kw">scale_colour_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-40-1.png" width="672" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-34-1.png" width="672" /></p>
 <p>To see a list of predefined <code>scale_colour_brewer</code> colors, type <code>?scale_colour_brewer</code> at the console.</p>
 </div>
 </div>
@@ -772,16 +687,16 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <p>Faceting (or conditioning on a variable) can be implemented in <code>ggplot2</code> using the <code>facet_wrap()</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l2, <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Yield, <span class="dt">color=</span>Crop)) +<span class="st"> </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">                                    </span><span class="kw">facet_wrap</span>( ~<span class="st"> </span>Country, <span class="dt">nrow=</span><span class="dv">1</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-41-1.png" width="576" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-35-1.png" width="576" /></p>
 <p>The parameter <code>~ Country</code> tells ggplot to condition the plots on country. If we wanted the plots to be stacked, we would set <code>nrow</code> to <code>2</code>.</p>
 <p>We can also condition the plots on two variables such as <code>crop</code> and <code>Country</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l2, <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Yield)) +<span class="st"> </span><span class="kw">geom_line</span>() +
 <span class="st">                                    </span><span class="kw">facet_wrap</span>(Crop ~<span class="st"> </span>Country, <span class="dt">nrow=</span><span class="dv">1</span>)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-42-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
 <p>This creates as many plots as there are unique combinations of variables <code>Crop</code> and <code>Country</code>. But such plots are usually best represented in a grid structure where one variable is spread along one axis and the other variable is spread along another axis of the plot layout. This can be accomplished using the <code>facet_grid</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat1l2, <span class="kw">aes</span>(<span class="dt">x=</span>Year, <span class="dt">y=</span>Yield)) +<span class="st"> </span><span class="kw">geom_line</span>() +<span class="st"> </span>
 <span class="st">                                       </span><span class="kw">facet_grid</span>( Crop ~<span class="st"> </span>Country)</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-43-1.png" width="576" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-37-1.png" width="576" /></p>
 </div>
 <div id="faceting-by-continuous-variable" class="section level2">
 <h2>Faceting by continuous variable</h2>
@@ -823,7 +738,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2c, <span class="kw">aes</span>(<span class="dt">x=</span>F, <span class="dt">y=</span>M)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.2</span>, <span class="dt">pch=</span><span class="dv">20</span>) +
 <span class="st">                               </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) +
 <span class="st">                               </span><span class="kw">facet_grid</span>( . ~<span class="st"> </span>incrng) </code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-49-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-43-1.png" width="768" /></p>
 <p>One reason we would want to explore our data across different ranges of value is to assess the consistency in relationship between variables. In our example, this plot helps assess whether the relationship between male and female income is consistent across income groups.</p>
 <p>To highlight differences in income, we will make a few changes to the plots. First, we will reduce the y-axis range to $0-$150k (this will remove a few points from the data); we will force the x-axis and y-axis units to match so that a unit of $50k on the x-axis has the same length as that on the y-axis; and we will add a 45° line (<code>geom_abline(c(0,1))</code> where 0 is the intercept and 1 is the slope) to help visualize the discrepancy (if a point lies above the 45° line, then male’s income is greater, if the point lies below, then female’s income is greater); we will also reduce the number of tics and assign shorthand notation to income values (such as “50k” instead of “50000”). All this can be accomplished by adding the <code>scale_x_continuous()</code> function to the stack of ggplot elements.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2c,  <span class="kw">aes</span>(<span class="dt">x=</span>F, <span class="dt">y=</span>M)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.2</span>, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.8</span>) +<span class="st"> </span>
@@ -833,7 +748,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <span class="st">                                </span><span class="kw">coord_equal</span>(<span class="dt">ratio=</span><span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">                                </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>, <span class="dt">col=</span><span class="st">&quot;grey50&quot;</span>) +
 <span class="st">                                </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">50000</span>,<span class="dv">100000</span>), <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;50k&quot;</span>, <span class="st">&quot;100k&quot;</span>))</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-50-1.png" width="768" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-44-1.png" width="768" /></p>
 <p>Note the change in regression slope for the last facet. The <code>geom_smooth</code> operation is only applied to the data limited to the axis range defined by <code>ylim</code>.</p>
 <p>Now let’s look at the same data but this time conditioned on educational attainment.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot M vs F by educational attainment except for Level == All</span>
@@ -844,7 +759,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <span class="st">                               </span><span class="kw">coord_equal</span>(<span class="dt">ratio=</span><span class="dv">1</span>) +<span class="st"> </span>
 <span class="st">                               </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>, <span class="dt">col=</span><span class="st">&quot;grey50&quot;</span>) +
 <span class="st">                               </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">50000</span>,<span class="dv">100000</span>), <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;50k&quot;</span>, <span class="st">&quot;100k&quot;</span>))</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-51-1.png" width="960" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-45-1.png" width="960" /></p>
 <p>We can also condition the plots on two variables: educational attainment and region.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2c, <span class="kw">aes</span>(<span class="dt">x=</span>F, <span class="dt">y=</span>M)) +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.2</span>, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.8</span>) +
 <span class="st">                               </span><span class="kw">ylim</span>( <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">150000</span>)) +<span class="st"> </span>
@@ -853,7 +768,7 @@ dat2$State.ord  &lt;-<span class="st"> </span><span class="kw">factor</span>(dat
 <span class="st">                               </span><span class="kw">coord_equal</span>(<span class="dt">ratio=</span><span class="dv">1</span>) +
 <span class="st">                               </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>, <span class="dt">col=</span><span class="st">&quot;grey50&quot;</span>) +
 <span class="st">                               </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">50000</span>,<span class="dv">100000</span>), <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;50k&quot;</span>, <span class="st">&quot;100k&quot;</span>))</code></pre></div>
-<p><img src="Week04c_files/figure-html/unnamed-chunk-52-1.png" width="960" /></p>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-46-1.png" width="960" /></p>
 </div>
 </div>
 
