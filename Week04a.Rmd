@@ -11,52 +11,20 @@ source("libs/Common.R")
 This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**
 </div>
 
-# Data prep work
+# Loading the data
 
-Data used in this tutorial include grain harvest for north america and income/education census data for the US. 
+The data files used in this tutorial were created in an [earlier exercise](Week03ab_examples.html). Type the following command to download the objects
 
-```{r cache=TRUE}
-dat1 <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=TRUE)
-dat2 <- read.csv("http://mgimond.github.io/ES218/Data/Income_education.csv", header=TRUE)
+```{r download_data}
+load(url("http://mgimond.github.io/ES218/Data/dat1_2.RData"))
 ```
 
-## Dataset `dat1` 
-
-`dat1` consists of grain yields by north american countries and by year. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014.
-
-A  subset of `dat1` will be used in this tutorial and will be in both a *wide* table format and a *long* table format.
+This should load several data frame objects into your R session (note that not all are used in this exercise). The first three lines of data frames used in the following sections are shown below:
 
 ```{r}
-library(dplyr)
-library(tidyr)
-
-# Create a subset
-dat1l <- dat1 %>%
-  filter(Information == "Yield (Hg/Ha)", 
-         Country     =="United States of America", 
-         Crop       %in% c("Oats", "Maize", "Barley", "Buckwheat","Rye")) %>%
-  mutate(Crop = droplevels(Crop))  %>%
-  select(Year, Crop, Value)                                          
-
-head(dat1l)
-
-# Create a wide version of the table
-```
-
-Now create the wide version of the table:
-
-```{r}
-dat1w <- spread(dat1l, key = Crop, value="Value")
-head(dat1w)
-```
-
-
-## Dataset `dat2`
-
-`dat2` consists of county income and educational attainment for both the male and female population. A codebook [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv) provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
-
-```{r}
-dat2 <- na.omit(dat2)
+head(dat1l, 3)
+head(dat1w, 3)
+head(dat2, 3)
 ```
 
 # Base plotting functions
@@ -231,7 +199,7 @@ If you use the long version of that table, the command looks like this:
 
 ```{r fig.height=3, fig.width=5, echo=2}
 OP <- par(mar=c(2,2,1,1))
-boxplot(Value ~ Crop, dat1l)
+boxplot(Yield ~ Crop, dat1l)
 par(OP)
 ```
 
@@ -246,7 +214,7 @@ levels(dat1l$Crop)
 To reorder the levels following the median values of yields across each level, we can use the `reorder()` function:
 
 ```{r}
-dat1l$Crop.ord <- reorder(dat1l$Crop, dat1l$Value, median)
+dat1l$Crop.ord <- reorder(dat1l$Crop, dat1l$Yield, median)
 ```
 
 This creates a new variable called `Crop.ord` whose values mirror those in variable `Crop` but differ in the underlying level order:
@@ -255,15 +223,15 @@ This creates a new variable called `Crop.ord` whose values mirror those in varia
 levels(dat1l$Crop.ord)
 ```
 
-If we wanted the order to be in descending order, we would prefix the value parameter with the negative operator as in `reorder(dat1l$Crop, -dat1l$Value, median)`.
+If we wanted the order to be in descending order, we would prefix the value parameter with the negative operator as in `reorder(dat1l$Crop, -dat1l$Yield, median)`.
 
-The function `reorder` takes three arguments: the factor whose levels are to be reordered (`Crop`), the value whose quantity will determine the new order (`Value`) and the statistic that will be used to summarize the values across each factor's level (`median`).
+The function `reorder` takes three arguments: the factor whose levels are to be reordered (`Crop`), the value whose quantity will determine the new order (`Yield`) and the statistic that will be used to summarize the values across each factor's level (`median`).
 
 The modified boxplot expression now looks like:
 
 ```{r fig.height=3, fig.width=5, echo=2}
 OP <- par(mar=c(2,2,1,1))
-boxplot(Value ~ Crop.ord, dat1l)
+boxplot(Yield ~ Crop.ord, dat1l)
 par(OP)
 ```
 

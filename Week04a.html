@@ -235,6 +235,9 @@ $(document).ready(function () {
     <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 04</li>
     <li>
@@ -385,10 +388,7 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
-<li><a href="#data-prep-work">Data prep work</a><ul>
-<li><a href="#dataset-dat1">Dataset <code>dat1</code></a></li>
-<li><a href="#dataset-dat2">Dataset <code>dat2</code></a></li>
-</ul></li>
+<li><a href="#loading-the-data">Loading the data</a></li>
 <li><a href="#base-plotting-functions">Base plotting functions</a><ul>
 <li><a href="#point-and-line-plots">Point and line plots</a></li>
 <li><a href="#boxplots">Boxplots</a></li>
@@ -403,51 +403,30 @@ $(document).ready(function () {
 <div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
 <p>This tutorial makes use of the following R package(s): <strong><code>dplyr</code></strong>, <strong><code>tidyr</code></strong></p>
 </div>
-<div id="data-prep-work" class="section level1">
-<h1>Data prep work</h1>
-<p>Data used in this tutorial include grain harvest for north america and income/education census data for the US.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)
-dat2 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</code></pre></div>
-<div id="dataset-dat1" class="section level2">
-<h2>Dataset <code>dat1</code></h2>
-<p><code>dat1</code> consists of grain yields by north american countries and by year. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
-<p>A subset of <code>dat1</code> will be used in this tutorial and will be in both a <em>wide</em> table format and a <em>long</em> table format.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-<span class="kw">library</span>(tidyr)
-
-<span class="co"># Create a subset</span>
-dat1l &lt;-<span class="st"> </span>dat1 %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(Information ==<span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, 
-         Country     ==<span class="st">&quot;United States of America&quot;</span>, 
-         Crop       %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Crop =</span> <span class="kw">droplevels</span>(Crop))  %&gt;%
-<span class="st">  </span><span class="kw">select</span>(Year, Crop, Value)                                          
-
-<span class="kw">head</span>(dat1l)</code></pre></div>
-<pre><code>  Year      Crop    Value
-1 2012    Barley 36533.24
-2 2012 Buckwheat 10445.86
-3 2012     Maize 77441.67
-4 2012      Oats 21974.70
-5 2012       Rye 17575.73
-6 2011    Barley 37431.96</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create a wide version of the table</span></code></pre></div>
-<p>Now create the wide version of the table:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1w &lt;-<span class="st"> </span><span class="kw">spread</span>(dat1l, <span class="dt">key =</span> Crop, <span class="dt">value=</span><span class="st">&quot;Value&quot;</span>)
-<span class="kw">head</span>(dat1w)</code></pre></div>
+<div id="loading-the-data" class="section level1">
+<h1>Loading the data</h1>
+<p>The data files used in this tutorial were created in an <a href="Week03ab_examples.html">earlier exercise</a>. Type the following command to download the objects</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="kw">url</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/dat1_2.RData&quot;</span>))</code></pre></div>
+<p>This should load several data frame objects into your R session (note that not all are used in this exercise). The first three lines of data frames used in the following sections are shown below:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1l, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  Year   Crop    Yield
+1 1961 Barley 16488.52
+2 1962 Barley 18839.00
+3 1963 Barley 18808.27</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1w, <span class="dv">3</span>)</code></pre></div>
 <pre><code>  Year   Barley Buckwheat    Maize     Oats      Rye
 1 1961 16488.52  10886.67 39183.63 15171.26 11121.79
 2 1962 18839.00  11737.50 40620.80 16224.60 12892.77
-3 1963 18808.27  11995.00 42595.55 16253.04 11524.11
-4 1964 20208.88  11566.50 39498.36 15471.55 12026.24
-5 1965 23070.58  11875.00 46492.14 18001.04 14192.91
-6 1966 20581.66  11956.52 45891.88 16117.92 13670.75</code></pre>
-</div>
-<div id="dataset-dat2" class="section level2">
-<h2>Dataset <code>dat2</code></h2>
-<p><code>dat2</code> consists of county income and educational attainment for both the male and female population. A codebook <a href="http://mgimond.github.io/ES218/Data/Income_education_codebook.csv">available here</a> provides descriptions for the different codes. We will remove the cases (rows) from <code>dat2</code> for which values are missing (i.e. cases having a <code>NA</code> designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2 &lt;-<span class="st"> </span><span class="kw">na.omit</span>(dat2)</code></pre></div>
-</div>
+3 1963 18808.27  11995.00 42595.55 16253.04 11524.11</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat2, <span class="dv">3</span>)</code></pre></div>
+<pre><code>   County State B20004001 B20004002 B20004003 B20004004 B20004005 B20004006 B20004007 B20004008 B20004009 B20004010
+1 Autauga    al     35881     17407     30169     35327     54917     63317     46227     26055     36440     48243
+2 Baldwin    al     31439     16970     25414     31312     44940     54599     40662     20401     31553     42561
+3 Barbour    al     25201     15643     20946     24201     42629     48500     31623     20526     29966     32212
+  B20004011 B20004012 B20004013 B20004014 B20004015 B20004016 B20004017 B20004018
+1     64639     79750     27799     15634     23728     27430     42158     49829
+2     61454     70349     24694     11772     18670     24040     36010     51107
+3     61528     62788     19950     12878     16748     19479     32014     47833</code></pre>
 </div>
 <div id="base-plotting-functions" class="section level1">
 <h1>Base plotting functions</h1>
@@ -455,33 +434,33 @@ dat1l &lt;-<span class="st"> </span>dat1 %&gt;%
 <h2>Point and line plots</h2>
 <p>The most commonly used plot function in R is <code>plot()</code> which generates both point and line plots. For example, to plot male population median income (<code>dat2$B20004007</code>) vs female population median income (<code>dat2$B20004013</code>) for each county, type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(B20004007 ~<span class="st"> </span>B20004013, <span class="dt">dat=</span>dat2)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-6-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-3-1.png" width="384" /></p>
 <p>The above <code>plot</code> command takes two arguments: <code>B20004007 ~ B20004013</code> which is to be read as <em>plot variable B20004007 as a function of B20004013</em> and <code>dat=dat2</code> which tells the plot function which data frame to extract the variables from. Another way to call this command is to type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(dat2$B20004007 ~<span class="st"> </span>dat2$B20004013)</code></pre></div>
 <p>The <code>plot</code> function can take on many other parameters to help tweak the default plot options. For example, we may want to change the axis labels to something more descriptive than the table variable name,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(B20004007 ~<span class="st"> </span>B20004013, <span class="dt">dat=</span>dat2, <span class="dt">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, 
      <span class="dt">ylab=</span><span class="st">&quot;Male median income ($)&quot;</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-8-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-5-1.png" width="384" /></p>
 <p>There are over 3000 unique values which makes it difficult the see what may be going on in the cloud of points. We can change the symbol type to solid fill,<code>pch=20</code>, and set its color to 85% transparent (or 15% opaque), <code>col=rgb(0,0,0,0.15)</code>. The <code>rgb()</code> function defines the intensities (on a scale of 0 to 1) for each of the display’s primary colors: red, green and blue. The forth value is optional and provides the fraction opaqueness with a value of <code>1</code> being completely opaque.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(B20004007 ~<span class="st"> </span>B20004013, <span class="dt">dat=</span>dat2, <span class="dt">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, 
      <span class="dt">ylab=</span><span class="st">&quot;Male median income ($)&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.15</span>) )</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-9-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-6-1.png" width="384" /></p>
 <p>The plot could use additional tweaking, but it may be best to build the plot from scratch as will be demonstrated a few sections down.</p>
 <p>By default, the <code>plot</code> command will plot points and not lines. To plot lines, add the <code>type=&quot;l&quot;</code> parameter to the <code>plot</code> function. For example, to plot oats crop yield as a function of year from our <code>dat1w</code> dataset, type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(Oats ~<span class="st"> </span>Year, <span class="dt">dat=</span>dat1w, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-10-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-7-1.png" width="384" /></p>
 <p>To plot both points and line, set the <code>type</code> parameter to <code>&quot;b&quot;</code> (for <em>both</em>),</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(Oats ~<span class="st"> </span>Year, <span class="dt">dat=</span>dat1w, <span class="dt">type=</span><span class="st">&quot;b&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">ylab=</span><span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-11-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-8-1.png" width="384" /></p>
 <p>The <code>plot</code> command can only graph on variable. If you want to add another variable, you will need to call the <code>lines</code> function. We will assign a different line type to this variable (<code>lty=2</code>):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(Oats ~<span class="st"> </span>Year, <span class="dt">dat=</span>dat1w, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">ylab=</span><span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )
 <span class="kw">lines</span>(Barley ~<span class="st"> </span>Year, <span class="dt">dat=</span>dat1w, <span class="dt">lty=</span><span class="dv">2</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-12-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-9-1.png" width="384" /></p>
 <p>Note how the plot does not automatically re-scale to accommodate the new line. The plot is a static object meaning that we need to define the axes limits before calling the original plot function. Both axes limits can be set using the <code>xlim</code> and <code>ylim</code> parameters. We don’t need to set the x-axis range since both variables cover the same year range. We will therefore only focus on the y-axis limits. We can grab both the minimum and maximum values for the variables <code>Oats</code> and <code>Barley</code> using the <code>range</code> function, then pass the range to the <code>ylim</code> parameter in the call to <code>plot</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(dat1w$Oats, dat1w$Barley) )
 <span class="kw">plot</span>(Oats ~<span class="st"> </span>Year, <span class="dt">dat=</span>dat1w, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Oats yield (Hg/Ha)&quot;</span>, <span class="dt">ylim =</span> y.rng)
 <span class="kw">lines</span>(Barley ~<span class="st"> </span>Year, <span class="dt">dat=</span>dat1w, <span class="dt">lty=</span><span class="dv">2</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-13-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-10-1.png" width="384" /></p>
 <p>Point plots from different variables can also be combined into a single plot using the <code>points</code> function in lieu of the <code>lines</code> function. In the following example, male vs. female income for population having a high school degree (blue dots) and a Bachelor’s degree (red dots) will be overlayed on the same plot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(dat2$B20004009, dat2$B20004011) , <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) 
 x.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(dat2$B20004015, dat2$B20004017) , <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) 
@@ -495,61 +474,61 @@ x.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="
 
 <span class="co"># Add legend</span>
 <span class="kw">legend</span>(<span class="st">&quot;topright&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;HS Degree&quot;</span>, <span class="st">&quot;Bachelor&#39;s&quot;</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span> <span class="kw">c</span>(<span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="fl">0.15</span>), <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.15</span>) ))</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-14-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-11-1.png" width="384" /></p>
 <p>The <code>na.rm=TRUE</code> option is added as a parameter in the <code>range</code> function to prevent a <code>NA</code> value in the data from returning a <code>NA</code> value in the range.</p>
 <p>Point symbols are defined by a numeric code. The following figure shows the list of point symbols available in R along with their numeric designation as used with the <code>pch=</code> parameter. The symbol’s color can be defined using the <code>col</code> parameter. For symbols 21 through 25 which have a two-color scheme, <code>col</code> applies to the outline color (blue in the following figure) and <code>bg</code> parameter applies to the fill color (red in the following figure).</p>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-15-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-12-1.png" width="384" /></p>
 <p>You can define the color using the <code>rgb()</code> function, or by a color name such as <code>col=&quot;red&quot;</code> or <code>col=&quot;bisque&quot;</code>. For a full list of color names, type <code>colors()</code> at a command prompt.</p>
 <p>Line types can also be customized in the <code>plot</code> function using the <code>lty=</code> parameter. There are six different line types, each identified by a number:</p>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-16-1.png" width="192" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-13-1.png" width="192" /></p>
 </div>
 <div id="boxplots" class="section level2">
 <h2>Boxplots</h2>
 <p>A boxplot is one of many graphical tools used to summarize the distribution of a data batch. The graphic consists of a “box” that depicts the range covered by 50% of the data (aka the interquartile range, IQR), a horizontal line that displays the median, and “whiskers” that depict 1.5 times the IQR or the largest (for the top half) or smallest (for the bottom half) values.</p>
 <p>For example, we can summarize the income range for all individuals as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(dat2$B20004001, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-17-1.png" width="192" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-14-1.png" width="192" /></p>
 <p>Note that the <code>boxplot</code> function has no option to specify the data frame as is the case with the <code>plot</code>; we must therefore pass it both the data frame name and the variable as a single argument (i.e. <code>dat2$B20004001</code>).</p>
 <p>Several variables can be summarized on the same plot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(dat2$B20004001, dat2$B20004007, dat2$B20004013, 
         <span class="dt">names=</span><span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), <span class="dt">main=</span><span class="st">&quot;Median income ($)&quot;</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-18-1.png" width="288" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-15-1.png" width="288" /></p>
 <p>The <code>names</code> parameter labels the x-axis.</p>
 <p>The outliers can be removed from the plot if desired by setting the <code>outline</code> parameter to <code>FALSE</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(dat2$B20004001, dat2$B20004007, dat2$B20004013, <span class="dt">names=</span><span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), 
         <span class="dt">main=</span><span class="st">&quot;Median income ($)&quot;</span>, <span class="dt">outline=</span><span class="ot">FALSE</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-19-1.png" width="288" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-16-1.png" width="288" /></p>
 <p>The boxplot graph can also be plotted horizontally by setting the <code>horizontal</code> parameter to <code>TRUE</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(dat2$B20004001, dat2$B20004007, dat2$B20004013, <span class="dt">names=</span><span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>),
         <span class="dt">main=</span><span class="st">&quot;Median income ($)&quot;</span>, <span class="dt">outline=</span><span class="ot">FALSE</span>, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-20-1.png" width="288" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-17-1.png" width="288" /></p>
 <p>The last two plots highlight on downside in using a table in wide format: the long series of column names passed to the boxplot function. It’s more practical to store such data in long form. To demonstrate this, let’s switch back to the crop data. To plot all columns in <code>dat1w</code>, we would need to type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(dat1w$Barley, dat1w$Buckwheat, dat1w$Maize,dat1w$Oats,dat1w$Rye,
         <span class="dt">names=</span><span class="kw">c</span>(<span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Rye&quot;</span>))</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-21-1.png" width="480" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-18-1.png" width="480" /></p>
 <p>If you use the long version of that table, the command looks like this:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(Value ~<span class="st"> </span>Crop, dat1l)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-22-1.png" width="480" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(Yield ~<span class="st"> </span>Crop, dat1l)</code></pre></div>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-19-1.png" width="480" /></p>
 <p>where <code>~ Crop</code> tells the function to break the boxplots across unique <code>Crop</code> levels.</p>
 <p>One can order the boxplots based on the median values. By default, <code>boxplot</code> will order the boxplots following the factor’s level order. In our example, the crop levels are ordered alphabetically.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(dat1l$Crop)</code></pre></div>
-<pre><code>[1] &quot;Barley&quot;    &quot;Buckwheat&quot; &quot;Maize&quot;     &quot;Oats&quot;      &quot;Rye&quot;      </code></pre>
+<pre><code>NULL</code></pre>
 <p>To reorder the levels following the median values of yields across each level, we can use the <code>reorder()</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1l$Crop.ord &lt;-<span class="st"> </span><span class="kw">reorder</span>(dat1l$Crop, dat1l$Value, median)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1l$Crop.ord &lt;-<span class="st"> </span><span class="kw">reorder</span>(dat1l$Crop, dat1l$Yield, median)</code></pre></div>
 <p>This creates a new variable called <code>Crop.ord</code> whose values mirror those in variable <code>Crop</code> but differ in the underlying level order:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(dat1l$Crop.ord)</code></pre></div>
 <pre><code>[1] &quot;Buckwheat&quot; &quot;Rye&quot;       &quot;Oats&quot;      &quot;Barley&quot;    &quot;Maize&quot;    </code></pre>
-<p>If we wanted the order to be in descending order, we would prefix the value parameter with the negative operator as in <code>reorder(dat1l$Crop, -dat1l$Value, median)</code>.</p>
-<p>The function <code>reorder</code> takes three arguments: the factor whose levels are to be reordered (<code>Crop</code>), the value whose quantity will determine the new order (<code>Value</code>) and the statistic that will be used to summarize the values across each factor’s level (<code>median</code>).</p>
+<p>If we wanted the order to be in descending order, we would prefix the value parameter with the negative operator as in <code>reorder(dat1l$Crop, -dat1l$Yield, median)</code>.</p>
+<p>The function <code>reorder</code> takes three arguments: the factor whose levels are to be reordered (<code>Crop</code>), the value whose quantity will determine the new order (<code>Yield</code>) and the statistic that will be used to summarize the values across each factor’s level (<code>median</code>).</p>
 <p>The modified boxplot expression now looks like:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(Value ~<span class="st"> </span>Crop.ord, dat1l)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-26-1.png" width="480" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(Yield ~<span class="st"> </span>Crop.ord, dat1l)</code></pre></div>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-23-1.png" width="480" /></p>
 </div>
 <div id="histograms" class="section level2">
 <h2>Histograms</h2>
 <p>The histogram is another form of data distribution visualization. It consists of partitioning a batch of values into intervals of equal length then tallying their count in each interval. The length of each bar represents these counts. For example, we can plot the histogram of maize yields using the <code>hist</code> function as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(dat1w$Maize, <span class="dt">xlab =</span> <span class="st">&quot;Maize&quot;</span>, <span class="dt">main=</span><span class="ot">NA</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-27-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-24-1.png" width="384" /></p>
 </div>
 <div id="density-plot" class="section level2">
 <h2>Density plot</h2>
@@ -557,7 +536,7 @@ x.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="
 <p>Unlike the other plotting functions, it does not generate a plot but instead, a list of outputs. But the output of <code>density</code> can be wrapped with a <code>plot</code> function to generate the plot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dens &lt;-<span class="st"> </span><span class="kw">density</span>(dat1w$Maize)
 <span class="kw">plot</span>(dens, <span class="dt">main =</span> <span class="st">&quot;Density distribution of Maize yields&quot;</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-28-1.png" width="384" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-25-1.png" width="384" /></p>
 </div>
 </div>
 <div id="customizing-plots" class="section level1">
@@ -581,14 +560,14 @@ lab &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&qu
 <p>First, let’s plot the y-axis with the custom tic labels.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot the y-axis</span>
 <span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">las=</span><span class="dv">1</span>, <span class="dt">at=</span><span class="kw">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="dt">length.out=</span><span class="dv">4</span>), <span class="dt">label=</span>lab)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-29-1.png" width="480" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-26-1.png" width="480" /></p>
 <p>Now let’s extract the plot’s corner coordinate values.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">loc &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)
 loc</code></pre></div>
 <pre><code>[1]  3850 68650  3850 68650</code></pre>
 <p>The corner location coordinate values are in the plot’s x and y units. We want to place the label in the upper left hand corner whose coordinate values are <code>loc[1]=</code> 3850 and <code>loc[2]=</code> 68650.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">text</span>(loc[<span class="dv">1</span>], loc[<span class="dv">4</span>], <span class="st">&quot;Male median</span><span class="ch">\n</span><span class="st">income&quot;</span>, <span class="dt">pos =</span> <span class="dv">3</span>, <span class="dt">adj =</span> <span class="dv">1</span>, <span class="dt">xpd =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<p><img src="Week04a_files/figure-html/unnamed-chunk-31-1.png" width="480" /></p>
+<p><img src="Week04a_files/figure-html/unnamed-chunk-28-1.png" width="480" /></p>
 <p>The string <code>\n</code> in the text <code>&quot;Median\nIncome&quot;</code> is interpreted in R as being a carriage return–i.e it forces the text that follows this string to be printed on the next line. The other parameters of interest are <code>pos</code> and <code>adj</code> that position and adjust the label location (type <code>?axis</code> for more information on axis parameters) and the parameter <code>xpd=TRUE</code> allows for the <code>text</code> function to display text outside of the plot region.</p>
 </div>
 <div id="exporting-plots-to-image-file-formats" class="section level1">
