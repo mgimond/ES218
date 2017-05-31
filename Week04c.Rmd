@@ -7,7 +7,7 @@ source("libs/Common.R")
 
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
-This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**, **`ggplot2`**, **`stringr`** and **`scales`**
+This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**, **`ggplot2`**, **`forcats`**, **`stringr`** and **`scales`**
 </div>
 
 # The data
@@ -164,20 +164,20 @@ Bar plots are used to summaries the counts of a categorical value. For example, 
 ggplot(dat2, aes(State)) + geom_bar()
 ```
 
-To arrange the bars in ascending order we need to rearrange the `State` factor level order based on total count. We won't be able to use the `reorder` function since we do not have a value field to summarize. Instead, we'll make use of the `table` function to enumerate each instance of a record associated with each state, sort that vector, then extract the `sorted` state names. We'll then create a copy of the `State` factor object to reflect the new level order.
-
-```{r}
-new.lev.ord     <- names( sort(table(dat2$State)) )
-dat2$State.ord  <- factor(dat2$State, levels = new.lev.ord)
-```
-
-Now let's recreate the bar plot with the new factor level order.
+To sort the bars by length we need to rearrange the `State` factor level order based on the number of counties in each state (which is the number of times a state appears in the data frame). We'll make use of `forcats`'s `fct_infreq` function to reorder the State factor levels based on frequency.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2, aes(State.ord)) + geom_bar()
+library(forcats)
+ggplot(dat2, aes(fct_infreq(State,ordered = TRUE))) + geom_bar()
 ```
 
-The `geom_bar` function can also be used with count values (i.e. values already summarized by count). We'll summaries the number of counties by state using the `dplyr` package.
+If we want to reverse the order (i.e. plot from smallest number of counties to greatest), wrap the forcats function with `fct_rev`.
+
+```{r fig.height=2.5, fig.width=8}
+ggplot(dat2, aes(fct_rev(fct_infreq(State,ordered = TRUE)))) + geom_bar()
+```
+
+The `geom_bar` function can also be used with count values (i.e. variable already summarized by count). First, we'll summaries the number of counties by state using the `dplyr` package. This will generate a data frame with just 51 records: one for each of the 50 states and the District of Columbia.
 
 ```{r fig.height=2.5, fig.width=8}
 library(dplyr)
@@ -186,12 +186,13 @@ dat2.ct <- dat2 %>% group_by(State) %>%
 head(dat2.ct)
 ```
 
-When using summarized data, we must pass the parameter `stat="identity"` to the `geom_bar` function. We must also explicitly map the *x* and *y* axes geometries. Note that we can make use of the `reorder` function to sort the bars by county count since the data have been summarized.
+When using summarized data, we must pass the parameter `stat="identity"` to the `geom_bar` function. We must also explicitly map the *x* and *y* axes geometries. Note that since we are now generating bar heights from a value field and not a frequency, we will need to use another `forcats` ordering function called `fct_reorder`. This function takes three parameters: the variable to be ordered (`State`), the variable whose values will determine the order (`Counties`) and the function, `fun=`, which defines the statistic used to summaries the sorting variable. Since there is just one value per state, we can use any summary statistic such as `median`, `mean`, `sum`, `min` or `max`.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct, aes(x=reorder(State, Counties), y=Counties)) + geom_bar(stat="identity")
+ggplot(dat2.ct, aes(x=fct_reorder(State, Counties, fun=median), y=Counties)) + geom_bar(stat="identity")
 ```
 
+Note that you can replace `fct_reorder` with the base function `reorder` for succinctness sake.
 
 ## dot plot
 
@@ -201,10 +202,10 @@ The dot plot is an alternative way to visualize counts as a function of a catego
 ggplot(dat2.ct , aes(x=Counties, y=State)) + geom_point()
 ```
 
-Dot plot graphics benefit from sorting--more so then bar plots. But instead of computing a new level order outside of the plotting function, we will make use of the `reorder` function *inside* of the `aes` function. 
+Dot plot graphics benefit from sorting--more so then bar plots. Here, we'll make use of `forcats::fct_reorder` function (see last section on `geom_bar`).
 
 ```{r fig.height=4.5, fig.width=4}
-ggplot(dat2.ct , aes(x=Counties, y=reorder(State, Counties))) + geom_point()
+ggplot(dat2.ct , aes(x=Counties, y=fct_reorder(State, Counties,fun=median))) + geom_point()
 ```
 
 
@@ -346,7 +347,7 @@ head(dat2.ct2)
 The following chunk applies a green to red color gradient fill to each bar based on the median county incomes. Note that we are using the summarized count table (and not the original `dat2` table). Recall that when plotting bars from counts that are already tabulated we must specify `stat="identity"` in the `geom_bar` function.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct2, aes(x=reorder(State, Counties), y=Counties, fill=Income)) + 
+ggplot(dat2.ct2, aes(x=fct_reorder(State, Counties), y=Counties, fill=Income)) + 
                 geom_bar(stat="identity") + 
                 scale_fill_gradient(low = "green", high = "red")
 ```
@@ -354,7 +355,7 @@ ggplot(dat2.ct2, aes(x=reorder(State, Counties), y=Counties, fill=Income)) +
 The following chunk applies a divergent color scheme while allowing one to specify the central value of this scheme. Note that the colors are symmetrical about the midpoint which may result in only a partial range of the full possible gradient of colors.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct2, aes(x=reorder(State, Counties), y=Counties, fill=Income)) + 
+ggplot(dat2.ct2, aes(x=fct_reorder(State, Counties), y=Counties, fill=Income)) + 
                 geom_bar(stat="identity") + 
                 scale_fill_gradient2(low = "darkred", mid = "white",  high = "darkgreen", midpoint = 30892)
 ```
@@ -362,7 +363,7 @@ ggplot(dat2.ct2, aes(x=reorder(State, Counties), y=Counties, fill=Income)) +
 In the last two chunk, we *filled* the bars with colors (note the use of functions with the string `_fill_`). When assigning color to point or line symbols, use the function with the `_colour_` string. For example:
 
 ```{r fig.height=4.5, fig.width=4}
-ggplot(dat2.ct2, aes(y=reorder(State, Counties), x=Counties, col=Income)) +
+ggplot(dat2.ct2, aes(y=fct_reorder(State, Counties), x=Counties, col=Income)) +
                  geom_point() +
                  scale_colour_gradient2(low = "darkred", mid = "white",  high = "darkgreen", midpoint = 30892)
 ```
