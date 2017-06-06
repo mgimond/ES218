@@ -285,7 +285,37 @@ head(dat1)
 
 # More on the `group_by` function
 
-The `group_by` function followed by the `summarise` function will generate a new table with as many rows as there are groups defined in the `group_by` function. But grouping variables can be used for other purposes where the output table contains the same number of rows as the input table. The following sub-sections highlight a few examples.
+## Count the number of records in each group
+
+In this example, we are identifying the number records by `Crop` type. There are two ways this can be accomplished:
+
+```{r eval = FALSE}
+dat %>%
+  filter(Information == "Yield (Hg/Ha)", Year >= 2005, Year <=2010, 
+         Country=="United States of America") %>%
+  group_by(Crop) %>%
+  count()
+```
+
+Or,
+
+```{r}
+dat %>%
+  filter(Information == "Yield (Hg/Ha)", Year >= 2005, Year <=2010, 
+         Country=="United States of America") %>%
+  group_by(Crop) %>%
+  summarise(Count = n())
+```
+
+## Summarize by crop yield sum and year range
+
+```{r}
+dat %>%
+  filter(Information == "Yield (Hg/Ha)", Year >= 2005, Year <=2010, 
+         Country=="United States of America") %>%
+  group_by(Crop) %>%
+  summarise( Yield = sum(Value), `Number of Years` = max(Year) - min(Year)) 
+```
 
 ## Normalizing each value in a group by the group median
 
