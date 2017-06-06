@@ -8,12 +8,12 @@ source("libs/Common.R")
 
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
-This tutorial makes use of the following R package(s): **`dplyr`**
+This tutorial makes use of the following R package(s): **`dplyr`** and **`lubridate`**.
 </div>
  
 
 
-The data file  *FAO_grains_NA.csv* will be used in this exercise. This dataset consists of grain yield and harvest year by north american country. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014. 
+The data file  *FAO_grains_NA.csv* will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014. 
 
 Run the following line to load the FAO data file into your current R session.
 
@@ -186,6 +186,102 @@ dat %>%
   summarise(median_yield = round(median(Value))) %>%
   arrange(Crop, desc(median_yield))
 ```
+
+# Conditional statements
+
+## The base `ifelse`
+
+Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want the output a value of `1` if an input value is less than `23` and a value of `0` otherwise, you could make use of the `ifelse` function:
+
+```{r}
+x <- c(12,102, 43, 20, 90, 0, 12, 6)
+ifelse(x < 23, 1, 0)
+```
+
+The  base `ifelse` function works as expected when the input/output values are  numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another,
+
+```{r}
+x <- as.factor( c("apple", "banana", "banana", "pear", "apple"))
+ifelse(x == "pear", "apple", x)
+```
+
+The output is a character where the input factor `x` is converted to a character representation of its level number (recall that factors encode level values as numbers behind the scene, i.e. `apple` =1, `banana`=2, etc...). Likewise, if you wish to replace a erroneous date with a missing value you will get:
+
+```{r}
+library(lubridate)
+y = mdy("1/23/2016", "3/2/2016", "12/1/1901", "11/23/2016")
+ifelse( year(y) != 2016, NA, y)
+```
+
+Here, `ifelse` converts the date object to an internal numeric representation of number of days since 1970. 
+
+If you want to ensure that the data type is preserved, a safer alternative is to use `dplyr`'s `if_else` function.
+
+## `dplyr`'s `if_else`
+
+The `if_else` function (note the underscore `_`), will preserve data type but does so strictly. For example, the following code will return an error: 
+
+```{r error=TRUE}
+if_else( year(y) != 2016, NA, y)
+```
+
+The output data types (`NA` and `y`) are not treated the same (by seeing `NA`, the function assumes that the output must be logical which `y` is not). The solution is to force `NA` as a missing *date* object by wrapping it with a date function as in `mdy(NA)`:
+
+```{r}
+if_else( year(y) != 2016, mdy(NA), y)
+```
+
+## Recoding factors using `recode`
+
+When working with factors, however,  `if_else` (as of `dplyr` version `0.6`) will produce the following error (see the [bug report](https://github.com/tidyverse/dplyr/issues/2197) on GitHub):
+
+```{r error=TRUE}
+if_else(x == "pear", "apple", x)
+```
+
+R sees `apple` as a character and `x` as a number (i.e. the numeric representation of the factor level). A better option for recoding factors is to use `dplyr`'s `recode` function:
+
+
+```{r}
+recode(x , "pear" = "apple")
+```
+
+You can recode more than one factor level. In fact, you can even introduce new levels in the recoding scheme:
+
+```{r}
+recode(x , "pear" = "apple", "banana" = "pineapple" )
+```
+
+## Changing values based on multiple conditions: `case_when`
+
+`ifelse` and `if_else` work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.
+
+```{r}
+z <- c("deg","F","C", "Temperature")
+if_else( z == "deg", "Degree", if_else(z == "F", "Fahrenheit", "Celsius"))
+```
+
+A better alternative is to use `case_when`.
+
+```{r}
+case_when(z == "deg" ~ "Degree",
+          z == "F" ~ "Fahrenheit",
+          z == "C" ~ "Celsius",
+          TRUE ~ z)
+```
+The last parameter, `TRUE ~ z` instructs R to keep all other values as is (not doing so would return `NA` values).
+
+Note that `ifelse`, `if_else`, `recode` and `case_when` can all be used inside of a `mutate` function. For example, to replace `Canada` and `United States of America` in variable `Country` with `CAN` and `USA` respectively and to create a new variable called `Type` which will take on the values of `1`, `2` or `3` depending on the values in variable `Source`, type the following: 
+
+```{r}
+dat1 <- dat %>% mutate(Country = recode(Country, "Canada" = "CAN",
+                                                 "United States of America" = "USA"),
+                       Type = case_when(Source == "Calculated data" ~ 1,
+                                        Source == "Official data" ~ 2,
+                                        TRUE ~ 3)) 
+head(dat1)   
+```
+
 
 # More on the `group_by` function
 

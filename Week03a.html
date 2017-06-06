@@ -235,6 +235,9 @@ $(document).ready(function () {
     <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 04</li>
     <li>
@@ -395,6 +398,12 @@ $(document).ready(function () {
 <li><a href="#dplyrs-output-data-structure"><code>dplyr</code>’s output data structure</a></li>
 </ul></li>
 <li><a href="#combining-table-manipulation-functions-using">Combining table manipulation functions using <code>%&gt;%</code></a></li>
+<li><a href="#conditional-statements">Conditional statements</a><ul>
+<li><a href="#the-base-ifelse">The base <code>ifelse</code></a></li>
+<li><a href="#dplyrs-if_else"><code>dplyr</code>’s <code>if_else</code></a></li>
+<li><a href="#recoding-factors-using-recode">Recoding factors using <code>recode</code></a></li>
+<li><a href="#changing-values-based-on-multiple-conditions-case_when">Changing values based on multiple conditions: <code>case_when</code></a></li>
+</ul></li>
 <li><a href="#more-on-the-group_by-function">More on the <code>group_by</code> function</a><ul>
 <li><a href="#normalizing-each-value-in-a-group-by-the-group-median">Normalizing each value in a group by the group median</a></li>
 </ul></li>
@@ -402,9 +411,9 @@ $(document).ready(function () {
 </div>
 
 <div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
-<p>This tutorial makes use of the following R package(s): <strong><code>dplyr</code></strong></p>
+<p>This tutorial makes use of the following R package(s): <strong><code>dplyr</code></strong> and <strong><code>lubridate</code></strong>.</p>
 </div>
-<p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by north american country. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
+<p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
 <p>Run the following line to load the FAO data file into your current R session.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</code></pre></div>
 <div id="the-dplyr-basics" class="section level1">
@@ -670,6 +679,78 @@ Groups: Crop [7]
 10 Buckwheat  2006        10000
 # ... with 32 more rows</code></pre>
 </div>
+<div id="conditional-statements" class="section level1">
+<h1>Conditional statements</h1>
+<div id="the-base-ifelse" class="section level2">
+<h2>The base <code>ifelse</code></h2>
+<p>Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want the output a value of <code>1</code> if an input value is less than <code>23</code> and a value of <code>0</code> otherwise, you could make use of the <code>ifelse</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>,<span class="dv">102</span>, <span class="dv">43</span>, <span class="dv">20</span>, <span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">6</span>)
+<span class="kw">ifelse</span>(x &lt;<span class="st"> </span><span class="dv">23</span>, <span class="dv">1</span>, <span class="dv">0</span>)</code></pre></div>
+<pre><code>[1] 1 0 0 1 0 1 1 1</code></pre>
+<p>The base <code>ifelse</code> function works as expected when the input/output values are numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">as.factor</span>( <span class="kw">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>))
+<span class="kw">ifelse</span>(x ==<span class="st"> &quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>, x)</code></pre></div>
+<pre><code>[1] &quot;1&quot;     &quot;2&quot;     &quot;2&quot;     &quot;apple&quot; &quot;1&quot;    </code></pre>
+<p>The output is a character where the input factor <code>x</code> is converted to a character representation of its level number (recall that factors encode level values as numbers behind the scene, i.e. <code>apple</code> =1, <code>banana</code>=2, etc…). Likewise, if you wish to replace a erroneous date with a missing value you will get:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lubridate)
+y =<span class="st"> </span><span class="kw">mdy</span>(<span class="st">&quot;1/23/2016&quot;</span>, <span class="st">&quot;3/2/2016&quot;</span>, <span class="st">&quot;12/1/1901&quot;</span>, <span class="st">&quot;11/23/2016&quot;</span>)
+<span class="kw">ifelse</span>( <span class="kw">year</span>(y) !=<span class="st"> </span><span class="dv">2016</span>, <span class="ot">NA</span>, y)</code></pre></div>
+<pre><code>[1] 16823 16862    NA 17128</code></pre>
+<p>Here, <code>ifelse</code> converts the date object to an internal numeric representation of number of days since 1970.</p>
+<p>If you want to ensure that the data type is preserved, a safer alternative is to use <code>dplyr</code>’s <code>if_else</code> function.</p>
+</div>
+<div id="dplyrs-if_else" class="section level2">
+<h2><code>dplyr</code>’s <code>if_else</code></h2>
+<p>The <code>if_else</code> function (note the underscore <code>_</code>), will preserve data type but does so strictly. For example, the following code will return an error:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">if_else</span>( <span class="kw">year</span>(y) !=<span class="st"> </span><span class="dv">2016</span>, <span class="ot">NA</span>, y)</code></pre></div>
+<pre><code>Error: `false` must be type logical, not double</code></pre>
+<p>The output data types (<code>NA</code> and <code>y</code>) are not treated the same (by seeing <code>NA</code>, the function assumes that the output must be logical which <code>y</code> is not). The solution is to force <code>NA</code> as a missing <em>date</em> object by wrapping it with a date function as in <code>mdy(NA)</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">if_else</span>( <span class="kw">year</span>(y) !=<span class="st"> </span><span class="dv">2016</span>, <span class="kw">mdy</span>(<span class="ot">NA</span>), y)</code></pre></div>
+<pre><code>[1] &quot;2016-01-23&quot; &quot;2016-03-02&quot; NA           &quot;2016-11-23&quot;</code></pre>
+</div>
+<div id="recoding-factors-using-recode" class="section level2">
+<h2>Recoding factors using <code>recode</code></h2>
+<p>When working with factors, however, <code>if_else</code> (as of <code>dplyr</code> version <code>0.6</code>) will produce the following error (see the <a href="https://github.com/tidyverse/dplyr/issues/2197">bug report</a> on GitHub):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">if_else</span>(x ==<span class="st"> &quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>, x)</code></pre></div>
+<pre><code>Error: `false` must be type character, not integer</code></pre>
+<p>R sees <code>apple</code> as a character and <code>x</code> as a number (i.e. the numeric representation of the factor level). A better option for recoding factors is to use <code>dplyr</code>’s <code>recode</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">recode</span>(x , <span class="st">&quot;pear&quot;</span> =<span class="st"> &quot;apple&quot;</span>)</code></pre></div>
+<pre><code>[1] apple  banana banana apple  apple 
+Levels: apple banana</code></pre>
+<p>You can recode more than one factor level. In fact, you can even introduce new levels in the recoding scheme:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">recode</span>(x , <span class="st">&quot;pear&quot;</span> =<span class="st"> &quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span> =<span class="st"> &quot;pineapple&quot;</span> )</code></pre></div>
+<pre><code>[1] apple     pineapple pineapple apple     apple    
+Levels: apple pineapple</code></pre>
+</div>
+<div id="changing-values-based-on-multiple-conditions-case_when" class="section level2">
+<h2>Changing values based on multiple conditions: <code>case_when</code></h2>
+<p><code>ifelse</code> and <code>if_else</code> work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">z &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;deg&quot;</span>,<span class="st">&quot;F&quot;</span>,<span class="st">&quot;C&quot;</span>, <span class="st">&quot;Temperature&quot;</span>)
+<span class="kw">if_else</span>( z ==<span class="st"> &quot;deg&quot;</span>, <span class="st">&quot;Degree&quot;</span>, <span class="kw">if_else</span>(z ==<span class="st"> &quot;F&quot;</span>, <span class="st">&quot;Fahrenheit&quot;</span>, <span class="st">&quot;Celsius&quot;</span>))</code></pre></div>
+<pre><code>[1] &quot;Degree&quot;     &quot;Fahrenheit&quot; &quot;Celsius&quot;    &quot;Celsius&quot;   </code></pre>
+<p>A better alternative is to use <code>case_when</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(z ==<span class="st"> &quot;deg&quot;</span> ~<span class="st"> &quot;Degree&quot;</span>,
+          z ==<span class="st"> &quot;F&quot;</span> ~<span class="st"> &quot;Fahrenheit&quot;</span>,
+          z ==<span class="st"> &quot;C&quot;</span> ~<span class="st"> &quot;Celsius&quot;</span>,
+          <span class="ot">TRUE</span> ~<span class="st"> </span>z)</code></pre></div>
+<pre><code>[1] &quot;Degree&quot;      &quot;Fahrenheit&quot;  &quot;Celsius&quot;     &quot;Temperature&quot;</code></pre>
+<p>The last parameter, <code>TRUE ~ z</code> instructs R to keep all other values as is (not doing so would return <code>NA</code> values).</p>
+<p>Note that <code>ifelse</code>, <code>if_else</code>, <code>recode</code> and <code>case_when</code> can all be used inside of a <code>mutate</code> function. For example, to replace <code>Canada</code> and <code>United States of America</code> in variable <code>Country</code> with <code>CAN</code> and <code>USA</code> respectively and to create a new variable called <code>Type</code> which will take on the values of <code>1</code>, <code>2</code> or <code>3</code> depending on the values in variable <code>Source</code>, type the following:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span>dat %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">Country =</span> <span class="kw">recode</span>(Country, <span class="st">&quot;Canada&quot;</span> =<span class="st"> &quot;CAN&quot;</span>,
+                                                 <span class="st">&quot;United States of America&quot;</span> =<span class="st"> &quot;USA&quot;</span>),
+                       <span class="dt">Type =</span> <span class="kw">case_when</span>(Source ==<span class="st"> &quot;Calculated data&quot;</span> ~<span class="st"> </span><span class="dv">1</span>,
+                                        Source ==<span class="st"> &quot;Official data&quot;</span> ~<span class="st"> </span><span class="dv">2</span>,
+                                        <span class="ot">TRUE</span> ~<span class="st"> </span><span class="dv">3</span>)) 
+<span class="kw">head</span>(dat1)   </code></pre></div>
+<pre><code>  Country         Crop         Information Year      Value          Source Type
+1     CAN       Barley Area harvested (Ha) 2012 2060000.00   Official data    2
+2     CAN       Barley       Yield (Hg/Ha) 2012   38894.66 Calculated data    1
+3     CAN    Buckwheat Area harvested (Ha) 2012       0.00    FAO estimate    3
+4     CAN  Canary seed Area harvested (Ha) 2012  101900.00   Official data    2
+5     CAN  Canary seed       Yield (Hg/Ha) 2012   12161.92 Calculated data    1
+6     CAN Grain, mixed Area harvested (Ha) 2012   57900.00   Official data    2</code></pre>
+</div>
+</div>
 <div id="more-on-the-group_by-function" class="section level1">
 <h1>More on the <code>group_by</code> function</h1>
 <p>The <code>group_by</code> function followed by the <code>summarise</code> function will generate a new table with as many rows as there are groups defined in the <code>group_by</code> function. But grouping variables can be used for other purposes where the output table contains the same number of rows as the input table. The following sub-sections highlight a few examples.</p>
@@ -686,7 +767,7 @@ Groups: Crop [7]
 <p>Let’s plot the normalized yields by year for Barley and add a <code>0</code> line representing the (normalized) central value.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>( NormYield ~<span class="st"> </span>Year, dat2[dat2$Crop ==<span class="st"> &quot;Barley&quot;</span>,] )
 <span class="kw">abline</span>(<span class="dt">h =</span> <span class="dv">0</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="Week03a_files/figure-html/unnamed-chunk-19-1.png" width="480" /></p>
+<p><img src="Week03a_files/figure-html/unnamed-chunk-30-1.png" width="480" /></p>
 <p>The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.</p>
 </div>
 </div>
