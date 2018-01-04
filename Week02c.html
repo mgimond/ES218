@@ -235,6 +235,9 @@ $(document).ready(function () {
     <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 04</li>
     <li>
@@ -374,6 +377,7 @@ $(document).ready(function () {
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans%7CSource+Code+Pro" rel="stylesheet">
 
 <div class="fluid-row" id="header">
 
@@ -476,12 +480,12 @@ x.date</code></pre></div>
 5 1959     5  318.29       318.29 315.50         -1
 6 1959     6  318.15       318.15 315.92         -1</code></pre>
 <p>The CO2 dataset has the date split across two columns: <code>Year</code> and <code>Month</code> (both loaded as integers). You can combine the columns into a character string using the <code>paste</code> function. For example, if we want to create a “Year-Month” string as in <code>1959-10</code>, we could type:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(dat1$Year,dat1$Month, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(dat1<span class="op">$</span>Year,dat1<span class="op">$</span>Month, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>)</code></pre></div>
 <p>The above example uses three arguments: the two objects that are pasted together (i.e. <code>Year</code> and <code>Month</code>) and the <code>sep=&quot;-&quot;</code> parameter which tells R to fill the gap between both objects with a dash <code>-</code> (by default, <code>paste</code> would have added spaces thus creating strings in the form of <code>1959 10</code>).</p>
 <p><code>lubridate</code> does not have a function along the lines of <code>ym</code> to only convert year-month strings, this requires that we add an artificial day of the month to the string. We’ll choose to add the 15th day of the month as in</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(dat1$Year, dat1$Month, <span class="st">&quot;15&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(dat1<span class="op">$</span>Year, dat1<span class="op">$</span>Month, <span class="st">&quot;15&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>)</code></pre></div>
 <p>And finally, we’ll add a new column called <code>Date</code> to the <code>dat</code> object, and fill that column with the newly created date string wrapped with the <code>ymd</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1$Date &lt;-<span class="st"> </span><span class="kw">ymd</span>( <span class="kw">paste</span>(dat1$Year, dat1$Month, <span class="st">&quot;15&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>) )
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1<span class="op">$</span>Date &lt;-<span class="st"> </span><span class="kw">ymd</span>( <span class="kw">paste</span>(dat1<span class="op">$</span>Year, dat1<span class="op">$</span>Month, <span class="st">&quot;15&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>) )
 <span class="kw">head</span>(dat1)</code></pre></div>
 <pre><code>  Year Month Average Interpolated  Trend Daily_mean       Date
 1 1959     1  315.62       315.62 315.70         -1 1959-01-15
@@ -501,7 +505,7 @@ x.date</code></pre></div>
  $ Daily_mean  : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
  $ Date        : Date, format: &quot;1959-01-15&quot; &quot;1959-02-15&quot; &quot;1959-03-15&quot; &quot;1959-04-15&quot; ...</code></pre>
 <p>or you could type,</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(dat1$Date)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(dat1<span class="op">$</span>Date)</code></pre></div>
 <pre><code>[1] &quot;Date&quot;</code></pre>
 <p>Note the <code>Date</code> class designation (as opposed to the <code>POSIX...</code> class) since we did not add a timezone or time component to the date object.</p>
 </div>
@@ -515,7 +519,7 @@ x.date</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wday</span>(x.date, <span class="dt">label=</span><span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>[1] Sun  Tues Tues
 Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre>
-<p>You’ll note that this last call not only returns the day of the week for each element (Sun, Tues, Tues) but it also returns <code>levels</code> information along with its hierarchy.</p>
+<p>You’ll note that this last call not only returns the day of the week for each element (Sun, Tue, Tue) but it also returns <code>levels</code> information along with its hierarchy.</p>
 <p>The following table lists functions that extract different elements of a date object.</p>
 <table>
 <thead>
@@ -559,17 +563,17 @@ Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre
 <div id="operating-on-dates" class="section level1">
 <h1>Operating on dates</h1>
 <p>You can apply certain operations to dates as you would to numbers. For example, to list the number of days between the first and third elements of the vector <code>x.date</code> type the following:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(x.date[<span class="dv">3</span>] -<span class="st"> </span>x.date[<span class="dv">1</span>]) /<span class="st"> </span><span class="kw">ddays</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(x.date[<span class="dv">3</span>] <span class="op">-</span><span class="st"> </span>x.date[<span class="dv">1</span>]) <span class="op">/</span><span class="st"> </span><span class="kw">ddays</span>()</code></pre></div>
 <pre><code>[1] 415.5949</code></pre>
 <p>To get the number of weeks between both dates:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(x.date[<span class="dv">3</span>] -<span class="st"> </span>x.date[<span class="dv">1</span>]) /<span class="st"> </span><span class="kw">dweeks</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(x.date[<span class="dv">3</span>] <span class="op">-</span><span class="st"> </span>x.date[<span class="dv">1</span>]) <span class="op">/</span><span class="st"> </span><span class="kw">dweeks</span>()</code></pre></div>
 <pre><code>[1] 59.37069</code></pre>
 <p>Likewise, you can get the number of minutes between dates by dividing by <code>dminutes()</code> and the number of years by dividing by <code>dyears()</code>.</p>
 <p>You can also apply Boolean operations on dates. For example, to find which date element in <code>x.date</code> falls between the 11<sup>th</sup> and 24<sup>th</sup> day of any month, type:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(<span class="kw">mday</span>(x.date) &gt;<span class="st"> </span><span class="dv">11</span>) &amp;<span class="st"> </span>(<span class="kw">mday</span>(x.date) &lt;<span class="st"> </span><span class="dv">24</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(<span class="kw">mday</span>(x.date) <span class="op">&gt;</span><span class="st"> </span><span class="dv">11</span>) <span class="op">&amp;</span><span class="st"> </span>(<span class="kw">mday</span>(x.date) <span class="op">&lt;</span><span class="st"> </span><span class="dv">24</span>)</code></pre></div>
 <pre><code>[1]  TRUE FALSE  TRUE</code></pre>
 <p>If you want the command to return just the dates that satisfy this query, pass the Boolean operation as an index to the <code>x.date</code> vector:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x.date[ (<span class="kw">mday</span>(x.date) &gt;<span class="st"> </span><span class="dv">11</span>) &amp;<span class="st"> </span>(<span class="kw">mday</span>(x.date) &lt;<span class="st"> </span><span class="dv">24</span>) ]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x.date[ (<span class="kw">mday</span>(x.date) <span class="op">&gt;</span><span class="st"> </span><span class="dv">11</span>) <span class="op">&amp;</span><span class="st"> </span>(<span class="kw">mday</span>(x.date) <span class="op">&lt;</span><span class="st"> </span><span class="dv">24</span>) ]</code></pre></div>
 <pre><code>[1] &quot;2013-06-23 03:45:23 EST&quot; &quot;2014-08-12 18:01:59 EST&quot;</code></pre>
 </div>
 <div id="formatting-date-objects" class="section level1">
@@ -709,7 +713,7 @@ Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre
 
 <div class="footer">
 <hr/>
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2017)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2018)
 </br>
 
 

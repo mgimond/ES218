@@ -235,6 +235,9 @@ $(document).ready(function () {
     <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 04</li>
     <li>
@@ -374,6 +377,7 @@ $(document).ready(function () {
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans%7CSource+Code+Pro" rel="stylesheet">
 
 <div class="fluid-row" id="header">
 
@@ -468,7 +472,7 @@ df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a,b)</code><
 <span class="kw">library</span>(ggplot2)
 
 dfl &lt;-<span class="st"> </span><span class="kw">gather</span>(df, <span class="dt">key=</span>Category, <span class="dt">value=</span>Value)
-<span class="kw">ggplot</span>(dfl,  <span class="kw">aes</span>(<span class="dt">y =</span> Value, <span class="dt">x =</span> Category, <span class="dt">col=</span>Category)) +<span class="st"> </span>
+<span class="kw">ggplot</span>(dfl,  <span class="kw">aes</span>(<span class="dt">y =</span> Value, <span class="dt">x =</span> Category, <span class="dt">col=</span>Category)) <span class="op">+</span><span class="st"> </span>
 <span class="st">             </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">height =</span> <span class="dv">0</span>, <span class="dt">width=</span><span class="fl">0.4</span>))</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-4-1.png" width="384" /></p>
 <p>It’s clear that both batches differ by their uniform values, batch <code>a</code> is made up of the identical numbers, <code>12</code>, and batch <code>b</code> is made up of a different set of identical values, <code>15</code>. Note that because so many values overlapped, we made use of the <code>geom_jitter()</code> function which randomly <em>jitters</em> or nudges the data about its actual location.</p>
@@ -534,12 +538,12 @@ dfl &lt;-<span class="st"> </span><span class="kw">gather</span>(df, <span class
 </tr>
 </tbody>
 </table>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dfl, <span class="kw">aes</span>(<span class="dt">y =</span> Value, <span class="dt">x =</span> Category, <span class="dt">col=</span>Category)) +<span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dfl, <span class="kw">aes</span>(<span class="dt">y =</span> Value, <span class="dt">x =</span> Category, <span class="dt">col=</span>Category)) <span class="op">+</span><span class="st"> </span>
 <span class="st">              </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">height =</span> <span class="dv">0</span>, <span class="dt">width=</span><span class="fl">0.4</span>))</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-7-1.png" width="384" /></p>
 <p>So how do these batches differ? They seem to differ by their center value. For example, each batch’s mean is:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-dfl %&gt;%<span class="st"> </span><span class="kw">group_by</span>(Category) %&gt;%<span class="st"> </span><span class="kw">summarize</span>(<span class="dt">mean =</span> <span class="kw">mean</span>(Value) )</code></pre></div>
+dfl <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(Category) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarize</span>(<span class="dt">mean =</span> <span class="kw">mean</span>(Value) )</code></pre></div>
 <pre><code># A tibble: 2 × 2
   Category  mean
      &lt;chr&gt; &lt;dbl&gt;
@@ -547,12 +551,12 @@ dfl %&gt;%<span class="st"> </span><span class="kw">group_by</span>(Category) %&
 2        b  15.8</code></pre>
 <p>The center value, or <strong>location</strong> (as Cleveland calls it), is one summary statistic we can use to compare batches, but this may not always be enough. For example, does the <strong>spread</strong> or distribution of the batches differ? It’s difficult to tell given that the batches are offset, so we’ll <strong>level</strong> the batches by subtracting the means from their respective batches.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Subtract the mean from each value for both a and b</span>
-dfl2 &lt;-<span class="st"> </span>dfl %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(Category) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Spread =</span> Value -<span class="st"> </span><span class="kw">mean</span>(Value))
+dfl2 &lt;-<span class="st"> </span>dfl <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(Category) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Spread =</span> Value <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(Value))
 
 <span class="co"># Now plot the leveled batches</span>
-<span class="kw">ggplot</span>(dfl2, <span class="kw">aes</span>(<span class="dt">y =</span> Spread, <span class="dt">x =</span> Category, <span class="dt">col=</span>Category)) +<span class="st"> </span>
+<span class="kw">ggplot</span>(dfl2, <span class="kw">aes</span>(<span class="dt">y =</span> Spread, <span class="dt">x =</span> Category, <span class="dt">col=</span>Category)) <span class="op">+</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">height =</span> <span class="dv">0</span>, <span class="dt">width=</span><span class="fl">0.4</span>))</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-9-1.png" width="384" /></p>
 <p>Removing the <em>location</em> (or mean) from each value facilitates the comparison of spread. But we are still in need of a small arsenal of tools that will help us explore and quantify a dataset’s spread. Three such tools that we will explore next are the <strong>histogram</strong>, the <strong>boxplot</strong> and the <strong>quantile plot</strong>.</p>
@@ -560,22 +564,22 @@ dfl2 &lt;-<span class="st"> </span>dfl %&gt;%<span class="st"> </span>
 <div id="histograms" class="section level1">
 <h1>Histograms</h1>
 <p>A histogram <strong>bins</strong> the values (usually in equal sized bins) and plots the frequency in which each <em>bin</em> is filled. For example, to create a histogram of batch <code>a</code> where each bin size covers <strong>one</strong> unit, we type:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span>a)) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="dt">by=</span><span class="dv">1</span>), <span class="dt">colour=</span><span class="st">&quot;white&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span>a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="dt">by=</span><span class="dv">1</span>), <span class="dt">colour=</span><span class="st">&quot;white&quot;</span>)</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-10-1.png" width="432" /></p>
 <p>We have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on until the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). Note in the parameter <code>seq(6.5, 16.5, by=1)</code> we are defining the last bin as covering a range from 15.5 to 16.5 which ends up not receiving a value, hence no grey bar on the plot at that location. The parameter <code>colour=</code> defines the outline color.</p>
 <p>We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span>a)) +<span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="dt">by=</span><span class="dv">2</span>), <span class="dt">colour=</span><span class="st">&quot;white&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span>a)) <span class="op">+</span><span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="dt">by=</span><span class="dv">2</span>), <span class="dt">colour=</span><span class="st">&quot;white&quot;</span>)</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-11-1.png" width="432" /></p>
 <p>You’ll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.</p>
 <p>You can also opt to have the function determine the bin ranges by simply specifying the number of bins using the <code>bin=</code> parameter:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span>a)) +<span class="kw">geom_histogram</span>(<span class="dt">bins=</span><span class="dv">12</span>, <span class="dt">colour=</span><span class="st">&quot;white&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span>a)) <span class="op">+</span><span class="kw">geom_histogram</span>(<span class="dt">bins=</span><span class="dv">12</span>, <span class="dt">colour=</span><span class="st">&quot;white&quot;</span>)</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-12-1.png" width="432" /></p>
 </div>
 <div id="boxplots" class="section level1">
 <h1>Boxplots</h1>
 <p>A boxplot is another popular plot used to explore distributions. In <code>ggplot</code> we use the <code>geom_boxplot()</code> function as in,</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span><span class="dv">1</span>, <span class="dt">y=</span>a)) +<span class="st"> </span><span class="kw">geom_boxplot</span>() +<span class="st"> </span>
-<span class="st">           </span><span class="kw">xlab</span>(<span class="ot">NULL</span>) +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.y=</span><span class="kw">element_blank</span>()) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x=</span><span class="dv">1</span>, <span class="dt">y=</span>a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">           </span><span class="kw">xlab</span>(<span class="ot">NULL</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.y=</span><span class="kw">element_blank</span>()) <span class="op">+</span>
 <span class="st">           </span><span class="kw">coord_flip</span>()</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-13-1.png" width="624" /></p>
 <p>Note that the <code>coord_flip()</code> function flips the boxplot on its side (the boxplot is normally plotted upright). The <code>geom_boxplot</code> function requires that both x and y axes be mapped a variable; usually, the x-axis is assigned a category, but since we are looking at a unique batch, we artifically map a value of 1 to the x-axis (we could have used any value). This requires that we mask the x-axis’s label and text so as not to confuse the reader using the the options <code>xlab(NULL) + theme(axis.text.y=element_blank())</code>.</p>
@@ -616,8 +620,8 @@ f_i = \frac{i - 0.5}{n}
 \]</span></p>
 <p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section, there are many ways one can compute a quantile, however, the differences may not matter much.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i    &lt;-<span class="st"> </span><span class="dv">1</span> :<span class="st"> </span><span class="kw">length</span>(a)
-fi   &lt;-<span class="st"> </span>(i -<span class="st"> </span><span class="fl">0.5</span>) /<span class="st"> </span><span class="kw">length</span>(a)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i    &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">:</span><span class="st"> </span><span class="kw">length</span>(a)
+fi   &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(a)
 a.fi &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a.o , fi)</code></pre></div>
 <p>Note that in the last line of code, we are appending the ordered representation of <code>a</code> to <code>fi</code> given that <code>fi</code> assumes an ordered dataset. The data frame <code>a.fi</code> should look like this:</p>
 <table style="width:17%;">
@@ -690,10 +694,10 @@ a.fi &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a.o , fi)<
 <div id="creating-a-quantile-plot" class="section level2">
 <h2>Creating a quantile plot</h2>
 <p>A batch’s quantile is best viewed as a plot where we plot the batch values as a function of the <span class="math inline">\(f\)</span>-values:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(a.fi, <span class="kw">aes</span>(<span class="dt">x=</span>fi, <span class="dt">y=</span>a.o)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(a.fi, <span class="kw">aes</span>(<span class="dt">x=</span>fi, <span class="dt">y=</span>a.o)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-21-1.png" width="288" /></p>
 <p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values and the dataframe <code>a.fi</code>, you could simply call the function <code>stat_qq()</code> as in:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample=</span>a)) +<span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution =</span> qunif) +<span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample=</span>a)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution =</span> qunif) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-22-1.png" width="288" /></p>
 <p>Note the slight change in mapping values to <code>aes()</code>: <code>sample = a</code> where <code>a</code>is the (unsorted) variable being plotted.</p>
 </div>
@@ -702,7 +706,7 @@ a.fi &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a.o , fi)<
 
 <div class="footer">
 <hr/>
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2017)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2018)
 </br>
 
 

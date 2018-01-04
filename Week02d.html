@@ -235,6 +235,9 @@ $(document).ready(function () {
     <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 04</li>
     <li>
@@ -374,6 +377,7 @@ $(document).ready(function () {
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans%7CSource+Code+Pro" rel="stylesheet">
 
 <div class="fluid-row" id="header">
 
@@ -563,16 +567,16 @@ $(document).ready(function () {
 <div id="removing-columns-with-no-data" class="section level1">
 <h1>Removing columns with no data</h1>
 <p>Let’s first remove all columns devoid of valid data. These columns are <code>MWD</code>, <code>VIS</code> and <code>TIDE</code>. There are many ways to do this. We will opt for subsetting the table and assigning this subset to a new data frame we will call <code>dat1</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span>dat[ , !(<span class="kw">names</span>(dat) %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span>dat[ , <span class="op">!</span>(<span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))]</code></pre></div>
 <p>Let’s break down this expression into its many components. <code>names(dat)</code> returns a list of column names in the order in which they appear in the object <code>dat</code>: YY, MM, DD, hh, mm, WDIR, WSPD, GST, WVHT, DPD, APD, MWD, PRES, ATMP, WTMP, DEWP, VIS, TIDE.</p>
 <p>The matching operator <code>%in%</code> compares two sets of vectors and assesses if an element on the left-hand side of <code>%in%</code> is included in the elements on the right. For each element in the left hand set, R returns <code>TRUE</code> if the value is present in the right-hand set of values or <code>FALSE</code> if it is not. In our example, R is evaluating if the column names are included in the set of elements defined in <code>c(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;)</code>. The expression could be read as “… are any of the column names (i.e. YY, MM, DD, hh, mm, WDIR, WSPD, GST, WVHT, DPD, APD, MWD, PRES, ATMP, WTMP, DEWP, VIS, TIDE) included in the set <code>(&quot;MWD&quot;, &quot;VIS&quot;, &quot;TIDE&quot;)</code>?” The output of this comparison is a series of <code>TRUE</code>’s and <code>FALSE</code>’s depending on whether or not a match is found.</p>
 <blockquote>
 <p>A short video summary on using <code>%in%</code> can be found <a href="./Videos/Matching_operator.mp4">here</a>.</p>
 </blockquote>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(dat) %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>)</code></pre></div>
 <pre><code> [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE  TRUE</code></pre>
 <p>The order in which the <code>TRUE</code>’s and <code>FALSE</code>’s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a <code>TRUE</code> value! We want the reverse, so we add the “not” operator, <code>!</code>, in front of the expression thus flipping the <code>TRUE</code>/<code>FALSE</code> values.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">!(<span class="kw">names</span>(dat) %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="op">!</span>(<span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))</code></pre></div>
 <pre><code> [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE</code></pre>
 <p>So <code>dat1</code> contains all the columns except <code>MWD</code>, <code>VIS</code> and <code>TIDE</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(dat1)</code></pre></div>
@@ -709,17 +713,17 @@ na999  &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">
 na9999 &lt;-<span class="st"> </span>(<span class="st">&quot;PRES&quot;</span>)
 
 <span class="co"># Replace missing values with NA</span>
-dat1[,na99][dat1[, na99] ==<span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
-dat1[,na999][dat1[, na999] ==<span class="st"> </span><span class="dv">999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
-dat1[,na9999][dat1[, na9999] ==<span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></code></pre></div>
+dat1[,na99][dat1[, na99] <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1[,na999][dat1[, na999] <span class="op">==</span><span class="st"> </span><span class="dv">999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1[,na9999][dat1[, na9999] <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></code></pre></div>
 <p>There are two components to the last three lines of code: The first is a subset of columns for which a particular missing value is designated (e.g. <code>dat1[,na99]</code> ), the second is an evaluation statement identifying which values in the column subset is flagged as missing (e.g. <code>[dat1[, na99] == 99]</code>). Together, these elements define the indices (table cells) for which a value is replaced with <code>NA</code> (e.g. <code>&lt;- NA</code>).</p>
 <p>Another way this could have been accomplished (and one you might feel more comfortable with) would have been to work off of one column at a time, for example:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1$WSPD[dat1$WSPD ==<span class="st"> </span><span class="dv">99</span>]   &lt;-<span class="st"> </span><span class="ot">NA</span>
-dat1$GST[dat1$WSPD ==<span class="st"> </span><span class="dv">99</span>]    &lt;-<span class="st"> </span><span class="ot">NA</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1<span class="op">$</span>WSPD[dat1<span class="op">$</span>WSPD <span class="op">==</span><span class="st"> </span><span class="dv">99</span>]   &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>GST[dat1<span class="op">$</span>WSPD <span class="op">==</span><span class="st"> </span><span class="dv">99</span>]    &lt;-<span class="st"> </span><span class="ot">NA</span>
 ...
-dat1$WDIR[dat1$WDIR ==<span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>WDIR[dat1<span class="op">$</span>WDIR <span class="op">==</span><span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span>
 ...
-dat1$PRES[dat1$PRES ==<span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></code></pre></div>
+dat1<span class="op">$</span>PRES[dat1<span class="op">$</span>PRES <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></code></pre></div>
 <p>Let’s look at a summary of our table:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dat1)</code></pre></div>
 <pre><code>       YY             MM               DD             hh              mm          WDIR            WSPD       
@@ -777,18 +781,18 @@ d.complete</code></pre></div>
 <h1>Checking if a value is <code>NA</code></h1>
 <p>When assessing if a value is equal to <code>NA</code> the following evaluation may behave unexpectedly.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a &lt;-<span class="st"> </span><span class="kw">c</span> (<span class="dv">3</span>, <span class="dv">67</span>, <span class="dv">4</span>, <span class="ot">NA</span>, <span class="dv">10</span>)
-a ==<span class="st"> </span><span class="ot">NA</span></code></pre></div>
+a <span class="op">==</span><span class="st"> </span><span class="ot">NA</span></code></pre></div>
 <pre><code>[1] NA NA NA NA NA</code></pre>
 <p>The output is not a logical datatype we would expect from an evaluation. Instead, you must make use of the <code>is.na()</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">is.na</span>(a)</code></pre></div>
 <pre><code>[1] FALSE FALSE FALSE  TRUE FALSE</code></pre>
 <p>As another example, if we want to keep all rows in dataframe <code>d</code> where <code>z</code> = <code>NA</code>, we would type:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d[ <span class="kw">is.na</span>(d$z), ]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d[ <span class="kw">is.na</span>(d<span class="op">$</span>z), ]</code></pre></div>
 <pre><code>  x y  z
 1 1 3 NA
 2 4 2 NA</code></pre>
 <p>You can, of course, use the <code>!</code> operator to reverse the evaluation and <em>omit</em> all rows where <code>z</code> = <code>NA</code>,</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d[ !<span class="kw">is.na</span>(d$z), ]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d[ <span class="op">!</span><span class="kw">is.na</span>(d<span class="op">$</span>z), ]</code></pre></div>
 <pre><code>   x y z
 3  2 5 4
 4  5 3 9
@@ -804,7 +808,7 @@ a ==<span class="st"> </span><span class="ot">NA</span></code></pre></div>
 
 <div class="footer">
 <hr/>
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2017)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2018)
 </br>
 
 

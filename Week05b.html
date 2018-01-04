@@ -235,6 +235,9 @@ $(document).ready(function () {
     <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 04</li>
     <li>
@@ -374,6 +377,7 @@ $(document).ready(function () {
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans%7CSource+Code+Pro" rel="stylesheet">
 
 <div class="fluid-row" id="header">
 
@@ -409,15 +413,15 @@ $(document).ready(function () {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
 <span class="kw">library</span>(ggplot2)
 
-df  &lt;-<span class="st"> </span>lattice::singer
-df2 &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part ==<span class="st"> &quot;Bass 2&quot;</span> |<span class="st"> </span>voice.part==<span class="st">&quot;Tenor 1&quot;</span>) %&gt;%<span class="st"> </span>
+df  &lt;-<span class="st"> </span>lattice<span class="op">::</span>singer
+df2 &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part <span class="op">==</span><span class="st"> &quot;Bass 2&quot;</span> <span class="op">|</span><span class="st"> </span>voice.part<span class="op">==</span><span class="st">&quot;Tenor 1&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">       </span><span class="kw">mutate</span>(<span class="dt">voice.part =</span> <span class="kw">droplevels</span>(voice.part))</code></pre></div>
 <p>Let’s plot both datasets side-by-side. We will jitter the points about their category groups to expose overlapping points.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df2, <span class="kw">aes</span>(<span class="dt">y=</span>height, <span class="dt">x=</span>voice.part, <span class="dt">col=</span>voice.part)) +<span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df2, <span class="kw">aes</span>(<span class="dt">y=</span>height, <span class="dt">x=</span>voice.part, <span class="dt">col=</span>voice.part)) <span class="op">+</span><span class="st"> </span>
 <span class="st">            </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">width =</span> .<span class="dv">1</span>, <span class="dt">height=</span><span class="dv">0</span>))</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-3-1.png" width="384" /></p>
 <p>Let’s get the count and median values for both batches.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df2 %&gt;%<span class="st"> </span><span class="kw">group_by</span>(voice.part) %&gt;%<span class="st"> </span><span class="kw">summarise</span>(<span class="dt">median =</span> <span class="kw">median</span>(height), <span class="dt">count =</span> <span class="kw">n</span>() )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df2 <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(voice.part) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarise</span>(<span class="dt">median =</span> <span class="kw">median</span>(height), <span class="dt">count =</span> <span class="kw">n</span>() )</code></pre></div>
 <pre><code># A tibble: 2 × 3
   voice.part median count
       &lt;fctr&gt;  &lt;dbl&gt; &lt;int&gt;
@@ -427,15 +431,15 @@ df2 &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part 
 <div id="boxplots" class="section level2">
 <h2>Boxplots</h2>
 <p>We can compare the batches using side-by-side boxplots.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df2) +<span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>voice.part, <span class="dt">y=</span>height) +<span class="st"> </span><span class="kw">geom_boxplot</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df2) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>voice.part, <span class="dt">y=</span>height) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-5-1.png" width="288" /></p>
 <p>The differences in median values is obvious. What’s more, the difference in overall height values is more pronounced with the boxplot than it is with a simple point distributions plot shown earlier.</p>
 <p>Are the spreads between the batches comparable? It’s difficult to tell given that the batches are offset by about four inches. So let’s level the playing field by subtracting the median values from their respective batches.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df2.med &lt;-<span class="st"> </span>df2 %&gt;%<span class="st"> </span>
-<span class="st">          </span><span class="kw">group_by</span>(voice.part) %&gt;%
-<span class="st">          </span><span class="kw">mutate</span>( <span class="dt">NormHeight =</span> height -<span class="st"> </span><span class="kw">median</span>(height)) 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df2.med &lt;-<span class="st"> </span>df2 <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">          </span><span class="kw">group_by</span>(voice.part) <span class="op">%&gt;%</span>
+<span class="st">          </span><span class="kw">mutate</span>( <span class="dt">NormHeight =</span> height <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(height)) 
 
-<span class="kw">ggplot</span>(df2.med, <span class="kw">aes</span>(<span class="dt">x=</span>voice.part, <span class="dt">y=</span>NormHeight)) +<span class="st"> </span><span class="kw">geom_boxplot</span>()</code></pre></div>
+<span class="kw">ggplot</span>(df2.med, <span class="kw">aes</span>(<span class="dt">x=</span>voice.part, <span class="dt">y=</span>NormHeight)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-6-1.png" width="288" /></p>
 <p>Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the <code>Tenor 1</code> group has a slightly wider range of heights than the <code>Bass 2</code> group. About 50% of singers in the <code>Tenor 1</code> group have heights that range five inches whereas the singers in the <code>Bass 2</code> group have heights that range four inches. We also note that the <code>Tenor 1</code> height distribution tends to be skewed towards taller singers whereas the <code>Bass 2</code> height distribution tends to be a little less skewed toward smaller heights.</p>
 </div>
@@ -447,21 +451,21 @@ df2 &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part 
 
 </div>
 <p>First, we need to compute the <span class="math inline">\(f\)</span>-values for both batches of singer data (<code>Bass 2</code> and <code>Tenor 1</code>).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df.qq &lt;-<span class="st"> </span>df2 %&gt;%<span class="st"> </span>
-<span class="st">         </span><span class="kw">group_by</span>(voice.part) %&gt;%
-<span class="st">         </span><span class="kw">arrange</span>(height) %&gt;%
-<span class="st">         </span><span class="kw">mutate</span>( <span class="dt">f.val =</span> (<span class="kw">row_number</span>() -<span class="st"> </span><span class="fl">0.5</span> ) /<span class="st"> </span><span class="kw">n</span>())</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df.qq &lt;-<span class="st"> </span>df2 <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">         </span><span class="kw">group_by</span>(voice.part) <span class="op">%&gt;%</span>
+<span class="st">         </span><span class="kw">arrange</span>(height) <span class="op">%&gt;%</span>
+<span class="st">         </span><span class="kw">mutate</span>( <span class="dt">f.val =</span> (<span class="kw">row_number</span>() <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span> ) <span class="op">/</span><span class="st"> </span><span class="kw">n</span>())</code></pre></div>
 <p>Now let’s generate quantile plots for both batches.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df.qq, <span class="kw">aes</span>(<span class="dt">x=</span>f.val, <span class="dt">y =</span> height)) +<span class="st"> </span><span class="kw">geom_line</span>(<span class="dt">col=</span><span class="st">&quot;grey&quot;</span>) +
-<span class="st">              </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">facet_grid</span>( voice.part ~<span class="st"> </span>.) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df.qq, <span class="kw">aes</span>(<span class="dt">x=</span>f.val, <span class="dt">y =</span> height)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>(<span class="dt">col=</span><span class="st">&quot;grey&quot;</span>) <span class="op">+</span>
+<span class="st">              </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>( voice.part <span class="op">~</span><span class="st"> </span>.) </code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-8-1.png" width="480" /></p>
 <p>While the geometric structure of a boxplot lends itself well to side-by-side comparison, the same cannot be said for side-by-side quantile plot comparison hence the need for an amalgamation of these two plots into a single plot called a <strong>quantile-quantile</strong> (<strong>q-q</strong>) plot. If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs. the other batch (see schematic at the beginning of this section)</p>
 <p>If the two batches differ in size (as is the case with our example where we have 21 tenors and 26 bassists), we won’t be able to match sorted values. For example, in the above graph, you’ll note that one of the singer’s height in the <code>Bass 2</code> batch is associated with an <span class="math inline">\(f\)</span>-value of 0.75, however, there are no singer heights associated with an <span class="math inline">\(f\)</span>-value of 0.75 in the <code>Tenor 1</code> batch.</p>
 <p>To overcome the problem of batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the <em>smallest</em> sized batch (21 in our working example). This requires that we find matching singer height values to the set of <span class="math inline">\(f\)</span>-values associated with a batch of 21 values. The following chunk of code computes the 21 <span class="math inline">\(f\)</span>-values. We are rounding the output to two decimal places for presentation only.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Generate and index</span>
-i  &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">21</span>
+i  &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">21</span>
 <span class="co"># Compute the f-values</span>
-fi &lt;-<span class="st"> </span>(i -<span class="st"> </span><span class="fl">0.5</span>) /<span class="st"> </span><span class="dv">21</span>
+fi &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="dv">21</span>
 <span class="co"># view rounded values</span>
 <span class="kw">round</span>(fi,<span class="dv">2</span>)</code></pre></div>
 <pre><code> [1] 0.02 0.07 0.12 0.17 0.21 0.26 0.31 0.36 0.40 0.45 0.50 0.55 0.60 0.64 0.69 0.74 0.79 0.83 0.88 0.93 0.98</code></pre>
@@ -472,28 +476,28 @@ fi &lt;-<span class="st"> </span>(i -<span class="st"> </span><span class="fl">0
 <h3>Manual construction of a q-q plot</h3>
 <p>To find a value in the larger dataset (i.e. <code>Bass 2</code>) that matches the 21 quantiles of the smaller dataset, <code>Tenor 1</code>, we can use the <code>approx()</code> function.</p>
 <p>First, we will extract all values associated with <code>Bass 2</code> from the dataset.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df.bass  &lt;-<span class="st"> </span>df.qq %&gt;%<span class="st">  </span><span class="kw">filter</span>( voice.part ==<span class="st"> &quot;Bass 2&quot;</span>)
-df.tenor &lt;-<span class="st"> </span>df.qq %&gt;%<span class="st">  </span><span class="kw">filter</span>( voice.part ==<span class="st"> &quot;Tenor 1&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df.bass  &lt;-<span class="st"> </span>df.qq <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>( voice.part <span class="op">==</span><span class="st"> &quot;Bass 2&quot;</span>)
+df.tenor &lt;-<span class="st"> </span>df.qq <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>( voice.part <span class="op">==</span><span class="st"> &quot;Tenor 1&quot;</span>)</code></pre></div>
 <p>Next, we will interpolate a new set of height values for <code>Bass 2</code> that match the 21 quantile values in <code>fi</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">b.hgt.interp &lt;-<span class="st"> </span><span class="kw">approx</span>(df.bass$f.val, df.bass$height, fi)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">b.hgt.interp &lt;-<span class="st"> </span><span class="kw">approx</span>(df.bass<span class="op">$</span>f.val, df.bass<span class="op">$</span>height, fi)</code></pre></div>
 <p>The output generates two columns: the 21 quantiles, <code>fi</code>, and the 21 <code>Bass 2</code> interpolated height values. Note that we could have substituted <code>fi</code> with <code>df.tenor$f.val</code>. The approach shown here is used to reinforce the idea that we are interpolating height values based on a <em>new</em> set of f-values.</p>
 <p>Finally, we will combine the interpolated <code>Bass 2</code> values (which is already in an ascending order) with <strong>sorted</strong> heights for the <code>Tenor 1</code> singers (these were sorted in <code>df.qq</code>). Then, we will plot the paired values using <code>ggplot</code>. We will also add the 45° line to facilitate comparison.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s.qq &lt;-<span class="st"> </span>df.tenor %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>  =<span class="st"> </span>b.hgt.interp$y) %&gt;%<span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s.qq &lt;-<span class="st"> </span>df.tenor <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>  =<span class="st"> </span>b.hgt.interp<span class="op">$</span>y) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">                     </span><span class="kw">rename</span>(<span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span> =<span class="st"> </span>height) 
 
-<span class="kw">ggplot</span>(s.qq, <span class="kw">aes</span>( <span class="dt">x=</span> <span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>, <span class="dt">y =</span> <span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>)</code></pre></div>
+<span class="kw">ggplot</span>(s.qq, <span class="kw">aes</span>( <span class="dt">x=</span> <span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>, <span class="dt">y =</span> <span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>)</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-12-1.png" width="288" /></p>
 <p>Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Get the range of both datasets</span>
-xylim &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(s.qq$<span class="st">&quot;Bass&quot;</span>, s.qq$<span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>) )
+xylim &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(s.qq<span class="op">$</span><span class="st">&quot;Bass&quot;</span>, s.qq<span class="op">$</span><span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>) )
 
 <span class="co"># Add a 5% buffer to the xy limits</span>
 <span class="co"># (This avoids having the points plotted on the edge of the plot)</span>
-xylim &lt;-<span class="st"> </span>xylim +<span class="st"> </span><span class="kw">c</span>(-<span class="fl">0.05</span> *<span class="st"> </span><span class="kw">diff</span>(xylim), +<span class="st"> </span><span class="fl">0.05</span> *<span class="st"> </span><span class="kw">diff</span>(xylim))
+xylim &lt;-<span class="st"> </span>xylim <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">0.05</span> <span class="op">*</span><span class="st"> </span><span class="kw">diff</span>(xylim), <span class="op">+</span><span class="st"> </span><span class="fl">0.05</span> <span class="op">*</span><span class="st"> </span><span class="kw">diff</span>(xylim))
 
-<span class="kw">ggplot</span>(s.qq, <span class="kw">aes</span>( <span class="dt">x=</span> <span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>, <span class="dt">y =</span> <span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>)) +<span class="st"> </span>
-<span class="st">             </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">             </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +
+<span class="kw">ggplot</span>(s.qq, <span class="kw">aes</span>( <span class="dt">x=</span> <span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>, <span class="dt">y =</span> <span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>)) <span class="op">+</span><span class="st"> </span>
+<span class="st">             </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">             </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) <span class="op">+</span>
 <span class="st">             </span><span class="kw">coord_fixed</span>(<span class="dt">ratio =</span> <span class="dv">1</span>, <span class="dt">xlim=</span>xylim, <span class="dt">ylim =</span> xylim)</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-13-1.png" width="288" /></p>
 </div>
@@ -501,22 +505,22 @@ xylim &lt;-<span class="st"> </span>xylim +<span class="st"> </span><span class=
 <h3>Using the base <code>qqplot</code></h3>
 <p>This approach is quicker and requires fewer lines of code, but it does not afford the insight into the inner workings of a q-q plot as does the manual approach from the previous section.</p>
 <p><code>qqplot</code> is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Tenor &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part ==<span class="st"> &quot;Tenor 1&quot;</span>)
-Bass  &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part ==<span class="st"> &quot;Bass 2&quot;</span>)
-<span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor$height, <span class="dt">y=</span>Bass$height, <span class="dt">asp=</span><span class="dv">1</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Tenor &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part <span class="op">==</span><span class="st"> &quot;Tenor 1&quot;</span>)
+Bass  &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part <span class="op">==</span><span class="st"> &quot;Bass 2&quot;</span>)
+<span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor<span class="op">$</span>height, <span class="dt">y=</span>Bass<span class="op">$</span>height, <span class="dt">asp=</span><span class="dv">1</span>)
 <span class="kw">abline</span>( <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-14-1.png" width="288" /></p>
 <p><code>qqplot</code> offers the option to output the q-q plot values (including the interpolated values) as a <strong>list</strong> by setting the parameter <code>plot.it=FALSE</code>. We then need to convert this list object to a dataframe using <code>as.data.frame</code>. The output can then be used in a call to <code>ggplot</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">qq.out &lt;-<span class="st"> </span><span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor$height, <span class="dt">y=</span>Bass$height, <span class="dt">plot.it=</span><span class="ot">FALSE</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">qq.out &lt;-<span class="st"> </span><span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor<span class="op">$</span>height, <span class="dt">y=</span>Bass<span class="op">$</span>height, <span class="dt">plot.it=</span><span class="ot">FALSE</span>)
 qq.out &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(qq.out)
 
-xylim &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(qq.out$x, qq.out$y) )
-xylim &lt;-<span class="st"> </span>xylim +<span class="st"> </span><span class="kw">c</span>(-<span class="fl">0.05</span> *<span class="st"> </span><span class="kw">diff</span>(xylim), +<span class="st"> </span><span class="fl">0.05</span> *<span class="st"> </span><span class="kw">diff</span>(xylim))
-<span class="kw">ggplot</span>(qq.out, <span class="kw">aes</span>( <span class="dt">x=</span> x, <span class="dt">y =</span> y)) +<span class="st"> </span>
-<span class="st">               </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">               </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +
-<span class="st">               </span><span class="kw">coord_fixed</span>(<span class="dt">ratio =</span> <span class="dv">1</span>, <span class="dt">xlim=</span>xylim, <span class="dt">ylim =</span> xylim) +
-<span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Tenor&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Bass&quot;</span>)</code></pre></div>
+xylim &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(qq.out<span class="op">$</span>x, qq.out<span class="op">$</span>y) )
+xylim &lt;-<span class="st"> </span>xylim <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">0.05</span> <span class="op">*</span><span class="st"> </span><span class="kw">diff</span>(xylim), <span class="op">+</span><span class="st"> </span><span class="fl">0.05</span> <span class="op">*</span><span class="st"> </span><span class="kw">diff</span>(xylim))
+<span class="kw">ggplot</span>(qq.out, <span class="kw">aes</span>( <span class="dt">x=</span> x, <span class="dt">y =</span> y)) <span class="op">+</span><span class="st"> </span>
+<span class="st">               </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">               </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) <span class="op">+</span>
+<span class="st">               </span><span class="kw">coord_fixed</span>(<span class="dt">ratio =</span> <span class="dv">1</span>, <span class="dt">xlim=</span>xylim, <span class="dt">ylim =</span> xylim) <span class="op">+</span>
+<span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Tenor&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Bass&quot;</span>)</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-15-1.png" width="288" /></p>
 </div>
 </div>
@@ -543,10 +547,10 @@ xylim &lt;-<span class="st"> </span>xylim +<span class="st"> </span><span class=
 <div id="is-the-relationship-between-tenor-and-bass-additive-or-multiplicative" class="section level3">
 <h3>Is the relationship between tenor and bass additive or multiplicative?</h3>
 <p>Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we’ll subtract the <code>Bass 2</code> value by about 2.5.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(s.qq, <span class="kw">aes</span>( <span class="dt">x=</span> <span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>, <span class="dt">y =</span> <span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>  -<span class="st"> </span><span class="fl">2.5</span>)) +<span class="st"> </span>
-<span class="st">             </span><span class="kw">geom_point</span>() +<span class="st"> </span>
-<span class="st">             </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) +
-<span class="st">             </span><span class="kw">coord_fixed</span>(<span class="dt">ratio =</span> <span class="dv">1</span>, <span class="dt">xlim=</span>xylim, <span class="dt">ylim =</span> xylim) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Bass 2 - 2.5&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(s.qq, <span class="kw">aes</span>( <span class="dt">x=</span> <span class="st">`</span><span class="dt">Tenor 1</span><span class="st">`</span>, <span class="dt">y =</span> <span class="st">`</span><span class="dt">Bass 2</span><span class="st">`</span>  <span class="op">-</span><span class="st"> </span><span class="fl">2.5</span>)) <span class="op">+</span><span class="st"> </span>
+<span class="st">             </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">             </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) <span class="op">+</span>
+<span class="st">             </span><span class="kw">coord_fixed</span>(<span class="dt">ratio =</span> <span class="dv">1</span>, <span class="dt">xlim=</span>xylim, <span class="dt">ylim =</span> xylim) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Bass 2 - 2.5&quot;</span>)</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-22-1.png" width="288" /></p>
 <p>The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here.</p>
 </div>
@@ -563,12 +567,12 @@ X = \frac{Bass + Tenor}{2}
 <div id="generating-an-m-d-plot-using-ggplot" class="section level3">
 <h3>Generating an m-d plot using <code>ggplot</code></h3>
 <p>We continue with the <code>qq.out</code> dataset generated from the <code>qqplot</code> function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">md.y  &lt;-<span class="st"> </span>(qq.out$y -<span class="st"> </span>qq.out$x) 
-md.x  &lt;-<span class="st"> </span>(qq.out$y +<span class="st"> </span>qq.out$x) *<span class="st"> </span><span class="fl">0.5</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">md.y  &lt;-<span class="st"> </span>(qq.out<span class="op">$</span>y <span class="op">-</span><span class="st"> </span>qq.out<span class="op">$</span>x) 
+md.x  &lt;-<span class="st"> </span>(qq.out<span class="op">$</span>y <span class="op">+</span><span class="st"> </span>qq.out<span class="op">$</span>x) <span class="op">*</span><span class="st"> </span><span class="fl">0.5</span>
 df.md &lt;-<span class="st"> </span><span class="kw">data.frame</span>(md.x, md.y)
 
-<span class="kw">ggplot</span>(df.md,  <span class="kw">aes</span>(<span class="dt">x =</span> md.x, <span class="dt">y =</span> md.y)) +<span class="st"> </span><span class="kw">geom_point</span>() +<span class="st"> </span><span class="kw">geom_abline</span>( <span class="dt">slope=</span><span class="dv">0</span> ) +
-<span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Mean height (in)&quot;</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Difference in height (in)&quot;</span>)</code></pre></div>
+<span class="kw">ggplot</span>(df.md,  <span class="kw">aes</span>(<span class="dt">x =</span> md.x, <span class="dt">y =</span> md.y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_abline</span>( <span class="dt">slope=</span><span class="dv">0</span> ) <span class="op">+</span>
+<span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Mean height (in)&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Difference in height (in)&quot;</span>)</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-23-1.png" width="288" /></p>
 <p>The units on both axes are in inches. It’s clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.</p>
 </div>
@@ -578,25 +582,25 @@ df.md &lt;-<span class="st"> </span><span class="kw">data.frame</span>(md.x, md.
 <p>A <strong>pairwise q-q plot</strong> allows one to view all combinations of batch pairs. This requires that we first find the smallest batch of height values, then interpolate all other batch values to match the smallest batch quantiles. Note that the pairwise plot is symmetrical about the diagonal. Here, we’ll make use of the <code>lattice</code> package to generate the pairwise q-q plots.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lattice)
 <span class="co"># Find smallest batch</span>
-f.rng &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="kw">tapply</span>(singer$height, singer$voice.part, length))
+f.rng &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="kw">tapply</span>(singer<span class="op">$</span>height, singer<span class="op">$</span>voice.part, length))
 
 <span class="co"># Define quantile function</span>
-fun1  &lt;-<span class="st"> </span>function(x,f.rng) {<span class="kw">approx</span>(<span class="dv">1</span>:<span class="kw">length</span>(x), <span class="kw">sort</span>(x), <span class="dt">n =</span> f.rng )$y}
+fun1  &lt;-<span class="st"> </span><span class="cf">function</span>(x,f.rng) {<span class="kw">approx</span>(<span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(x), <span class="kw">sort</span>(x), <span class="dt">n =</span> f.rng )<span class="op">$</span>y}
 
 <span class="co"># Compute quantiles for all factors</span>
-t1    &lt;-<span class="st"> </span><span class="kw">aggregate</span>(singer$height ~<span class="st"> </span>singer$voice.part, <span class="dt">FUN=</span>fun1, <span class="dt">f.rng=</span>f.rng )
+t1    &lt;-<span class="st"> </span><span class="kw">aggregate</span>(singer<span class="op">$</span>height <span class="op">~</span><span class="st"> </span>singer<span class="op">$</span>voice.part, <span class="dt">FUN=</span>fun1, <span class="dt">f.rng=</span>f.rng )
 
 <span class="co"># Flip table and name columns</span>
-t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(t1[,-<span class="dv">1</span>]))
+t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(t1[,<span class="op">-</span><span class="dv">1</span>]))
 <span class="kw">names</span>(t2) &lt;-<span class="st"> </span>t1[,<span class="dv">1</span>]
 
 <span class="co"># Label columns of qmat using names of voice parts.</span>
-<span class="kw">splom</span>(~t2,  <span class="dt">axis.text.cex=</span><span class="fl">0.6</span>, <span class="dt">pch =</span> <span class="dv">20</span>,
+<span class="kw">splom</span>(<span class="op">~</span>t2,  <span class="dt">axis.text.cex=</span><span class="fl">0.6</span>, <span class="dt">pch =</span> <span class="dv">20</span>,
       <span class="dt">varname.cex=</span><span class="fl">0.8</span>,
       <span class="dt">pscales=</span><span class="dv">3</span>,
       <span class="dt">xlab=</span><span class="st">&quot;Heights (inches)&quot;</span>,
-      <span class="dt">prepanel.limits =</span> function(x) (<span class="kw">range</span>(t2)), <span class="co"># force all axes the same</span>
-      <span class="dt">panel =</span> function(x,y,...){
+      <span class="dt">prepanel.limits =</span> <span class="cf">function</span>(x) (<span class="kw">range</span>(t2)), <span class="co"># force all axes the same</span>
+      <span class="dt">panel =</span> <span class="cf">function</span>(x,y,...){
         <span class="kw">panel.grid</span>()
         <span class="kw">panel.splom</span>(x,y,...)
         <span class="kw">panel.abline</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">col=</span><span class="st">&quot;grey&quot;</span>)
@@ -607,7 +611,7 @@ t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span 
 
 <div class="footer">
 <hr/>
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2017)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2018)
 </br>
 
 

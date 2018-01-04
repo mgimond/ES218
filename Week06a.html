@@ -235,6 +235,9 @@ $(document).ready(function () {
     <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 04</li>
     <li>
@@ -374,6 +377,7 @@ $(document).ready(function () {
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans%7CSource+Code+Pro" rel="stylesheet">
 
 <div class="fluid-row" id="header">
 
@@ -420,16 +424,16 @@ $(document).ready(function () {
 <p>In the following example, we’ll compare the <code>Alto 1</code> group to a normal distribution. First, we’ll extract the <code>Alto 1</code> height values and save them as an atomic vector object using <code>dplyr</code>’s piping operations. However, <code>dplyr</code>’s operations will return a dataframe–even if a single column is select. To force the output to an atomic vector, we’ll pipe the subset to <code>.$height</code> which will extract the <code>height</code> column into a plain vector element.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
 
-df   &lt;-<span class="st"> </span>lattice::singer
-alto &lt;-<span class="st"> </span>df %&gt;%<span class="st">  </span><span class="kw">filter</span>(voice.part ==<span class="st"> &quot;Alto 1&quot;</span>) %&gt;%<span class="st"> </span>.$height</code></pre></div>
+df   &lt;-<span class="st"> </span>lattice<span class="op">::</span>singer
+alto &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>(voice.part <span class="op">==</span><span class="st"> &quot;Alto 1&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>.<span class="op">$</span>height</code></pre></div>
 <p>Next, we need to sort <code>alto</code> in ascending order.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">alto &lt;-<span class="st"> </span><span class="kw">sort</span>(alto)</code></pre></div>
 <p>Next, we need to find the matching normal distribution quantiles. We first find the quantiles for <code>alto</code>, then use <code>qnorm</code> to find the matching normal distribution values from the quantiles.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i      &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="kw">length</span>(alto)
-fi     &lt;-<span class="st"> </span>(i -<span class="st"> </span><span class="fl">0.5</span>) /<span class="st"> </span><span class="kw">length</span>(alto)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">i      &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(alto)
+fi     &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(alto)
 x.norm &lt;-<span class="st"> </span><span class="kw">qnorm</span>(fi)</code></pre></div>
 <p>Now we can plot the sorted <code>alto</code> values against the normal values.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>( alto ~<span class="st"> </span>x.norm, <span class="dt">type=</span><span class="st">&quot;p&quot;</span>, <span class="dt">xlab=</span><span class="st">&quot;Normal quantiles&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>( alto <span class="op">~</span><span class="st"> </span>x.norm, <span class="dt">type=</span><span class="st">&quot;p&quot;</span>, <span class="dt">xlab=</span><span class="st">&quot;Normal quantiles&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>)</code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-6-1.png" width="288" /></p>
 <p>When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are <strong>not</strong> creating a 45° (or x=y) slope; the range of values between both sets of numbers do not match. Here, we are only seeking the <strong>straightness</strong> of the points.</p>
 <p>There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile of the q-q plot. The following chunk of code identifies the quantiles for both the <code>alto</code> dataset and the theoretical normal distribution. It then computes the slope and intercept for that line.</p>
@@ -441,8 +445,8 @@ x &lt;-<span class="st"> </span><span class="kw">qnorm</span>( <span class="kw">
 
 <span class="co"># Now we can compute the intercept and slope of the line that passes</span>
 <span class="co"># through these points</span>
-slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) /<span class="st"> </span><span class="kw">diff</span>(x)
-int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] -<span class="st"> </span>slope *<span class="st"> </span>x[<span class="dv">1</span>]</code></pre></div>
+slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) <span class="op">/</span><span class="st"> </span><span class="kw">diff</span>(x)
+int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>x[<span class="dv">1</span>]</code></pre></div>
 <p>Next, we add the line to the plot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">abline</span>(<span class="dt">a=</span>int, <span class="dt">b=</span>slope )</code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-8-1.png" width="288" /></p>
@@ -465,23 +469,23 @@ int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] -<span class="s
 
 y     &lt;-<span class="st"> </span><span class="kw">quantile</span>(alto, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>)) <span class="co"># Find the 1st and 3rd quartiles</span>
 x     &lt;-<span class="st"> </span><span class="kw">qnorm</span>( <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))         <span class="co"># Find the matching normal values on the x-axis</span>
-slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) /<span class="st"> </span><span class="kw">diff</span>(x)             <span class="co"># Compute the line slope</span>
-int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] -<span class="st"> </span>slope *<span class="st"> </span>x[<span class="dv">1</span>]           <span class="co"># Compute the line intercept</span>
+slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) <span class="op">/</span><span class="st"> </span><span class="kw">diff</span>(x)             <span class="co"># Compute the line slope</span>
+int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>x[<span class="dv">1</span>]           <span class="co"># Compute the line intercept</span>
 
 <span class="co"># Generate normal q-q plot</span>
 
-<span class="kw">ggplot</span>() +<span class="st"> </span><span class="kw">aes</span>(<span class="dt">sample=</span>alto) +<span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution=</span>qnorm) +<span class="st"> </span>
-<span class="st">           </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span>int, <span class="dt">slope=</span>slope) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>)           </code></pre></div>
+<span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">sample=</span>alto) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution=</span>qnorm) <span class="op">+</span><span class="st"> </span>
+<span class="st">           </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span>int, <span class="dt">slope=</span>slope) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>)           </code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-10-1.png" width="288" /></p>
 <p>We can, of course, make use of <code>ggplot</code>’s faceting function to generate trellised plots. For example, the following plot replicates Cleveland’s figure 2.11 (except for the layout which we’ll setup as a single row of plots instead). But first, we will need to compute the slopes for each singer group. We’ll use <code>dplyr</code>’s piping operations to create a new dataframe with singer group name, slope and intercept.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-intsl &lt;-<span class="st"> </span>df %&gt;%<span class="st"> </span><span class="kw">group_by</span>(voice.part) %&gt;%<span class="st"> </span>
+intsl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(voice.part) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">       </span><span class="kw">summarize</span>(<span class="dt">q25    =</span> <span class="kw">quantile</span>(height,<span class="fl">0.25</span>),
                  <span class="dt">q75    =</span> <span class="kw">quantile</span>(height,<span class="fl">0.75</span>),
                  <span class="dt">norm25 =</span> <span class="kw">qnorm</span>( <span class="fl">0.25</span>),
                  <span class="dt">norm75 =</span> <span class="kw">qnorm</span>( <span class="fl">0.75</span>),
-                 <span class="dt">slope  =</span> (q25 -<span class="st"> </span>q75) /<span class="st"> </span>(norm25 -<span class="st"> </span>norm75),
-                 <span class="dt">int    =</span> q25 -<span class="st"> </span>slope *<span class="st"> </span>norm25) %&gt;%
+                 <span class="dt">slope  =</span> (q25 <span class="op">-</span><span class="st"> </span>q75) <span class="op">/</span><span class="st"> </span>(norm25 <span class="op">-</span><span class="st"> </span>norm75),
+                 <span class="dt">int    =</span> q25 <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>norm25) <span class="op">%&gt;%</span>
 <span class="st">       </span><span class="kw">select</span>(voice.part,slope, int) </code></pre></div>
 <p>The above chunk creates the following table.</p>
 <table style="width:39%;">
@@ -541,9 +545,9 @@ intsl &lt;-<span class="st"> </span>df %&gt;%<span class="st"> </span><span clas
 </tbody>
 </table>
 <p>It’s important that the <code>voice.part</code> names match those in <code>df</code> letter-for-letter so that when <code>ggplot</code> is called, it will know which facet to assign the slope and intercept values to via <code>geom_abline</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample=</span>height)) +<span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution=</span>qnorm) +<span class="st"> </span>
-<span class="st">           </span><span class="kw">geom_abline</span>(<span class="dt">data=</span>intsl, <span class="kw">aes</span>(<span class="dt">intercept=</span>int, <span class="dt">slope=</span>slope), <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>) +
-<span class="st">           </span><span class="kw">facet_wrap</span>(~voice.part,<span class="dt">nrow=</span><span class="dv">1</span>) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample=</span>height)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution=</span>qnorm) <span class="op">+</span><span class="st"> </span>
+<span class="st">           </span><span class="kw">geom_abline</span>(<span class="dt">data=</span>intsl, <span class="kw">aes</span>(<span class="dt">intercept=</span>int, <span class="dt">slope=</span>slope), <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>) <span class="op">+</span>
+<span class="st">           </span><span class="kw">facet_wrap</span>(<span class="op">~</span>voice.part,<span class="dt">nrow=</span><span class="dv">1</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>) </code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-13-1.png" width="864" /></p>
 </div>
 </div>
@@ -551,7 +555,7 @@ intsl &lt;-<span class="st"> </span>df %&gt;%<span class="st"> </span><span clas
 
 <div class="footer">
 <hr/>
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2017)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2018)
 </br>
 
 
