@@ -406,7 +406,9 @@ $(document).ready(function () {
 <li><a href="#data-frames">Data frames</a></li>
 <li><a href="#lists">Lists</a></li>
 </ul></li>
-<li><a href="#coercing-data-from-one-type-to-another">Coercing data from one type to another</a></li>
+<li><a href="#coercing-data-from-one-type-to-another">Coercing data from one type to another</a><ul>
+<li><a href="#a-word-of-caution-when-converting-from-factors">A word of caution when converting from factors</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -555,6 +557,10 @@ dat.f</code></pre></div>
 <div id="data-structures" class="section level1">
 <h1>Data structures</h1>
 <p>A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of several <em>data structures</em> such as <strong>(atomic) vectors</strong>, <strong>matrices</strong>, <strong>data frames</strong> and <strong>lists</strong>.</p>
+<div class="figure">
+<img src="img/data_structures.png" />
+
+</div>
 <div id="atomic-vectors" class="section level2">
 <h2>(Atomic) Vectors</h2>
 <p>The <strong>atomic vector</strong> (or vector for short) is the simplest data structure in R which consists of an ordered set of values of the same type (e.g. numeric, character, date, etc…). A vector can be created using the <em>combine</em> function <code>c()</code> as in</p>
@@ -624,10 +630,10 @@ m</code></pre></div>
 </div>
 <div id="data-frames" class="section level2">
 <h2>Data frames</h2>
-<p>A <strong>data frame</strong> is what comes closest to our perception of a data <em>table</em>. It’s an extension of the matrix object in that, unlike a matrix, a data frame can <em>mix</em> data types across columns (e.g. both numeric and character columns a can coexist in a data frame) but data type remains the same across rows.</p>
+<p>A <strong>data frame</strong> is what comes closest to our perception of a data <em>table</em>. It’s an extension of the matrix object in that, unlike a matrix, a data frame can <em>mix</em> data types across columns (e.g. both numeric and character columns can coexist in a data frame) but data type remains the same across rows.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Name   &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;a1&quot;</span>, <span class="st">&quot;a2&quot;</span>, <span class="st">&quot;b3&quot;</span>)
 Value1 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">12</span>)
-Value2 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">45</span>,<span class="dv">5</span>)
+Value2 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">45</span>, <span class="dv">5</span>)
 dat    &lt;-<span class="st"> </span><span class="kw">data.frame</span>(Name, Value1, Value2)
 dat</code></pre></div>
 <pre><code>  Name Value1 Value2
@@ -640,6 +646,7 @@ dat</code></pre></div>
  $ Name  : Factor w/ 3 levels &quot;a1&quot;,&quot;a2&quot;,&quot;b3&quot;: 1 2 3
  $ Value1: num  23 4 12
  $ Value2: num  1 45 5</code></pre>
+<p>You’ll notice that the <code>Value1</code> and <code>Value2</code> columns are stored as <code>numeric</code> (i.e. as doubles) and not as <code>integer</code> even though the numbers do not contain decimal places. R will assume that any number is <code>numeric</code> unless it is followed by <code>L</code> as in <code>Value1 &lt;- c(23L, 4L, 12L)</code></p>
 <p>Like a vector, elements of a data frame can be accessed by their index (aka subscripts). The first index represents the row number and the second index represents the column number. For example, to list the second row of the third column, type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat[<span class="dv">2</span>, <span class="dv">3</span>]</code></pre></div>
 <pre><code>[1] 45</code></pre>
@@ -649,17 +656,17 @@ dat</code></pre></div>
 1   a1     23
 2   a2      4
 3   b3     12</code></pre>
-<p>or the third row for all columns, leave the second index blank:</p>
+<p>or if you wish to list the third row for all columns, leave the second index blank:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat[ <span class="dv">3</span> , ]</code></pre></div>
 <pre><code>  Name Value1 Value2
 3   b3     12      5</code></pre>
-<p>You can also reference columns by their names if you append the <code>$</code> character to the dataframe object name. For example, to list the values in the column named <em>Value2</em>, type:</p>
+<p>You can also reference columns by their names if you append the <code>$</code> character to the dataframe object name. For example, to list the values in the column named <code>Value2</code>, type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat<span class="op">$</span>Value2</code></pre></div>
 <pre><code>[1]  1 45  5</code></pre>
 </div>
 <div id="lists" class="section level2">
 <h2>Lists</h2>
-<p>A <strong>list</strong> is an ordered set of components stored in a 1D structure. In fact, it’s another kind of vector called a <strong>recursive vector</strong> where each element can be of different data type and <em>structure</em>. This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number to a three paragraph sentence to a five column table.</p>
+<p>A <strong>list</strong> is an ordered set of components stored in a 1D structure. In fact, it’s another kind of vector called a <strong>recursive vector</strong> where each vector element can be of different data type and <em>structure</em>. This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number to a three paragraph sentence to a five column table.</p>
 <p>A list is constructed using the <code>list()</code> function. For example, the following list consists of 3 components: a two-column data frame (tagged <code>A</code>), a two element logical vector (tagged <code>B</code>) and a three element character vector (tagged <code>D</code>).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">A &lt;-<span class="st"> </span><span class="kw">data.frame</span>(
      <span class="dt">x =</span> <span class="kw">c</span>(<span class="fl">7.3</span>, <span class="fl">29.4</span>, <span class="fl">29.4</span>, <span class="fl">2.9</span>, <span class="fl">12.3</span>, <span class="fl">7.5</span>, <span class="fl">36.0</span>, <span class="fl">4.8</span>, <span class="fl">18.8</span>, <span class="fl">4.2</span>),
@@ -677,7 +684,7 @@ lst &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">
   ..$ y: num [1:10] 5.2 26.6 31.2 2.2 13.8 7.8 35.2 8.6 20.3 1.1
  $ B: logi [1:2] TRUE FALSE
  $ D: chr [1:3] &quot;apples&quot; &quot;oranges&quot; &quot;round&quot;</code></pre>
-<p>Each component of a list can be extracted using the <code>$</code> symbol followed by that component’s <strong>tag</strong> (the name that was assigned to each component when we constructed the list object). For example, to access component <code>A</code> from list <code>lst</code>, type:</p>
+<p>Each component of a list can be extracted using the <code>$</code> symbol followed by that component’s <strong>tag</strong> name (the name that was assigned to each component when we constructed the list object). For example, to access component <code>A</code> from list <code>lst</code>, type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lst<span class="op">$</span>A</code></pre></div>
 <pre><code>      x    y
 1   7.3  5.2
@@ -703,15 +710,15 @@ lst &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">
 8   4.8  8.6
 9  18.8 20.3
 10  4.2  1.1</code></pre>
-<p>Note that we are using <strong>double brackets</strong> to extract <code>A</code>. In doing so, we are extracting <code>A</code> in its <em>native data format</em> (a data frame in our example). Had we used single brackets, <code>A</code> would have been extracted as a <em>list</em> regardless of its native format. The following compares the different data structure outputs between single and double bracketed indices:</p>
+<p>Note that we are using <strong>double brackets</strong> to extract <code>A</code>. In doing so, we are extracting <code>A</code> in its <em>native data format</em> (a data frame in this example). Had we used single brackets, <code>A</code> would have been extracted as a <em>list</em> regardless of its native format. The following compares the different data structure outputs between single and double bracketed indices:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(lst[[<span class="dv">1</span>]])</code></pre></div>
 <pre><code>[1] &quot;data.frame&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(lst[<span class="dv">1</span>])</code></pre></div>
 <pre><code>[1] &quot;list&quot;</code></pre>
-<p>The tag names for each component in a list can be extracted using the <code>names()</code> function:</p>
+<p>To list the tag names for each component in a list use the <code>names()</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(lst)</code></pre></div>
 <pre><code>[1] &quot;A&quot; &quot;B&quot; &quot;D&quot;</code></pre>
-<p>Note that lists do not require tag names for its components. For example, we could have created a list as follows (note the omission of <code>A=</code>, <code>B=</code>, etc…):</p>
+<p>Note that lists do not require tag names for their components. For example, we could have created a list as follows (note the omission of <code>A=</code>, <code>B=</code>, etc…):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lst.notags &lt;-<span class="st"> </span><span class="kw">list</span>(A, B, D)</code></pre></div>
 <p>Listing its contents displays bracketed indices instead of tag names.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lst.notags</code></pre></div>
@@ -750,7 +757,7 @@ lst &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M<span class="op">$</span>residuals</code></pre></div>
 <pre><code>         1          2          3          4          5          6          7          8          9         10 
 -2.1119291 -2.6122265  1.9877735 -0.7516888  1.5332525  0.2898782 -0.5525869  3.7654802  1.5919885 -3.1399416 </code></pre>
-<p>The list <code>M</code> is more complex than the simple list <code>lst</code> we created earlier. In addition to having more elements, it stores a <em>wider range</em> of data type and structure. For example, element <code>qr</code> is itself a list of five elements!</p>
+<p>The list <code>M</code> is more complex than the simple list <code>lst</code> we created earlier. In addition to having more components, it stores a <em>wider range</em> of data types and structures. For example, element <code>qr</code> is itself a list of five elements!</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(M<span class="op">$</span>qr)</code></pre></div>
 <pre><code>List of 5
  $ qr   : num [1:10, 1:2] -3.162 0.316 0.316 0.316 0.316 ...
@@ -769,43 +776,55 @@ lst &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">
 <p>If we want to access <code>rank</code> using indices instead, and noting that <code>qr</code> is the 7th component in list <code>M</code> and that <code>rank</code> is the 5th element in list <code>qr</code> we type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M[[<span class="dv">7</span>]][[<span class="dv">5</span>]]</code></pre></div>
 <pre><code>[1] 2</code></pre>
-<p>This should illustrate the value in assigning <em>tags</em> to list elements; not only does the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.</p>
+<p>This should illustrate the value in assigning <em>tags</em> to list elements; not only do the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.</p>
 </div>
 </div>
 <div id="coercing-data-from-one-type-to-another" class="section level1">
 <h1>Coercing data from one type to another</h1>
 <p>Data can be coerced from one type to another. For example, to coerce the following vector object from character to numeric, use the <code>as.numeric()</code> function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y   &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;23.4&quot;</span>, <span class="st">&quot;6&quot;</span>, <span class="st">&quot;100.01&quot;</span>,<span class="st">&quot;6&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y   &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;23.8&quot;</span>, <span class="st">&quot;6&quot;</span>, <span class="st">&quot;100.01&quot;</span>,<span class="st">&quot;6&quot;</span>)
 y.c &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(y)
 y.c</code></pre></div>
-<pre><code>[1]  23.40   6.00 100.01   6.00</code></pre>
-<p>The <code>as.numeric</code> function forces the vector to a double (you could have also used the <code>as.double</code> function).</p>
+<pre><code>[1]  23.80   6.00 100.01   6.00</code></pre>
+<p>The <code>as.numeric</code> function forces the vector to a double (you could have also used the <code>as.double</code> function). If you convert <code>y</code> to an integer, R will remove all values past the decimal point.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.integer</span>(y)</code></pre></div>
+<pre><code>[1]  23   6 100   6</code></pre>
 <p>To convert a number to a character use <code>as.character()</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">numchar &lt;-<span class="st"> </span><span class="kw">as.character</span>(y.c)
 numchar</code></pre></div>
-<pre><code>[1] &quot;23.4&quot;   &quot;6&quot;      &quot;100.01&quot; &quot;6&quot;     </code></pre>
+<pre><code>[1] &quot;23.8&quot;   &quot;6&quot;      &quot;100.01&quot; &quot;6&quot;     </code></pre>
 <p>You can also coerce a number or character to a factor.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">numfac &lt;-<span class="st"> </span><span class="kw">as.factor</span>(y)
 numfac</code></pre></div>
-<pre><code>[1] 23.4   6      100.01 6     
-Levels: 100.01 23.4 6</code></pre>
+<pre><code>[1] 23.8   6      100.01 6     
+Levels: 100.01 23.8 6</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">charfac &lt;-<span class="st"> </span><span class="kw">as.factor</span>(y.c)
 charfac</code></pre></div>
-<pre><code>[1] 23.4   6      100.01 6     
-Levels: 6 23.4 100.01</code></pre>
+<pre><code>[1] 23.8   6      100.01 6     
+Levels: 6 23.8 100.01</code></pre>
 <p>It’s not uncommon for R’s file reading functions to create factors from character variables (columns). If you need to coerce a factor back to a character use the <code>as.character()</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">char &lt;-<span class="st"> </span><span class="kw">as.character</span>(charfac)
 char</code></pre></div>
-<pre><code>[1] &quot;23.4&quot;   &quot;6&quot;      &quot;100.01&quot; &quot;6&quot;     </code></pre>
+<pre><code>[1] &quot;23.8&quot;   &quot;6&quot;      &quot;100.01&quot; &quot;6&quot;     </code></pre>
+<div id="a-word-of-caution-when-converting-from-factors" class="section level2">
+<h2>A word of caution when converting from factors</h2>
 <p>Numbers stored as factors can also be coerced back to numbers, but be careful, the following will not produce the expected output:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(numfac)
 num</code></pre></div>
 <pre><code>[1] 2 3 1 3</code></pre>
-<p>The output does not look like a numeric representation of the original elements in <code>numfac</code>. This is because factors store values as integers where each integer is a pointer to one of the unique factor levels. Here, we have three unique factor levels, hence three unique integer levels. Level number <code>1</code> repesents <code>100.01</code>, level number <code>2</code> represents <code>23.4</code>, and so on. To extract the numbers, you must first convert the factors to characters before converting to numbers.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as.character</span> (numfac))
+<p>The output does not look like a numeric representation of the original elements in <code>numfac</code>. This is because a factor <em>tags</em> the unique values (or <strong>levels</strong> in R lingo). To see the <em>unique</em> levels in our factor <code>numfac</code>, type:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(numfac)</code></pre></div>
+<pre><code>[1] &quot;100.01&quot; &quot;23.8&quot;   &quot;6&quot;     </code></pre>
+<p>There are three unique values in our vector. The order in which the levels appear in the above output represents the ordered <em>tag</em> values. So tag number <code>1</code> repesents level <code>100.01</code>, tag number <code>2</code> represents level <code>23.4</code>, and tag number <code>3</code> represents level <code>6</code>. So our earlier attempt at converting the factor to a number ended up outputing the tag values instead.</p>
+<div class="figure">
+<img src="img/levels.png" />
+
+</div>
+<p>So, to extract the levels (and not the tags), you must first convert the factor to character before converting to a numeric vector.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as.character</span>(numfac))
 num</code></pre></div>
-<pre><code>[1]  23.40   6.00 100.01   6.00</code></pre>
-<p>A summary of coercing functions follows:</p>
+<pre><code>[1]  23.80   6.00 100.01   6.00</code></pre>
+<p>There are many coercion functions in R, a summary of some the most common ones we’ll be using in this course folows:</p>
 <table style="width:78%;">
 <colgroup>
 <col width="41%" />
@@ -834,6 +853,7 @@ num</code></pre></div>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 
 

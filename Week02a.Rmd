@@ -217,6 +217,8 @@ It's more common to find data tables with missing elements populated with `NA`'s
 
 A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of several *data structures* such as **(atomic) vectors**, **matrices**, **data frames** and **lists**.
 
+![](img/data_structures.png)
+
 ## (Atomic) Vectors
 
 The **atomic vector** (or vector for short) is the simplest data structure in R which consists of an ordered set of values of the same type (e.g. numeric, character, date, etc...). A vector can be created using the *combine* function `c()` as in
@@ -297,13 +299,13 @@ but the value `2` and `4` are no longer treated as numeric values but as charact
 
 ## Data frames
 
-A **data frame** is what comes closest to our perception of a data *table*. It's an extension of the matrix object in that, unlike a matrix, a data frame can *mix* data types across columns (e.g. both numeric and character columns a can coexist in a data frame) but data type remains the same across rows. 
+A **data frame** is what comes closest to our perception of a data *table*. It's an extension of the matrix object in that, unlike a matrix, a data frame can *mix* data types across columns (e.g. both numeric and character columns can coexist in a data frame) but data type remains the same across rows. 
 
 
 ```{r}
 Name   <- c("a1", "a2", "b3")
 Value1 <- c(23, 4, 12)
-Value2 <- c(1,45,5)
+Value2 <- c(1, 45, 5)
 dat    <- data.frame(Name, Value1, Value2)
 dat
 ```
@@ -313,6 +315,8 @@ To view each column's mode type:
 ```{r}
 str(dat)
 ```
+
+You'll notice that the `Value1` and `Value2` columns are stored as `numeric` (i.e. as doubles) and not as `integer` even though the numbers do not contain decimal places. R will assume that any number is `numeric` unless it is followed by `L` as in `Value1 <- c(23L, 4L, 12L)`
 
 Like a vector, elements of a data frame can be accessed by their index (aka subscripts). The first index represents the row number and the second index represents the column number. For example, to list the second row of the third column, type:
 
@@ -326,13 +330,13 @@ If you wish to list all rows for columns one through two leave the first index b
 dat[ , 1:2 ]
 ```
 
-or the third row for all columns, leave the second index blank:
+or if you wish to list the third row for all columns, leave the second index blank:
 
 ```{r}
 dat[ 3 , ]
 ```
 
-You can also reference columns by their names if you append the `$` character to the dataframe object name. For example, to list the values in the column named *Value2*, type:
+You can also reference columns by their names if you append the `$` character to the dataframe object name. For example, to list the values in the column named `Value2`, type:
 
 ```{r}
 dat$Value2
@@ -340,7 +344,7 @@ dat$Value2
 
 ## Lists
 
-A **list** is an ordered set of components stored in a 1D structure.  In fact, it's another kind of vector called a **recursive vector**  where each element can be of different data type and *structure*.  This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number to a three paragraph sentence to a five column table. 
+A **list** is an ordered set of components stored in a 1D structure.  In fact, it's another kind of vector called a **recursive vector**  where each vector element can be of different data type and *structure*.  This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number to a three paragraph sentence to a five column table. 
 
 A list is constructed using the `list()` function. For example, the following list consists of 3 components: a two-column data frame (tagged `A`), a two element logical vector (tagged `B`) and a three element character vector (tagged `D`).
 
@@ -361,7 +365,7 @@ You can view each component's structure using the `str()` function.
 str(lst)
 ```
 
-Each component of a list can be extracted using the `$` symbol followed by that component's **tag** (the name that was assigned to each component when we constructed the list object). For example, to access component `A` from list `lst`, type:
+Each component of a list can be extracted using the `$` symbol followed by that component's **tag** name (the name that was assigned to each component when we constructed the list object). For example, to access component `A` from list `lst`, type:
 
 ```{r}
 lst$A
@@ -373,20 +377,20 @@ You can also access that same component using its *numerical index*. Since `A` i
 lst[[1]]
 ```
 
-Note that we are using **double brackets** to extract `A`. In doing so, we are extracting `A` in its *native data format* (a data frame in our example). Had we used single brackets, `A` would have been extracted as a *list* regardless of its native format. The following compares the different data structure outputs between single and double bracketed indices:
+Note that we are using **double brackets** to extract `A`. In doing so, we are extracting `A` in its *native data format* (a data frame in this example). Had we used single brackets, `A` would have been extracted as a *list* regardless of its native format. The following compares the different data structure outputs between single and double bracketed indices:
 
 ```{r}
 class(lst[[1]])
 class(lst[1])
 ```
 
-The tag names for each component in a list can be extracted using the `names()` function:
+To list the tag names for each component in a list use the `names()` function:
 
 ```{r}
 names(lst)
 ```
 
-Note that lists do not require tag names for its components. For example, we could have created a list as follows (note the omission of `A=`, `B=`, etc...):
+Note that lists do not require tag names for their components. For example, we could have created a list as follows (note the omission of `A=`, `B=`, etc...):
 
 ```{r}
 lst.notags <- list(A, B, D)
@@ -430,7 +434,7 @@ Fortunately, the regression function assigns descriptive tag names to each of it
 M$residuals
 ```
 
-The list `M` is more complex than the simple list `lst` we created earlier. In addition to having more elements, it stores a *wider range* of data type and structure. For example, element `qr` is itself a list of five elements!
+The list `M` is more complex than the simple list `lst` we created earlier. In addition to having more components, it stores a *wider range* of data types and structures. For example, element `qr` is itself a list of five elements!
 
 ```{r}
 str(M$qr)
@@ -448,19 +452,23 @@ If we want to access `rank` using indices instead, and noting that `qr` is  the 
 M[[7]][[5]]
 ```
 
-This should illustrate the value in assigning *tags* to list elements; not only does the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.
+This should illustrate the value in assigning *tags* to list elements; not only do the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.
 
 # Coercing data from one type to another
 
 Data can be coerced from one type to another. For example, to coerce the following vector object from character to numeric, use the `as.numeric()` function.
 
 ```{r}
-y   <- c("23.4", "6", "100.01","6")
+y   <- c("23.8", "6", "100.01","6")
 y.c <- as.numeric(y)
 y.c
 ```
 
-The `as.numeric` function forces the vector to a double (you could have also used the `as.double` function). 
+The `as.numeric` function forces the vector to a double (you could have also used the `as.double` function). If you convert `y` to an integer, R will remove all values past the decimal point.
+
+```{r}
+as.integer(y)
+```
 
 To convert a number to a character use `as.character()`.
 
@@ -485,6 +493,8 @@ char <- as.character(charfac)
 char
 ```
 
+## A word of caution when converting from factors
+
 Numbers stored as factors can also be coerced back to numbers, but be careful, the following will not produce the expected output:
 
 ```{r}
@@ -492,15 +502,26 @@ num <- as.numeric(numfac)
 num
 ```
 
-The output does not look like a numeric representation of the original elements in `numfac`. This is because factors store values as integers where each integer is a pointer to one of the unique factor levels. Here, we have three unique factor levels, hence three unique integer levels. Level number `1` repesents `100.01`, level number `2` represents `23.4`, and so on. To extract the numbers, you must first convert the factors to characters before converting to numbers.
+The output does not look like a numeric representation of the original elements in `numfac`. This is because a factor *tags* the unique values (or **levels** in R lingo). To see the *unique* levels in our factor `numfac`, type:
 
 ```{r}
-num <- as.numeric(as.character (numfac))
+levels(numfac)
+```
+
+There are three unique values in our vector. The order in which the levels appear in the above output represents the ordered *tag* values. So tag number `1` repesents level `100.01`, tag number `2` represents level `23.4`, and tag number `3` represents level `6`. So our earlier attempt at converting the factor to a number ended up outputing the tag values instead.
+
+![](img/levels.png)
+
+So, to extract the levels (and not the tags), you must first convert the factor to character before converting to a numeric vector.
+
+```{r}
+num <- as.numeric(as.character(numfac))
 num
 
 ```
 
-A summary of coercing functions follows:
+
+There are many coercion functions in R, a summary of some the most common ones we'll be using in this course folows:
 
 +-----------------------------+-------------------------+
 |as.character()               | Convert to character    |
