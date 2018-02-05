@@ -8,9 +8,16 @@ editor_options:
 source("libs/Common.R")
 ```
 
-# Data types
 
-R objects can store values as different data types including **numeric** (both integer and double), **character**, **logical** or **date**. R variable types are often referred to as **modes** and can be identified using the `mode()` or `typeof()` functions.
+
+R objects can store values as different *core* data types (referred to as **modes** in R jargon); these include **numeric** (both integer and double), **character** and **logical**. 
+
+R expands these modes into  *derived* data types such as **dates** and **factors** by assigning *attribute* information to these objects. 
+
+
+# Core data types
+
+These data types, or **modes**, define how the values are stored in the computer. You can get an object's mode using the `typeof()` function. Note that R also has a built-in `mode()` function that will serve the same purpose with the one exception in that it will not distinguish integers from doubles.
 
 ## Numeric
 
@@ -47,7 +54,7 @@ The **character** data type consists of letters or words such as `"a", "f", "pro
 
 ```{r}
 x <- c("a", "f", "project", "house value")
-mode(x)
+typeof(x)
 ```
 
 Characters can also consist of numbers represented as characters. The distinction between a character representation of a number and a numeric one is important. For example, if we have two numeric vectors `x` and `y` such as
@@ -82,36 +89,60 @@ x <- c(TRUE, FALSE, FALSE, TRUE)
 ```
 
 or
+
 ```{r}
 x <- as.logical(c(1,0,0,1))
 ```
 
-Note that in both cases, `mode(x)` returns `r mode(x)`. Also note that the `1`'s and `0`'s in the last example are converted to `TRUE`'s and `FALSE`'s.
+Note that in both cases, `typeof(x)` returns `r typeof(x)`. Also note that the `1`'s and `0`'s in the last example are converted to `TRUE`'s and `FALSE`'s internally.
+
+# Derived data types
+
+These data types are stored as either numeric, character or logical but have additional *attribute* information that allow these objects to be treated in special ways by certain functions in R. These attributes define an object's **class** and can be extracted from that object via the `class()` function. 
 
 ## Factor
 
 **Factors** are normally used to group variables into a fixed number of unique categories or **levels**. For example, a dataset may be grouped by gender or month of the year. Such data are usually loaded into R as a numeric or character data type requiring that they be converted to a factor using the `as.factor()` function.
 
-In the following example, a dataframe (dataframes are data tables--this will be covered later in this tutorial) is created with a column, `gender`, storing one of three values: `M`, `F` and `U`. These values are first encoded as character objects, but are then converted to factors using the `as.factor` function.
+In the following chunk of code, we create a factor from a character object.
 
 ```{r}
 a      <- c("M", "F", "F", "U", "F", "M", "M", "M", "F", "U")
 a.fact <- as.factor(a)
+```
+
+To confirm that `a.fact` is indeed a factor, we call the `class` function.
+
+```{r}
+class(a.fact)
+```
+
+Interestingly, if you look at `a.fact`'s mode, you'll note that it's stored as an integer even though values are character.
+
+```{r}
+typeof(a.fact)
+```
+
+This is because a factor uses integers to point to one of the vectors' unique values stored in the vector's attribute header (more details are provided [later](#factors_xtr) in this chapter). 
+
+The unique values associated with `a.fact` can be extracted using the `levels` function.
+
+```{r}
+levels(a.fact)
+```
+
+To appreciate the benefits of a factor we'll first create a dataframe (dataframes are data tables whose structure will be covered later in this tutorial). One column will be assigned  the `a.fact` factor and another will be assigned some random numeric values.
+
+```{r}
 x      <- c(166, 47, 61, 148, 62, 123, 232, 98, 93, 110)
 dat    <- data.frame(x = x, gender = a.fact)
 dat
 ```
 
-The `gender` column is now a factor with three levels: `F`, `M` and `U`. 
+The `gender` column is now a factor with three levels: `F`, `M` and `U`. We can use the `str()` function to view the dataframe's structure as well as its columns classes.
 
 ```{r}
 str(dat)
-```
-
-You can also use the `levels` function to identify the unique levels in a factor:
-
-```{r}
-levels(a.fact)
 ```
 
 Many functions recognize factor data types and will allow you to split the output into groups defined by the factor's unique levels. For example, to create three boxplots of the value `x`, one for each gender group `F`, `M` and `U`, type the following:
@@ -126,7 +157,7 @@ The tilde `~` operator is used in the plot function to split (or *condition*) th
 
 ### Rearranging level order
 
-A factor will define a hierarchy for its levels.  When we invoked the `levels` function in the last example, you may have noted that the levels output were ordered `F`, `M` and`U`--this is the level hierarchy defined for `gender` (i.e. `F`>`M`>`U` ). This means that regardless of the order in which the factors appear in a table, anytime a plot or operation is conditioned by the factor the grouped elements will appear in the order defined by the levels' hierarchy. When we created the boxplot from our `dat` object, the plotting function ordered the boxplot (bottom to top) following `gender`'s level hierarchy (i.e. `F` first, then `M`, then `U`). 
+A factor will define a hierarchy for its levels. When we invoked the `levels` function in the last example, you may have noted that the levels output were ordered `F`, `M` and`U`--this is the level hierarchy defined for `gender` (i.e. `F`>`M`>`U` ). This means that regardless of the order in which the factors appear in a table, anytime a plot or operation is conditioned by the factor the grouped elements will appear in the order defined by the levels' hierarchy. When we created the boxplot from our `dat` object, the plotting function ordered the boxplot (bottom to top) following `gender`'s level hierarchy (i.e. `F` first, then `M`, then `U`). 
 
 If we wanted the boxplots to be plotted in a different order (i.e. `U` first followed by `F` then `M`) we would need to modify the `gender` column by recreating the factor object as follows:
 
@@ -135,7 +166,7 @@ dat$gender <- factor(dat$gender, levels=c("U","F","M"))
 str(dat)
 ```
 
-The `factor` function is given the original factor values but is also given the levels in the new order in which they are to appear. Now, if we recreate the boxplot, the plot order (plotted from bottom to top) will reflect the new level hierarchy.
+The `factor` function is given the original factor values (`dat$gender`) but is also given the levels in the new order in which they are to appear(`levels=c("U","F","M")`). Now, if we recreate the boxplot, the plot order (plotted from bottom to top) will reflect the new level hierarchy.
 
 
 ```{r fig.width = 4, fig.height=2.5,echo=2}
@@ -144,25 +175,9 @@ boxplot(x ~ gender, dat, horizontal = TRUE)
 par(OP)
 ```
 
-### Using `class` to identify a factor
+### Subsetting table by level and *re-leveling*
 
-The `mode` or `typeof` functions will not tell you if an object is a factor.
-
-```{r}
-typeof(a.fact)
-```
-
-Instead, it's best to use the `class` function as in,
-
-```{r}
-class(a.fact)
-```
-
-This is because a factor stores its values as integers that point to the levels stored in the vector's attribute header. More details are provided later in this chapter.
-
-### Subsetting table by level
-
-We can subset the table by level using the subset function. For example, to subset the values associated with `F` and `M`, type:
+In this example, we can subset the table by level using the subset function. For example, to subset the values associated with `F` and `M`, type:
 
 ```{r}
 dat.f <- subset(dat, gender == "F" | gender == "M")
@@ -192,10 +207,15 @@ dat.f$gender <- droplevels(dat.f$gender)
 levels(dat.f$gender)
 ```
 
+```{r fig.width = 4, fig.height=2,echo=2}
+OP <- par( mar=c(2,2,0,0))
+boxplot(x ~ gender, dat.f, horizontal = TRUE)
+par(OP)
+```
 
 ## Date
 
-Date values can be represented as numbers or characters. But to be properly interpreted as a date object in R, values must be stored as an R **date** object. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. A separate [section](Week02c.html) is dedicated to the creation and manipulation of date objects.
+Date values are stored as numbers. But to be properly interpreted as a date object in R, their attribute must be explicitly defined as a **date**. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. A separate [section](Week02c.html) is dedicated to the creation and manipulation of date objects.
 
 ## NA and NULL
 
@@ -464,7 +484,7 @@ So if we want to access the element `rank` in the component `qr` of list `M`, we
 M$qr$rank
 ```
 
-If we want to access `rank` using indices instead, and noting that `qr` is  the 7th component in list `M` and that `rank` is the 5th element in list `qr` we type:
+If we want to access `rank` using indices instead, and noting that `qr` is  the 7^th^ component in list `M` and that `rank` is the 5th element in list `qr` we type:
 
 ```{r}
 M[[7]][[5]]
@@ -511,7 +531,7 @@ char <- as.character(charfac)
 char
 ```
 
-## A word of caution when converting from factors
+## A word of caution when converting from factors {#factors_xtr}
 
 Numbers stored as factors can also be coerced back to numbers, but be careful, the following will not produce the expected output:
 

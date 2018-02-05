@@ -389,14 +389,15 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
-<li><a href="#data-types">Data types</a><ul>
+<li><a href="#core-data-types">Core data types</a><ul>
 <li><a href="#numeric">Numeric</a></li>
 <li><a href="#character">Character</a></li>
 <li><a href="#logical">Logical</a></li>
+</ul></li>
+<li><a href="#derived-data-types">Derived data types</a><ul>
 <li><a href="#factor">Factor</a><ul>
 <li><a href="#rearranging-level-order">Rearranging level order</a></li>
-<li><a href="#using-class-to-identify-a-factor">Using <code>class</code> to identify a factor</a></li>
-<li><a href="#subsetting-table-by-level">Subsetting table by level</a></li>
+<li><a href="#subsetting-table-by-level-and-re-leveling">Subsetting table by level and <em>re-leveling</em></a></li>
 </ul></li>
 <li><a href="#date">Date</a></li>
 <li><a href="#na-and-null">NA and NULL</a></li>
@@ -408,14 +409,16 @@ $(document).ready(function () {
 <li><a href="#lists">Lists</a></li>
 </ul></li>
 <li><a href="#coercing-data-from-one-type-to-another">Coercing data from one type to another</a><ul>
-<li><a href="#a-word-of-caution-when-converting-from-factors">A word of caution when converting from factors</a></li>
+<li><a href="#factors_xtr">A word of caution when converting from factors</a></li>
 </ul></li>
 </ul>
 </div>
 
-<div id="data-types" class="section level1">
-<h1>Data types</h1>
-<p>R objects can store values as different data types including <strong>numeric</strong> (both integer and double), <strong>character</strong>, <strong>logical</strong> or <strong>date</strong>. R variable types are often referred to as <strong>modes</strong> and can be identified using the <code>mode()</code> or <code>typeof()</code> functions.</p>
+<p>R objects can store values as different <em>core</em> data types (referred to as <strong>modes</strong> in R jargon); these include <strong>numeric</strong> (both integer and double), <strong>character</strong> and <strong>logical</strong>.</p>
+<p>R expands these modes into <em>derived</em> data types such as <strong>dates</strong> and <strong>factors</strong> by assigning <em>attribute</em> information to these objects.</p>
+<div id="core-data-types" class="section level1">
+<h1>Core data types</h1>
+<p>These data types, or <strong>modes</strong>, define how the values are stored in the computer. You can get an object’s mode using the <code>typeof()</code> function. Note that R also has a built-in <code>mode()</code> function that will serve the same purpose with the one exception in that it will not distinguish integers from doubles.</p>
 <div id="numeric" class="section level2">
 <h2>Numeric</h2>
 <p>The <strong>numeric</strong> data type is probably the simplest. It consists of numbers such as integers (e.g. <code>1 ,-3 ,33 ,0</code>) or doubles (e.g. <code>0.3, 12.4, -0.04, 1.0</code>). For example, to create a numeric (double) vector we can type:</p>
@@ -438,7 +441,7 @@ $(document).ready(function () {
 <h2>Character</h2>
 <p>The <strong>character</strong> data type consists of letters or words such as <code>&quot;a&quot;, &quot;f&quot;, &quot;project&quot;, &quot;house value&quot;</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;f&quot;</span>, <span class="st">&quot;project&quot;</span>, <span class="st">&quot;house value&quot;</span>)
-<span class="kw">mode</span>(x)</code></pre></div>
+<span class="kw">typeof</span>(x)</code></pre></div>
 <pre><code>[1] &quot;character&quot;</code></pre>
 <p>Characters can also consist of numbers represented as characters. The distinction between a character representation of a number and a numeric one is important. For example, if we have two numeric vectors <code>x</code> and <code>y</code> such as</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">3</span>
@@ -459,15 +462,30 @@ x <span class="op">+</span><span class="st"> </span>y</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="ot">TRUE</span>, <span class="ot">FALSE</span>, <span class="ot">FALSE</span>, <span class="ot">TRUE</span>)</code></pre></div>
 <p>or</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">as.logical</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
-<p>Note that in both cases, <code>mode(x)</code> returns logical. Also note that the <code>1</code>’s and <code>0</code>’s in the last example are converted to <code>TRUE</code>’s and <code>FALSE</code>’s.</p>
+<p>Note that in both cases, <code>typeof(x)</code> returns logical. Also note that the <code>1</code>’s and <code>0</code>’s in the last example are converted to <code>TRUE</code>’s and <code>FALSE</code>’s internally.</p>
 </div>
+</div>
+<div id="derived-data-types" class="section level1">
+<h1>Derived data types</h1>
+<p>These data types are stored as either numeric, character or logical but have additional <em>attribute</em> information that allow these objects to be treated in special ways by certain functions in R. These attributes define an object’s <strong>class</strong> and can be extracted from that object via the <code>class()</code> function.</p>
 <div id="factor" class="section level2">
 <h2>Factor</h2>
 <p><strong>Factors</strong> are normally used to group variables into a fixed number of unique categories or <strong>levels</strong>. For example, a dataset may be grouped by gender or month of the year. Such data are usually loaded into R as a numeric or character data type requiring that they be converted to a factor using the <code>as.factor()</code> function.</p>
-<p>In the following example, a dataframe (dataframes are data tables–this will be covered later in this tutorial) is created with a column, <code>gender</code>, storing one of three values: <code>M</code>, <code>F</code> and <code>U</code>. These values are first encoded as character objects, but are then converted to factors using the <code>as.factor</code> function.</p>
+<p>In the following chunk of code, we create a factor from a character object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a      &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;M&quot;</span>, <span class="st">&quot;F&quot;</span>, <span class="st">&quot;F&quot;</span>, <span class="st">&quot;U&quot;</span>, <span class="st">&quot;F&quot;</span>, <span class="st">&quot;M&quot;</span>, <span class="st">&quot;M&quot;</span>, <span class="st">&quot;M&quot;</span>, <span class="st">&quot;F&quot;</span>, <span class="st">&quot;U&quot;</span>)
-a.fact &lt;-<span class="st"> </span><span class="kw">as.factor</span>(a)
-x      &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">166</span>, <span class="dv">47</span>, <span class="dv">61</span>, <span class="dv">148</span>, <span class="dv">62</span>, <span class="dv">123</span>, <span class="dv">232</span>, <span class="dv">98</span>, <span class="dv">93</span>, <span class="dv">110</span>)
+a.fact &lt;-<span class="st"> </span><span class="kw">as.factor</span>(a)</code></pre></div>
+<p>To confirm that <code>a.fact</code> is indeed a factor, we call the <code>class</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(a.fact)</code></pre></div>
+<pre><code>[1] &quot;factor&quot;</code></pre>
+<p>Interestingly, if you look at <code>a.fact</code>’s mode, you’ll note that it’s stored as an integer even though values are character.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">typeof</span>(a.fact)</code></pre></div>
+<pre><code>[1] &quot;integer&quot;</code></pre>
+<p>This is because a factor uses integers to point to one of the vectors’ unique values stored in the vector’s attribute header (more details are provided <a href="#factors_xtr">later</a> in this chapter).</p>
+<p>The unique values associated with <code>a.fact</code> can be extracted using the <code>levels</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(a.fact)</code></pre></div>
+<pre><code>[1] &quot;F&quot; &quot;M&quot; &quot;U&quot;</code></pre>
+<p>To appreciate the benefits of a factor we’ll first create a dataframe (dataframes are data tables whose structure will be covered later in this tutorial). One column will be assigned the <code>a.fact</code> factor and another will be assigned some random numeric values.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x      &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">166</span>, <span class="dv">47</span>, <span class="dv">61</span>, <span class="dv">148</span>, <span class="dv">62</span>, <span class="dv">123</span>, <span class="dv">232</span>, <span class="dv">98</span>, <span class="dv">93</span>, <span class="dv">110</span>)
 dat    &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> x, <span class="dt">gender =</span> a.fact)
 dat</code></pre></div>
 <pre><code>     x gender
@@ -481,17 +499,14 @@ dat</code></pre></div>
 8   98      M
 9   93      F
 10 110      U</code></pre>
-<p>The <code>gender</code> column is now a factor with three levels: <code>F</code>, <code>M</code> and <code>U</code>.</p>
+<p>The <code>gender</code> column is now a factor with three levels: <code>F</code>, <code>M</code> and <code>U</code>. We can use the <code>str()</code> function to view the dataframe’s structure as well as its columns classes.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(dat)</code></pre></div>
 <pre><code>&#39;data.frame&#39;:   10 obs. of  2 variables:
  $ x     : num  166 47 61 148 62 123 232 98 93 110
  $ gender: Factor w/ 3 levels &quot;F&quot;,&quot;M&quot;,&quot;U&quot;: 2 1 1 3 1 2 2 2 1 3</code></pre>
-<p>You can also use the <code>levels</code> function to identify the unique levels in a factor:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(a.fact)</code></pre></div>
-<pre><code>[1] &quot;F&quot; &quot;M&quot; &quot;U&quot;</code></pre>
 <p>Many functions recognize factor data types and will allow you to split the output into groups defined by the factor’s unique levels. For example, to create three boxplots of the value <code>x</code>, one for each gender group <code>F</code>, <code>M</code> and <code>U</code>, type the following:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(x <span class="op">~</span><span class="st"> </span>gender, dat, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<p><img src="Week02a_files/figure-html/unnamed-chunk-15-1.png" width="384" /></p>
+<p><img src="Week02a_files/figure-html/unnamed-chunk-18-1.png" width="384" /></p>
 <p>The tilde <code>~</code> operator is used in the plot function to split (or <em>condition</em>) the data into separate plots based on the factor <code>gender</code>.</p>
 <div id="rearranging-level-order" class="section level3">
 <h3>Rearranging level order</h3>
@@ -502,23 +517,13 @@ dat</code></pre></div>
 <pre><code>&#39;data.frame&#39;:   10 obs. of  2 variables:
  $ x     : num  166 47 61 148 62 123 232 98 93 110
  $ gender: Factor w/ 3 levels &quot;U&quot;,&quot;F&quot;,&quot;M&quot;: 3 2 2 1 2 3 3 3 2 1</code></pre>
-<p>The <code>factor</code> function is given the original factor values but is also given the levels in the new order in which they are to appear. Now, if we recreate the boxplot, the plot order (plotted from bottom to top) will reflect the new level hierarchy.</p>
+<p>The <code>factor</code> function is given the original factor values (<code>dat$gender</code>) but is also given the levels in the new order in which they are to appear(<code>levels=c(&quot;U&quot;,&quot;F&quot;,&quot;M&quot;)</code>). Now, if we recreate the boxplot, the plot order (plotted from bottom to top) will reflect the new level hierarchy.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(x <span class="op">~</span><span class="st"> </span>gender, dat, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<p><img src="Week02a_files/figure-html/unnamed-chunk-17-1.png" width="384" /></p>
+<p><img src="Week02a_files/figure-html/unnamed-chunk-20-1.png" width="384" /></p>
 </div>
-<div id="using-class-to-identify-a-factor" class="section level3">
-<h3>Using <code>class</code> to identify a factor</h3>
-<p>The <code>mode</code> or <code>typeof</code> functions will not tell you if an object is a factor.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">typeof</span>(a.fact)</code></pre></div>
-<pre><code>[1] &quot;integer&quot;</code></pre>
-<p>Instead, it’s best to use the <code>class</code> function as in,</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(a.fact)</code></pre></div>
-<pre><code>[1] &quot;factor&quot;</code></pre>
-<p>This is because a factor stores its values as integers that point to the levels stored in the vector’s attribute header. More details are provided later in this chapter.</p>
-</div>
-<div id="subsetting-table-by-level" class="section level3">
-<h3>Subsetting table by level</h3>
-<p>We can subset the table by level using the subset function. For example, to subset the values associated with <code>F</code> and <code>M</code>, type:</p>
+<div id="subsetting-table-by-level-and-re-leveling" class="section level3">
+<h3>Subsetting table by level and <em>re-leveling</em></h3>
+<p>In this example, we can subset the table by level using the subset function. For example, to subset the values associated with <code>F</code> and <code>M</code>, type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.f &lt;-<span class="st"> </span><span class="kw">subset</span>(dat, gender <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">|</span><span class="st"> </span>gender <span class="op">==</span><span class="st"> &quot;M&quot;</span>)
 dat.f</code></pre></div>
 <pre><code>    x gender
@@ -536,16 +541,18 @@ dat.f</code></pre></div>
 <pre><code>[1] &quot;U&quot; &quot;F&quot; &quot;M&quot;</code></pre>
 <p>This can be a nuisance when plotting the data subset.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(x <span class="op">~</span><span class="st"> </span>gender, dat.f, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<p><img src="Week02a_files/figure-html/unnamed-chunk-22-1.png" width="384" /></p>
+<p><img src="Week02a_files/figure-html/unnamed-chunk-23-1.png" width="384" /></p>
 <p>Even though no records are available for <code>U</code>, the plot function allocates a slot for that level. To resolve this, we can use the <code>droplevels</code> function to remove all unused levels.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.f<span class="op">$</span>gender &lt;-<span class="st"> </span><span class="kw">droplevels</span>(dat.f<span class="op">$</span>gender)
 <span class="kw">levels</span>(dat.f<span class="op">$</span>gender)</code></pre></div>
 <pre><code>[1] &quot;F&quot; &quot;M&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(x <span class="op">~</span><span class="st"> </span>gender, dat.f, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p><img src="Week02a_files/figure-html/unnamed-chunk-25-1.png" width="384" /></p>
 </div>
 </div>
 <div id="date" class="section level2">
 <h2>Date</h2>
-<p>Date values can be represented as numbers or characters. But to be properly interpreted as a date object in R, values must be stored as an R <strong>date</strong> object. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier. A separate <a href="Week02c.html">section</a> is dedicated to the creation and manipulation of date objects.</p>
+<p>Date values are stored as numbers. But to be properly interpreted as a date object in R, their attribute must be explicitly defined as a <strong>date</strong>. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier. A separate <a href="Week02c.html">section</a> is dedicated to the creation and manipulation of date objects.</p>
 </div>
 <div id="na-and-null" class="section level2">
 <h2>NA and NULL</h2>
@@ -784,7 +791,7 @@ lst &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">
 <p>So if we want to access the element <code>rank</code> in the component <code>qr</code> of list <code>M</code>, we can type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M<span class="op">$</span>qr<span class="op">$</span>rank</code></pre></div>
 <pre><code>[1] 2</code></pre>
-<p>If we want to access <code>rank</code> using indices instead, and noting that <code>qr</code> is the 7th component in list <code>M</code> and that <code>rank</code> is the 5th element in list <code>qr</code> we type:</p>
+<p>If we want to access <code>rank</code> using indices instead, and noting that <code>qr</code> is the 7<sup>th</sup> component in list <code>M</code> and that <code>rank</code> is the 5th element in list <code>qr</code> we type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M[[<span class="dv">7</span>]][[<span class="dv">5</span>]]</code></pre></div>
 <pre><code>[1] 2</code></pre>
 <p>This should illustrate the value in assigning <em>tags</em> to list elements; not only do the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.</p>
@@ -817,7 +824,7 @@ Levels: 6 23.8 100.01</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">char &lt;-<span class="st"> </span><span class="kw">as.character</span>(charfac)
 char</code></pre></div>
 <pre><code>[1] &quot;23.8&quot;   &quot;6&quot;      &quot;100.01&quot; &quot;6&quot;     </code></pre>
-<div id="a-word-of-caution-when-converting-from-factors" class="section level2">
+<div id="factors_xtr" class="section level2">
 <h2>A word of caution when converting from factors</h2>
 <p>Numbers stored as factors can also be coerced back to numbers, but be careful, the following will not produce the expected output:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(numfac)
