@@ -1,5 +1,7 @@
 ---
 title: "Week2: Working with Dates"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r echo=FALSE}
@@ -7,7 +9,7 @@ source("libs/Common.R")
 ```
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
-This tutorial makes use of the following R package(s): **`lubridate`**
+This tutorial makes use of the following R package(s): **`lubridate`** and **`stringr`**.
 </div>
 
 Date values can be represented in tables as numbers or characters. But to be properly interpreted by R as dates, date values should be converted to an R **date** object class or a `POSIXct`/`POSIXt` object class. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier.
@@ -141,6 +143,25 @@ class(dat1$Date)
 ```
 
 Since we did not add a timezone or a time component to the date object the `Date` column was assigned a `Date` class as opposed to the `POSIX...` class. 
+
+## Padding time values
+
+The lubridate functions may expect the time values to consist of a specific number of characters if a delimiter such as `:` is not present to split the time elements. For example, the following will not generate a valide date/time object: 
+
+```{r}   
+hrmin <- 712           # Time 7:12
+date  <- "2018/03/17"  # Date 
+ymd_hm(paste(date, hrmin))
+```
+
+One solution is to *pad* the time element with 0's to complete a four character vector (or a six character vector if seconds are part of the time element). We can use the `str_pad` function from the `stringr` package to pad the time object (the `stringr` package is covered [in Week 4](https://mgimond.github.io/ES218/Week03d.html)).
+
+```{r}
+library(stringr)
+ymd_hm(paste(date, str_pad(hrmin, width=4, pad="0")))
+```
+
+
 
 # Extracting date information
 

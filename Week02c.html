@@ -392,6 +392,7 @@ $(document).ready(function () {
 <li><a href="#creating-datetime-objects">Creating date/time objects</a><ul>
 <li><a href="#from-complete-date-strings">From complete date strings</a></li>
 <li><a href="#from-separate-date-elements">From separate date elements</a></li>
+<li><a href="#padding-time-values">Padding time values</a></li>
 </ul></li>
 <li><a href="#extracting-date-information">Extracting date information</a></li>
 <li><a href="#operating-on-dates">Operating on dates</a></li>
@@ -400,7 +401,7 @@ $(document).ready(function () {
 </div>
 
 <div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
-<p>This tutorial makes use of the following R package(s): <strong><code>lubridate</code></strong></p>
+<p>This tutorial makes use of the following R package(s): <strong><code>lubridate</code></strong> and <strong><code>stringr</code></strong>.</p>
 </div>
 <p>Date values can be represented in tables as numbers or characters. But to be properly interpreted by R as dates, date values should be converted to an R <strong>date</strong> object class or a <code>POSIXct</code>/<code>POSIXt</code> object class. R provides many facilities to convert and manipulate dates and times, but a package called <code>lubridate</code> makes working with dates/times much easier.</p>
 <div id="creating-datetime-objects" class="section level1">
@@ -513,6 +514,18 @@ x.date</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(dat1<span class="op">$</span>Date)</code></pre></div>
 <pre><code>[1] &quot;Date&quot;</code></pre>
 <p>Since we did not add a timezone or a time component to the date object the <code>Date</code> column was assigned a <code>Date</code> class as opposed to the <code>POSIX...</code> class.</p>
+</div>
+<div id="padding-time-values" class="section level2">
+<h2>Padding time values</h2>
+<p>The lubridate functions may expect the time values to consist of a specific number of characters if a delimiter such as <code>:</code> is not present to split the time elements. For example, the following will not generate a valide date/time object:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hrmin &lt;-<span class="st"> </span><span class="dv">712</span>           <span class="co"># Time 7:12</span>
+date  &lt;-<span class="st"> &quot;2018/03/17&quot;</span>  <span class="co"># Date </span>
+<span class="kw">ymd_hm</span>(<span class="kw">paste</span>(date, hrmin))</code></pre></div>
+<pre><code>[1] NA</code></pre>
+<p>One solution is to <em>pad</em> the time element with 0’s to complete a four character vector (or a six character vector if seconds are part of the time element). We can use the <code>str_pad</code> function from the <code>stringr</code> package to pad the time object (the <code>stringr</code> package is covered <a href="https://mgimond.github.io/ES218/Week03d.html">in Week 4</a>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
+<span class="kw">ymd_hm</span>(<span class="kw">paste</span>(date, <span class="kw">str_pad</span>(hrmin, <span class="dt">width=</span><span class="dv">4</span>, <span class="dt">pad=</span><span class="st">&quot;0&quot;</span>)))</code></pre></div>
+<pre><code>[1] &quot;2018-03-17 07:12:00 UTC&quot;</code></pre>
 </div>
 </div>
 <div id="extracting-date-information" class="section level1">
