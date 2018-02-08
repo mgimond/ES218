@@ -1,5 +1,7 @@
 ---
 title: "Week2: Exploring and cleaning dataframes"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r echo=FALSE}
@@ -11,8 +13,10 @@ The dataset used in this tutorial was downloaded from [NOAA' NDBC buoy data cent
 Type the following to load the data file into your current R session (note that we are using the `read.table` function instead of the `read.csv` function since the data are not comma delimited):
 
 ```{r}
-dat <- read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", sep="", header=TRUE)
+dat <- read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", header=TRUE)
 ```
+
+Since `read.table` defaults to a space separated format (the same format our data file is stored in), there is no need to specify the `sep=` parameter.
 
 # Exploring a dataframe
 
@@ -66,21 +70,21 @@ We can also display the last few lines of the table using the `tail` function.
 tail( dat, n =5)
 ```
 
-We can usually tell what data types are associated with each column by viewing the first few lines. But it's best to check with the `str` function.
+To view the data type/class associated with each variable in the table, we'll use the `str` function.
 
 ```{r}
 str(dat)
 ```
 
-All values are stored as numbers with about a third stored as integers, `int`. The `num` description indicates that the data are stored using double precision.
+All values are stored as numbers with about a third of those stored as integers, `int`, and the others as double precision, `num`.
 
-Now let's generate a summary of the table.
+Now let's generate a descriptive summary of the table.
 
 ```{r}
 summary(dat)
 ```
 
-You'll note that many columns in our data contain values of 99 or 999. Such values are often placeholders for missing data. If not dealt with properly, these values will be interpreted as valid data by the software. One tell-tale sign that these values should be treated specially is their extreme values compared to the rest of the data batch. For example, the wave height field, `WVHT`, has values that average less than 2 meters so a value of 99 meters should be flagged as suspicious. In fact, NOAA's [documentation](http://www.ndbc.noaa.gov/measdes.shtml) states that *"Missing data ... are denoted by ... a variable number of 9's ... depending on the data type (for example: 999.0 99.0)."*
+You'll note that many columns in our data contain values of 99 or 999. Such values are often placeholders for missing data. If not dealt with properly, these values may be interpreted as valid data in subsequent analyses. One tell-tale sign that these values should be treated specially is their extreme values compared to the rest of the data batch. For example, the wave height field, `WVHT`, has values that average less than 2 meters so a value of 99 meters should be flagged as suspicious. In fact, NOAA's [documentation](http://www.ndbc.noaa.gov/measdes.shtml) states that *"Missing data ... are denoted by ... a variable number of 9's ... depending on the data type (for example: 999.0 99.0)."*
 
 We also note that some columns have nothing but missing values (e.g. `VIS` and `TIDE`) suggesting that either these variables are not measured at this particular buoy or the instruments did not function properly during the data collection period.
 
@@ -104,7 +108,7 @@ The matching operator `%in%` compares two sets of vectors and assesses if an ele
 names(dat) %in% c("MWD", "VIS", "TIDE")
 ```
 
-The order in which the `TRUE`'s and `FALSE`'s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a `TRUE` value! We want the reverse, so we add the "not" operator, `!`, in front of the expression thus flipping the `TRUE`/`FALSE` values.
+The order in which the `TRUE`'s and `FALSE`'s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a `TRUE` value! We want the reverse, so we add the NOT operator, `!`, in front of the expression thus flipping the `TRUE`/`FALSE` values.
 
 ```{r}
 !(names(dat) %in% c("MWD", "VIS", "TIDE"))
@@ -118,7 +122,12 @@ head(dat1)
 
 # Boolean Operations
 
-The NOT operator, `!`, is one of three Boolean operators you'll be making good use of in this course; the other two being the AND operator, `&`, and the OR operator, `|`.
+The NOT operator, `!`, used in the last section is one of three Boolean operators you'll be making good use of in this course; the other two being the AND operator, `&`, and the OR operator, `|`.
+
+```{r echo=FALSE}
+a <- 3
+b <- 6
+```
 
 The following table demonstrates a few examples using the vectors `a <- 3` and `b <- 6`.
 
@@ -134,7 +143,7 @@ The following table demonstrates a few examples using the vectors `a <- 3` and `
 +------------------+----------+------------------+----------+
 
 
-The following table lists all possible Boolean outcomes:
+The following table breaks down all possible Boolean outcomes where `T` = `TRUE` and `F` = `FALSE`:
 
 +------------------+------------+
 |Boolean operation |  Outcome   |
@@ -156,7 +165,26 @@ The following table lists all possible Boolean outcomes:
 |`!`F              |   TRUE     |
 +------------------+------------+
 
-Note that the operation `a == 2 | 4` is not the same as `a == 2 | a == 4`! The former will return `TRUE` whereas the latter will return `FALSE`. This is because the Boolean operator evaluates both sides of its expression as separate **logical** outcomes (i.e. `T` and `F` values). In the latter case, the Boolean expression is asking *"is `a` equal to `2` OR is `a` equal to `4`"*, since neither condition is true, the output will be `FALSE OR FALSE` which returns `FALSE`.  In the former expression, the only condition being evaluated is `a == 2`, the value `4` just after  boolean operator `|` is treated as a **logical** value; **any non-zero value is interpreted as `TRUE`** by the Boolean  operation so `a == 2 |  4` is really being evaluated as  `a == 2 | TRUE` since the value of `4` is non-zero therefore `TRUE`. So *always* explicitly define each condition as a stand-alone expression as in `a == 2 | a == 4`.
+## A word of caution
+
+Note that the operation `a == (3 | 4)` is **not** the same as `(a == 3) | (a == 4)`. The former will return `FALSE` whereas the latter will return `TRUE`. This is because the Boolean operator evaluates both sides of its expression as separate **logical** outcomes (i.e. `T` and `F` values). In the latter case, the Boolean expression is asking *"is `a` equal to `3` OR is `a` equal to `4`"*. Since one of the conditions is true, the expression ends up evaluating `TRUE | FALSE` which returns `TRUE` (see above table).  
+
+```{r}
+(a == 3) | (a == 4)
+```
+
+In the former expression, the boolean operator `|` is evaluating `3` OR `4`. Recall that logical values usually take on values of `0` for FALSE and `1` for TRUE, but boolean operators will treat any none 0 values as TRUE. So when it's evaluating `3 | 4`, it's really seeing `TRUE | TRUE` which, according to the aforementioned table will output `TRUE`.
+
+```{r}
+3 | 4
+```
+
+So in the end, the expression `a == (3 | 4)` is really evaluating the condition `a == TRUE` which returns false (since 3 is not equal to the logical value `TRUE`).
+
+```{r}
+a == (3 | 4)
+```
+
 
 # Assigning `NA` to missing data
 
@@ -164,7 +192,7 @@ Note that the operation `a == 2 | 4` is not the same as `a == 2 | a == 4`! The f
 
 It's usually best to assign `NA` values the moment a data file is loaded into R. For example, had all `NA` values been flagged as `-9999`, we could have added the parameter `na.strings="-9999"` to the `read.table()` function. But our dataset contains missing values flagged as 99, 999 *and* 9999 requiring that we combine the missing string values such as `na.strings = c("99", "999", "9999")` however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as `NA` would be sensible, but a wind direction of 99 degrees would make sense and flagging such value as `NA` would not be appropriate. Had we set *all* values of 99 to `NA` the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as `NA` in our dataset will require column level intervention.
 
-Let's review the data summary to identify each column's no data numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the `dat1` dataframe and not the original `dat`.
+Let's review the data summary to identify each column's no data numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the `dat1` dataframe and not the original `dat` dataframe.
 
 ```{r}
 summary(dat1)
@@ -180,23 +208,31 @@ na999  <- c("WDIR",  "DEWP", "ATMP", "WTMP")
 na9999 <- ("PRES")
 
 # Replace missing values with NA
-dat1[,na99][dat1[, na99] == 99] <- NA
-dat1[,na999][dat1[, na999] == 999] <- NA
-dat1[,na9999][dat1[, na9999] == 9999] <- NA
+dat1[ ,na99][dat1[ ,na99] == 99] <- NA
+dat1[ ,na999][dat1[ ,na999] == 999] <- NA
+dat1[ ,na9999][dat1[ ,na9999] == 9999] <- NA
 ```
 
-There are two components to the last three lines of code: The first is a subset of columns for which a particular missing value is designated (e.g. `dat1[,na99]` ), the second is an evaluation statement identifying which values in the column subset is flagged as missing (e.g. `[dat1[, na99] == 99]`). Together, these elements define the indices (table cells) for which a value is replaced with `NA` (e.g. ` <- NA`).
+The above expression is quite succinct, but succinctness does not always translate to easy readability. There are two components to the last three lines of code: The first is a subset of columns for which a particular missing value is designated (e.g. `dat1[,na99]` ), the second is an evaluation statement identifying which values in the column subset is flagged as missing (e.g. `[dat1[, na99] == 99]`). Together, these elements define the indices (table cells) for which a value is replaced with `NA` (e.g. ` <- NA`).
 
 Another way this could have been accomplished (and one you might feel more comfortable with) would have been to work off of one column at a time, for example:
 
 ```{r eval=FALSE}
-dat1$WSPD[dat1$WSPD == 99]   <- NA
-dat1$GST[dat1$WSPD == 99]    <- NA
-...
+dat1$WSPD[dat1$WSPD == 99] <- NA
+dat1$GST[dat1$GST   == 99] <- NA
+dat1$WVHT[dat1$WVHT == 99] <- NA
+dat1$DPD[dat1$DPD   == 99] <- NA
+dat1$APD[dat1$APD   == 99] <- NA
+
 dat1$WDIR[dat1$WDIR == 999]  <- NA
-...
+dat1$DEWP[dat1$DEWP == 999]  <- NA
+dat1$ATMP[dat1$ATMP == 999]  <- NA
+dat1$WTMP[dat1$WTMP == 999]  <- NA
+
 dat1$PRES[dat1$PRES == 9999] <- NA
 ```
+
+This chunk of code is easier to read, but lacks the succinctness of its predecessor.
 
 Let's look at a summary of our table:
 
@@ -256,5 +292,5 @@ d[ !is.na(d$z), ]
 
 # Is there an easier way?
 
-Cleaning data tables is an important component of any analytical workflow, but the syntax can get complicated  and difficult to follow. Fortunately, there is an easier way to clean data tables using the `dplyr`  package which will be covered in Week 3. 
+Cleaning data tables is an important component of any analytical workflow, but the syntax used thus far can get complicated and be difficult to follow. Fortunately, there is an easier way to clean data tables using the `dplyr`  package which will be covered in [Week 3](Week03a.html). 
 
