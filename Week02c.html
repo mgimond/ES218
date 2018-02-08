@@ -459,13 +459,16 @@ x.date</code></pre></div>
 <p>The characters <code>_h</code>, <code>_hm</code> or <code>_hms</code> can be appended to any of the four date function names described earlier to accommodate time formats. A few examples follow:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mdy_h</span>(<span class="st">&quot;6/23/2013 3&quot;</span>, <span class="dt">tz=</span><span class="st">&quot;EST&quot;</span>) </code></pre></div>
 <pre><code>[1] &quot;2013-06-23 03:00:00 EST&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dmy_hm</span>(<span class="st">&quot;23/6/2013 3:15&quot;</span>, <span class="dt">tz=</span><span class="st">&quot;EST5EDT&quot;</span>)</code></pre></div>
-<pre><code>[1] &quot;2013-06-23 03:15:00 EDT&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ymd_hms</span>(<span class="st">&quot;2013/06/23 3:15:7&quot;</span>, <span class="dt">tz=</span><span class="st">&quot;UTC&quot;</span>)</code></pre></div>
-<pre><code>[1] &quot;2013-06-23 03:15:07 UTC&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dmy_hm</span>(<span class="st">&quot;23/6/2013 3:15&quot;</span>, <span class="dt">tz=</span><span class="st">&quot;EST&quot;</span>)</code></pre></div>
+<pre><code>[1] &quot;2013-06-23 03:15:00 EST&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ymd_hms</span>(<span class="st">&quot;2013/06/23 3:15:7&quot;</span>, <span class="dt">tz=</span><span class="st">&quot;EST&quot;</span>)</code></pre></div>
+<pre><code>[1] &quot;2013-06-23 03:15:07 EST&quot;</code></pre>
 <p>Note that adding a time element to the date object will also create <code>POSIXct</code> and <code>POSIXt</code> object classes.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(x.date)</code></pre></div>
 <pre><code>[1] &quot;POSIXct&quot; &quot;POSIXt&quot; </code></pre>
+<p>Also, if a timezone is not explicitly defined for a time based date, the function assigns the <code>UTC</code> (universal time) time zone.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dmy_hm</span>(<span class="st">&quot;23/6/2013 3:15&quot;</span>)</code></pre></div>
+<pre><code>[1] &quot;2013-06-23 03:15:00 UTC&quot;</code></pre>
 </div>
 <div id="from-separate-date-elements" class="section level2">
 <h2>From separate date elements</h2>
@@ -479,10 +482,10 @@ x.date</code></pre></div>
 4 1959     4  317.72       317.72 315.56         -1
 5 1959     5  318.29       318.29 315.50         -1
 6 1959     6  318.15       318.15 315.92         -1</code></pre>
-<p>The CO2 dataset has the date split across two columns: <code>Year</code> and <code>Month</code> (both loaded as integers). You can combine the columns into a character string using the <code>paste</code> function. For example, if we want to create a “Year-Month” string as in <code>1959-10</code>, we could type:</p>
+<p>The CO2 dataset has the date split across two columns: <code>Year</code> and <code>Month</code> (both stored as integers). You can combine the columns into a character string using the <code>paste</code> function. For example, if we want to create a “Year-Month” string as in <code>1959-10</code>, we could type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(dat1<span class="op">$</span>Year,dat1<span class="op">$</span>Month, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>)</code></pre></div>
-<p>The above example uses three arguments: the two objects that are pasted together (i.e. <code>Year</code> and <code>Month</code>) and the <code>sep=&quot;-&quot;</code> parameter which tells R to fill the gap between both objects with a dash <code>-</code> (by default, <code>paste</code> would have added spaces thus creating strings in the form of <code>1959 10</code>).</p>
-<p><code>lubridate</code> does not have a function along the lines of <code>ym</code> to only convert year-month strings, this requires that we add an artificial day of the month to the string. We’ll choose to add the 15th day of the month as in</p>
+<p>The above example uses three arguments: the two objects that are pasted together (i.e. <code>Year</code> and <code>Month</code>) and the <code>sep=&quot;-&quot;</code> parameter which fills the gap between both objects with a dash <code>-</code> (by default, <code>paste</code> would have added spaces thus creating strings in the form of <code>1959 10</code>).</p>
+<p><code>lubridate</code> does not have a function along the lines of <code>ym</code> to convert just the year-month strings, this requires that we add an artificial day of the month to the string. We’ll choose to add the 15<sup>th</sup> day of the month as in</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">paste</span>(dat1<span class="op">$</span>Year, dat1<span class="op">$</span>Month, <span class="st">&quot;15&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>)</code></pre></div>
 <p>And finally, we’ll add a new column called <code>Date</code> to the <code>dat</code> object, and fill that column with the newly created date string wrapped with the <code>ymd</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1<span class="op">$</span>Date &lt;-<span class="st"> </span><span class="kw">ymd</span>( <span class="kw">paste</span>(dat1<span class="op">$</span>Year, dat1<span class="op">$</span>Month, <span class="st">&quot;15&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;-&quot;</span>) )
@@ -494,6 +497,8 @@ x.date</code></pre></div>
 4 1959     4  317.72       317.72 315.56         -1 1959-04-15
 5 1959     5  318.29       318.29 315.50         -1 1959-05-15
 6 1959     6  318.15       318.15 315.92         -1 1959-06-15</code></pre>
+<p>The <code>sep=&quot;-&quot;</code> option is not needed with the lubridate function so the last piece of code could have been written as:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1<span class="op">$</span>Date &lt;-<span class="st"> </span><span class="kw">ymd</span>( <span class="kw">paste</span>(dat1<span class="op">$</span>Year, dat1<span class="op">$</span>Month, <span class="st">&quot;15&quot;</span>) )</code></pre></div>
 <p>To confirm that the <code>Date</code> column is indeed formatted as a date object type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(dat1)</code></pre></div>
 <pre><code>&#39;data.frame&#39;:   671 obs. of  7 variables:
@@ -507,19 +512,19 @@ x.date</code></pre></div>
 <p>or you could type,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(dat1<span class="op">$</span>Date)</code></pre></div>
 <pre><code>[1] &quot;Date&quot;</code></pre>
-<p>Note the <code>Date</code> class designation (as opposed to the <code>POSIX...</code> class) since we did not add a timezone or time component to the date object.</p>
+<p>Since we did not add a timezone or a time component to the date object the <code>Date</code> column was assigned a <code>Date</code> class as opposed to the <code>POSIX...</code> class.</p>
 </div>
 </div>
 <div id="extracting-date-information" class="section level1">
 <h1>Extracting date information</h1>
-<p>If you want to get the day of the week from a date vector, use the <code>wday</code> function.</p>
+<p>If you want to extract the day of the week from a date vector, use the <code>wday</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wday</span>(x.date)</code></pre></div>
 <pre><code>[1] 1 3 3</code></pre>
 <p>If you want the day of the week displayed as its three letter designation, add the <code>label=TRUE</code> parameter.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wday</span>(x.date, <span class="dt">label=</span><span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>[1] Sun  Tues Tues
-Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre>
-<p>You’ll note that this last call not only returns the day of the week for each element (Sun, Tue, Tue) but it also returns <code>levels</code> information along with its hierarchy.</p>
+<pre><code>[1] Sun Tue Tue
+Levels: Sun &lt; Mon &lt; Tue &lt; Wed &lt; Thu &lt; Fri &lt; Sat</code></pre>
+<p>You’ll note that the function returns a <code>factor</code> object with seven levels–one for each day of the week (Sun, Mon, Tue, Wed, Thu, Fri, Sat)–as well as the level hierarchy which will dictate the order in which values will be displayed if grouped by this factor. The levels are not necessarily reflected in the vector elements (only Sun, Tue are present), but the levels are there if we were ever to add addition day elements to this vector.</p>
 <p>The following table lists functions that extract different elements of a date object.</p>
 <table>
 <thead>
@@ -546,14 +551,18 @@ Levels: Sun &lt; Mon &lt; Tues &lt; Wed &lt; Thurs &lt; Fri &lt; Sat</code></pre
 <td>Day of the year</td>
 </tr>
 <tr class="odd">
+<td><code>decimal_date()</code></td>
+<td>Decimal year</td>
+</tr>
+<tr class="even">
 <td><code>month()</code></td>
 <td>Month of the year</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>year()</code></td>
 <td>Year</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>tz()</code></td>
 <td>Time zone</td>
 </tr>
