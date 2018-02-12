@@ -391,7 +391,9 @@ $(document).ready(function () {
 <ul>
 <li><a href="#exploring-a-dataframe">Exploring a dataframe</a></li>
 <li><a href="#removing-columns-with-no-data">Removing columns with no data</a></li>
-<li><a href="#boolean-operations">Boolean Operations</a></li>
+<li><a href="#boolean-operations">Boolean Operations</a><ul>
+<li><a href="#a-word-of-caution">A word of caution</a></li>
+</ul></li>
 <li><a href="#assigning-na-to-missing-data">Assigning <code>NA</code> to missing data</a></li>
 <li><a href="#removing-rows-with-na-values">Removing rows with <code>NA</code> values</a></li>
 <li><a href="#checking-if-a-value-is-na">Checking if a value is <code>NA</code></a></li>
@@ -401,7 +403,8 @@ $(document).ready(function () {
 
 <p>The dataset used in this tutorial was downloaded from <a href="http://www.ndbc.noaa.gov/view_text_file.php?filename=44005h2010.txt.gz&amp;dir=data/historical/stdmet/">NOAA’ NDBC buoy data center</a> in a space delimited file format. It consists of hourly air and ocean physical measurements such as temperature, wind speed and wave height for 2012 measured at NOAA’s buoy #44005 located in the Gulf of Maine (43.204 N, 69.128 W).</p>
 <p>Type the following to load the data file into your current R session (note that we are using the <code>read.table</code> function instead of the <code>read.csv</code> function since the data are not comma delimited):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</code></pre></div>
+<p>Since <code>read.table</code> defaults to a space separated format (the same format our data file is stored in), there is no need to specify the <code>sep=</code> parameter.</p>
 <div id="exploring-a-dataframe" class="section level1">
 <h1>Exploring a dataframe</h1>
 <p>First, let’s extract the number of rows and columns in our table:</p>
@@ -515,7 +518,7 @@ $(document).ready(function () {
 8345 2012 12 14  3 50  999   99  99 0.36 12.90 4.04 999 1025.0  5.6  9.7 -4.2  99   99
 8346 2012 12 14  4 50  999   99  99 0.36 12.90 3.87 999 1024.6  5.6  9.7 -4.0  99   99
 8347 2012 12 14  5 50  999   99  99 0.37  8.33 3.66 999 1023.8  5.6  9.6 -3.9  99   99</code></pre>
-<p>We can usually tell what data types are associated with each column by viewing the first few lines. But it’s best to check with the <code>str</code> function.</p>
+<p>To view the data type/class associated with each variable in the table, we’ll use the <code>str</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(dat)</code></pre></div>
 <pre><code>&#39;data.frame&#39;:   8347 obs. of  18 variables:
  $ YY  : int  2011 2012 2012 2012 2012 2012 2012 2012 2012 2012 ...
@@ -536,8 +539,8 @@ $(document).ready(function () {
  $ DEWP: num  6.8 6.1 5.5 5.4 5.8 5.7 5.8 5.5 5.1 5.2 ...
  $ VIS : num  99 99 99 99 99 99 99 99 99 99 ...
  $ TIDE: num  99 99 99 99 99 99 99 99 99 99 ...</code></pre>
-<p>All values are stored as numbers with about a third stored as integers, <code>int</code>. The <code>num</code> description indicates that the data are stored using double precision.</p>
-<p>Now let’s generate a summary of the table.</p>
+<p>All values are stored as numbers with about a third of those stored as integers, <code>int</code>, and the others as double precision, <code>num</code>.</p>
+<p>Now let’s generate a descriptive summary of the table.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dat)</code></pre></div>
 <pre><code>       YY             MM               DD             hh              mm          WDIR            WSPD     
  Min.   :2011   Min.   : 1.000   Min.   : 1.0   Min.   : 0.00   Min.   :50   Min.   :  1.0   Min.   : 0.0  
@@ -560,7 +563,7 @@ $(document).ready(function () {
  Mean   :12.17   Mean   :  8.268   Mean   :99   Mean   :99  
  3rd Qu.:16.30   3rd Qu.: 15.300   3rd Qu.:99   3rd Qu.:99  
  Max.   :24.30   Max.   :999.000   Max.   :99   Max.   :99  </code></pre>
-<p>You’ll note that many columns in our data contain values of 99 or 999. Such values are often placeholders for missing data. If not dealt with properly, these values will be interpreted as valid data by the software. One tell-tale sign that these values should be treated specially is their extreme values compared to the rest of the data batch. For example, the wave height field, <code>WVHT</code>, has values that average less than 2 meters so a value of 99 meters should be flagged as suspicious. In fact, NOAA’s <a href="http://www.ndbc.noaa.gov/measdes.shtml">documentation</a> states that <em>“Missing data … are denoted by … a variable number of 9’s … depending on the data type (for example: 999.0 99.0).”</em></p>
+<p>You’ll note that many columns in our data contain values of 99 or 999. Such values are often placeholders for missing data. If not dealt with properly, these values may be interpreted as valid data in subsequent analyses. One tell-tale sign that these values should be treated specially is their extreme values compared to the rest of the data batch. For example, the wave height field, <code>WVHT</code>, has values that average less than 2 meters so a value of 99 meters should be flagged as suspicious. In fact, NOAA’s <a href="http://www.ndbc.noaa.gov/measdes.shtml">documentation</a> states that <em>“Missing data … are denoted by … a variable number of 9’s … depending on the data type (for example: 999.0 99.0).”</em></p>
 <p>We also note that some columns have nothing but missing values (e.g. <code>VIS</code> and <code>TIDE</code>) suggesting that either these variables are not measured at this particular buoy or the instruments did not function properly during the data collection period.</p>
 <p>Before proceeding with any analysis, we need to address the missing values by flagging them as such or removing them all together.</p>
 </div>
@@ -575,7 +578,7 @@ $(document).ready(function () {
 </blockquote>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>)</code></pre></div>
 <pre><code> [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE  TRUE</code></pre>
-<p>The order in which the <code>TRUE</code>’s and <code>FALSE</code>’s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a <code>TRUE</code> value! We want the reverse, so we add the “not” operator, <code>!</code>, in front of the expression thus flipping the <code>TRUE</code>/<code>FALSE</code> values.</p>
+<p>The order in which the <code>TRUE</code>’s and <code>FALSE</code>’s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a <code>TRUE</code> value! We want the reverse, so we add the NOT operator, <code>!</code>, in front of the expression thus flipping the <code>TRUE</code>/<code>FALSE</code> values.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="op">!</span>(<span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))</code></pre></div>
 <pre><code> [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE</code></pre>
 <p>So <code>dat1</code> contains all the columns except <code>MWD</code>, <code>VIS</code> and <code>TIDE</code>.</p>
@@ -590,7 +593,7 @@ $(document).ready(function () {
 </div>
 <div id="boolean-operations" class="section level1">
 <h1>Boolean Operations</h1>
-<p>The NOT operator, <code>!</code>, is one of three Boolean operators you’ll be making good use of in this course; the other two being the AND operator, <code>&amp;</code>, and the OR operator, <code>|</code>.</p>
+<p>The NOT operator, <code>!</code>, used in the last section is one of three Boolean operators you’ll be making good use of in this course; the other two being the AND operator, <code>&amp;</code>, and the OR operator, <code>|</code>.</p>
 <p>The following table demonstrates a few examples using the vectors <code>a &lt;- 3</code> and <code>b &lt;- 6</code>.</p>
 <table style="width:83%;">
 <colgroup>
@@ -628,7 +631,7 @@ $(document).ready(function () {
 </tr>
 </tbody>
 </table>
-<p>The following table lists all possible Boolean outcomes:</p>
+<p>The following table breaks down all possible Boolean outcomes where <code>T</code> = <code>TRUE</code> and <code>F</code> = <code>FALSE</code>:</p>
 <table style="width:44%;">
 <colgroup>
 <col width="26%" />
@@ -675,7 +678,18 @@ $(document).ready(function () {
 </tr>
 </tbody>
 </table>
-<p>Note that the operation <code>a == 2 | 4</code> is not the same as <code>a == 2 | a == 4</code>! The former will return <code>TRUE</code> whereas the latter will return <code>FALSE</code>. This is because the Boolean operator evaluates both sides of its expression as separate <strong>logical</strong> outcomes (i.e. <code>T</code> and <code>F</code> values). In the latter case, the Boolean expression is asking <em>“is <code>a</code> equal to <code>2</code> OR is <code>a</code> equal to <code>4</code>”</em>, since neither condition is true, the output will be <code>FALSE OR FALSE</code> which returns <code>FALSE</code>. In the former expression, the only condition being evaluated is <code>a == 2</code>, the value <code>4</code> just after boolean operator <code>|</code> is treated as a <strong>logical</strong> value; <strong>any non-zero value is interpreted as <code>TRUE</code></strong> by the Boolean operation so <code>a == 2 |  4</code> is really being evaluated as <code>a == 2 | TRUE</code> since the value of <code>4</code> is non-zero therefore <code>TRUE</code>. So <em>always</em> explicitly define each condition as a stand-alone expression as in <code>a == 2 | a == 4</code>.</p>
+<div id="a-word-of-caution" class="section level2">
+<h2>A word of caution</h2>
+<p>Note that the operation <code>a == (3 | 4)</code> is <strong>not</strong> the same as <code>(a == 3) | (a == 4)</code>. The former will return <code>FALSE</code> whereas the latter will return <code>TRUE</code>. This is because the Boolean operator evaluates both sides of its expression as separate <strong>logical</strong> outcomes (i.e. <code>T</code> and <code>F</code> values). In the latter case, the Boolean expression is asking <em>“is <code>a</code> equal to <code>3</code> OR is <code>a</code> equal to <code>4</code>”</em>. Since one of the conditions is true, the expression ends up evaluating <code>TRUE | FALSE</code> which returns <code>TRUE</code> (see above table).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(a <span class="op">==</span><span class="st"> </span><span class="dv">3</span>) <span class="op">|</span><span class="st"> </span>(a <span class="op">==</span><span class="st"> </span><span class="dv">4</span>)</code></pre></div>
+<pre><code>[1] TRUE</code></pre>
+<p>In the former expression, the boolean operator <code>|</code> is evaluating <code>3</code> OR <code>4</code>. Recall that logical values usually take on values of <code>0</code> for FALSE and <code>1</code> for TRUE, but boolean operators will treat any none 0 values as TRUE. So when it’s evaluating <code>3 | 4</code>, it’s really seeing <code>TRUE | TRUE</code> which, according to the aforementioned table will output <code>TRUE</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">3</span> <span class="op">|</span><span class="st"> </span><span class="dv">4</span></code></pre></div>
+<pre><code>[1] TRUE</code></pre>
+<p>So in the end, the expression <code>a == (3 | 4)</code> is really evaluating the condition <code>a == TRUE</code> which returns false (since 3 is not equal to the logical value <code>TRUE</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a <span class="op">==</span><span class="st"> </span>(<span class="dv">3</span> <span class="op">|</span><span class="st"> </span><span class="dv">4</span>)</code></pre></div>
+<pre><code>[1] FALSE</code></pre>
+</div>
 </div>
 <div id="assigning-na-to-missing-data" class="section level1">
 <h1>Assigning <code>NA</code> to missing data</h1>
@@ -683,7 +697,7 @@ $(document).ready(function () {
 <p>A short video summary on replacing values with <code>NA</code> can be found <a href="./Videos/Replace_99_with_NA.mp4">here</a>.</p>
 </blockquote>
 <p>It’s usually best to assign <code>NA</code> values the moment a data file is loaded into R. For example, had all <code>NA</code> values been flagged as <code>-9999</code>, we could have added the parameter <code>na.strings=&quot;-9999&quot;</code> to the <code>read.table()</code> function. But our dataset contains missing values flagged as 99, 999 <em>and</em> 9999 requiring that we combine the missing string values such as <code>na.strings = c(&quot;99&quot;, &quot;999&quot;, &quot;9999&quot;)</code> however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as <code>NA</code> would be sensible, but a wind direction of 99 degrees would make sense and flagging such value as <code>NA</code> would not be appropriate. Had we set <em>all</em> values of 99 to <code>NA</code> the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as <code>NA</code> in our dataset will require column level intervention.</p>
-<p>Let’s review the data summary to identify each column’s no data numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the <code>dat1</code> dataframe and not the original <code>dat</code>.</p>
+<p>Let’s review the data summary to identify each column’s no data numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the <code>dat1</code> dataframe and not the original <code>dat</code> dataframe.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dat1)</code></pre></div>
 <pre><code>       YY             MM               DD             hh              mm          WDIR            WSPD     
  Min.   :2011   Min.   : 1.000   Min.   : 1.0   Min.   : 0.00   Min.   :50   Min.   :  1.0   Min.   : 0.0  
@@ -713,17 +727,24 @@ na999  &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">
 na9999 &lt;-<span class="st"> </span>(<span class="st">&quot;PRES&quot;</span>)
 
 <span class="co"># Replace missing values with NA</span>
-dat1[,na99][dat1[, na99] <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
-dat1[,na999][dat1[, na999] <span class="op">==</span><span class="st"> </span><span class="dv">999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
-dat1[,na9999][dat1[, na9999] <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></code></pre></div>
-<p>There are two components to the last three lines of code: The first is a subset of columns for which a particular missing value is designated (e.g. <code>dat1[,na99]</code> ), the second is an evaluation statement identifying which values in the column subset is flagged as missing (e.g. <code>[dat1[, na99] == 99]</code>). Together, these elements define the indices (table cells) for which a value is replaced with <code>NA</code> (e.g. <code>&lt;- NA</code>).</p>
+dat1[ ,na99][dat1[ ,na99] <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1[ ,na999][dat1[ ,na999] <span class="op">==</span><span class="st"> </span><span class="dv">999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1[ ,na9999][dat1[ ,na9999] <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></code></pre></div>
+<p>The above expression is quite succinct, but succinctness does not always translate to easy readability. There are two components to the last three lines of code: The first is a subset of columns for which a particular missing value is designated (e.g. <code>dat1[,na99]</code> ), the second is an evaluation statement identifying which values in the column subset is flagged as missing (e.g. <code>[dat1[, na99] == 99]</code>). Together, these elements define the indices (table cells) for which a value is replaced with <code>NA</code> (e.g. <code>&lt;- NA</code>).</p>
 <p>Another way this could have been accomplished (and one you might feel more comfortable with) would have been to work off of one column at a time, for example:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1<span class="op">$</span>WSPD[dat1<span class="op">$</span>WSPD <span class="op">==</span><span class="st"> </span><span class="dv">99</span>]   &lt;-<span class="st"> </span><span class="ot">NA</span>
-dat1<span class="op">$</span>GST[dat1<span class="op">$</span>WSPD <span class="op">==</span><span class="st"> </span><span class="dv">99</span>]    &lt;-<span class="st"> </span><span class="ot">NA</span>
-...
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1<span class="op">$</span>WSPD[dat1<span class="op">$</span>WSPD <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>GST[dat1<span class="op">$</span>GST   <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>WVHT[dat1<span class="op">$</span>WVHT <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>DPD[dat1<span class="op">$</span>DPD   <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>APD[dat1<span class="op">$</span>APD   <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+
 dat1<span class="op">$</span>WDIR[dat1<span class="op">$</span>WDIR <span class="op">==</span><span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span>
-...
+dat1<span class="op">$</span>DEWP[dat1<span class="op">$</span>DEWP <span class="op">==</span><span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>ATMP[dat1<span class="op">$</span>ATMP <span class="op">==</span><span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span>
+dat1<span class="op">$</span>WTMP[dat1<span class="op">$</span>WTMP <span class="op">==</span><span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span>
+
 dat1<span class="op">$</span>PRES[dat1<span class="op">$</span>PRES <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></code></pre></div>
+<p>This chunk of code is easier to read, but lacks the succinctness of its predecessor.</p>
 <p>Let’s look at a summary of our table:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(dat1)</code></pre></div>
 <pre><code>       YY             MM               DD             hh              mm          WDIR            WSPD       
@@ -802,7 +823,7 @@ a <span class="op">==</span><span class="st"> </span><span class="ot">NA</span><
 </div>
 <div id="is-there-an-easier-way" class="section level1">
 <h1>Is there an easier way?</h1>
-<p>Cleaning data tables is an important component of any analytical workflow, but the syntax can get complicated and difficult to follow. Fortunately, there is an easier way to clean data tables using the <code>dplyr</code> package which will be covered in Week 3.</p>
+<p>Cleaning data tables is an important component of any analytical workflow, but the syntax used thus far can get complicated and be difficult to follow. Fortunately, there is an easier way to clean data tables using the <code>dplyr</code> package which will be covered in <a href="Week03a.html">Week 3</a>.</p>
 </div>
 
 
