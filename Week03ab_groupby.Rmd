@@ -1,0 +1,119 @@
+---
+title: "Week 3: Grouping and summarizing tables"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r echo=FALSE}
+source("libs/Common.R")
+```
+
+
+<div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
+This tutorial makes use of the following R package(s): **`dplyr`**.
+</div>
+ 
+
+
+The data file  *FAO_grains_NA.csv* will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014. 
+
+Run the following line to load the FAO data file into your current R session.
+
+```{r}
+dat <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=TRUE)
+```
+
+Make sure to load the `dplyr` package before proceeding with the following examples. 
+
+```{r, message=FALSE}
+library(dplyr)
+```
+
+## Splitting data operations by group: `group_by`
+
+The `group_by` function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the `Year` column for which crop data are available *by crop type*, we would type the following:
+
+```{r}
+dat %>% 
+  group_by(Crop) %>% 
+  summarise(yr_min = min(Year), yr_max=max(Year))
+```
+
+## Count the number of records in each group
+
+In this example, we are identifying the number of records by `Crop` type. There are two ways this can be accomplished:
+
+```{r eval = FALSE}
+dat %>%
+  filter(Information == "Yield (Hg/Ha)", 
+         Year >= 2005 & Year <=2010, 
+         Country=="United States of America") %>%
+  group_by(Crop) %>%
+  count()
+```
+
+Or,
+
+```{r}
+dat %>%
+  filter(Information == "Yield (Hg/Ha)", 
+         Year >= 2005 & Year <=2010, 
+         Country=="United States of America") %>%
+  group_by(Crop) %>%
+  summarise(Count = n())
+```
+
+The former uses the `count()` function and the latter uses the `summarise()` and `n()` functions.
+
+## Summarize by sum of crop yield and year range
+
+Here's another example where two variables are summarized in a single pipe.
+
+```{r}
+dat.grp <- dat %>%
+  filter(Information == "Yield (Hg/Ha)", 
+         Year >= 2005 & Year <=2010, 
+         Country=="United States of America") %>%
+  group_by(Crop) %>%
+  summarise( Yield = sum(Value), `Number of Years` = max(Year) - min(Year)) 
+
+dat.grp
+```
+
+## Normalizing each value in a group by the group median
+
+In this example, we are subtracting each value in a group by that group's median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We'll save the output dataframe as `dat2`.
+
+```{r}
+dat2 <- dat %>% 
+  filter(Information == "Yield (Hg/Ha)",
+         Country == "United States of America") %>%
+  select(Crop, Year, Value)                     %>%
+  group_by(Crop)                                %>%
+  mutate(NormYield = Value - median(Value))     %>%
+  arrange(Crop)
+```
+
+Let's plot the normalized yields by year for `Barley` and add a `0` line representing the (normalized) central value.
+
+```{r fig.width=5, fig.height=3,small.mar=TRUE}
+plot( NormYield ~ Year, dat2[dat2$Crop == "Barley",] )
+abline(h = 0, col="red")
+```
+
+The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.
+
+## `dplyr`'s output data structure
+
+Some of `dplyr`'s functions such as `group_by`/`summarise` generate a **tibble** data table. For example, the `dat.grp` object created in the last chunk of code is associated with a `tb_df` (a tibble).
+
+```{r}
+class(dat.grp)
+```
+
+A *tibble* table will behave a little differently than a *data frame* table when printing to a screen or subsetting its elements. In most cases, a tibble rendering of the table will not pose a problem in a workflow, however, this format may prove problematic with some older functions. To remedy this, you can force the `dat.grp` object to a standalone `dataframe` as follows:
+
+```{r}
+dat.df <- as.data.frame(dat.grp)
+class(dat.df)
+```

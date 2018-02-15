@@ -233,6 +233,9 @@ $(document).ready(function () {
       <a href="Week03a.html">Manipulating dataframes with dplyr</a>
     </li>
     <li>
+      <a href="Week03ab_groupby.html">Grouping and summarizing tables</a>
+    </li>
+    <li>
       <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
     </li>
     <li>
@@ -393,10 +396,9 @@ $(document).ready(function () {
 <li><a href="#subset-by-rows-filter">Subset by rows: <code>filter</code></a></li>
 <li><a href="#sort-rows-by-column-value-arrange">Sort rows by column value: <code>arrange</code></a></li>
 <li><a href="#subset-by-column-select">Subset by column: <code>select</code></a></li>
-<li><a href="#adding-columns-mutate">Adding columns: <code>mutate</code></a></li>
+<li><a href="#creating-andor-calculating-column-values-mutate">Creating and/or calculating column values: <code>mutate</code></a></li>
+<li><a href="#creating-andor-calculating-values-across-muliple-columns-mutate_at">Creating and/or calculating values across muliple columns: <code>mutate_at</code></a></li>
 <li><a href="#summarize-columns-summarise">Summarize columns: <code>summarise</code></a></li>
-<li><a href="#splitting-data-operations-by-group-group_by">Splitting data operations by group: <code>group_by</code></a></li>
-<li><a href="#dplyrs-output-data-structure"><code>dplyr</code>’s output data structure</a></li>
 </ul></li>
 <li><a href="#combining-table-manipulation-functions-using">Combining table manipulation functions using <code>%&gt;%</code></a></li>
 <li><a href="#conditional-statements">Conditional statements</a><ul>
@@ -404,11 +406,6 @@ $(document).ready(function () {
 <li><a href="#dplyrs-if_else"><code>dplyr</code>’s <code>if_else</code></a></li>
 <li><a href="#recoding-factors-using-recode">Recoding factors using <code>recode</code></a></li>
 <li><a href="#changing-values-based-on-multiple-conditions-case_when">Changing values based on multiple conditions: <code>case_when</code></a></li>
-</ul></li>
-<li><a href="#more-on-the-group_by-function">More on the <code>group_by</code> function</a><ul>
-<li><a href="#count-the-number-of-records-in-each-group">Count the number of records in each group</a></li>
-<li><a href="#summarize-by-crop-yield-sum-and-year-range">Summarize by crop yield sum and year range</a></li>
-<li><a href="#normalizing-each-value-in-a-group-by-the-group-median">Normalizing each value in a group by the group median</a></li>
 </ul></li>
 </ul>
 </div>
@@ -421,7 +418,7 @@ $(document).ready(function () {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</code></pre></div>
 <div id="the-dplyr-basics" class="section level1">
 <h1>The <code>dplyr</code> basics</h1>
-<p>The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The package <code>dplyr</code> offers some nifty and simple querying functions as shown in the next subsections. <code>dplyr</code>’s data manipulation functions are summarized in the following table:</p>
+<p>The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The package <code>dplyr</code> offers some nifty and simple querying functions as shown in the next subsections. Some of <code>dplyr</code>’s key data manipulation functions are summarized in the following table:</p>
 <table>
 <thead>
 <tr class="header">
@@ -452,6 +449,12 @@ $(document).ready(function () {
 </tr>
 </tbody>
 </table>
+<p>Note that all of these functions take as first argument the data table name except when used in a piping operation (pipes will be discussed later in this section). For example:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># When used alone, dataframe dat is inside the select function</span>
+dat2 &lt;-<span class="st"> </span><span class="kw">select</span>(dat, column1)
+
+<span class="co"># When used in a pipe, dataframe dat is outside of the select function</span>
+dat2 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(column1)</code></pre></div>
 <p>Make sure to load the <code>dplyr</code> package before proceeding with the following examples.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)</code></pre></div>
 <div id="subset-by-rows-filter" class="section level2">
@@ -519,7 +522,7 @@ dat.query3 &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Cro
                                              
                                              
                                              </code></pre>
-<p>Note the use of the AND Boolean operator (<code>&amp;</code>) instead of the OR operator (<code>|</code>) for the <code>Year</code> query. We want the <code>Year</code> value to satisfy two criteria simultaneously: <em>greater than or equal to 2005</em> <strong>AND</strong> <em>less than or equal to 2010</em>. Had we used the <code>|</code> operator, R would have returned all years since all year values satisfy at least one of the two criteria.</p>
+<p>Note the use of the AND Boolean operator (<code>&amp;</code>) instead of the OR operator (<code>|</code>) for the <code>Year</code> query. We want the <code>Year</code> value to satisfy two criteria simultaneously: <em>greater than or equal to 2005</em> <strong>AND</strong> <em>less than or equal to 2010</em>. Had we used the <code>|</code> operator, R would have returned all years since all year values satisfy at least one of the two criterion.</p>
 </div>
 <div id="sort-rows-by-column-value-arrange" class="section level2">
 <h2>Sort rows by column value: <code>arrange</code></h2>
@@ -564,37 +567,80 @@ dat.query3 &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Cro
 <h2>Subset by column: <code>select</code></h2>
 <p>You can grab a subset of the table by column(s). To extract the columns <code>Crop</code>, <code>Year</code> and <code>Value</code>, type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.subcol &lt;-<span class="st"> </span><span class="kw">select</span>(dat, Crop, Year, Value)
-<span class="kw">head</span>(dat.subcol)</code></pre></div>
-<pre><code>          Crop Year      Value
-1       Barley 2012 2060000.00
-2       Barley 2012   38894.66
-3    Buckwheat 2012       0.00
-4  Canary seed 2012  101900.00
-5  Canary seed 2012   12161.92
-6 Grain, mixed 2012   57900.00</code></pre>
+<span class="kw">head</span>(dat.subcol, <span class="dv">2</span>)</code></pre></div>
+<pre><code>    Crop Year      Value
+1 Barley 2012 2060000.00
+2 Barley 2012   38894.66</code></pre>
+<p>If you want all columns <em>other</em> than <code>Crop</code>, <code>Year</code> and <code>Value</code>, add the negative <code>-</code> symbol before the column name:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.subcol &lt;-<span class="st"> </span><span class="kw">select</span>(dat, <span class="op">-</span>Crop, <span class="op">-</span>Year, <span class="op">-</span>Value)
+<span class="kw">head</span>(dat.subcol, <span class="dv">2</span>)</code></pre></div>
+<pre><code>  Country         Information          Source
+1  Canada Area harvested (Ha)   Official data
+2  Canada       Yield (Hg/Ha) Calculated data</code></pre>
 </div>
-<div id="adding-columns-mutate" class="section level2">
-<h2>Adding columns: <code>mutate</code></h2>
+<div id="creating-andor-calculating-column-values-mutate" class="section level2">
+<h2>Creating and/or calculating column values: <code>mutate</code></h2>
 <p>You can add columns (and compute their values) using the <code>mutate</code> function. For example, to add a column <code>Ctr_abbr</code> and assign it the abbreviated values <code>CAN</code> for Canada and <code>USA</code> for the United States of America based on the values in column <code>Country</code> type:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.extended &lt;-<span class="st"> </span><span class="kw">mutate</span>(dat, <span class="dt">Ctr_abbr =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))
-<span class="kw">head</span>(dat.extended)</code></pre></div>
-<pre><code>  Country         Crop         Information Year      Value          Source Ctr_abbr
-1  Canada       Barley Area harvested (Ha) 2012 2060000.00   Official data      CAN
-2  Canada       Barley       Yield (Hg/Ha) 2012   38894.66 Calculated data      CAN
-3  Canada    Buckwheat Area harvested (Ha) 2012       0.00    FAO estimate      CAN
-4  Canada  Canary seed Area harvested (Ha) 2012  101900.00   Official data      CAN
-5  Canada  Canary seed       Yield (Hg/Ha) 2012   12161.92 Calculated data      CAN
-6  Canada Grain, mixed Area harvested (Ha) 2012   57900.00   Official data      CAN</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(dat.extended)</code></pre></div>
+<span class="kw">head</span>(dat.extended,<span class="dv">3</span>)</code></pre></div>
+<pre><code>  Country      Crop         Information Year      Value          Source Ctr_abbr
+1  Canada    Barley Area harvested (Ha) 2012 2060000.00   Official data      CAN
+2  Canada    Barley       Yield (Hg/Ha) 2012   38894.66 Calculated data      CAN
+3  Canada Buckwheat Area harvested (Ha) 2012       0.00    FAO estimate      CAN</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(dat.extended,<span class="dv">3</span>)</code></pre></div>
 <pre><code>                      Country    Crop         Information Year      Value          Source Ctr_abbr
-1496 United States of America Popcorn Area harvested (Ha) 1961   83162.00   Official data      USA
-1497 United States of America Popcorn       Yield (Hg/Ha) 1961   21762.34 Calculated data      USA
-1498 United States of America     Rye Area harvested (Ha) 1961  624000.00   Official data      USA
 1499 United States of America     Rye       Yield (Hg/Ha) 1961   11121.79 Calculated data      USA
 1500 United States of America Sorghum Area harvested (Ha) 1961 4445000.00   Official data      USA
 1501 United States of America Sorghum       Yield (Hg/Ha) 1961   27442.07 Calculated data      USA</code></pre>
 <p>Here, we make use of an embedded function, <code>ifelse</code>, which performs a conditional operation: if the <code>Country</code> value is <code>Canada</code> return <code>CAN</code> if not, return <code>USA</code>.</p>
 <p>Note that if you wish to <em>rename</em> a column, you can use the <code>rename()</code> function instead of <code>mutate</code>.</p>
+<p>You can also use <code>mutate</code> to recompute column values. For example, to replace the <code>Country</code> column values with <code>CAN</code> or <code>USA</code> type:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.overwrite &lt;-<span class="st"> </span><span class="kw">mutate</span>(dat, <span class="dt">Country =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))
+<span class="kw">head</span>(dat.overwrite,<span class="dv">3</span>)</code></pre></div>
+<pre><code>  Country      Crop         Information Year      Value          Source
+1     CAN    Barley Area harvested (Ha) 2012 2060000.00   Official data
+2     CAN    Barley       Yield (Hg/Ha) 2012   38894.66 Calculated data
+3     CAN Buckwheat Area harvested (Ha) 2012       0.00    FAO estimate</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(dat.overwrite,<span class="dv">3</span>)</code></pre></div>
+<pre><code>     Country    Crop         Information Year      Value          Source
+1499     USA     Rye       Yield (Hg/Ha) 1961   11121.79 Calculated data
+1500     USA Sorghum Area harvested (Ha) 1961 4445000.00   Official data
+1501     USA Sorghum       Yield (Hg/Ha) 1961   27442.07 Calculated data</code></pre>
+</div>
+<div id="creating-andor-calculating-values-across-muliple-columns-mutate_at" class="section level2">
+<h2>Creating and/or calculating values across muliple columns: <code>mutate_at</code></h2>
+<p>You might find yourself wanting to apply a same set of <em>mutate</em> operations across multiple variables. For example, given the following sample dataset,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">met &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">Wind =</span> <span class="kw">c</span>(<span class="fl">3.4</span>, <span class="fl">5.0</span>, <span class="dv">99</span>, <span class="fl">4.1</span>, <span class="fl">1.5</span>),
+                  <span class="dt">Dir  =</span> <span class="kw">c</span>(<span class="dv">181</span>, <span class="dv">220</span>, <span class="dv">15</span>,  <span class="dv">15</span>,  <span class="dv">99</span> ),
+                  <span class="dt">Prec =</span> <span class="kw">c</span>(<span class="dv">99</span> , <span class="fl">0.5</span>,  <span class="dv">0</span>,  <span class="dv">99</span>,  <span class="dv">99</span>))
+met</code></pre></div>
+<pre><code>  Wind Dir Prec
+1  3.4 181 99.0
+2  5.0 220  0.5
+3 99.0  15  0.0
+4  4.1  15 99.0
+5  1.5  99 99.0</code></pre>
+<p>where the value <code>99</code> is a placeholder for a missing value for the variables <code>Wind</code> and <code>Prec</code> but a valid value for <code>Dir</code>, we want to replace all missing values with <code>NA</code>. We could either create two mutate operations as in,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">met2 &lt;-<span class="st"> </span><span class="kw">mutate</span>( met, <span class="dt">Wind =</span> <span class="kw">ifelse</span>(Wind <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, Wind),
+                     <span class="dt">Prec =</span> <span class="kw">ifelse</span>(Prec <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, Prec))
+met2</code></pre></div>
+<pre><code>  Wind Dir Prec
+1  3.4 181   NA
+2  5.0 220  0.5
+3   NA  15  0.0
+4  4.1  15   NA
+5  1.5  99   NA</code></pre>
+<p>or, we could reduce the separate <code>mutate</code> operations into a single <code>mutate_at</code> operation,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">met2 &lt;-<span class="st"> </span><span class="kw">mutate_at</span>( met, <span class="kw">vars</span>(Wind, Prec),
+                        <span class="kw">funs</span>(<span class="kw">ifelse</span>( . <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, .)))
+met2</code></pre></div>
+<pre><code>  Wind Dir Prec
+1  3.4 181   NA
+2  5.0 220  0.5
+3   NA  15  0.0
+4  4.1  15   NA
+5  1.5  99   NA</code></pre>
+<p>The dots <code>.</code> in the <code>funs()</code> function are placeholders for each column listed in the <code>vars()</code> function.</p>
 </div>
 <div id="summarize-columns-summarise" class="section level2">
 <h2>Summarize columns: <code>summarise</code></h2>
@@ -603,100 +649,50 @@ dat.query3 &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Cro
 <pre><code>  yr_min yr_max
 1   1961   2012</code></pre>
 </div>
-<div id="splitting-data-operations-by-group-group_by" class="section level2">
-<h2>Splitting data operations by group: <code>group_by</code></h2>
-<p>The <code>group_by</code> function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the <code>Year</code> column for which crop data are available <em>by crop type</em>, we would type the following:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.grp &lt;-<span class="st"> </span><span class="kw">group_by</span>(dat, Crop)
-<span class="kw">summarise</span>(dat.grp, <span class="dt">yr_min =</span> <span class="kw">min</span>(Year), <span class="dt">yr_max=</span><span class="kw">max</span>(Year))</code></pre></div>
-<pre><code># A tibble: 11 × 3
-           Crop yr_min yr_max
-         &lt;fctr&gt;  &lt;int&gt;  &lt;int&gt;
-1        Barley   1961   2012
-2     Buckwheat   1961   2012
-3   Canary seed   1980   2012
-4  Grain, mixed   1961   2012
-5         Maize   1961   2012
-6        Millet   1961   2012
-7          Oats   1961   2012
-8       Popcorn   1961   1982
-9           Rye   1961   2012
-10      Sorghum   1961   2012
-11    Triticale   1989   2012</code></pre>
-<p>The <code>dat.grp</code> object is a special data structure which differs from that of <code>dat</code> in that it explicitly defines the groups for which any subsequent operations (like <code>summarise</code>) are to be split across.</p>
-</div>
-<div id="dplyrs-output-data-structure" class="section level2">
-<h2><code>dplyr</code>’s output data structure</h2>
-<p>Many of <code>dplyr</code>’s functions generate a <strong>tibble</strong> data table. For example, if we stored the summary output from the last chunk of code to an object called <code>dat.sum</code>, we’d discover that this object is associated with a <code>tb_df</code> (a tibble).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.sum &lt;-<span class="st"> </span><span class="kw">summarise</span>(dat.grp, <span class="dt">yr_min =</span> <span class="kw">min</span>(Year), <span class="dt">yr_max=</span><span class="kw">max</span>(Year))
-<span class="kw">class</span>(dat.sum)</code></pre></div>
-<pre><code>[1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
-<p>A <em>tibble</em> table will behave a little differently than a <em>data frame</em> table when printing to a screen or subsetting its elements. In most cases, a tibble rendering of the table will not pose a problem in a workflow, however, this format may prove problematic with some functions. To remedy this, you can force the <code>dat.sum</code> object to a standalone <code>dataframe</code> as follows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.df &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(dat.sum)
-<span class="kw">class</span>(dat.df)</code></pre></div>
-<pre><code>[1] &quot;data.frame&quot;</code></pre>
-</div>
 </div>
 <div id="combining-table-manipulation-functions-using" class="section level1">
 <h1>Combining table manipulation functions using <code>%&gt;%</code></h1>
-<p>In most cases, you will find yourself wanting to combine several of <code>dplyr</code>’s data manipulation functions. For example, to summarize the total yield of oats by country, you could type the following:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.yield &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>)
-dat.grp   &lt;-<span class="st"> </span><span class="kw">group_by</span>(dat.yield, Country)
-dat.sum   &lt;-<span class="st"> </span><span class="kw">summarise</span>(dat.grp, <span class="dt">mean_yield =</span> <span class="kw">mean</span>(Value))
-<span class="kw">data.frame</span>(dat.sum)</code></pre></div>
-<pre><code>                   Country mean_yield
-1                   Canada   21932.51
-2 United States of America   19785.44</code></pre>
-<p>The one downside to this approach of combining data table manipulation functions for complex queries is the use of several intermediate objects (e.g. <code>dat.yield</code>, <code>dat.grp</code>, <code>dat.sum</code>). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects.</p>
-<p>Another approach to combining <code>dplyr</code> operations is to use the <strong>piping operator</strong> ,<code>%&gt;%</code>, which daisy chains <code>dplyr</code> operations. So our previous workflow would look like:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(Country) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">mean_yield =</span> <span class="kw">mean</span>(Value)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">data.frame</span>()</code></pre></div>
-<pre><code>                   Country mean_yield
-1                   Canada   21932.51
-2 United States of America   19785.44</code></pre>
-<p>The chunk of code can be read as <em>“… with the <code>dat</code> table, <code>filter</code> by …, then <code>group_by</code> …., then <code>summarise</code> by …”</em> with the result from one operation being passed on to the next using the <code>%&gt;%</code> operator. Note that the <code>filter</code>, <code>group_by</code> and <code>summarise</code> functions do not include the data table name making the chunk of code less cluttered and easier to read.</p>
-<p>This chunk of code will output the results to the screen, if you want to save it to an object called <code>dat2</code>, replace the first line with <code>dat2 &lt;- dat %&gt;% ...</code>.</p>
-<p>Here’s a more complicated output whereby the median yield for each USA crop is summarized by year for the years spanning 2005 through 2010 and the output is sorted by crop name (in ascending order) and median yield value (in descending order).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span>, Year <span class="op">&lt;=</span><span class="dv">2010</span>, 
-         Country<span class="op">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(Crop, Year) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">median_yield =</span> <span class="kw">round</span>(<span class="kw">median</span>(Value))) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">arrange</span>(Crop, <span class="kw">desc</span>(median_yield))</code></pre></div>
-<pre><code>Source: local data frame [42 x 3]
-Groups: Crop [7]
+<p>In most cases, you will find yourself wanting to combine several of <code>dplyr</code>’s data manipulation functions. For example,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.yield  &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, 
+                          Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
+                          Year <span class="op">==</span><span class="st"> </span><span class="dv">2012</span>)
+dat.rename &lt;-<span class="st"> </span><span class="kw">mutate</span>(dat.yield, <span class="dt">Country =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))
+dat.final  &lt;-<span class="st"> </span><span class="kw">select</span>(dat.rename, Country, Value)
 
-        Crop  Year median_yield
-      &lt;fctr&gt; &lt;int&gt;        &lt;dbl&gt;
-1     Barley  2010        39345
-2     Barley  2009        39287
-3     Barley  2005        34873
-4     Barley  2008        34195
-5     Barley  2006        32846
-6     Barley  2007        32278
-7  Buckwheat  2005        11019
-8  Buckwheat  2009        10931
-9  Buckwheat  2010        10555
-10 Buckwheat  2006        10000
-# ... with 32 more rows</code></pre>
+<span class="kw">head</span>(dat.final, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  Country    Value
+1     CAN 24954.79
+2     USA 21974.70</code></pre>
+<p>The downside to this approach is the creation of several intermediate objects (e.g. <code>dat.yield</code> and <code>dat.rename</code>). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects.</p>
+<p>Another approach to combining <code>dplyr</code> operations is to use the <strong>piping operator</strong> ,<code>%&gt;%</code>, which daisy chains <code>dplyr</code> operations. So our previous workflow could look like:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat.final &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, 
+         Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
+         Year <span class="op">==</span><span class="st"> </span><span class="dv">2012</span>)  <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Country =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(Country, Value)
+
+<span class="kw">head</span>(dat.final, <span class="dv">3</span>)</code></pre></div>
+<pre><code>  Country    Value
+1     CAN 24954.79
+2     USA 21974.70</code></pre>
+<p>The chunk of code can be read as <em>“… with the <code>dat</code> table, <code>filter</code> by …, then <code>mutate</code> …., then <code>select</code> …”</em> with the result from one operation being passed on to the next using the <code>%&gt;%</code> operator. Note that the <code>filter</code>, <code>mutate</code> and <code>select</code> functions do not include the data table name making the chunk of code less cluttered and easier to read. The input data table <code>dat</code> appears just once at the beginning of the pipe.</p>
 </div>
 <div id="conditional-statements" class="section level1">
 <h1>Conditional statements</h1>
 <div id="the-base-ifelse" class="section level2">
 <h2>The base <code>ifelse</code></h2>
-<p>Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want to output a value of <code>1</code> <em>if</em> an input value is less than <code>23</code> and a value of <code>0</code> otherwise, you could make use of the <code>ifelse</code> function:</p>
+<p>Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want to output a value of <code>1</code> <em>if</em> an input value is less than <code>23</code> and a value of <code>0</code> otherwise, you can make use of the <code>ifelse</code> function as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>,<span class="dv">102</span>, <span class="dv">43</span>, <span class="dv">20</span>, <span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">6</span>)
 <span class="kw">ifelse</span>(x <span class="op">&lt;</span><span class="st"> </span><span class="dv">23</span>, <span class="dv">1</span>, <span class="dv">0</span>)</code></pre></div>
 <pre><code>[1] 1 0 0 1 0 1 1 1</code></pre>
-<p>The base <code>ifelse</code> function works as expected when the input/output values are numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another,</p>
+<p>The base <code>ifelse</code> function works as expected when the input/output values are numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another, the following example will not return the expected output.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">as.factor</span>( <span class="kw">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>))
 <span class="kw">ifelse</span>(x <span class="op">==</span><span class="st"> &quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>, x)</code></pre></div>
 <pre><code>[1] &quot;1&quot;     &quot;2&quot;     &quot;2&quot;     &quot;apple&quot; &quot;1&quot;    </code></pre>
-<p>The output is a character where the input factor <code>x</code> is converted to a character representation of its level number (recall that factors encode level values as numbers behind the scene, i.e. <code>apple</code> =1, <code>banana</code>=2, etc…). Likewise, if you wish to replace an erroneous date with a missing value you will get:</p>
+<p>The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e. <code>apple</code> =1, <code>banana</code>=2, etc…). Likewise, if you wish to replace an erroneous date with a missing value you will get:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lubridate)
-y =<span class="st"> </span><span class="kw">mdy</span>(<span class="st">&quot;1/23/2016&quot;</span>, <span class="st">&quot;3/2/2016&quot;</span>, <span class="st">&quot;12/1/1901&quot;</span>, <span class="st">&quot;11/23/2016&quot;</span>)
+y &lt;-<span class="st"> </span><span class="kw">mdy</span>(<span class="st">&quot;1/23/2016&quot;</span>, <span class="st">&quot;3/2/2016&quot;</span>, <span class="st">&quot;12/1/1901&quot;</span>, <span class="st">&quot;11/23/2016&quot;</span>)
 <span class="kw">ifelse</span>( <span class="kw">year</span>(y) <span class="op">!=</span><span class="st"> </span><span class="dv">2016</span>, <span class="ot">NA</span>, y)</code></pre></div>
 <pre><code>[1] 16823 16862    NA 17128</code></pre>
 <p>Here, <code>ifelse</code> converts the date object to its internal numeric representation as number of days since 1970.</p>
@@ -739,11 +735,12 @@ Levels: apple pineapple</code></pre>
 <pre><code>[1] &quot;Degree&quot;      &quot;Fahrenheit&quot;  &quot;Celsius&quot;     &quot;Temperature&quot;</code></pre>
 <p>The last parameter, <code>TRUE ~ z</code> instructs R to keep all other values as is (not doing so would return <code>NA</code> values).</p>
 <p>Note that <code>ifelse</code>, <code>if_else</code>, <code>recode</code> and <code>case_when</code> can all be used inside of a <code>mutate</code> function. For example, to replace <code>Canada</code> and <code>United States of America</code> in variable <code>Country</code> with <code>CAN</code> and <code>USA</code> respectively and to create a new variable called <code>Type</code> which will take on the values of <code>1</code>, <code>2</code> or <code>3</code> depending on the values in variable <code>Source</code>, type the following:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">Country =</span> <span class="kw">recode</span>(Country, <span class="st">&quot;Canada&quot;</span> =<span class="st"> &quot;CAN&quot;</span>,
-                                                 <span class="st">&quot;United States of America&quot;</span> =<span class="st"> &quot;USA&quot;</span>),
-                       <span class="dt">Type =</span> <span class="kw">case_when</span>(Source <span class="op">==</span><span class="st"> &quot;Calculated data&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,
-                                        Source <span class="op">==</span><span class="st"> &quot;Official data&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">2</span>,
-                                        <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span><span class="dv">3</span>)) 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Country =</span> <span class="kw">recode</span>(Country, <span class="st">&quot;Canada&quot;</span> =<span class="st"> &quot;CAN&quot;</span>,
+                                   <span class="st">&quot;United States of America&quot;</span> =<span class="st"> &quot;USA&quot;</span>),
+         <span class="dt">Type =</span> <span class="kw">case_when</span>(Source <span class="op">==</span><span class="st"> &quot;Calculated data&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,
+                          Source <span class="op">==</span><span class="st"> &quot;Official data&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">2</span>,
+                          <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span><span class="dv">3</span>)) 
 <span class="kw">head</span>(dat1)   </code></pre></div>
 <pre><code>  Country         Crop         Information Year      Value          Source Type
 1     CAN       Barley Area harvested (Ha) 2012 2060000.00   Official data    2
@@ -752,68 +749,6 @@ Levels: apple pineapple</code></pre>
 4     CAN  Canary seed Area harvested (Ha) 2012  101900.00   Official data    2
 5     CAN  Canary seed       Yield (Hg/Ha) 2012   12161.92 Calculated data    1
 6     CAN Grain, mixed Area harvested (Ha) 2012   57900.00   Official data    2</code></pre>
-</div>
-</div>
-<div id="more-on-the-group_by-function" class="section level1">
-<h1>More on the <code>group_by</code> function</h1>
-<div id="count-the-number-of-records-in-each-group" class="section level2">
-<h2>Count the number of records in each group</h2>
-<p>In this example, we are identifying the number of records by <code>Crop</code> type. There are two ways this can be accomplished:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span>, Year <span class="op">&lt;=</span><span class="dv">2010</span>, 
-         Country<span class="op">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(Crop) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">count</span>()</code></pre></div>
-<p>Or,</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span>, Year <span class="op">&lt;=</span><span class="dv">2010</span>, 
-         Country<span class="op">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(Crop) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">Count =</span> <span class="kw">n</span>())</code></pre></div>
-<pre><code># A tibble: 7 x 2
-       Crop Count
-     &lt;fctr&gt; &lt;int&gt;
-1    Barley     6
-2 Buckwheat     6
-3     Maize     6
-4    Millet     6
-5      Oats     6
-6       Rye     6
-7   Sorghum     6</code></pre>
-</div>
-<div id="summarize-by-crop-yield-sum-and-year-range" class="section level2">
-<h2>Summarize by crop yield sum and year range</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span>, Year <span class="op">&lt;=</span><span class="dv">2010</span>, 
-         Country<span class="op">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(Crop) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>( <span class="dt">Yield =</span> <span class="kw">sum</span>(Value), <span class="st">`</span><span class="dt">Number of Years</span><span class="st">`</span> =<span class="st"> </span><span class="kw">max</span>(Year) <span class="op">-</span><span class="st"> </span><span class="kw">min</span>(Year)) </code></pre></div>
-<pre><code># A tibble: 7 x 3
-       Crop     Yield `Number of Years`
-     &lt;fctr&gt;     &lt;dbl&gt;             &lt;dbl&gt;
-1    Barley 212823.30                 5
-2 Buckwheat  62505.56                 5
-3     Maize 576907.21                 5
-4    Millet  99289.42                 5
-5      Oats 135712.89                 5
-6       Rye 102789.63                 5
-7   Sorghum 253548.41                 5</code></pre>
-</div>
-<div id="normalizing-each-value-in-a-group-by-the-group-median" class="section level2">
-<h2>Normalizing each value in a group by the group median</h2>
-<p>In this example, we are subtracting each value in a group by that group’s median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We’ll save the output dataframe as <code>dat2</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>,
-         Country <span class="op">==</span><span class="st"> &quot;United States of America&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(Crop, Year, Value)                     <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(Crop)                                <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">NormYield =</span> Value <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Value))     <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">arrange</span>(Crop)</code></pre></div>
-<p>Let’s plot the normalized yields by year for Barley and add a <code>0</code> line representing the (normalized) central value.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>( NormYield <span class="op">~</span><span class="st"> </span>Year, dat2[dat2<span class="op">$</span>Crop <span class="op">==</span><span class="st"> &quot;Barley&quot;</span>,] )
-<span class="kw">abline</span>(<span class="dt">h =</span> <span class="dv">0</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="Week03a_files/figure-html/unnamed-chunk-33-1.png" width="480" /></p>
-<p>The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.</p>
 </div>
 </div>
 

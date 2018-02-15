@@ -24,7 +24,7 @@ dat <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=
 
 # The `dplyr` basics
 
-The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The package `dplyr` offers some nifty and simple querying functions as shown in the next subsections. `dplyr`'s data manipulation functions are summarized in the following table:
+The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The package `dplyr` offers some nifty and simple querying functions as shown in the next subsections. Some of `dplyr`'s key data manipulation functions are summarized in the following table:
 
 `dplyr` function   | Description
 -------------------|-------------
@@ -33,6 +33,16 @@ The basic set of R tools can accomplish many data table queries, but the syntax 
 `select()`         | Subset columns
 `mutate()`         | Add columns
 `summarise()`      | Summarize columns
+
+Note that all of these functions take as first argument the data table name except when used in a piping operation (pipes will be discussed later in this section). For example:
+
+```{r eval=FALSE}
+# When used alone, dataframe dat is inside the select function
+dat2 <- select(dat, column1)
+
+# When used in a pipe, dataframe dat is outside of the select function
+dat2 <- dat %>% select(column1)
+```
 
 Make sure to load the `dplyr` package before proceeding with the following examples. 
 
@@ -71,7 +81,7 @@ dat.query3 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat",
 summary(dat.query3)
 ```
 
-Note the use of the AND Boolean operator (`&`) instead of the OR operator (`|`) for the `Year` query. We want the `Year` value to satisfy two criteria simultaneously: *greater than or equal to 2005* **AND** *less than or equal to 2010*. Had we used the `|` operator, R would have returned all years since all year values satisfy at least one of the two criteria.
+Note the use of the AND Boolean operator (`&`) instead of the OR operator (`|`) for the `Year` query. We want the `Year` value to satisfy two criteria simultaneously: *greater than or equal to 2005* **AND** *less than or equal to 2010*. Had we used the `|` operator, R would have returned all years since all year values satisfy at least one of the two criterion.
 
 ## Sort rows by column value: `arrange`
 
@@ -97,22 +107,65 @@ You can grab a subset of the table by column(s). To extract the columns `Crop`, 
 
 ```{r}
 dat.subcol <- select(dat, Crop, Year, Value)
-head(dat.subcol)
+head(dat.subcol, 2)
 ```
 
-## Adding columns: `mutate`
+If you want all columns *other* than `Crop`, `Year` and `Value`, add the negative `-` symbol before the column name:
+
+```{r}
+dat.subcol <- select(dat, -Crop, -Year, -Value)
+head(dat.subcol, 2)
+```
+
+## Creating and/or calculating column values: `mutate`
 
 You can add columns (and compute their values) using the `mutate` function. For example, to add a column `Ctr_abbr` and assign it the abbreviated values `CAN` for Canada and `USA` for the United States of America based on the values in column `Country` type:
 
 ```{r}
 dat.extended <- mutate(dat, Ctr_abbr = ifelse(Country == "Canada", "CAN", "USA"))
-head(dat.extended)
-tail(dat.extended)
+head(dat.extended,3)
+tail(dat.extended,3)
 ```
 
 Here, we make use of an embedded function, `ifelse`, which performs a conditional operation: if the `Country` value is `Canada` return `CAN` if not, return `USA`.
 
 Note that if you wish to *rename* a column, you can use the `rename()` function instead of `mutate`.
+
+You can also use `mutate` to recompute column values. For example, to replace the `Country` column values with `CAN` or `USA` type:
+
+```{r}
+dat.overwrite <- mutate(dat, Country = ifelse(Country == "Canada", "CAN", "USA"))
+head(dat.overwrite,3)
+tail(dat.overwrite,3)
+```
+
+## Creating and/or calculating values across muliple columns: `mutate_at`
+
+You might find yourself wanting to apply a same set of *mutate* operations across multiple variables. For example, given the following sample dataset,
+
+```{r}
+met <- data.frame(Wind = c(3.4, 5.0, 99, 4.1, 1.5),
+                  Dir  = c(181, 220, 15,  15,  99 ),
+                  Prec = c(99 , 0.5,  0,  99,  99))
+met
+```
+
+where the value `99` is a placeholder for a missing value for the variables `Wind` and `Prec` but a valid value for `Dir`, we want to replace all missing values with `NA`. We could either create two mutate operations as in,
+
+```{r}
+met2 <- mutate( met, Wind = ifelse(Wind == 99, NA, Wind),
+                     Prec = ifelse(Prec == 99, NA, Prec))
+met2
+```
+
+or, we could reduce the separate `mutate` operations into a single `mutate_at` operation,
+
+```{r}
+met2 <- mutate_at( met, vars(Wind, Prec),
+                        funs(ifelse( . == 99, NA, .)))
+met2
+```
+The dots `.` in the `funs()` function are placeholders for each column listed in the `vars()` function.
 
 ## Summarize columns: `summarise`
 
@@ -122,94 +175,61 @@ You can summarize (or "collapse") one or more columns using the `summarise` func
 summarise(dat, yr_min = min(Year), yr_max=max(Year))
 ```
 
-## Splitting data operations by group: `group_by`
-
-The `group_by` function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the `Year` column for which crop data are available *by crop type*, we would type the following:
-
-```{r}
-dat.grp <- group_by(dat, Crop)
-summarise(dat.grp, yr_min = min(Year), yr_max=max(Year))
-```
-
-The `dat.grp` object is a special data structure which differs from that of `dat` in that it explicitly defines the groups for which any subsequent operations (like `summarise`) are to be split across. 
-
-## `dplyr`'s output data structure
-
-Many of `dplyr`'s functions generate a **tibble** data table. For example, if we stored the summary output from the last chunk of code to an object called `dat.sum`, we'd discover that this object is associated with a `tb_df` (a tibble).
-
-```{r}
-dat.sum <- summarise(dat.grp, yr_min = min(Year), yr_max=max(Year))
-class(dat.sum)
-```
-
-A *tibble* table will behave a little differently than a *data frame* table when printing to a screen or subsetting its elements. In most cases, a tibble rendering of the table will not pose a problem in a workflow, however, this format may prove problematic with some functions. To remedy this, you can force the `dat.sum` object to a standalone `dataframe` as follows:
-
-```{r}
-dat.df <- as.data.frame(dat.sum)
-class(dat.df)
-```
-
 # Combining table manipulation functions using `%>%`
 
-In most cases, you will find yourself wanting to combine several of `dplyr`'s data manipulation functions. For example, to summarize the total yield of oats by country, you could type the following:
+In most cases, you will find yourself wanting to combine several of `dplyr`'s data manipulation functions. For example, 
 
 ```{r}
-dat.yield <- filter(dat, Information == "Yield (Hg/Ha)", Crop == "Oats")
-dat.grp   <- group_by(dat.yield, Country)
-dat.sum   <- summarise(dat.grp, mean_yield = mean(Value))
-data.frame(dat.sum)
+dat.yield  <- filter(dat, Information == "Yield (Hg/Ha)", 
+                          Crop == "Oats",
+                          Year == 2012)
+dat.rename <- mutate(dat.yield, Country = ifelse(Country == "Canada", "CAN", "USA"))
+dat.final  <- select(dat.rename, Country, Value)
+
+head(dat.final, 3)
 ```
 
-The one downside to this approach of combining data table manipulation functions for complex queries is the use of several intermediate objects (e.g. `dat.yield`, `dat.grp`, `dat.sum`). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects. 
+The downside to this approach is the creation of several intermediate objects (e.g. `dat.yield` and `dat.rename`). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects. 
 
-Another approach to combining `dplyr` operations is to use the **piping operator** ,`%>%`, which daisy chains `dplyr` operations. So our previous workflow would look like:
+Another approach to combining `dplyr` operations is to use the **piping operator** ,`%>%`, which daisy chains `dplyr` operations. So our previous workflow could look like:
 
 ```{r}
-dat %>%
-  filter(Information == "Yield (Hg/Ha)", Crop == "Oats") %>%
-  group_by(Country) %>%
-  summarise(mean_yield = mean(Value)) %>%
-  data.frame()
+dat.final <- dat %>%
+  filter(Information == "Yield (Hg/Ha)", 
+         Crop == "Oats",
+         Year == 2012)  %>% 
+  mutate(Country = ifelse(Country == "Canada", "CAN", "USA")) %>%
+  select(Country, Value)
+
+head(dat.final, 3)
 ```
 
-The chunk of code can be read as *"... with the `dat` table, `filter` by ..., then `group_by` ...., then `summarise` by ..."* with the result from one operation being passed on to the next using the `%>%` operator. Note that the `filter`, `group_by` and `summarise` functions do not include the data table name making the chunk of code less cluttered and easier to read.
+The chunk of code can be read as *"... with the `dat` table, `filter` by ..., then `mutate` ...., then `select` ..."* with the result from one operation being passed on to the next using the `%>%` operator. Note that the `filter`, `mutate` and `select` functions do not include the data table name making the chunk of code less cluttered and easier to read. The input data table  `dat` appears just once at the beginning of the pipe.
 
-This chunk of code will output the results to the screen, if you want to save it to an object called `dat2`, replace the first line with `dat2 <- dat %>% ...`.
-
-Here's a more complicated output whereby the median yield for each USA crop is summarized by year for the years spanning 2005 through 2010 and the output is sorted by crop name (in ascending order) and median yield value (in descending order).
-
-```{r}
-dat %>%
-  filter(Information == "Yield (Hg/Ha)", Year >= 2005, Year <=2010, 
-         Country=="United States of America") %>%
-  group_by(Crop, Year) %>%
-  summarise(median_yield = round(median(Value))) %>%
-  arrange(Crop, desc(median_yield))
-```
 
 # Conditional statements
 
 ## The base `ifelse`
 
-Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want to output a value of `1` *if* an input value is less than `23` and a value of `0` otherwise, you could make use of the `ifelse` function:
+Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want to output a value of `1` *if* an input value is less than `23` and a value of `0` otherwise, you can make use of the `ifelse` function as follows:
 
 ```{r}
 x <- c(12,102, 43, 20, 90, 0, 12, 6)
 ifelse(x < 23, 1, 0)
 ```
 
-The  base `ifelse` function works as expected when the input/output values are  numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another,
+The  base `ifelse` function works as expected when the input/output values are  numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another, the following example will not return the expected output.
 
 ```{r}
 x <- as.factor( c("apple", "banana", "banana", "pear", "apple"))
 ifelse(x == "pear", "apple", x)
 ```
 
-The output is a character where the input factor `x` is converted to a character representation of its level number (recall that factors encode level values as numbers behind the scene, i.e. `apple` =1, `banana`=2, etc...). Likewise, if you wish to replace an erroneous date with a missing value you will get:
+The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e. `apple` =1, `banana`=2, etc...). Likewise, if you wish to replace an erroneous date with a missing value you will get:
 
 ```{r}
 library(lubridate)
-y = mdy("1/23/2016", "3/2/2016", "12/1/1901", "11/23/2016")
+y <- mdy("1/23/2016", "3/2/2016", "12/1/1901", "11/23/2016")
 ifelse( year(y) != 2016, NA, y)
 ```
 
@@ -274,70 +294,13 @@ The last parameter, `TRUE ~ z` instructs R to keep all other values as is (not d
 Note that `ifelse`, `if_else`, `recode` and `case_when` can all be used inside of a `mutate` function. For example, to replace `Canada` and `United States of America` in variable `Country` with `CAN` and `USA` respectively and to create a new variable called `Type` which will take on the values of `1`, `2` or `3` depending on the values in variable `Source`, type the following: 
 
 ```{r}
-dat1 <- dat %>% mutate(Country = recode(Country, "Canada" = "CAN",
-                                                 "United States of America" = "USA"),
-                       Type = case_when(Source == "Calculated data" ~ 1,
-                                        Source == "Official data" ~ 2,
-                                        TRUE ~ 3)) 
+dat1 <- dat %>% 
+  mutate(Country = recode(Country, "Canada" = "CAN",
+                                   "United States of America" = "USA"),
+         Type = case_when(Source == "Calculated data" ~ 1,
+                          Source == "Official data" ~ 2,
+                          TRUE ~ 3)) 
 head(dat1)   
 ```
-
-
-# More on the `group_by` function
-
-## Count the number of records in each group
-
-In this example, we are identifying the number of records by `Crop` type. There are two ways this can be accomplished:
-
-```{r eval = FALSE}
-dat %>%
-  filter(Information == "Yield (Hg/Ha)", Year >= 2005, Year <=2010, 
-         Country=="United States of America") %>%
-  group_by(Crop) %>%
-  count()
-```
-
-Or,
-
-```{r}
-dat %>%
-  filter(Information == "Yield (Hg/Ha)", Year >= 2005, Year <=2010, 
-         Country=="United States of America") %>%
-  group_by(Crop) %>%
-  summarise(Count = n())
-```
-
-## Summarize by crop yield sum and year range
-
-```{r}
-dat %>%
-  filter(Information == "Yield (Hg/Ha)", Year >= 2005, Year <=2010, 
-         Country=="United States of America") %>%
-  group_by(Crop) %>%
-  summarise( Yield = sum(Value), `Number of Years` = max(Year) - min(Year)) 
-```
-
-## Normalizing each value in a group by the group median
-
-In this example, we are subtracting each value in a group by that group's median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We'll save the output dataframe as `dat2`.
-
-```{r}
-dat2 <- dat %>% 
-  filter(Information == "Yield (Hg/Ha)",
-         Country == "United States of America") %>%
-  select(Crop, Year, Value)                     %>%
-  group_by(Crop)                                %>%
-  mutate(NormYield = Value - median(Value))     %>%
-  arrange(Crop)
-```
-
-Let's plot the normalized yields by year for Barley and add a `0` line representing the (normalized) central value.
-
-```{r fig.width=5, fig.height=3,small.mar=TRUE}
-plot( NormYield ~ Year, dat2[dat2$Crop == "Barley",] )
-abline(h = 0, col="red")
-```
-
-The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.
 
 
