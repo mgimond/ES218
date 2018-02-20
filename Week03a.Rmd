@@ -245,11 +245,26 @@ The `if_else` function (note the underscore `_`), will preserve data type but do
 if_else( year(y) != 2016, NA, y)
 ```
 
-The output data types (`NA` and `y`) are not treated the same (by seeing `NA`, the function assumes that the output must be logical which `y` is not). The solution is to force `NA` as a missing *date* object by wrapping it with a date function as in `mdy(NA)`:
+The output data types (`NA` and `y`) are not treated the same (by seeing `NA`, the function assumes that the output must be logical which `y` is not). The solution is to force `NA` as a *date* object by wrapping it with a date function like `mdy(NA)`:
 
 ```{r}
 if_else( year(y) != 2016, mdy(NA), y)
 ```
+
+Likewise, if the input vector is of type character, you need to ensure that all output values are characters too.
+
+```{r}
+y <- c("apple", "banana", "banana", "pear", "apple")
+if_else( y == "banana", as.character(NA), y)
+```
+
+Recall from the Week 02 lecture notes that R has several `NA` reserved words for different data types (e.g. `NA_character_` and `NA_integer_` to name a few). So the last chunk of code could have been written as,
+
+```{r}
+if_else( y == "banana", NA_character_, y)
+```
+Note that there is no reserved word for `NA` *date* types in which case you would coerce `NA` to date using built-in functions like `as.Date(NA)`  or lubridate functions like `mdy(NA)` as demonstrated in an earlier example.
+
 
 ## Recoding factors using `recode`
 
@@ -272,6 +287,8 @@ You can recode more than one factor level. In fact, you can even introduce new l
 recode(x , "pear" = "apple", "banana" = "pineapple" )
 ```
 
+Note that as with `if_else` and `case_when`, `recode` is strict about preserving data types. So if you want to recode a level to `NA` make sure to use `NA_character_` or `as.character(NA)`.
+
 ## Changing values based on multiple conditions: `case_when`
 
 `ifelse` and `if_else` work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.
@@ -290,6 +307,23 @@ case_when(z == "deg" ~ "Degree",
           TRUE ~ z)
 ```
 The last parameter, `TRUE ~ z` instructs R to keep all other values as is (not doing so would return `NA` values).
+
+As with the `if_else` function, `case_when` is strict about data type, so if the input is a character vector it expects the output to be character as well. So if you are to assign `NA` values in your output, avoid the following mistake.
+
+```{r error=TRUE}
+case_when(z == "deg" ~ NA,  # NA is a logical type, this wil return an error
+          z == "F" ~ "Fahrenheit",
+          z == "C" ~ "Celsius",
+          TRUE ~ z)
+```
+As was the case with the earlier `if_else` example, `case_when` requires a character `NA` type. We can use either `as.character(NA)` or `NA_character_`.
+
+```{r}
+case_when(z == "deg" ~ NA_character_,
+          z == "F" ~ "Fahrenheit",
+          z == "C" ~ "Celsius",
+          TRUE ~ z)
+```
 
 Note that `ifelse`, `if_else`, `recode` and `case_when` can all be used inside of a `mutate` function. For example, to replace `Canada` and `United States of America` in variable `Country` with `CAN` and `USA` respectively and to create a new variable called `Type` which will take on the values of `1`, `2` or `3` depending on the values in variable `Source`, type the following: 
 
