@@ -1,5 +1,7 @@
 ---
 title: "Manipulating data tables with dplyr"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r echo=FALSE}
@@ -8,7 +10,7 @@ source("libs/Common.R")
 
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
-This tutorial makes use of the following R package(s): **`dplyr`** and **`lubridate`**.
+This tutorial makes use of the following R package(s): **`dplyr`**, **`lubridate`** and **`forcats`**.
 </div>
  
 
@@ -288,6 +290,31 @@ recode(x , "pear" = "apple", "banana" = "pineapple" )
 ```
 
 Note that as with `if_else` and `case_when`, `recode` is strict about preserving data types. So if you want to recode a level to `NA` make sure to use `NA_character_` or `as.character(NA)`.
+
+### Replacing NA factor levels
+
+One operation you cannot perform with `recode` is converting an `NA` level to another level. For example, the following will generate an error message:
+
+```{r}
+x[2] <- NA
+x
+```
+
+```{r eval=FALSE}
+recode(x, NA = "other")
+```
+
+```
+Error: unexpected '=' in "recode(x, NA ="
+```
+
+The simplest solution is to make use of a specialized factor package called `forcats` and its funtion, `fct_explicit_na`.
+
+```{r}
+library(forcats)
+x <- fct_explicit_na(x, na_level = "Other")
+x
+```
 
 ## Changing values based on multiple conditions: `case_when`
 

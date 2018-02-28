@@ -404,14 +404,16 @@ $(document).ready(function () {
 <li><a href="#conditional-statements">Conditional statements</a><ul>
 <li><a href="#the-base-ifelse">The base <code>ifelse</code></a></li>
 <li><a href="#dplyrs-if_else"><code>dplyr</code>’s <code>if_else</code></a></li>
-<li><a href="#recoding-factors-using-recode">Recoding factors using <code>recode</code></a></li>
+<li><a href="#recoding-factors-using-recode">Recoding factors using <code>recode</code></a><ul>
+<li><a href="#replacing-na-factor-levels">Replacing NA factor levels</a></li>
+</ul></li>
 <li><a href="#changing-values-based-on-multiple-conditions-case_when">Changing values based on multiple conditions: <code>case_when</code></a></li>
 </ul></li>
 </ul>
 </div>
 
 <div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
-<p>This tutorial makes use of the following R package(s): <strong><code>dplyr</code></strong> and <strong><code>lubridate</code></strong>.</p>
+<p>This tutorial makes use of the following R package(s): <strong><code>dplyr</code></strong>, <strong><code>lubridate</code></strong> and <strong><code>forcats</code></strong>.</p>
 </div>
 <p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
 <p>Run the following line to load the FAO data file into your current R session.</p>
@@ -729,6 +731,22 @@ Levels: apple banana</code></pre>
 <pre><code>[1] apple     pineapple pineapple apple     apple    
 Levels: apple pineapple</code></pre>
 <p>Note that as with <code>if_else</code> and <code>case_when</code>, <code>recode</code> is strict about preserving data types. So if you want to recode a level to <code>NA</code> make sure to use <code>NA_character_</code> or <code>as.character(NA)</code>.</p>
+<div id="replacing-na-factor-levels" class="section level3">
+<h3>Replacing NA factor levels</h3>
+<p>One operation you cannot perform with <code>recode</code> is converting an <code>NA</code> level to another level. For example, the following will generate an error message:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x[<span class="dv">2</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
+x</code></pre></div>
+<pre><code>[1] apple  &lt;NA&gt;   banana pear   apple 
+Levels: apple banana pear</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">recode</span>(x, <span class="dt">NA =</span> <span class="st">&quot;other&quot;</span>)</code></pre></div>
+<pre><code>Error: unexpected &#39;=&#39; in &quot;recode(x, NA =&quot;</code></pre>
+<p>The simplest solution is to make use of a specialized factor package called <code>forcats</code> and its funtion, <code>fct_explicit_na</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(forcats)
+x &lt;-<span class="st"> </span><span class="kw">fct_explicit_na</span>(x, <span class="dt">na_level =</span> <span class="st">&quot;Other&quot;</span>)
+x</code></pre></div>
+<pre><code>[1] apple  Other  banana pear   apple 
+Levels: apple banana pear Other</code></pre>
+</div>
 </div>
 <div id="changing-values-based-on-multiple-conditions-case_when" class="section level2">
 <h2>Changing values based on multiple conditions: <code>case_when</code></h2>
