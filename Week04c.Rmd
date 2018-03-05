@@ -1,5 +1,7 @@
 ---
 title: 'ggplot2 plotting environment'
+editor_options: 
+  chunk_output_type: console
 ---
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -243,9 +245,9 @@ You can add a plot title using the `ggtile` function.
 ggplot(dat2, aes(State)) + geom_bar() +ggtitle("Number of counties by state")
 ```
 
-## Axes labels
+## Axes titles
 
-Axes labels can be explicitly defined using the `xlab()` and `ylab()` functions.
+Axes titles can be explicitly defined using the `xlab()` and `ylab()` functions.
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
@@ -254,6 +256,36 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
 ```
 
 To remove axis labels, simply pass `NULL` to the functions as in `xlab(NULL)` and `ylab(NULL)`.
+
+## Axes labels
+
+You can customize an axis' label elements. If you are mapping continuous values along the x and y axes, use  the `scale_x_continuous()` and `scale_y_continuous()` functions. For example, to specify where to place the tics and the accompanying labels, type:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
+               xlab("Female income ($)") + ylab("Male income ($)") +
+               scale_x_continuous(breaks=c(10000, 30000, 50000),
+                                  labels=c("$10,000", "$30,000", "$50,000"))
+```
+
+If you want to change the label formats whereby the numbers are truncated to a thousandth of their original value, you can make use of `unit_format()` from the `scales` package:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
+               xlab("Female income ($)") + ylab("Male income ($)") +
+               scale_x_continuous(labels=scales::unit_format("k", 0.001, sep="")) +
+               scale_y_continuous(labels=scales::unit_format("k", 0.001, sep=""))
+```
+
+The `scales` package also has a `comma_format()` function that will add commas to large numbers:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
+               xlab("Female income ($)") + ylab("Male income ($)") +
+               scale_x_continuous(labels=scales::comma_format()) +
+               scale_y_continuous(labels=scales::comma_format())
+```
+
 
 ## Axes limits
 
