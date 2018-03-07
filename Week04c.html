@@ -420,6 +420,7 @@ $(document).ready(function () {
 <li><a href="#faceting-by-categorical-variable">Faceting by categorical variable</a></li>
 <li><a href="#faceting-by-continuous-variable">Faceting by continuous variable</a></li>
 </ul></li>
+<li><a href="#tile-plots-aka-heat-maps">Tile plots (aka heat maps)</a></li>
 </ul>
 </div>
 
@@ -557,7 +558,7 @@ $(document).ready(function () {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(forcats)
 <span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="kw">fct_infreq</span>(State,<span class="dt">ordered =</span> <span class="ot">TRUE</span>))) <span class="op">+</span><span class="st"> </span><span class="kw">geom_bar</span>()</code></pre></div>
 <p><img src="Week04c_files/figure-html/unnamed-chunk-18-1.png" width="768" /></p>
-<p>If we want to reverse the order (i.e. plot from smallest number of counties to greatest), wrap the forcats function with <code>fct_rev</code>.</p>
+<p>If we want to reverse the order (i.e. plot from smallest number of counties to greatest), wrap the <code>fct_infreq</code> function with <code>fct_rev</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat2, <span class="kw">aes</span>(<span class="kw">fct_rev</span>(<span class="kw">fct_infreq</span>(State,<span class="dt">ordered =</span> <span class="ot">TRUE</span>)))) <span class="op">+</span><span class="st"> </span><span class="kw">geom_bar</span>()</code></pre></div>
 <p><img src="Week04c_files/figure-html/unnamed-chunk-19-1.png" width="768" /></p>
 <p>The <code>geom_bar</code> function can also be used with count values (i.e. variable already summarized by count). First, we’ll summaries the number of counties by state using the <code>dplyr</code> package. This will generate a data frame with just 51 records: one for each of the 50 states and the District of Columbia.</p>
@@ -852,6 +853,18 @@ dat2.ct &lt;-<span class="st"> </span>dat2 <span class="op">%&gt;%</span><span c
 <span class="st">                               </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">50000</span>,<span class="dv">100000</span>), <span class="dt">labels=</span><span class="kw">c</span>(<span class="st">&quot;50k&quot;</span>, <span class="st">&quot;100k&quot;</span>))</code></pre></div>
 <p><img src="Week04c_files/figure-html/unnamed-chunk-56-1.png" width="960" /></p>
 </div>
+</div>
+<div id="tile-plots-aka-heat-maps" class="section level1">
+<h1>Tile plots (aka heat maps)</h1>
+<p>You can create so-called <em>heat maps</em> by tiling the data. This typically requires the use of three variables–two of which are either categorical or have equally spaced continuous values that define a rectangular grid layout, and the third that defines the grid cells’ color. For example, a tile plot can be created showing the median income (for all sexes) as a function of education level and region.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c.med &lt;-<span class="st"> </span>dat2c <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(Level <span class="op">!=</span><span class="st"> &quot;All&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(Level, Region) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">Income =</span> <span class="kw">median</span>(All))
+
+<span class="kw">ggplot</span>(dat2c.med, <span class="kw">aes</span>(<span class="dt">x=</span>Region, <span class="dt">y=</span>Level, <span class="dt">fill=</span>Income)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_tile</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradient</span>(<span class="dt">low =</span> <span class="st">&quot;yellow&quot;</span>, <span class="dt">high =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
+<p><img src="Week04c_files/figure-html/unnamed-chunk-57-1.png" width="384" /></p>
 </div>
 
 

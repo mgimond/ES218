@@ -173,7 +173,7 @@ library(forcats)
 ggplot(dat2, aes(fct_infreq(State,ordered = TRUE))) + geom_bar()
 ```
 
-If we want to reverse the order (i.e. plot from smallest number of counties to greatest), wrap the forcats function with `fct_rev`.
+If we want to reverse the order (i.e. plot from smallest number of counties to greatest), wrap the `fct_infreq` function with `fct_rev`.
 
 ```{r fig.height=2.5, fig.width=8}
 ggplot(dat2, aes(fct_rev(fct_infreq(State,ordered = TRUE)))) + geom_bar()
@@ -545,4 +545,18 @@ ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) +
                                geom_abline(intercept = 0, slope = 1, col="grey50") +
                                scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
 ```                                        
+
+# Tile plots (aka heat maps)
+
+You can create so-called *heat maps* by tiling the data. This typically requires the use of three variables--two of which are either categorical or have equally spaced continuous values that define a rectangular grid layout, and the third that defines the grid cells' color. For example, a tile plot can be created showing the median income (for all sexes) as a function of education level and region.
+
+```{r fig.height=3, fig.width=4}
+dat2c.med <- dat2c %>% 
+  filter(Level != "All") %>% 
+  group_by(Level, Region) %>% 
+  summarise(Income = median(All))
+
+ggplot(dat2c.med, aes(x=Region, y=Level, fill=Income)) + geom_tile() +
+  scale_fill_gradient(low = "yellow", high = "red")
+```
 
