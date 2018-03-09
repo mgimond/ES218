@@ -409,6 +409,9 @@ $(document).ready(function () {
 </ul></li>
 <li><a href="#changing-values-based-on-multiple-conditions-case_when">Changing values based on multiple conditions: <code>case_when</code></a></li>
 </ul></li>
+<li><a href="#miscellaneous">Miscellaneous</a><ul>
+<li><a href="#outputting-a-vector-instead-of-a-table-using-pull">Outputting a vector instead of a table using <code>pull</code></a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -740,7 +743,7 @@ x</code></pre></div>
 Levels: apple banana pear</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">recode</span>(x, <span class="dt">NA =</span> <span class="st">&quot;other&quot;</span>)</code></pre></div>
 <pre><code>Error: unexpected &#39;=&#39; in &quot;recode(x, NA =&quot;</code></pre>
-<p>The simplest solution is to make use of a specialized factor package called <code>forcats</code> and its funtion, <code>fct_explicit_na</code>.</p>
+<p>The simplest solution is to make use of a specialized factor package called <code>forcats</code> and its function, <code>fct_explicit_na</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(forcats)
 x &lt;-<span class="st"> </span><span class="kw">fct_explicit_na</span>(x, <span class="dt">na_level =</span> <span class="st">&quot;Other&quot;</span>)
 x</code></pre></div>
@@ -788,6 +791,59 @@ Levels: apple banana pear Other</code></pre>
 4     CAN  Canary seed Area harvested (Ha) 2012  101900.00   Official data    2
 5     CAN  Canary seed       Yield (Hg/Ha) 2012   12161.92 Calculated data    1
 6     CAN Grain, mixed Area harvested (Ha) 2012   57900.00   Official data    2</code></pre>
+</div>
+</div>
+<div id="miscellaneous" class="section level1">
+<h1>Miscellaneous</h1>
+<div id="outputting-a-vector-instead-of-a-table-using-pull" class="section level2">
+<h2>Outputting a vector instead of a table using <code>pull</code></h2>
+<p>Piping operations will normally output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">oats &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
+         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">Oats_sum =</span> <span class="kw">sum</span>(Value))
+oats</code></pre></div>
+<pre><code>  Oats_sum
+1  2169334</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(oats)</code></pre></div>
+<pre><code>[1] &quot;data.frame&quot;</code></pre>
+<p>There may be times when you want the output as a vector element and not a data table. To output a vector, use the <code>pull()</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">oats &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
+         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">Oats_sum =</span> <span class="kw">sum</span>(Value)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">pull</span>()
+oats</code></pre></div>
+<pre><code>[1] 2169334</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(oats)</code></pre></div>
+<pre><code>[1] &quot;numeric&quot;</code></pre>
+<p>The <code>pull</code> function can also be used to convert a data table column to a multi-element vector, e.g.:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This outputs a one column table</span>
+yield &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
+         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(Value)
+
+<span class="kw">head</span>(yield)</code></pre></div>
+<pre><code>     Value
+1 24954.79
+2 21974.70
+3 29109.36
+4 20492.37
+5 27364.53
+6 23056.62</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(yield)</code></pre></div>
+<pre><code>[1] &quot;data.frame&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This outputs a multi-element vector</span>
+yield &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
+         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">pull</span>(Value)
+
+<span class="kw">head</span>(yield)</code></pre></div>
+<pre><code>[1] 24954.79 21974.70 29109.36 20492.37 27364.53 23056.62</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(yield)</code></pre></div>
+<pre><code>[1] &quot;numeric&quot;</code></pre>
 </div>
 </div>
 

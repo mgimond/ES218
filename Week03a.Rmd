@@ -308,7 +308,7 @@ recode(x, NA = "other")
 Error: unexpected '=' in "recode(x, NA ="
 ```
 
-The simplest solution is to make use of a specialized factor package called `forcats` and its funtion, `fct_explicit_na`.
+The simplest solution is to make use of a specialized factor package called `forcats` and its function, `fct_explicit_na`.
 
 ```{r}
 library(forcats)
@@ -364,4 +364,56 @@ dat1 <- dat %>%
 head(dat1)   
 ```
 
+# Miscellaneous
 
+## Outputting a vector instead of a table using `pull`
+
+Piping operations will normally output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:
+
+```{r}
+oats <- dat %>% 
+  filter(Crop == "Oats",
+         Information == "Yield (Hg/Ha)") %>% 
+  summarise(Oats_sum = sum(Value))
+oats
+class(oats)
+```
+
+There may be times when you want the output as a vector element and not a data table. To output a vector, use the `pull()` function.
+
+```{r}
+oats <- dat %>% 
+  filter(Crop == "Oats",
+         Information == "Yield (Hg/Ha)") %>% 
+  summarise(Oats_sum = sum(Value)) %>% 
+  pull()
+oats
+
+class(oats)
+```
+
+The `pull` function can also be used to convert a data table column to a multi-element vector, e.g.:
+
+```{r}
+# This outputs a one column table
+yield <- dat %>% 
+  filter(Crop == "Oats",
+         Information == "Yield (Hg/Ha)") %>% 
+  select(Value)
+
+head(yield)
+
+class(yield)
+```
+
+```{r}
+# This outputs a multi-element vector
+yield <- dat %>% 
+  filter(Crop == "Oats",
+         Information == "Yield (Hg/Ha)") %>% 
+  pull(Value)
+
+head(yield)
+
+class(yield)
+```
