@@ -395,12 +395,17 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
+<li><a href="#introduction">Introduction</a></li>
 <li><a href="#the-yaml-header">The YAML header</a></li>
 <li><a href="#section-headers">Section headers</a></li>
-<li><a href="#text-format">Text format</a></li>
+<li><a href="#text-formats">Text formats</a></li>
 <li><a href="#code-chunks">Code chunks</a></li>
 <li><a href="#document-wide-code-chunk-options">Document wide code chunk options</a></li>
 <li><a href="#inline-code-chunks">Inline code chunks</a></li>
+<li><a href="#tables">Tables</a><ul>
+<li><a href="#static-tables">Static tables</a></li>
+<li><a href="#dynamic-tables">Dynamic tables</a></li>
+</ul></li>
 <li><a href="#a-complete-example">A complete example</a></li>
 <li><a href="#additional-resources">Additional resources</a></li>
 </ul>
@@ -412,6 +417,7 @@ $(document).ready(function () {
     padding: 10px;
     background: #EEEEEE;
     box-shadow: 2px 3px 5px #bbbbbb;
+    margin-block-end: 25px;
 }
 
 .output_out {
@@ -419,11 +425,23 @@ $(document).ready(function () {
     padding: 10px;
     background: #F5EFD5;
     box-shadow: 2px 3px 5px #bbbbbb;
+    margin-left: 25px;
+    margin-block-end: 25px;
+}
+
+.table{
+max-width: 50% ;
 }
 
 </style>
 <div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
 <p>This tutorial makes use of the following R package(s): <strong><code>knitr</code></strong> and <strong><code>rmarkdown</code></strong>.</p>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>An R markdown document is a text file usually ending with an <code>.Rmd</code> extension. It allows one to embed R code chunks and their output into a comprehensive report thus eliminating the possibility of loading the wrong figure into the document, or forgetting to update a statistical summary in the text when the original data file was revised.</p>
+<p>Creating an R markdown output from an Rmd file requires <strong>knitting</strong> the file as opposed to <em>running</em> the code as you would an R script. The RStudio interface provides you with a <em>knit</em> button at the top of its interface. The knit button also allows you to choose the output format (HMTL, Word or PDF). You can also knit an Rmd file in R using the <code>render</code> function from the <code>rmarkdown</code> package. For example,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="st">&quot;HW16.Rmd&quot;</span>)</code></pre></div>
 </div>
 <div id="the-yaml-header" class="section level1">
 <h1>The YAML header</h1>
@@ -501,13 +519,13 @@ etc...
 <p>etc…</p>
 </div>
 </div>
-<div id="text-format" class="section level1">
-<h1>Text format</h1>
+<div id="text-formats" class="section level1">
+<h1>Text formats</h1>
 <p>The markdown language has several built-in text formatting options. A brief summary of some their syntax follows:</p>
 <ul>
 <li><em>Italic</em>: To italicize text, wrap it in asterisks as in <em><code>*this is italicized*</code></em>. Note that you do not want spaces between the asterisks and the text.</li>
 <li><strong>Bold</strong>: To bold text, wrap it with a <em>pair</em> of asterisks <strong><code>**this is bold**</code></strong>.</li>
-<li>Web links: To create web links wrap the text to be displayed with <code>[ ]</code> and the web link with <code>( )</code> as in <code>[ES 218 website](https://mgimond.github.io/ES218)</code>.</li>
+<li>Web links: To create web links wrap the text with <code>[ ]</code> followed by the web link wrapped with <code>( )</code> as in <code>[ES 218 website](https://mgimond.github.io/ES218)</code>. Make sure that there are no spaces between <code>[]</code> and <code>()</code>.</li>
 <li>Lists: To create lists in your document, precede each list item with an asterisk followed by a space. For example:</li>
 </ul>
 <pre class="output_example">
@@ -515,6 +533,13 @@ etc...
 * Second list element
 * Third list element
 </pre>
+<div class="output_out">
+<ul>
+<li>First list element</li>
+<li>Second list element</li>
+<li>Third list element</li>
+</ul>
+</div>
 <ul>
 <li>Block equations: You can embed <a href="https://www.sharelatex.com/learn/Mathematical_expressions">Latex</a> block equations using double dollar signs,</li>
 </ul>
@@ -553,19 +578,19 @@ plot(hp ~ mpg, mtcars)
 <li><code>fig.width</code> and <code>fig.height</code>: These parameters control a figure’s height and width (in inches).</li>
 <li><code>warning</code> and <code>message</code>: Some functions will output warnings or messages, most of which you probably do not want in your output document. To hide these, set <code>warning</code> and <code>message</code> to <code>FALSE</code>.</li>
 </ul>
-<p>An code chunk example follows:</p>
+<p>An example of a code chunk with a few of the aformentioned parameter follows:</p>
 <pre class="output_example">```{r message=FALSE, warning=FALSE, echo=TRUE, fig.width=3, fig.height=2} 
 plot(hp ~ mpg, mtcars)
 ```</pre>
 <p>Here’s the output (note that <code>echo</code> was set to <code>TRUE</code> in this example):</p>
 <div class="output_out">
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(hp <span class="op">~</span><span class="st"> </span>mpg, mtcars)</code></pre></div>
-<p><img src="Misc01_files/figure-html/unnamed-chunk-2-1.png" width="288" /></p>
+<p><img src="Misc01_files/figure-html/unnamed-chunk-3-1.png" width="288" /></p>
 </div>
 </div>
 <div id="document-wide-code-chunk-options" class="section level1">
 <h1>Document wide code chunk options</h1>
-<p>You can apply document wide code chunk options. For example, to avoid adding <code>message=FALSE, warning=FALSE</code> to each chunk of code, you can add this single chunk of code at the beginning of your document.</p>
+<p>You can apply document wide code chunk options. For example, to avoid adding <code>message=FALSE</code> and <code>warning=FALSE</code> to each chunk of code, you can add this single chunk of code to the beginning of your Rmd file.</p>
 <pre class="output_example">```{r include=FALSE}
 knitr::opts_chunk$set(message=FALSE, warning=FALSE)
 ```</pre>
@@ -594,7 +619,7 @@ The mean miles per gallon is `r round(mean(mtcars$mpg), 1)` mpg.
 <p class="output_out">
 The mean miles per gallon is 20.1 mpg.
 </p>
-<p>If the code chunk becomes to long and unwieldy to embed in your text, you can create an object in a separate chunk of code then reference that object inline. For example:</p>
+<p>If the code chunk becomes too long and unwieldy to embed in your text, you can create an object from that code in a separate chunk of code then reference that object inline. For example:</p>
 <pre class="output_example">```{r include=FALSE}
 M <- lm(mpg ~ hp, mtcars)
 r.sq <- round(summary(M)$r.square, 3)
@@ -606,6 +631,331 @@ The modeled r-square between miles-per-gallon and engine horsepower is `r r.sq`.
 <p class="output_out">
 The modeled r-square between miles-per-gallon and engine horsepower is 0.602.
 </p>
+</div>
+<div id="tables" class="section level1">
+<h1>Tables</h1>
+<p>You can create two types of tables: <strong>static tables</strong> where you manually populate the cell values, and <strong>dynamic tables</strong> which are populated with R data tables.</p>
+<div id="static-tables" class="section level2">
+<h2>Static tables</h2>
+<p>Here’s an example of a static table syntax:</p>
+<pre class="output_example">
+column 1        Column 2    column3 
+-----------  -----------  ------------
+val1                 2.3  apple
+val2                   5  orange
+val3                0.34  kiwi
+</pre>
+<div class="output_out">
+<table>
+<thead>
+<tr class="header">
+<th align="left">column 1</th>
+<th align="right">Column 2</th>
+<th align="left">column3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">val1</td>
+<td align="right">2.3</td>
+<td align="left">apple</td>
+</tr>
+<tr class="even">
+<td align="left">val2</td>
+<td align="right">5.0</td>
+<td align="left">orange</td>
+</tr>
+<tr class="odd">
+<td align="left">val3</td>
+<td align="right">0.34</td>
+<td align="left">kiwi</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Note how the left and right adjusted columns in the output reflect the left and right adjusted columns in the above syntax. It’s important that the column elements not extend beyond the dashed line extents.</p>
+</div>
+<div id="dynamic-tables" class="section level2">
+<h2>Dynamic tables</h2>
+<p>There are many R packages that specialize in table output formats such as <code>xtable</code> and <code>stargazer</code>. However, decent tables can be created with <code>knitr</code>’s <code>kable</code> function. Here’s an example:</p>
+<pre class="output_example">
+knitr::kable( head(mtcars), format="html" )
+</pre>
+<div class="output_out">
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+mpg
+</th>
+<th style="text-align:right;">
+cyl
+</th>
+<th style="text-align:right;">
+disp
+</th>
+<th style="text-align:right;">
+hp
+</th>
+<th style="text-align:right;">
+drat
+</th>
+<th style="text-align:right;">
+wt
+</th>
+<th style="text-align:right;">
+qsec
+</th>
+<th style="text-align:right;">
+vs
+</th>
+<th style="text-align:right;">
+am
+</th>
+<th style="text-align:right;">
+gear
+</th>
+<th style="text-align:right;">
+carb
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Mazda RX4
+</td>
+<td style="text-align:right;">
+21.0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+160
+</td>
+<td style="text-align:right;">
+110
+</td>
+<td style="text-align:right;">
+3.90
+</td>
+<td style="text-align:right;">
+2.620
+</td>
+<td style="text-align:right;">
+16.46
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mazda RX4 Wag
+</td>
+<td style="text-align:right;">
+21.0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+160
+</td>
+<td style="text-align:right;">
+110
+</td>
+<td style="text-align:right;">
+3.90
+</td>
+<td style="text-align:right;">
+2.875
+</td>
+<td style="text-align:right;">
+17.02
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Datsun 710
+</td>
+<td style="text-align:right;">
+22.8
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+108
+</td>
+<td style="text-align:right;">
+93
+</td>
+<td style="text-align:right;">
+3.85
+</td>
+<td style="text-align:right;">
+2.320
+</td>
+<td style="text-align:right;">
+18.61
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hornet 4 Drive
+</td>
+<td style="text-align:right;">
+21.4
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+258
+</td>
+<td style="text-align:right;">
+110
+</td>
+<td style="text-align:right;">
+3.08
+</td>
+<td style="text-align:right;">
+3.215
+</td>
+<td style="text-align:right;">
+19.44
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hornet Sportabout
+</td>
+<td style="text-align:right;">
+18.7
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+360
+</td>
+<td style="text-align:right;">
+175
+</td>
+<td style="text-align:right;">
+3.15
+</td>
+<td style="text-align:right;">
+3.440
+</td>
+<td style="text-align:right;">
+17.02
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Valiant
+</td>
+<td style="text-align:right;">
+18.1
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+225
+</td>
+<td style="text-align:right;">
+105
+</td>
+<td style="text-align:right;">
+2.76
+</td>
+<td style="text-align:right;">
+3.460
+</td>
+<td style="text-align:right;">
+20.22
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>If the output file format is a Word document, substitute <code>format=&quot;html&quot;</code> with <code>format=&quot;pandoc&quot;</code>.</p>
+</div>
 </div>
 <div id="a-complete-example" class="section level1">
 <h1>A complete example</h1>
@@ -628,6 +978,10 @@ knitr::opts_chunk$set(message=FALSE, warning=FALSE, echo=TRUE)
 ```{r fig.width=3, fig.height=2} 
 plot(hp ~ mpg, mtcars)
 ```
+
+## Here's a glimpse at the data 
+
+knitr::kable(head((mtcars), format="html")
 
 ## A basic analysis
 
