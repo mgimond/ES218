@@ -363,6 +363,9 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Misc01.html">R markdown documents</a>
+    </li>
     <li class="dropdown-header">Week 13</li>
     <li>
       <a href="Week12a.html">Creating maps in R</a>
@@ -402,7 +405,7 @@ $(document).ready(function () {
 <li><a href="#is-the-relationship-between-tenor-and-bass-additive-or-multiplicative">Is the relationship between tenor and bass additive or multiplicative?</a></li>
 </ul></li>
 <li><a href="#the-tukey-mean-difference-plot">The Tukey mean-difference plot</a><ul>
-<li><a href="#generating-an-m-d-plot-using-ggplot">Generating an m-d plot using <code>ggplot</code></a></li>
+<li><a href="#generating-a-tukey-m-d-plot-using-ggplot">Generating a Tukey m-d plot using <code>ggplot</code></a></li>
 </ul></li>
 <li><a href="#pairwise-q-q-plots">Pairwise q-q plots</a></li>
 </ul>
@@ -425,11 +428,11 @@ df2 &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part 
 <p><img src="Week05b_files/figure-html/unnamed-chunk-3-1.png" width="384" /></p>
 <p>Let’s get the count and median values for both batches.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df2 <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(voice.part) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarise</span>(<span class="dt">median =</span> <span class="kw">median</span>(height), <span class="dt">count =</span> <span class="kw">n</span>() )</code></pre></div>
-<pre><code># A tibble: 2 × 3
+<pre><code># A tibble: 2 x 3
   voice.part median count
-      &lt;fctr&gt;  &lt;dbl&gt; &lt;int&gt;
-1     Bass 2     72    26
-2    Tenor 1     68    21</code></pre>
+  &lt;fct&gt;       &lt;dbl&gt; &lt;int&gt;
+1 Bass 2       72.0    26
+2 Tenor 1      68.0    21</code></pre>
 <p>The basest tend to be slightly taller than the Tenor–this is one way to compare the batches. But how do their distributions differ? We will explore this in the next section.</p>
 <div id="boxplots" class="section level2">
 <h2>Boxplots</h2>
@@ -473,14 +476,14 @@ fi &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> <
 <span class="kw">round</span>(fi,<span class="dv">2</span>)</code></pre></div>
 <pre><code> [1] 0.02 0.07 0.12 0.17 0.21 0.26 0.31 0.36 0.40 0.45 0.50 0.55 0.60 0.64 0.69 0.74 0.79 0.83 0.88 0.93 0.98</code></pre>
 <p>To find the matching singer height values in <code>Bass2</code>, we need to interpolate the original height values. In practice, a linear interpolation is sought unless theory justifies otherwise.</p>
-<p>We will explore two methods: a <strong>manual</strong> approach to constructing a q-q plot and the <code>qqplot()</code> function approach. <strong>Note that both methods can produce slightly different q-q plots</strong>–this is to be expected since they may adopt different quantile algorithms.</p>
+<p>We will explore two methods: a <em>manual</em> approach to constructing a q-q plot and the <code>qqplot()</code> function approach. <strong>Note that both methods can produce slightly different q-q plots</strong>–this is to be expected since they may adopt different quantile algorithms.</p>
 <p>In all cases, we will add a 45° line (i.e. the <code>Bass 1</code> <span class="math inline">\(=\)</span> <code>Tenor 1</code> line) that shows where we would expect the points to be plotted if both distributions were identical.</p>
 <div id="manual-construction-of-a-q-q-plot" class="section level3">
 <h3>Manual construction of a q-q plot</h3>
 <p>To find a value in the larger dataset (i.e. <code>Bass 2</code>) that matches the 21 quantiles of the smaller dataset, <code>Tenor 1</code>, we can use the <code>approx()</code> function.</p>
 <p>First, we will extract all values associated with <code>Bass 2</code> from the dataset.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df.bass  &lt;-<span class="st"> </span>df.qq <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>( voice.part <span class="op">==</span><span class="st"> &quot;Bass 2&quot;</span>)
-df.tenor &lt;-<span class="st"> </span>df.qq <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>( voice.part <span class="op">==</span><span class="st"> &quot;Tenor 1&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df.bass  &lt;-<span class="st"> </span>df.qq <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>( voice.part <span class="op">==</span><span class="st"> &quot;Bass 2&quot;</span>) 
+df.tenor &lt;-<span class="st"> </span>df.qq <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>( voice.part <span class="op">==</span><span class="st"> &quot;Tenor 1&quot;</span>) </code></pre></div>
 <p>Next, we will interpolate a new set of height values for <code>Bass 2</code> that match the 21 quantile values in <code>fi</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">b.hgt.interp &lt;-<span class="st"> </span><span class="kw">approx</span>(df.bass<span class="op">$</span>f.val, df.bass<span class="op">$</span>height, fi)</code></pre></div>
 <p>The output generates two columns: the 21 quantiles, <code>fi</code>, and the 21 <code>Bass 2</code> interpolated height values. Note that we could have substituted <code>fi</code> with <code>df.tenor$f.val</code>. The approach shown here is used to reinforce the idea that we are interpolating height values based on a <em>new</em> set of f-values.</p>
@@ -508,23 +511,38 @@ xylim &lt;-<span class="st"> </span>xylim <span class="op">+</span><span class="
 <h3>Using the base <code>qqplot</code></h3>
 <p>This approach is quicker and requires fewer lines of code, but it does not afford the insight into the inner workings of a q-q plot as does the manual approach from the previous section.</p>
 <p><code>qqplot</code> is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Tenor &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part <span class="op">==</span><span class="st"> &quot;Tenor 1&quot;</span>)
-Bass  &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part <span class="op">==</span><span class="st"> &quot;Bass 2&quot;</span>)
-<span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor<span class="op">$</span>height, <span class="dt">y=</span>Bass<span class="op">$</span>height, <span class="dt">asp=</span><span class="dv">1</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Tenor &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part <span class="op">==</span><span class="st"> &quot;Tenor 1&quot;</span>) <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">pull</span>(height)
+Bass  &lt;-<span class="st"> </span><span class="kw">filter</span>(df, voice.part <span class="op">==</span><span class="st"> &quot;Bass 2&quot;</span>)  <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">pull</span>(height)
+<span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor, <span class="dt">y=</span>Bass, <span class="dt">asp=</span><span class="dv">1</span>)
 <span class="kw">abline</span>( <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-14-1.png" width="288" /></p>
 <p><code>qqplot</code> offers the option to output the q-q plot values (including the interpolated values) as a <strong>list</strong> by setting the parameter <code>plot.it=FALSE</code>. We then need to convert this list object to a dataframe using <code>as.data.frame</code>. The output can then be used in a call to <code>ggplot</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">qq.out &lt;-<span class="st"> </span><span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor<span class="op">$</span>height, <span class="dt">y=</span>Bass<span class="op">$</span>height, <span class="dt">plot.it=</span><span class="ot">FALSE</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create the quantile-quantile data table</span>
+qq.out &lt;-<span class="st"> </span><span class="kw">qqplot</span>(<span class="dt">x=</span>Tenor, <span class="dt">y=</span>Bass, <span class="dt">plot.it=</span><span class="ot">FALSE</span>)
 qq.out &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(qq.out)
 
+<span class="co"># Set the x and y limits</span>
 xylim &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(qq.out<span class="op">$</span>x, qq.out<span class="op">$</span>y) )
-xylim &lt;-<span class="st"> </span>xylim <span class="op">+</span><span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="fl">0.05</span> <span class="op">*</span><span class="st"> </span><span class="kw">diff</span>(xylim), <span class="op">+</span><span class="st"> </span><span class="fl">0.05</span> <span class="op">*</span><span class="st"> </span><span class="kw">diff</span>(xylim))
+
+<span class="co"># Generate the QQ plot</span>
 <span class="kw">ggplot</span>(qq.out, <span class="kw">aes</span>( <span class="dt">x=</span> x, <span class="dt">y =</span> y)) <span class="op">+</span><span class="st"> </span>
 <span class="st">               </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
 <span class="st">               </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) <span class="op">+</span>
 <span class="st">               </span><span class="kw">coord_fixed</span>(<span class="dt">ratio =</span> <span class="dv">1</span>, <span class="dt">xlim=</span>xylim, <span class="dt">ylim =</span> xylim) <span class="op">+</span>
 <span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Tenor&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Bass&quot;</span>)</code></pre></div>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-15-1.png" width="288" /></p>
+<p>Note that <code>qqplot</code> generates a wide table where the <code>Tenor</code> height values and the interpolated <code>Bass</code> values are side-by-side (note that <code>x</code> and <code>y</code> were assigned when we called the <code>qqplot</code> function in the last code chunk).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(qq.out)</code></pre></div>
+<pre><code>   x    y
+1 64 66.0
+2 64 67.0
+3 65 67.5
+4 66 68.0
+5 66 69.0
+6 66 70.0</code></pre>
+<blockquote>
+<p>Note: The difference in output between our manual approach and <code>qqplot</code>’s approach is small. If you want to faithfully recreate <code>qqplot</code>’s output using the manual approach, compute the f-values as <span class="math inline">\((i -1)/(n-1)\)</span>.</p>
+</blockquote>
 </div>
 </div>
 <div id="q-q-plots-are-not-scatter-plots" class="section level2">
@@ -534,18 +552,18 @@ xylim &lt;-<span class="st"> </span>xylim <span class="op">+</span><span class="
 <div id="what-can-we-learn-from-a-q-q-plot" class="section level2">
 <h2>What can we learn from a q-q plot?</h2>
 <p>A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e. all the points of a q-q plot fall on the 45° line) then we could characterize the relationship as <code>batch1 = batch2</code>. If the points follow a pattern mimicking a line parallel to the 45° line as in the following plot,</p>
-<p><img src="Week05b_files/figure-html/unnamed-chunk-16-1.png" width="192" /></p>
+<p><img src="Week05b_files/figure-html/unnamed-chunk-17-1.png" width="192" /></p>
 <p>then we say that there is an <strong>additive shift</strong> between <code>batch1</code> and <code>batch2</code>. The shift can usually be eyeballed from the plot. In this example, the shift is around 2 or <code>batch2 = 2 * batch1</code>.</p>
 <p>When the points follow a line at an angle to the 45° line as in</p>
-<p><img src="Week05b_files/figure-html/unnamed-chunk-17-1.png" width="192" /></p>
-<p>then we say that there is a <strong>multiplicative shift</strong> between the batches. The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by the inverse of the suspected relationship. For example, if we believe that <code>batch2</code> is 1.5 times greater than <code>batch1</code>, we divide the former by 1.5 then plot the result to see if the points line up.</p>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-18-1.png" width="192" /></p>
-<p>In many cases, you might encounter a relationship that is both additive <em>and</em> multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to parallel to the 45° line, then resolve the additive portion. For example, the following plot</p>
+<p>then we say that there is a <strong>multiplicative shift</strong> between the batches. The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by the inverse of the suspected relationship. For example, if we believe that <code>batch2</code> is 1.5 times greater than <code>batch1</code>, we divide the former by 1.5 then plot the result to see if the points line up.</p>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-19-1.png" width="192" /></p>
-<p>can be decomposed into its multiplicative component (divide by ~ 1.5),</p>
+<p>In many cases, you might encounter a relationship that is both additive <em>and</em> multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to parallel to the 45° line, then resolve the additive portion. For example, the following plot</p>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-20-1.png" width="192" /></p>
-<p>then by its additive component (subtract by ~ 3.5),</p>
+<p>can be decomposed into its multiplicative component (divide by ~ 1.5),</p>
 <p><img src="Week05b_files/figure-html/unnamed-chunk-21-1.png" width="192" /></p>
+<p>then by its additive component (subtract by ~ 3.5),</p>
+<p><img src="Week05b_files/figure-html/unnamed-chunk-22-1.png" width="192" /></p>
 <p>to get the approximate relationship of <code>batch2 = batch1 * 1.5 + 3.5</code>.</p>
 <div id="is-the-relationship-between-tenor-and-bass-additive-or-multiplicative" class="section level3">
 <h3>Is the relationship between tenor and bass additive or multiplicative?</h3>
@@ -554,21 +572,21 @@ xylim &lt;-<span class="st"> </span>xylim <span class="op">+</span><span class="
 <span class="st">             </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
 <span class="st">             </span><span class="kw">geom_abline</span>( <span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) <span class="op">+</span>
 <span class="st">             </span><span class="kw">coord_fixed</span>(<span class="dt">ratio =</span> <span class="dv">1</span>, <span class="dt">xlim=</span>xylim, <span class="dt">ylim =</span> xylim) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Bass 2 - 2.5&quot;</span>)</code></pre></div>
-<p><img src="Week05b_files/figure-html/unnamed-chunk-22-1.png" width="288" /></p>
+<p><img src="Week05b_files/figure-html/unnamed-chunk-23-1.png" width="288" /></p>
 <p>The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here.</p>
 </div>
 </div>
 <div id="the-tukey-mean-difference-plot" class="section level2">
 <h2>The Tukey mean-difference plot</h2>
-<p>Cleveland notes on page 23 that our eyes are better suited at judging deviations from a horizontal line than from a 45° line. All that is required is to subtract the y-value, <code>Bass2</code>, from the x-value, <code>Tenor 2</code>, then compare the difference to the mean of the two values:</p>
+<p>Our eyes are better suited at judging deviations from a horizontal line than from a 45° line. All that is required is to subtract the y-value (<code>Bass2</code>) from the x-value (<code>Tenor 2</code>) then compare the difference to the mean of the two values:</p>
 <p><span class="math display">\[
 Y = Bass- Tenor 
 \]</span> <span class="math display">\[
 X = \frac{Bass + Tenor}{2}
 \]</span></p>
 <p>This forces the 45° line in the previous q-q plots to a 0° slope. The final plot is a <strong>Tukey mean-difference</strong> plot or <strong>m-d</strong> for short.</p>
-<div id="generating-an-m-d-plot-using-ggplot" class="section level3">
-<h3>Generating an m-d plot using <code>ggplot</code></h3>
+<div id="generating-a-tukey-m-d-plot-using-ggplot" class="section level3">
+<h3>Generating a Tukey m-d plot using <code>ggplot</code></h3>
 <p>We continue with the <code>qq.out</code> dataset generated from the <code>qqplot</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">md.y  &lt;-<span class="st"> </span>(qq.out<span class="op">$</span>y <span class="op">-</span><span class="st"> </span>qq.out<span class="op">$</span>x) 
 md.x  &lt;-<span class="st"> </span>(qq.out<span class="op">$</span>y <span class="op">+</span><span class="st"> </span>qq.out<span class="op">$</span>x) <span class="op">*</span><span class="st"> </span><span class="fl">0.5</span>
@@ -576,7 +594,7 @@ df.md &lt;-<span class="st"> </span><span class="kw">data.frame</span>(md.x, md.
 
 <span class="kw">ggplot</span>(df.md,  <span class="kw">aes</span>(<span class="dt">x =</span> md.x, <span class="dt">y =</span> md.y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_abline</span>( <span class="dt">slope=</span><span class="dv">0</span> ) <span class="op">+</span>
 <span class="st">               </span><span class="kw">xlab</span>(<span class="st">&quot;Mean height (in)&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Difference in height (in)&quot;</span>)</code></pre></div>
-<p><img src="Week05b_files/figure-html/unnamed-chunk-23-1.png" width="288" /></p>
+<p><img src="Week05b_files/figure-html/unnamed-chunk-24-1.png" width="288" /></p>
 <p>The units on both axes are in inches. It’s clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.</p>
 </div>
 </div>
@@ -608,7 +626,7 @@ t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span 
         <span class="kw">panel.splom</span>(x,y,...)
         <span class="kw">panel.abline</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">col=</span><span class="st">&quot;grey&quot;</span>)
       })</code></pre></div>
-<p><img src="Week05b_files/figure-html/unnamed-chunk-24-1.png" width="576" /></p>
+<p><img src="Week05b_files/figure-html/unnamed-chunk-25-1.png" width="576" /></p>
 </div>
 
 

@@ -103,7 +103,7 @@ round(fi,2)
 
 To find the matching singer height values in `Bass2`, we need to interpolate the original height values. In practice, a linear interpolation is sought unless theory justifies otherwise. 
 
-We will explore two methods: a **manual** approach to constructing a q-q plot and the `qqplot()` function approach. **Note that both methods can produce slightly different q-q plots**--this is to be expected since they may adopt different quantile algorithms. 
+We will explore two methods: a *manual* approach to constructing a q-q plot and the `qqplot()` function approach. **Note that both methods can produce slightly different q-q plots**--this is to be expected since they may adopt different quantile algorithms. 
 
 In all cases, we will add a 45&deg; line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
 
@@ -114,8 +114,8 @@ To find a value in the larger dataset (i.e. `Bass 2`) that matches the 21 quanti
 First, we will extract all values associated with `Bass 2` from the dataset.
 
 ```{r}
-df.bass  <- df.qq %>%  filter( voice.part == "Bass 2")
-df.tenor <- df.qq %>%  filter( voice.part == "Tenor 1")
+df.bass  <- df.qq %>%  filter( voice.part == "Bass 2") 
+df.tenor <- df.qq %>%  filter( voice.part == "Tenor 1") 
 ```
 
 Next, we will interpolate a new set of height values for `Bass 2` that match the 21 quantile values in `fi`.
@@ -161,9 +161,9 @@ This approach is quicker and requires fewer lines of code, but it does not affor
 
 ```{r fig.height=3, fig.width=3, echo=2:5}
 OP <- par(mar=c(4,4,0,0))
-Tenor <- filter(df, voice.part == "Tenor 1")
-Bass  <- filter(df, voice.part == "Bass 2")
-qqplot(x=Tenor$height, y=Bass$height, asp=1)
+Tenor <- filter(df, voice.part == "Tenor 1") %>%  pull(height)
+Bass  <- filter(df, voice.part == "Bass 2")  %>%  pull(height)
+qqplot(x=Tenor, y=Bass, asp=1)
 abline( c(0,1))
 par(OP)
 ```
@@ -171,17 +171,29 @@ par(OP)
 `qqplot` offers the option to output the q-q plot values (including the interpolated values) as a **list**  by setting the parameter `plot.it=FALSE`. We then need to convert this list object to a dataframe using `as.data.frame`. The output can then be used in a call to `ggplot`.
 
 ```{r fig.height=3, fig.width=3}
-qq.out <- qqplot(x=Tenor$height, y=Bass$height, plot.it=FALSE)
+# Create the quantile-quantile data table
+qq.out <- qqplot(x=Tenor, y=Bass, plot.it=FALSE)
 qq.out <- as.data.frame(qq.out)
 
+# Set the x and y limits
 xylim <- range( c(qq.out$x, qq.out$y) )
-xylim <- xylim + c(-0.05 * diff(xylim), + 0.05 * diff(xylim))
+
+# Generate the QQ plot
 ggplot(qq.out, aes( x= x, y = y)) + 
                geom_point() + 
                geom_abline( intercept=0, slope=1) +
                coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
                xlab("Tenor") + ylab("Bass")
 ```
+
+Note that `qqplot` generates a wide table where the `Tenor` height values and the interpolated `Bass` values are side-by-side (note that `x` and `y` were assigned when we called the `qqplot` function in the last code chunk).
+
+```{r}
+head(qq.out)
+```
+
+> Note: 
+The difference in output between our manual approach and `qqplot`'s approach is small. If you want to faithfully recreate `qqplot`'s output using the manual approach, compute the f-values as $(i -1)/(n-1)$. 
 
 ## q-q plots are *not* scatter plots
 
@@ -262,7 +274,7 @@ The bulk of the data appears to follow an additive shift except for one or two o
 
 ## The Tukey mean-difference plot
 
-Cleveland notes on page 23 that our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line.  All that is required is to subtract the y-value, `Bass2`, from the x-value, `Tenor 2`, then compare the difference to the mean of the two values:
+Our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line.  All that is required is to subtract the y-value  (`Bass2`) from the x-value (`Tenor 2`) then compare the difference to the mean of the two values:
 
 $$
 Y = Bass- Tenor 
@@ -273,7 +285,7 @@ $$
 
 This forces the 45&deg; line in the previous q-q plots to a 0° slope. The final plot is a **Tukey mean-difference** plot or **m-d** for short.
 
-### Generating an m-d plot using `ggplot`
+### Generating a Tukey m-d plot using `ggplot`
 
 We continue with the `qq.out` dataset generated from the `qqplot` function.
 
