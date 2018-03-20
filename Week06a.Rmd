@@ -1,5 +1,7 @@
 ---
 title: "The theoretical q-q"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r echo=FALSE}
@@ -14,7 +16,7 @@ This material can be read in conjunction with **section 2.4** of **Cleveland's b
 
 # Introduction
 
-Thus far, we have used the quantile-quantile plots to compare the distributions between two empirical (i.e. observational) datasets. We can also use the q-q plot to compare an empirical observation to a theoretical observation (i.e. one defined mathematically). Examples of popular theoretical observations are the normal distribution (aka the Gaussian distribution), the chi-square distribution, and the exponential distribution just to name a few.
+Thus far, we have used the quantile-quantile plots to compare the distributions between two empirical (i.e. observational) datasets. This is sometimes referred to as an *empirical Q-Q plot*. We can also use the q-q plot to compare an empirical observation to a theoretical observation (i.e. one defined mathematically). Such a plot is usually referred to as a *theoretical Q-Q plot*. Examples of popular theoretical observations are the normal distribution (aka the Gaussian distribution), the chi-square distribution, and the exponential distribution just to name a few.
 
 ```{r, fig.height=2, fig.width=7, echo=FALSE}
 OP <- par( mfrow=c(1,4))
@@ -47,13 +49,13 @@ The *normal q-q plot* is just a special case of the *empirical q-q plot* we've e
 
 ## Drawing a normal q-q plot from scratch
 
-In the following example, we'll compare the `Alto 1` group to a normal distribution. First, we'll extract the `Alto 1` height values and save them as an atomic vector object using `dplyr`'s piping operations. However, `dplyr`'s operations will return a dataframe--even if a single column is select. To force the output to an atomic vector, we'll pipe the subset to `.$height` which will extract the `height` column into a plain vector element.
+In the following example, we'll compare the `Alto 1` group to a normal distribution. First, we'll extract the `Alto 1` height values and save them as an atomic vector object using `dplyr`'s piping operations. However, `dplyr`'s operations will return a dataframe--even if a single column is selected. To force the output to an atomic vector, we'll pipe the subset to `pull(height)` which will extract the `height` column into a plain vector element.
  
 ```{r}
 library(dplyr)
 
 df   <- lattice::singer
-alto <- df %>%  filter(voice.part == "Alto 1") %>% .$height
+alto <- df %>%  filter(voice.part == "Alto 1") %>% pull(height)
 ```
 
 Next, we need to sort `alto` in ascending order.
@@ -62,7 +64,7 @@ Next, we need to sort `alto` in ascending order.
 alto <- sort(alto)
 ```
 
-Next, we need to find the matching normal distribution quantiles. We first find the quantiles for `alto`, then use `qnorm` to find the matching normal distribution values from the quantiles.
+Next, we need to find the matching normal distribution quantiles. We first find the $f$-values for `alto`, then use `qnorm` to find the matching normal distribution values from those same $f$-values
 
 ```{r}
 i      <- 1:length(alto)
@@ -80,11 +82,11 @@ par(OP)
 
 When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45° (or x=y) slope; the range of values between both sets of numbers do not match. Here, we are only seeking the **straightness** of the points.
 
-There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile of the q-q plot. The following chunk of code identifies the quantiles for both the `alto` dataset and the theoretical normal distribution. It then computes the slope and intercept for that line.
+There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile of the q-q plot. The following chunk of code identifies the quantiles for both the `alto` dataset and the theoretical normal distribution. It then computes the slope and intercept from these coordinates.
 
 ```{r}
 # Find 1st and 3rd quartile for the Alto 1 data
-y <- quantile(alto, c(0.25, 0.75))
+y <- quantile(alto, c(0.25, 0.75), type=5)
 
 # Find the 1st and 3rd quartile of the normal distribution
 x <- qnorm( c(0.25, 0.75))
@@ -107,12 +109,12 @@ par(OP)
 
 ## Using R's built-in functions
 
-R has two built-in functions that facilitate the plot building task when comparing a batch to a normal distribution: `qqnorm` and `qqline`.
+R has two built-in functions that facilitate the plot building task when comparing a batch to a normal distribution: `qqnorm` and `qqline`. Note that the function `qqline` allows the user to define the quantile method via the `qtype=` parameter. Here, we set it to 5 to match our choice of $f$-value calculation.
 
 ```{r fig.height=3, fig.width=3, echo=2:3, results='hold'}
 OP <-par(mar=c(3,3,1,1))
 qqnorm(alto)
-qqline(alto)
+qqline(alto, qtype=5)
 par(OP)
 ```
 
@@ -128,10 +130,10 @@ library(ggplot2)
 # Find the slope and intercept of the line that passes through the 1st and 3rd
 # quartile of the normal q-q plot
 
-y     <- quantile(alto, c(0.25, 0.75)) # Find the 1st and 3rd quartiles
-x     <- qnorm( c(0.25, 0.75))         # Find the matching normal values on the x-axis
-slope <- diff(y) / diff(x)             # Compute the line slope
-int   <- y[1] - slope * x[1]           # Compute the line intercept
+y     <- quantile(alto, c(0.25, 0.75), type=5) # Find the 1st and 3rd quartiles
+x     <- qnorm( c(0.25, 0.75))                 # Find the matching normal values on the x-axis
+slope <- diff(y) / diff(x)                     # Compute the line slope
+int   <- y[1] - slope * x[1]                   # Compute the line intercept
 
 # Generate normal q-q plot
 
@@ -144,8 +146,8 @@ We can, of course, make use of `ggplot`'s faceting function to generate trellise
 ```{r}
 library(dplyr)
 intsl <- df %>% group_by(voice.part) %>% 
-       summarize(q25    = quantile(height,0.25),
-                 q75    = quantile(height,0.75),
+       summarize(q25    = quantile(height,0.25, type=5),
+                 q75    = quantile(height,0.75, type=5),
                  norm25 = qnorm( 0.25),
                  norm75 = qnorm( 0.75),
                  slope  = (q25 - q75) / (norm25 - norm75),
