@@ -363,6 +363,9 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Misc01.html">R markdown documents</a>
+    </li>
     <li class="dropdown-header">Week 13</li>
     <li>
       <a href="Week12a.html">Creating maps in R</a>
@@ -396,13 +399,13 @@ $(document).ready(function () {
 <li><a href="#computing-the-residuals">Computing the residuals</a></li>
 <li><a href="#comparing-the-residuals">Comparing the residuals</a><ul>
 <li><a href="#pairwise-q-q-plots-with-the-lattice-package">Pairwise q-q plots with the <code>lattice</code> package</a></li>
-<li><a href="#comparing-batches-to-pooled-residuals">Comparing batches to pooled residuals</a></li>
+<li><a href="#comparing-batches-to-pooled-residuals-using-a-qq-plot">Comparing batches to pooled residuals using a QQ plot</a></li>
 </ul></li>
-<li><a href="#comparing-pooled-residuals-to-the-normal-distribution">Comparing pooled residuals to the normal distribution</a></li>
 <li><a href="#residual-fit-spread-plot">Residual-fit spread plot</a><ul>
 <li><a href="#a-simple-example">A simple example</a></li>
 <li><a href="#are-the-fitted-voice-part-values-significantly-different">Are the fitted voice part values significantly different?</a></li>
 </ul></li>
+<li><a href="#comparing-pooled-residuals-to-the-normal-distribution">Comparing pooled residuals to the normal distribution</a></li>
 </ul>
 </div>
 
@@ -468,57 +471,39 @@ t2    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span 
 <p><img src="Week07a_files/figure-html/unnamed-chunk-6-1.png" width="480" /></p>
 <p>Note that the plots are symmetrical about the diagonal. The q-q plots suggest that the spreads are very similar across singer heights given that the points fall almost perfectly along the one-to-one line.</p>
 </div>
-<div id="comparing-batches-to-pooled-residuals" class="section level2">
-<h2>Comparing batches to pooled residuals</h2>
+<div id="comparing-batches-to-pooled-residuals-using-a-qq-plot" class="section level2">
+<h2>Comparing batches to pooled residuals using a QQ plot</h2>
 <p>Since the spreads are homogeneous across the batches, we may choose to combine (pool) the residuals and compare the residuals of each batch to the <strong>pooled</strong> residuals. The advantage with this approach is that we are increasing the <em>size</em> of the reference residual distribution thus reducing uncertainty that results from a relatively small sample size.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df3 &lt;-<span class="st"> </span>df2 <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">group_by</span>(voice.part)                     <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">mutate</span>(<span class="dt">H.sorted =</span> <span class="kw">sort</span>(Height.res),
-              <span class="dt">f.val    =</span> (<span class="dv">1</span><span class="op">:</span><span class="kw">n</span>() <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">n</span>() )  <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">ungroup</span>()                                <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">mutate</span>(<span class="dt">Pooled.res =</span> <span class="kw">quantile</span>(Height.res, f.val))  <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">select</span>(voice.part, H.sorted, Pooled.res)
+<span class="st">  </span><span class="kw">group_by</span>(voice.part)  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">arrange</span>(Height.res)  <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">f.val    =</span> (<span class="kw">row_number</span>() <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">n</span>() )  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ungroup</span>()  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Pooled.res =</span> <span class="kw">quantile</span>(Height.res, f.val))  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(voice.part, Height.res, Pooled.res)
 
-
-<span class="kw">ggplot</span>(df3, <span class="kw">aes</span>(<span class="dt">y=</span>H.sorted, <span class="dt">x=</span>Pooled.res)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.5</span>) <span class="op">+</span><span class="st"> </span>
+<span class="kw">ggplot</span>(df3, <span class="kw">aes</span>(<span class="dt">y=</span>Height.res, <span class="dt">x=</span>Pooled.res)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.5</span>) <span class="op">+</span><span class="st"> </span>
 <span class="st">              </span><span class="kw">geom_abline</span>(<span class="dt">intercept=</span><span class="dv">0</span>, <span class="dt">slope=</span><span class="dv">1</span>) <span class="op">+</span>
-<span class="st">              </span><span class="kw">facet_grid</span>(. <span class="op">~</span><span class="st"> </span>voice.part) </code></pre></div>
+<span class="st">              </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>voice.part, <span class="dt">nrow=</span><span class="dv">1</span>) </code></pre></div>
 <p><img src="Week07a_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
+<p>All eight batches seem to have similar spreads. This makes it possible to compare batch means using a <strong>residual-fit spread</strong> plot (covered in the next section).</p>
 </div>
-</div>
-<div id="comparing-pooled-residuals-to-the-normal-distribution" class="section level1">
-<h1>Comparing pooled residuals to the normal distribution</h1>
-<p>We can also take advantage of the pooled residuals to give us a larger sample size when comparing it with the normal distribution.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Find the equation for the line</span>
-y     &lt;-<span class="st"> </span><span class="kw">quantile</span>(df3<span class="op">$</span>Pooled.res, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))
-x     &lt;-<span class="st"> </span><span class="kw">qnorm</span>( <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))        
-slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) <span class="op">/</span><span class="st"> </span><span class="kw">diff</span>(x)             
-int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>x[<span class="dv">1</span>]
-
-<span class="kw">ggplot</span>(df3, <span class="kw">aes</span>(<span class="dt">sample=</span>Pooled.res)) <span class="op">+</span><span class="kw">stat_qq</span>() <span class="op">+</span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> int, <span class="dt">slope=</span>slope)</code></pre></div>
-<p><img src="Week07a_files/figure-html/unnamed-chunk-8-1.png" width="288" /></p>
-<p>This dataset has behaved quite well. Its batches differed only by location, yet its spread remained homogeneous (enough) across the batches to pool them and enable us to confirm, with greater confidence, that the spread follows a normal distribution.</p>
-<p>This <em>well behaved</em> dataset allows us to model its spread using the sample <strong>standard deviation</strong>. It’s important to note that had the data not followed a normal distribution, then characterizing its spread using the standard deviation would have been inappropriate. Unfortunately, many ancillary data analysts seldom check the distribution requirements of their data before choosing to characterize its distribution using the standard deviation. In such a situation, you would have to revert to a far less succinct characterization of spread: the quantile.</p>
-<p>You can compute the standard deviation as:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(df3<span class="op">$</span>H.sorted)</code></pre></div>
-<pre><code>[1] 2.465049</code></pre>
-<p>We can now model singer height by both <code>voice.part</code> means, and the group standard deviation of 2.47.</p>
 </div>
 <div id="residual-fit-spread-plot" class="section level1">
 <h1>Residual-fit spread plot</h1>
+<p>So far, we’ve learned that the spreads are the same across all batches. This makes it feasible to assess whether the differences in means are comparable in magnitude to the spread of the pooled residuals.</p>
 <div id="a-simple-example" class="section level2">
 <h2>A simple example</h2>
-<p>So far, we’ve learned how to fit a model to the data then examine the residuals for homogeneity and normality with the added bonus of characterizing the spread with the standard deviation. But we haven’t assessed if the differences in location (means) between batches is a significant contributor to overall variability in the data. This begs the question, what constitutes <em>“significant”</em>?</p>
-<p>To answer this question, let’s compare the following two plots. Both plots show two batches side-by-side. The difference in location is nearly the same in both plots (group <code>a</code> and <code>b</code> have a mean of 10 and 11 respectively), but the difference in spreads are not.</p>
-<p><img src="Week07a_files/figure-html/unnamed-chunk-10-1.png" width="480" /></p>
-<p>The left-side plot does not allow us to say, with confidence, that the two batches differ significantly despite both means being different. The right-side plot, on the other hand, shows a significant difference in batch locations. So the answer to the question is one of relative spread of the means vs the residuals.</p>
-<p>For example, on the right-hand side plot, the <em>spread</em> (or difference) in mean values is relatively large compared to the spread of the residuals for each group (note that the spreads are nearly identical between both batches <code>a</code> and <code>b</code>). The difference in means spans one unit while the spread of each sets of residuals spans about the same amount. So the difference in location is significant.</p>
-<p>If we split each batch in the right-side plot into a location component plot (normalized to the overall mean) and a pooled residual component plot then compare those values against a quantile, we get a <strong>residual-fit spread</strong> plot, or <strong>r-f spread</strong> plot for short.</p>
-<p><img src="Week07a_files/figure-html/unnamed-chunk-11-1.png" width="768" /></p>
-<p>It’s clear from this r-f plot that the spread of the mean distribution (between batches <code>a</code> and <code>b</code> of the right-side plot) is important compared to that of its residuals.</p>
-<p>For the left-side plot, the difference in mean values is also one unit, but the spread of residuals spans almost 5 units. An r-f plot makes this difference quite clear.</p>
-<p><img src="Week07a_files/figure-html/unnamed-chunk-12-1.png" width="768" /></p>
-<p>The spread between each batch’s fitted mean is small compared to that of the combined residuals.</p>
+<p>First, let’s compare the following two plots. Both plots show two batches side-by-side. The difference in location is nearly the same in both plots (group <code>a</code> and <code>b</code> have a mean of 10 and 11 respectively), but the difference in spreads are not.</p>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-8-1.png" width="480" /></p>
+<p><code>Plot 2</code> does not allow us to say, with confidence, that the two batches differ significantly despite both means being different. <code>Plot 1</code> on the other hand, shows a significant difference in batch locations. So the answer to the question is one of relative spread of the means vs the residuals.</p>
+<p>For example, in <code>Plot 1</code>, the <em>spread</em> (or difference) in mean values is relatively large compared to the spread of the residuals for each group (note that the spreads are nearly identical between both batches <code>a</code> and <code>b</code>). The difference in means spans one unit while the spread of each sets of residuals spans about the same amount. So the difference in location is significant.</p>
+<p>If we split each batch in <code>Plot 1</code> into a location component plot (normalized to the overall mean) and a pooled residual component plot then compare those values against a quantile, we get a <strong>residual-fit spread</strong> plot, or <strong>r-f spread</strong> plot for short.</p>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>It’s clear from this r-f spread plot that the spread of the mean distribution (between batches <code>a</code> and <code>b</code>) is important compared to that of its residuals. This suggests that the groups <code>a</code> and <code>b</code> explain much of the variability in the data.</p>
+<p>For in <code>Plot 2</code>, the difference in mean values is also one unit, but the spread of residuals spans almost 5 units. An r-f spread plot makes this difference quite clear.</p>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>The spread between each batch’s fitted mean is small compared to that of the combined residuals suggesting that much of the variability in the data is not explained by the groups <code>a</code> and <code>b</code>.</p>
 </div>
 <div id="are-the-fitted-voice-part-values-significantly-different" class="section level2">
 <h2>Are the fitted voice part values significantly different?</h2>
@@ -526,9 +511,32 @@ int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] <span class="op
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rfs</span>(<span class="kw">oneway</span>(height<span class="op">~</span>voice.part, <span class="dt">data =</span> singer, <span class="dt">spread =</span> <span class="dv">1</span>), 
     <span class="dt">aspect=</span><span class="dv">1</span>, 
     <span class="dt">ylab =</span> <span class="st">&quot;Height (inches)&quot;</span>)</code></pre></div>
-<p><img src="Week07a_files/figure-html/unnamed-chunk-13-1.png" width="768" /></p>
-<p>The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. So height difference between singer groups cannot be explained by random chance alone; the voice-part means <em>can</em> explain a good part of the variation in the data.</p>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-11-1.png" width="768" /></p>
+<p>After normalizing the data to the global mean, the r-f spread plot splits the singer height data into two parts: modeled mean and residual. For example, the smallest value in the <code>Bass 2</code> group is <code>66</code>. When normalized to the global mean, that value is <code>-1.29</code>. The normalized value is then split between the group (normalized) mean of 4.1 and its residual of -5.39 (i.e. the difference between its value and the <code>Bass 2</code> group mean). These two values are then each added to two separate plots: the <em>fitted values</em> plot and the <em>residuals</em> plot. This process is repeated for each observation in the dataset to generate the final r-f spread plot.</p>
+<img src="img/RF_plot_explained.png" />
+<p>
+</p>
+<p>The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts <em>can</em> explain a good part of the variation in the data.</p>
 </div>
+</div>
+<div id="comparing-pooled-residuals-to-the-normal-distribution" class="section level1">
+<h1>Comparing pooled residuals to the normal distribution</h1>
+<p>Our exploration of the singer height batches have been visual thus far. But there may be times when the analysis may need to culminate in a statistical test. Some of these tests reduce the data to mathematically tractable models such as the mean and the standard deviation (which follows a normal distribution).</p>
+<p>We’ll take advantage of the pooled residuals to give us a larger sample size for comparison with the theoretical normal distribution.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Find the equation for the line</span>
+y     &lt;-<span class="st"> </span><span class="kw">quantile</span>(df3<span class="op">$</span>Pooled.res, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))
+x     &lt;-<span class="st"> </span><span class="kw">qnorm</span>( <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))        
+slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) <span class="op">/</span><span class="st"> </span><span class="kw">diff</span>(x)             
+int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>x[<span class="dv">1</span>]
+
+<span class="kw">ggplot</span>(df3, <span class="kw">aes</span>(<span class="dt">sample=</span>Pooled.res)) <span class="op">+</span><span class="kw">stat_qq</span>() <span class="op">+</span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> int, <span class="dt">slope=</span>slope)</code></pre></div>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-12-1.png" width="288" /></p>
+<p>This dataset has behaved quite well. Its batches differed only by location, yet its spread remained homogeneous (enough) across the batches to pool them and enable us to confirm, with greater confidence, that the spread follows a normal distribution.</p>
+<p>This <em>well behaved</em> dataset allows us to model its spread using the sample <strong>standard deviation</strong>. It’s important to note that had the data not followed a normal distribution, then characterizing its spread using the standard deviation would have been inappropriate. Unfortunately, many ancillary data analysts seldom check the distribution requirements of their data before choosing to characterize its distribution using the standard deviation. In such a situation, you would have to revert to a far less succinct characterization of spread: the quantile.</p>
+<p>You can compute the standard deviation as:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(df2<span class="op">$</span>Height.res)</code></pre></div>
+<pre><code>[1] 2.465049</code></pre>
+<p>We can now model singer height by both <code>voice.part</code> means, and the group standard deviation of 2.47.</p>
 </div>
 
 
