@@ -363,6 +363,9 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Misc01.html">R markdown documents</a>
+    </li>
     <li class="dropdown-header">Week 13</li>
     <li>
       <a href="Week12a.html">Creating maps in R</a>
@@ -420,19 +423,20 @@ df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="s
 
 <span class="co"># Create two new columns: group median and group residual</span>
 df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">group_by</span>(nv.vv)   <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">mutate</span>( <span class="dt">med =</span> <span class="kw">median</span>(time),
-               <span class="dt">res =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( time <span class="op">-</span><span class="st"> </span>med)))
+<span class="st">  </span><span class="kw">group_by</span>(nv.vv)   <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(time),
+          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( time <span class="op">-</span><span class="st"> </span>Median)))
 
 <span class="co"># Compute the coordinate values needed to connect residual medians</span>
 sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
-<span class="st">           </span><span class="kw">group_by</span>(nv.vv)  <span class="op">%&gt;%</span>
-<span class="st">           </span><span class="kw">summarise</span>(<span class="dt">location =</span> <span class="kw">median</span>(time),
-                     <span class="dt">res.med  =</span> <span class="kw">median</span>(res))
+<span class="st">  </span><span class="kw">group_by</span>(nv.vv)  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">location =</span> <span class="kw">median</span>(time),
+            <span class="dt">res.med  =</span> <span class="kw">median</span>(Residuals))
 
 <span class="co"># Generate the s-l plot</span>
-<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
+<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>Median, <span class="dt">y=</span>Residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>))))</code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-2-1.png" width="288" /></p>
 <p>The red line in the plot helps identify the type of relationship between spread and location (defined by the group median in this plot). If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.</p>
 <p>In the data fusion example, there is an obvious increase in spread as a function of location.</p>
@@ -446,22 +450,20 @@ sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
 
 <span class="co"># Create two new columns: group median and group residual</span>
 df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">group_by</span>(dimension)                            <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">mutate</span>( <span class="dt">med =</span> <span class="kw">median</span>(mean.length),
-               <span class="dt">res =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( mean.length <span class="op">-</span><span class="st"> </span>med)))  <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">ungroup</span>()                                      <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">mutate</span>( <span class="dt">dimension =</span> <span class="kw">factor</span>(dimension, <span class="dt">levels=</span><span class="kw">unique</span>(dimension)))
-
+<span class="st">  </span><span class="kw">group_by</span>(dimension)                            <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(mean.length),
+          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( mean.length <span class="op">-</span><span class="st"> </span>Median)))   
 
 <span class="co"># Compute the coordinate values needed to connect residual medians</span>
 sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
-<span class="st">           </span><span class="kw">group_by</span>(dimension)  <span class="op">%&gt;%</span>
-<span class="st">           </span><span class="kw">summarise</span>(<span class="dt">location =</span> <span class="kw">median</span>(mean.length),
-                     <span class="dt">res.med  =</span> <span class="kw">median</span>(res))
+<span class="st">  </span><span class="kw">group_by</span>(dimension)  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">location =</span> <span class="kw">median</span>(mean.length),
+            <span class="dt">res.med  =</span> <span class="kw">median</span>(Residuals))
 
 <span class="co"># Generate the s-l plot</span>
-<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.05</span>,<span class="dt">height=</span><span class="dv">0</span>) <span class="op">+</span>
+<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>Median, <span class="dt">y=</span>Residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.05</span>,<span class="dt">height=</span><span class="dv">0</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x=</span>sl.line<span class="op">$</span>location, <span class="dt">y=</span><span class="fl">1.75</span>, <span class="dt">label=</span>sl.line<span class="op">$</span>dimension)</code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-3-1.png" width="336" /></p>
 <p>A monotonic spread is apparent in this dataset too, i.e. as the median chain length increases, so does the spread.</p>
@@ -474,22 +476,19 @@ sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
 <span class="co"># Create two new columns: group median and group residual</span>
 df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
 <span class="st">       </span><span class="kw">group_by</span>(MM)                            <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">mutate</span>( <span class="dt">med =</span> <span class="kw">median</span>(WTMP),
-               <span class="dt">res =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( WTMP <span class="op">-</span><span class="st"> </span>med)))  <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">ungroup</span>()                                      <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">arrange</span>(med)                                   <span class="op">%&gt;%</span>
-<span class="st">       </span><span class="kw">mutate</span>( <span class="dt">MM =</span> <span class="kw">factor</span>(MM, <span class="dt">levels=</span><span class="kw">unique</span>(MM)))
-
+<span class="st">       </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(WTMP),
+               <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( WTMP <span class="op">-</span><span class="st"> </span>Median)))  
 
 <span class="co"># Compute the coordinate values needed to connect residual medians</span>
 sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
 <span class="st">           </span><span class="kw">group_by</span>(MM)  <span class="op">%&gt;%</span>
 <span class="st">           </span><span class="kw">summarise</span>(<span class="dt">location =</span> <span class="kw">median</span>(WTMP),
-                     <span class="dt">res.med  =</span> <span class="kw">median</span>(res))
+                     <span class="dt">res.med  =</span> <span class="kw">median</span>(Residuals))
 
 <span class="co"># Generate the s-l plot</span>
-<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>med, <span class="dt">y=</span>res)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.1</span>) <span class="op">+</span>
+<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>Median, <span class="dt">y=</span>Residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha=</span><span class="fl">0.1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x=</span>sl.line<span class="op">$</span>location, <span class="dt">y=</span><span class="fl">2.5</span>, <span class="dt">label=</span>sl.line<span class="op">$</span>MM, <span class="dt">cex=</span><span class="dv">3</span>)</code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-4-1.png" width="768" /></p>
 <p>Note that the discrete appearance of the values reflects the level of precision used to record water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread as a function of increasing water temperature is not immediately apparent.</p>
@@ -497,13 +496,14 @@ sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
 </div>
 <div id="variations-of-the-s-l-plot" class="section level1">
 <h1>Variations of the S-L plot</h1>
-<p>Another version of the S-L plot (and one that seems to be the most popular) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0). This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week’s lecture).</p>
+<p>Another version of the S-L plot (and one that seems to be the most popular) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).</p>
+<p>This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week’s lecture) via <strong>power = 1 - slope</strong>.</p>
 <p>This variant of the s-l plot can be computed in R as follows (we will use the buoy data as an example).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">      </span><span class="kw">group_by</span>(MM)  <span class="op">%&gt;%</span>
-<span class="st">      </span><span class="kw">summarise</span> (<span class="dt">level  =</span> <span class="kw">log</span>(<span class="kw">median</span>(WTMP)),
-                    <span class="dt">IQR =</span> <span class="kw">diff</span>(<span class="kw">quantile</span>(WTMP, <span class="kw">c</span>(.<span class="dv">25</span>,.<span class="dv">75</span>))),
-                 <span class="dt">spread =</span> <span class="kw">log</span>(IQR))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(MM)  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span> (<span class="dt">level  =</span> <span class="kw">log</span>(<span class="kw">median</span>(WTMP)),
+                <span class="dt">IQR =</span> <span class="kw">IQR</span>(WTMP),  <span class="co"># Computes the interquartile range</span>
+             <span class="dt">spread =</span> <span class="kw">log</span>(IQR))
 
 <span class="kw">ggplot</span>(sl, <span class="kw">aes</span>(<span class="dt">x=</span>level, <span class="dt">y=</span>spread)) <span class="op">+</span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">stat_smooth</span>(<span class="dt">method=</span><span class="st">&quot;lm&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>) <span class="op">+</span>
@@ -511,7 +511,7 @@ sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x=</span>level, <span class="dt">y=</span>spread, <span class="dt">label=</span>MM), <span class="dt">vjust=</span><span class="fl">1.21</span>, <span class="dt">cex=</span><span class="fl">2.8</span>)</code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-5-1.png" width="268.8" /></p>
 <p>Note how this plot differs from Cleveland’s plot in that we are only displaying each month’s median spread value and we are fitting a straight line to the points.</p>
-<p>The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression model indicates that the slope may not be significantly different from 0 (the p-value indicates that there is a 12% chance that the computed slope is consistent with a slope we would expect to get if there was no linear relationship between spread and location values).</p>
+<p>The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression model indicates that the slope may not be significantly different from 0 (the p-value of 0.12 suggests that there is a 12% chance that the computed slope is consistent with a slope we would expect to get if there was no linear relationship between spread and location values).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(<span class="kw">lm</span>(spread <span class="op">~</span><span class="st"> </span>level, sl) )</code></pre></div>
 <pre><code>
 Call:
