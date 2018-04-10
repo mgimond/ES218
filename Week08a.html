@@ -363,6 +363,9 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Misc01.html">R markdown documents</a>
+    </li>
     <li class="dropdown-header">Week 13</li>
     <li>
       <a href="Week12a.html">Creating maps in R</a>
@@ -394,6 +397,7 @@ $(document).ready(function () {
 <ul>
 <li><a href="#introduction">Introduction</a></li>
 <li><a href="#the-log-transformation">The log transformation</a></li>
+<li><a href="#the-tukey-transformation">The Tukey transformation</a></li>
 <li><a href="#the-box-cox-transformation">The Box-Cox transformation</a></li>
 <li><a href="#how-quantile-plots-behave-in-the-face-of-skewed-data">How quantile plots behave in the face of skewed data</a><ul>
 <li><a href="#quantile-plots">Quantile plots</a></li>
@@ -409,11 +413,9 @@ $(document).ready(function () {
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>Datasets do not always follow a nice symmetrical distribution nor do their spreads behave systematically across different levels (e.g. medians). Such distributions do not lend themselves well to visual exploration since they can mask simple patterns. They can also be a problem when testing hypotheses using traditional statistical procedures. A solution to this problem is non-linear <strong>re-expression</strong> (aka transformation) of the values. In univariate analysis, we often seek to <strong>symmetrize</strong> the distribution and/or <strong>equalize</strong> the spread. In multivariate analysis, the objective is to usually <strong>linearize</strong> the relationship between variables and/or to <strong>normalize</strong> the residual in a regression model.</p>
-<div class="figure">
 <img src="img/Reexpression_properties.png" />
-
-</div>
-<p>One popular form of re-expression is the <strong>log</strong> (natural or base 10). The other is the <strong>box-cox</strong> family of transformations (of which the <em>log</em> is a special case).</p>
+</p>
+<p>One popular form of re-expression is the <strong>log</strong> (natural or base 10). The other is the family of power transformations (of which the <em>log</em> is a special case) implemented using either the <strong>Tukey</strong> transformation or the <strong>Box-Cox</strong> transformation.</p>
 </div>
 <div id="the-log-transformation" class="section level1">
 <h1>The log transformation</h1>
@@ -503,29 +505,34 @@ y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1000
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">log</span>(US) <span class="op">~</span><span class="st"> </span>Year, dat, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>)  </code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-7-1.png" width="384" /></p>
 <p>It’s clear from the log plot that the rate of growth for the US has not been consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate over the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).</p>
-<p>A logarithm is defined by a base. Some of the most common bases are <code>10</code>, <code>2</code> and <code>exp(1)</code> with the latter being the natural log. The bases can be defined in the call to <code>log()</code> by adding a second parameter to that function. For example, to apply the log base 2 to the 5th value of the vector <code>y</code>, type <code>log( y[5], 2)</code>. To apply the natural log to that same value, simply type <code>log( y[5], exp(1))</code>. If you don’t specify a base, <code>R</code> will default to the natural log.</p>
+<p>A logarithm is defined by a base. Some of the most common bases are <code>10</code>, <code>2</code> and <code>exp(1)</code> with the latter being the natural log. The bases can be defined in the call to <code>log()</code> by adding a second parameter to that function. For example, to apply the log base 2 to the 5<sup>th</sup> value of the vector <code>y</code>, type <code>log( y[5], 2)</code>. To apply the natural log to that same value, simply type <code>log( y[5], exp(1))</code>. If you don’t specify a base, <code>R</code> will default to the natural log.</p>
 <p>The choice of a log base will not impact the shape of the logged values in the plot, only in its absolute value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.</p>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-8-1.png" width="576" /></p>
 <p>A rule of thumb is to use log base 10 when the range of values to be logged covers 3 or more powers of ten, <span class="math inline">\(\geq 10^3\)</span> (for example, a range of 5 to 50,000); if the range of values covers 2 or fewer powers of ten, <span class="math inline">\(\leq 10^2\)</span>(for example, a range of 5 to 500) then a natural log or a log base 2 log is best.</p>
 </div>
-<div id="the-box-cox-transformation" class="section level1">
-<h1>The Box-Cox transformation</h1>
-<p>The Box-Cox family of transformations offers a broader range of re-expression options (which includes the log). The values are re-expressed using the algorithm:</p>
+<div id="the-tukey-transformation" class="section level1">
+<h1>The Tukey transformation</h1>
+<p>The Tukey family of transformations offers a broader range of re-expression options (which includes the log). The values are re-expressed using the algorithm:</p>
 <p><span class="math display">\[
-re-expressed(x) = \frac{x^p -1}{p}\; for\; p\neq 0
-\]</span> <span class="math display">\[
-re-expressed(x) = ln(x)\; for\; p = 0
-\]</span></p>
-<p>The objective is to find a value for <span class="math inline">\(p\)</span> from a “ladder” of powers (e.g. -1, -1/2, 0, 1/2, 1) that does a good job in re-expressing the batch of values. Technically, <span class="math inline">\(p\)</span> can take on any value. But in practice, we normally pick a value for <span class="math inline">\(p\)</span> that may be “interpretable” in the context of our analysis. For example, a log transformation (<code>p=0</code>) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of <span class="math inline">\(p\)</span> may not be directly interpretable or may not be of concern to the analyst.</p>
+\begin{equation} T_{Tukey} = 
+\begin{cases} x^p , &amp; p &gt;  0 \\
+              log(x), &amp; p = 0  \\
+              -x^p, &amp; p &lt; 0
+\end{cases}
+\end{equation}
+\]</span> The objective is to find a value for <span class="math inline">\(p\)</span> from a “ladder” of powers (e.g. -2, -1, -1/2, 0, 1/2, 1, 2) that does a good job in re-expressing the batch of values. Technically, <span class="math inline">\(p\)</span> can take on any value. But in practice, we normally pick a value for <span class="math inline">\(p\)</span> that may be “interpretable” in the context of our analysis. For example, a log transformation (<code>p=0</code>) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of <span class="math inline">\(p\)</span> may not be directly interpretable or may not be of concern to the analyst.</p>
 <p>A nifty solution to finding an appropriate <span class="math inline">\(p\)</span> is to create a function whose input is the vector (that we want to re-express) and a <span class="math inline">\(p\)</span> parameter we want to explore.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BC &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">p =</span> <span class="dv">0</span>) {
-  <span class="cf">if</span>(p <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">RE &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">p =</span> <span class="dv">0</span>) {
+  <span class="cf">if</span>(p <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) {
+    z &lt;-<span class="st"> </span>x<span class="op">^</span>p
+  } <span class="cf">else</span> <span class="cf">if</span>(p <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span>) {
+    z &lt;-<span class="st"> </span><span class="op">-</span>x<span class="op">^</span>p
+  } <span class="cf">else</span>{
     z &lt;-<span class="st"> </span><span class="kw">log</span>(x)
-  } <span class="cf">else</span> {
-    z &lt;-<span class="st"> </span>(x<span class="op">^</span>p <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)<span class="op">/</span>p
   }
+  <span class="kw">return</span>(z)
 }</code></pre></div>
-<p>To use the custom function <code>BC</code> simply pass two vectors: the batch of numbers being re-expressed and the <span class="math inline">\(p\)</span> parameter.</p>
+<p>To use the custom function <code>RE</code> simply pass two vectors: the batch of numbers being re-expressed and the <span class="math inline">\(p\)</span> parameter.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create a skewed distribution of 50 random values</span>
 <span class="kw">set.seed</span>(<span class="dv">9</span>)
 a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">50</span>, <span class="dt">shape=</span><span class="dv">1</span>)
@@ -534,18 +541,43 @@ a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">
 <span class="kw">boxplot</span>(a, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-10-1.png" width="288" /></p>
 <p>The batch is strongly skewed to the right. Let’s first try a square-root transformation (<code>p=1/2</code>)</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a.re &lt;-<span class="st"> </span><span class="kw">BC</span>(a, <span class="dt">p =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>)   
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a.re &lt;-<span class="st"> </span><span class="kw">RE</span>(a, <span class="dt">p =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>)   
 <span class="kw">boxplot</span>(a.re, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-11-1.png" width="288" /></p>
 <p>That certainly helps minimize the skew, but the distribution still lacks symmetry. Let’s try a log transformation (<code>p=0</code>):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a.re &lt;-<span class="st"> </span><span class="kw">BC</span>(a, <span class="dt">p =</span> <span class="dv">0</span>)   
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a.re &lt;-<span class="st"> </span><span class="kw">RE</span>(a, <span class="dt">p =</span> <span class="dv">0</span>)   
 <span class="kw">boxplot</span>(a.re, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-12-1.png" width="288" /></p>
 <p>That’s a little too much over-correction; we don’t want to substitute a right skew for a left skew. Let’s try a power in between (i.e. <code>p=1/4</code>):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a.re &lt;-<span class="st"> </span><span class="kw">BC</span>(a, <span class="dt">p =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>)   
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a.re &lt;-<span class="st"> </span><span class="kw">RE</span>(a, <span class="dt">p =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>)   
 <span class="kw">boxplot</span>(a.re, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-13-1.png" width="288" /></p>
 <p>That’s much better. The distribution is now nicely balanced about its median.</p>
+</div>
+<div id="the-box-cox-transformation" class="section level1">
+<h1>The Box-Cox transformation</h1>
+<p>Another family of transformations is the Box-Cox transformation. The values are re-expressed using a modified version of the Tukey transformation:</p>
+<p><span class="math display">\[
+\begin{equation} T_{Box-Cox} = 
+\begin{cases} \frac{x^p - 1}{p}, &amp; p \neq  0 \\
+              log(x), &amp; p = 0 
+\end{cases}
+\end{equation}
+\]</span> Just as we can create a custom Tukey transformation function, we can create a Box-Cox transformation function too:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BC &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">p =</span> <span class="dv">0</span>) {
+  <span class="cf">if</span>(p <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {
+    z &lt;-<span class="st"> </span><span class="kw">log</span>(x)
+  } <span class="cf">else</span> {
+    z &lt;-<span class="st"> </span>(x<span class="op">^</span>p <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)<span class="op">/</span>p
+  }
+  <span class="kw">return</span>(z)
+}</code></pre></div>
+<p>The Box-Cox method only differs in spread and location from the Tukey method. In other words, you will only see a difference in the re-expressed values but not a difference in the shape of the data as demonstrated in the following examples which pit the Box-Cox vs Tukey transformations for three different powers.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">BC</span>(mtcars<span class="op">$</span>mpg,<span class="op">-</span><span class="dv">1</span><span class="op">/</span><span class="dv">2</span>), <span class="kw">RE</span>(mtcars<span class="op">$</span>mpg,<span class="op">-</span><span class="dv">1</span><span class="op">/</span><span class="dv">2</span>), <span class="dt">main=</span><span class="st">&quot;P = -1/2&quot;</span>)
+<span class="kw">plot</span>(<span class="kw">BC</span>(mtcars<span class="op">$</span>mpg, <span class="fl">0.0</span>), <span class="kw">RE</span>(mtcars<span class="op">$</span>mpg, <span class="fl">0.0</span>), <span class="dt">main=</span><span class="st">&quot;P = 0&quot;</span>)
+<span class="kw">plot</span>(<span class="kw">BC</span>(mtcars<span class="op">$</span>mpg, <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>), <span class="kw">RE</span>(mtcars<span class="op">$</span>mpg, <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>), <span class="dt">main=</span><span class="st">&quot;P = 1/2&quot;</span>)</code></pre></div>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-15-1.png" width="576" /></p>
+<p>In most cases, the choice between Box-Cox and Tukey will not matter. But it may be worth noting that a value of <code>1</code> will always be re-expressed as <code>0</code> in a Box-Cox transformation whereas a Tukey transformation will re-express <code>1</code> as <code>0</code>, <code>-1</code> or <code>1</code> depending of <code>p</code>’s value. Conversely, the Tukey method re-expresses <code>0</code> as <code>0</code> for all <code>p</code> values whereas the Box-Cox method does not. These differences may only matter if theory dictates it.</p>
 </div>
 <div id="how-quantile-plots-behave-in-the-face-of-skewed-data" class="section level1">
 <h1>How quantile plots behave in the face of skewed data</h1>
@@ -553,12 +585,12 @@ a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">
 <div id="quantile-plots" class="section level2">
 <h2>Quantile plots</h2>
 <p>A beta distribution is used to simulate a range of distributions from right skew to left skew. The top row shows the different density distribution plots; the bottom row shows the <strong>quantile plots</strong> for each distribution.</p>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-14-1.png" width="864" /></p>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-16-1.png" width="864" /></p>
 </div>
 <div id="normal-q-q-plots" class="section level2">
 <h2>Normal q-q plots</h2>
 <p>A beta distribution is used to simulate a range of distributions from right skew to left skew. The top row shows the different density distribution plots; the bottom row shows the <strong>normal q-q plots</strong> for each distribution.</p>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-15-1.png" width="864" /></p>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-17-1.png" width="864" /></p>
 </div>
 </div>
 <div id="re-expressing-to-stabilize-spread" class="section level1">
@@ -573,60 +605,45 @@ df.sl &lt;-<span class="st"> </span><span class="kw">sl</span>(<span class="dt">
 
 <span class="co"># Plot spread vs median</span>
 <span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch=</span><span class="dv">16</span>)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-16-1.png" width="384" /></p>
-<p>The plot suggests a monotonic relationship between spread and median. Next, we’ll fit a line to this scatter plot and compute its slope. We’ll use the <code>lm()</code> function, but note that many other line fitting operations could be used as well.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Run regression model</span>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-18-1.png" width="211.2" /></p>
+<p>The plot suggests a monotonic relationship between spread and median. Next, we’ll fit a line to this scatter plot and compute its slope. We’ll use the <code>lm()</code> function, but note that any other line fitting strategies could be used as well.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch=</span><span class="dv">16</span>)
+<span class="co"># Run regression model</span>
 M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl)
 <span class="kw">abline</span>(M, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-17-1.png" width="384" /></p>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-19-1.png" width="211.2" /></p>
 <p>The slope can be used to come up with the best power transformation to minimize the systematic increase in spread: <span class="math inline">\(p = 1 - slope\)</span>.</p>
-<p>The slope can be extracted from the model <code>M</code> as using the <code>coef</code> function:</p>
+<p>The slope can be extracted from the model <code>M</code> using the <code>coef</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coef</span>(M)</code></pre></div>
 <pre><code>(Intercept)         med 
   -2.317414    2.649166 </code></pre>
-<p>The second value in the output is the slope. So the power to use is <code>1 - 2.65</code> or <code>-1.65</code>. We will use the custom Box-Cox power transformation function <code>bc</code> (also available in the <code>ES218.R</code> script) to re-express the <code>mean.length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df<span class="op">$</span>bc1.mean.length &lt;-<span class="st"> </span><span class="kw">bc</span>(df<span class="op">$</span>mean.length, <span class="op">-</span><span class="fl">1.65</span>)</code></pre></div>
+<p>The second value in the output is the slope. So the power to use is <code>1 - 2.65</code> or <code>-1.65</code>. We will use the custom Tukey power transformation function <code>RE</code> to re-express the <code>mean.length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df<span class="op">$</span>re.mean.length &lt;-<span class="st"> </span><span class="kw">RE</span>(df<span class="op">$</span>mean.length, <span class="op">-</span><span class="fl">1.65</span>)</code></pre></div>
 <p>Let’s compare boxplots between the original values with the re-expressed values.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
-<span class="kw">boxplot</span>(mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Original data&quot;</span>)
-<span class="kw">boxplot</span>(bc1.mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Re-expressed data&quot;</span>)
-<span class="kw">par</span>(OP)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-20-1.png" width="768" /></p>
-<p>Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have done the trick.</p>
-<p>In his book, Cleveland proposes a power transformation of -1; a power less aggressive than ours. Let’s see how well it performs compared to our transformation using the s-l plot.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Re-express data using Cleveland&#39;s power of -1 (or 1/x)</span>
-df<span class="op">$</span>bc2.mean.length &lt;-<span class="st"> </span><span class="kw">bc</span>(df<span class="op">$</span>mean.length, <span class="op">-</span><span class="dv">1</span>)
-
-<span class="co"># Generate s-l table</span>
-df1.sl &lt;-<span class="st"> </span><span class="kw">sl</span>(<span class="dt">x=</span>dimension, <span class="dt">y=</span>bc1.mean.length, df)
-df2.sl &lt;-<span class="st"> </span><span class="kw">sl</span>(<span class="dt">x=</span>dimension, <span class="dt">y=</span>bc2.mean.length, df)
-
-<span class="co"># Plot the data</span>
-OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
-<span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df2.sl, <span class="dt">pch=</span><span class="dv">16</span>, <span class="dt">main=</span><span class="st">&quot;p = -1&quot;</span>)
-<span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df1.sl, <span class="dt">pch=</span><span class="dv">16</span>, <span class="dt">main=</span><span class="st">&quot;p = -1.65&quot;</span>)
-<span class="kw">par</span>(OP)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-21-1.png" width="768" /></p>
-<p>Neither plot seems to do a bad job in stabilizing spread. To help decide which power to choose, let’s see how well they help balance the spread about the median. We’ll generate letter value summary plots using the custom <code>lsum</code> function available in the <code>ES218.R</code> course script.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Original data&quot;</span>)
+<span class="kw">boxplot</span>(re.mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Re-expressed data&quot;</span>)</code></pre></div>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-22-1.png" width="576" /></p>
+<p>Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have equalized the spreads across the three groups.</p>
+<p>We’ll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week’s <a href="file:///C:/Users/mgimond/Documents/GitHub/ES218/Week07b.html#constructing-the-s-l-plot">lecture</a>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(dimension)                            <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(re.mean.length),
+          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( re.mean.length <span class="op">-</span><span class="st"> </span>Median)))   
 
-<span class="co"># Generate letter value summary plot for original data</span>
-df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(dimension) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">do</span>(<span class="kw">as.data.frame</span>( <span class="kw">lsum</span>(.<span class="op">$</span>mean.length, <span class="dt">l=</span><span class="dv">6</span>) )) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(.) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>letter, <span class="dt">y=</span>mid) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>dimension) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Original data&quot;</span>)
+<span class="co"># Compute the coordinate values needed to connect residual medians</span>
+sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(dimension)  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">location =</span> <span class="kw">median</span>(re.mean.length),
+            <span class="dt">res.med  =</span> <span class="kw">median</span>(Residuals))
 
-<span class="co"># Generate letter value summary plot for p = -1.65</span>
-df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(dimension) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">do</span>(<span class="kw">as.data.frame</span>( <span class="kw">lsum</span>(.<span class="op">$</span>bc1.mean.length, <span class="dt">l=</span><span class="dv">6</span>) )) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(.) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>letter, <span class="dt">y=</span>mid) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>dimension) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;p = -1.65&quot;</span>)
-
-<span class="co"># Generate letter value summary plot for p = -1</span>
-df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(dimension) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">do</span>(<span class="kw">as.data.frame</span>( <span class="kw">lsum</span>(.<span class="op">$</span>bc2.mean.length, <span class="dt">l=</span><span class="dv">6</span>) )) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(.) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>letter, <span class="dt">y=</span>mid) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>dimension) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;p = -1&quot;</span>)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-22-1.png" width="672" /><img src="Week08a_files/figure-html/unnamed-chunk-22-2.png" width="672" /><img src="Week08a_files/figure-html/unnamed-chunk-22-3.png" width="672" /></p>
-<p>The original data does not suffer from skewness except for the three-dimension dataset which exhibits a consistent skew across all depth of the data towards larger values. The power of <code>-1.65</code> reverses that skew–an outcome we don’t want–whereas the power of <code>-1</code> seems to do a better job in balancing the spread across all depths. The power of <code>-1</code> does not seem to introduce significant skew in the <code>Mixed</code> and <code>Two</code> batches which were fine to start with; this is good news.</p>
-<p>If we are interested in both removing skewness AND in stabilizing spread across all levels, the power of <code>-1</code> seems to accomplish this quite well with this dataset. But be aware that most datasets are not that accommodating and that one may be faced with having to sacrifice one characteristic of the spread for another. Also note that re-expressions may not be a common fix across all factors (categories) of the data. This suggests that the data may behave differently under different circumstances. For example, in our food web dataset, skewness is prominent for the mixed dimension batch but not for the two or three dimension batches.</p>
+<span class="co"># Generate the s-l plot</span>
+<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x=</span>Median, <span class="dt">y=</span>Residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha=</span><span class="fl">0.4</span>,<span class="dt">width=</span><span class="fl">0.01</span>,<span class="dt">height=</span><span class="dv">0</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x=</span>sl.line<span class="op">$</span>location, <span class="dt">y=</span><span class="fl">1.75</span>, <span class="dt">label=</span>sl.line<span class="op">$</span>dimension)</code></pre></div>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-23-1.png" width="307.2" /></p>
+<p>The plot suggests that the re-expression does a great job in stabilizing the spread.</p>
 </div>
 
 

@@ -20,9 +20,9 @@ This tutorial makes use of the following R package(s): **`ggplot2`**.
 Datasets do not always follow a nice symmetrical distribution nor do their spreads behave systematically across different levels (e.g. medians). Such distributions do not lend themselves well to visual exploration since they can mask simple patterns. They can also be a problem when testing hypotheses using traditional statistical procedures. A solution to this problem is non-linear **re-expression** (aka transformation) of the values. In univariate analysis, we often seek to **symmetrize** the distribution and/or **equalize** the spread. In multivariate analysis, the objective is to usually **linearize** the relationship between variables and/or to **normalize** the residual in a regression model.
 
 ![](img/Reexpression_properties.png)
+</p>
 
-
-One popular form of re-expression is the **log** (natural or base 10). The other is the **box-cox** family of transformations (of which the *log* is a special case).
+One popular form of re-expression is the **log** (natural or base 10). The other is the family of power transformations (of which the *log* is a special case) implemented using either the **Tukey** transformation or the **Box-Cox** transformation.
 
 # The log transformation
 
@@ -109,7 +109,7 @@ plot(log(US) ~ Year, dat, type="l")
 
 It's clear from the log plot that the rate of growth for the US has not been consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate over the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).
 
-A logarithm is defined by a base. Some of the most common bases are `10`, `2` and `exp(1)` with the latter being the natural log. The bases can be defined in the call to `log()` by adding a second parameter to that function. For example, to apply the log base 2 to the 5th value of the vector `y`, type `log( y[5], 2)`. To apply the natural log to that same value, simply type `log( y[5], exp(1))`. If you don't specify a base, `R` will default to the natural log.
+A logarithm is defined by a base. Some of the most common bases are `10`, `2` and `exp(1)` with the latter being the natural log. The bases can be defined in the call to `log()` by adding a second parameter to that function. For example, to apply the log base 2 to the 5^th^ value of the vector `y`, type `log( y[5], 2)`. To apply the natural log to that same value, simply type `log( y[5], exp(1))`. If you don't specify a base, `R` will default to the natural log.
 
 The choice of a log base will not impact the shape of the logged values in the plot, only in its absolute value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with  whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.
 
@@ -136,35 +136,39 @@ par(OP)
 
 A rule of thumb is to use log base 10 when the range of values to be logged covers 3 or more powers of ten, $\geq 10^3$ (for example, a range of 5 to 50,000); if the range of values covers 2 or fewer powers of ten, $\leq 10^2$(for example, a range of 5 to 500) then a natural log or a log base 2 log is best.
 
-# The Box-Cox transformation
+# The Tukey transformation
 
-The Box-Cox family of transformations offers a broader range of re-expression options (which includes the log). The values are re-expressed using the algorithm:
+The Tukey family of transformations offers a broader range of re-expression options (which includes the log). The values are re-expressed using the algorithm:
 
 $$
-re-expressed(x) = \frac{x^p -1}{p}\; for\; p\neq 0
+\begin{equation} T_{Tukey} = 
+\begin{cases} x^p , & p >  0 \\
+              log(x), & p = 0  \\
+              -x^p, & p < 0
+\end{cases}
+\end{equation}
 $$
-$$
-re-expressed(x) = ln(x)\; for\; p = 0
-$$
-
-The objective is to find a value for $p$ from a "ladder" of powers (e.g. -1, -1/2, 0, 1/2, 1) that does a good job in re-expressing the batch of values. Technically, $p$ can take on any value. But in practice, we normally pick a value for $p$ that may be "interpretable" in the context of our analysis. For example, a log transformation (`p=0`) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of $p$ may not be directly interpretable or may not be of concern to the analyst.
+The objective is to find a value for $p$ from a "ladder" of powers (e.g. -2, -1, -1/2, 0, 1/2, 1, 2) that does a good job in re-expressing the batch of values. Technically, $p$ can take on any value. But in practice, we normally pick a value for $p$ that may be "interpretable" in the context of our analysis. For example, a log transformation (`p=0`) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of $p$ may not be directly interpretable or may not be of concern to the analyst.
 
 A nifty solution to finding an appropriate $p$ is to create a function whose input is the vector (that we want to re-express) and a $p$ parameter we want to explore.
 
 ```{r}
-BC <- function(x, p = 0) {
-  if(p == 0) {
+RE <- function(x, p = 0) {
+  if(p > 0) {
+    z <- x^p
+  } else if(p < 0) {
+    z <- -x^p
+  } else{
     z <- log(x)
-  } else {
-    z <- (x^p - 1)/p
   }
+  return(z)
 }
 ```
 
-To use the custom function `BC` simply pass two vectors: the batch of numbers being re-expressed and the $p$ parameter.
+To use the custom function `RE` simply pass two vectors: the batch of numbers being re-expressed and the $p$ parameter.
 
-```{r fig.width=3, fig.height=2, echo=2:7}
-OP <- par( mar=c(2,2,1,1))
+```{r fig.width=3, fig.height=1, echo=2:7}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
 # Create a skewed distribution of 50 random values
 set.seed(9)
 a <- rgamma(50, shape=1)
@@ -176,32 +180,70 @@ par(OP)
 
 The batch is strongly skewed to the right. Let's first try a square-root transformation (`p=1/2`)
 
-```{r fig.width=3, fig.height=2, echo=2:3}
-OP <- par(mar=c(2,2,1,1))
-a.re <- BC(a, p = 1/2)   
+```{r fig.width=3, fig.height=1, echo=2:3}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+a.re <- RE(a, p = 1/2)   
 boxplot(a.re, horizontal = TRUE)
 par(OP)
 ```
 
 That certainly helps minimize the skew, but the distribution still lacks symmetry. Let's try a log transformation (`p=0`):
 
-```{r fig.width=3, fig.height=2, echo=2:3}
-OP <- par(mar=c(2,2,1,1))
-a.re <- BC(a, p = 0)   
+```{r fig.width=3, fig.height=1, echo=2:3}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+a.re <- RE(a, p = 0)   
 boxplot(a.re, horizontal = TRUE)
 par(OP)
 ```
 
 That's a little too much over-correction; we don't want to substitute a right skew for a left skew. Let's try a power in between (i.e.  `p=1/4`):
 
-```{r fig.width=3, fig.height=2, echo=2:3}
-OP <- par(mar=c(2,2,1,1))
-a.re <- BC(a, p = 1/4)   
+```{r fig.width=3, fig.height=1, echo=2:3}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+a.re <- RE(a, p = 1/4)   
 boxplot(a.re, horizontal = TRUE)
 par(OP)
 ```
 
 That's much better. The distribution is now nicely balanced about its median.
+
+
+# The Box-Cox transformation
+
+Another family of transformations is the Box-Cox transformation. The values are re-expressed using a modified version of the Tukey transformation:
+
+$$
+\begin{equation} T_{Box-Cox} = 
+\begin{cases} \frac{x^p - 1}{p}, & p \neq  0 \\
+              log(x), & p = 0 
+\end{cases}
+\end{equation}
+$$
+Just as we can create a custom Tukey transformation function, we can create a Box-Cox transformation function too:
+
+```{r}
+BC <- function(x, p = 0) {
+  if(p == 0) {
+    z <- log(x)
+  } else {
+    z <- (x^p - 1)/p
+  }
+  return(z)
+}
+```
+
+
+The Box-Cox method only differs in spread and location from the Tukey method. In other words, you will only see a difference in the re-expressed values but not a difference in the shape of the data as demonstrated in the following examples which pit the Box-Cox vs Tukey transformations for three different powers. 
+
+```{r fig.width=6, fig.height=2, echo=2:4}
+OP <- par(mar=c(2,2,1.1,1), mfrow=c(1,3), cex.axis=0.8)
+plot(BC(mtcars$mpg,-1/2), RE(mtcars$mpg,-1/2), main="P = -1/2")
+plot(BC(mtcars$mpg, 0.0), RE(mtcars$mpg, 0.0), main="P = 0")
+plot(BC(mtcars$mpg, 1/2), RE(mtcars$mpg, 1/2), main="P = 1/2")
+par(OP)
+```
+
+In most cases, the choice between Box-Cox and Tukey will not matter. But it may be worth noting that a value of `1` will always be re-expressed as `0` in a Box-Cox transformation whereas a Tukey transformation will re-express `1` as `0`, `-1` or `1` depending of `p`'s value. Conversely, the Tukey method re-expresses `0` as `0` for all `p` values whereas the Box-Cox method does not. These differences may only matter if theory dictates it.
 
 # How quantile plots behave in the face of skewed data
 
@@ -287,7 +329,8 @@ par(OP)
 
 A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland's book (see the section titled "Spread-location plot" on the course website for an alternative version of the plot). We will make use of a custom function called `sl` available in the `ES218.R` script to help construct the s-l plot using .
 
-```{r fig.weight=4, fig.width=4}
+```{r fig.height=2, fig.width=2.2, echo=2:10}
+OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
 source("http://mgimond.github.io/ES218/es218.R")
 
 df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
@@ -297,83 +340,65 @@ df.sl <- sl(x=dimension, y=mean.length, df)
 
 # Plot spread vs median
 plot(sprd ~ med, df.sl, pch=16)
+par(OP)
 ```
 
-The plot suggests a monotonic relationship between spread and median. Next, we'll  fit a line to this scatter plot and compute its slope. We'll use the `lm()` function, but note that many other line fitting operations could be used as well.
+The plot suggests a monotonic relationship between spread and median. Next, we'll  fit a line to this scatter plot and compute its slope. We'll use the `lm()` function, but note that any other line fitting strategies could be used as well.
 
-```{r echo=-1, fig.weight=4, fig.width=4}
+```{r fig.height=2, fig.width=2.2, echo=2:5}
+OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
 plot(sprd ~ med, df.sl, pch=16)
 # Run regression model
 M <- lm(sprd ~ med, df.sl)
 abline(M, col="red")
+par(OP)
 ```
 
 The slope can be used to come up with the best power transformation to minimize the systematic increase in spread:  $p = 1 - slope$. 
 
-The slope can be extracted from the model `M` as using the `coef` function:
+The slope can be extracted from the model `M` using the `coef` function:
 
 ```{r}
 coef(M)
 ```
 
-The second value in the output is the slope. So the power to use is `1 - 2.65` or `-1.65`. We will use the custom Box-Cox power transformation function `bc` (also available in the `ES218.R` script) to re-express the `mean.length` values. We'll add the re-expressed values as a new  column to `df`:
+The second value in the output is the slope. So the power to use is `1 - 2.65` or `-1.65`. We will use the custom Tukey power transformation function `RE`  to re-express the `mean.length` values. We'll add the re-expressed values as a new  column to `df`:
 
 ```{r}
-df$bc1.mean.length <- bc(df$mean.length, -1.65)
+df$re.mean.length <- RE(df$mean.length, -1.65)
 ```
 
 Let's compare boxplots between the original values with the re-expressed values.
 
-```{r fig.height=4, fig.width=8, fig.show='hold'}
-OP <- par(mfrow = c(1,2))
+```{r fig.height=3, fig.width=6, fig.show='hold', echo=2:3}
+OP <- par(mfrow = c(1,2), mar=c(3,2,2,0.1))
 boxplot(mean.length ~ dimension, df, main = "Original data")
-boxplot(bc1.mean.length ~ dimension, df, main = "Re-expressed data")
+boxplot(re.mean.length ~ dimension, df, main = "Re-expressed data")
 par(OP)
 ```
 
-Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have done the trick. 
+Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have equalized the spreads across the three groups. 
 
-In his book, Cleveland proposes a power transformation of -1; a power less aggressive than ours. Let's see how well it performs compared to our transformation using the s-l plot.
+We'll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week's [lecture](file:///C:/Users/mgimond/Documents/GitHub/ES218/Week07b.html#constructing-the-s-l-plot).
 
-```{r fig.height=4, fig.width=8, fig.show='hold'}
-# Re-express data using Cleveland's power of -1 (or 1/x)
-df$bc2.mean.length <- bc(df$mean.length, -1)
-
-# Generate s-l table
-df1.sl <- sl(x=dimension, y=bc1.mean.length, df)
-df2.sl <- sl(x=dimension, y=bc2.mean.length, df)
-
-# Plot the data
-OP <- par(mfrow=c(1,2))
-plot(sprd ~ med, df2.sl, pch=16, main="p = -1")
-plot(sprd ~ med, df1.sl, pch=16, main="p = -1.65")
-par(OP)
-```
-
-Neither plot seems to do a bad job in stabilizing spread. To help decide which power to choose, let's see how well they help balance the spread about the median. We'll generate letter value summary plots using the custom `lsum` function available in the `ES218.R` course script.
-
-```{r fig.height=3, fig.width=7,fig.show='hold'}
-
+```{r fig.height=2.5, fig.width=3.2}
 library(ggplot2)
+df1 <- df %>%
+  group_by(dimension)                            %>%
+  mutate( Median = median(re.mean.length),
+          Residuals = sqrt( abs( re.mean.length - Median)))   
 
-# Generate letter value summary plot for original data
-df %>% group_by(dimension) %>% 
-  do(as.data.frame( lsum(.$mean.length, l=6) )) %>%
-  ggplot(.) + aes(x=letter, y=mid) + geom_point() + facet_grid(.~dimension) + ylab("Original data")
+# Compute the coordinate values needed to connect residual medians
+sl.line <- df1 %>%
+  group_by(dimension)  %>%
+  summarise(location = median(re.mean.length),
+            res.med  = median(Residuals))
 
-# Generate letter value summary plot for p = -1.65
-df %>% group_by(dimension) %>% 
-  do(as.data.frame( lsum(.$bc1.mean.length, l=6) )) %>%
-  ggplot(.) + aes(x=letter, y=mid) + geom_point() + facet_grid(.~dimension) + ylab("p = -1.65")
-
-# Generate letter value summary plot for p = -1
-df %>% group_by(dimension) %>% 
-  do(as.data.frame( lsum(.$bc2.mean.length, l=6) )) %>%
-  ggplot(.) + aes(x=letter, y=mid) + geom_point() + facet_grid(.~dimension) + ylab("p = -1")
+# Generate the s-l plot
+ggplot(df1, aes(x=Median, y=Residuals)) + geom_jitter(alpha=0.4,width=0.01,height=0) +
+  geom_line(data=sl.line,aes(x=location,y=res.med), col="red") +
+  ylab(expression(sqrt( abs( " Residuals ")))) +
+  annotate("text", x=sl.line$location, y=1.75, label=sl.line$dimension)
 ```
 
-The original data does not suffer from skewness except for the three-dimension dataset which exhibits a consistent skew across all depth of the data towards larger values. The power of `-1.65` reverses that skew--an outcome we don't want--whereas the power of `-1` seems to do a better job in balancing the spread across all depths. The power of `-1` does not seem to introduce significant skew in the `Mixed` and `Two` batches which were fine to start with; this is good news.
-
-If we are interested in both removing skewness AND in stabilizing spread across all levels, the power of `-1` seems to accomplish this quite well with this dataset. But be aware that most datasets are not that accommodating and that one may be faced with having to sacrifice one characteristic of the spread for another. Also note that re-expressions may not be a common fix across all factors (categories) of the data. This suggests that the data may behave differently under different circumstances. For example, in our food web dataset, skewness is prominent for the mixed dimension batch but not for the two or three dimension batches.
-
-
+The plot suggests that the re-expression does a great job in stabilizing the spread.
