@@ -162,8 +162,8 @@ We'll create a **residual dependence plot** to plot the residuals as a function 
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
-res1 <- data.frame( area = df$area, residuals = residuals(M))
-ggplot(res1, aes(x=area, y=residuals)) + geom_point() +
+df$residuals <- residuals(M)
+ggplot(df, aes(x=area, y=residuals)) + geom_point() +
              stat_smooth(method="loess", se=FALSE, span=1, 
                          method.args=list(degree=1) )
 
@@ -174,8 +174,8 @@ We are interested in identifying any pattern in the residuals. If the model does
 Next, we'll look at the residuals from the second order polynomial model `M2`.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
-res2 <- data.frame( area = df$area, residuals = residuals(M2))
-ggplot(res2, aes(x=area, y=residuals)) + geom_point() +
+df$residuals2 <- residuals(M2)
+ggplot(df, aes(x=area, y=residuals2)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=1, 
                            method.args=list(degree=1) )
 
@@ -185,8 +185,8 @@ There is no indication of dependency between the residual and the `area` values.
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
-res2 <- data.frame( area = df$area, residuals = residuals(lo))
-ggplot(res2, aes(x=area, y=residuals)) + geom_point() +
+df$residuals3 <- residuals(lo)
+ggplot(df, aes(x=area, y=residuals3)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=1, 
                            method.args=list(degree=1) )
 
@@ -196,11 +196,11 @@ The loess model also seems to do a good job in smoothing out any overall pattern
 
 You may ask *“if the loess model does such a good job in fitting the data, why bother with polynomial fits?”* If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in identifying a pattern in the data, then a loess fit is a good choice.
 
-Next we will look for any homogeneity in the residuals.
+Next we will look for homogeneity in the residuals.
 
 ## Spread-location plot
 
-The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that the residuals do not show a dependence with *fitted* y-values. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across factors. Here we will compare residuals to the fitted `CP.ratio` values (think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot (this reproduces fig 3.14 in Cleveland's book).
+The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that the residuals do not show a dependence with *fitted* y-values. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across factors. Here we will compare residuals to the fitted `cp.ratio` values (think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot (this reproduces fig 3.14 in Cleveland's book).
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 sl2 <- data.frame( std.res = sqrt(abs(residuals(M2))), 
@@ -244,8 +244,8 @@ abline(M3, col="red")
 At first glance, the log transformation seems to have done a good job at straightening the batch of values. Next, let's look at the residual dependence plot.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
-res3 <- data.frame( area = df.log$area, residuals = residuals(M3))
-ggplot(res3, aes(x=area, y=residuals)) + geom_point() +
+df.log$residuals <- residuals(M3)
+ggplot(df.log, aes(x=area, y=residuals)) + geom_point() +
                stat_smooth(method="loess", se=FALSE, span=2, 
                            method.args=list(degree=1) )
 ```
