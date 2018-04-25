@@ -65,6 +65,8 @@ The second column represents the intercept and the third column represents the s
 
 > Disclaimer: the analysis presented here is only exploratory and does not mirror the complete analysis conducted by Vincent *et al.* nor the one conducted by Stone.
 
+## Original analysis
+
 The following data are pulled from the paper titled "*Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000*" (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90^th^ and 10^th^ percentiles respectively within each year. The percentiles are calculated for the 1961 to 2000 period.
 
 
@@ -108,18 +110,18 @@ The patterns seem to be segmented around the 1975-1980 period for both plots sug
 
 ## Changepoint
 
-In a comment to *Vincent et al.*'s paper, R.J. Stone argues that the trend observed in the percent hot and cold dataset is not monotonic but segmented instead. In other words, there is an abrupt change in patterns for both datasets that make it *seem* as though a monotonic trend exists when in fact the data may follow relatively flat patterns for two different segments of time. He notes that the abrupt change (which he refers to as a **changepoint**) occurs around the 1976 and 1977 period. He suggests that this time period coincides with a change in the Pacific decadal oscillation (PDO)  pattern. PDO refers to an ocean/atmospheric weather pattern that spans multiple decades and that is believed to impact global climate. 
+In a comment to *Vincent et al.*'s paper, R.J. Stone argues that the trend observed in the percent hot and cold dataset is not monotonic but segmented instead. In other words, there is an abrupt change in patterns for both datasets that make it *seem* as though a monotonic trend exists when in fact the data may follow relatively flat patterns for two different segments of time. He notes that the abrupt change (which he refers to as a **changepoint**) occurs around the 1976 and 1977 period. He suggests that this time period coincides with a change in the Pacific Decadal Oscillation (PDO)  pattern. PDO refers to an ocean/atmospheric weather pattern that spans multiple decades and that is believed to impact global climate. 
 
 The following chunk of code loads the PDO data then summarizes by year before plotting the resulting dataset.
 
 ```{r fig.width=5, fig.height=2.5}
 df3  <- read.table("http://mgimond.github.io/ES218/Data/PDO.dat", header=TRUE, na.strings = "-9999")
-dpo <- df3 %>%
-  gather(key=Month, value=DPO, -YEAR) %>%
+pdo <- df3 %>%
+  gather(key=Month, value=PDO, -YEAR) %>%
   group_by(YEAR) %>%
-  summarise(DPO = median(DPO) )
+  summarise(PDO = median(PDO) )
 
-ggplot(dpo, aes(x=YEAR, y=DPO)) + geom_line() + geom_smooth(se=F, span=1/4) +
+ggplot(pdo, aes(x=YEAR, y=PDO)) + geom_line() + geom_smooth(se=F, span=1/4) +
   geom_vline(xintercept =c(1960, 1976,2000), lty=3)
 ```
 
@@ -138,16 +140,23 @@ ggplot(df2.l, aes(x=Year, y=Percent)) + geom_point() +
   geom_smooth(method="lm", se=FALSE) + facet_grid( seg ~ Temp)
 ```
  
+We can also choose to map `seg` to the color aesthetics which will split the points by color with the added benefit of fitting two separate models to each batch.
+
+```{r fig.width=5, fig.height=2.5}
+ggplot(df2.l, aes(x=Year, y=Percent, col=seg)) + geom_point() +
+  geom_smooth(method="lm", se=FALSE) + facet_grid( . ~ Temp)
+```
+ 
 To test for "straightness" in the fits, we'll fit a loess to the points.
 
-```{r fig.width=5, fig.height=4}
-ggplot(df2.l, aes(x=Year, y=Percent)) + geom_point() +
+```{r fig.width=5, fig.height=2.5}
+ggplot(df2.l, aes(x=Year, y=Percent, col=seg)) + geom_point() +
   geom_smooth(method="loess", se=FALSE, method.args=list(degree=1)) + 
-  facet_grid( seg ~ Temp)
+  facet_grid( . ~ Temp)
 ```
 
 
-The "stair-step" pattern for the percent cold nights becomes more obvious in this plot. Note too that the lines appear *flatter* suggesting little change over the course of the years within each segment. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period whereas the pre-1977 period seems to suggest little change in percent hot nights. This could imply that in additon to the PDO effect, another process could be at play.
+There is a clear "stair-step" pattern for the percent cold nights. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period which could imply that in addition to the PDO effect, another process could be at play.
 
 It should be noted that in a followup to Stone's comment, Vincent *et al.* defend their analysis results. However, this little exercise highlights the ease in which an analysis can follow different (and seemingly sound) paths. 
 
