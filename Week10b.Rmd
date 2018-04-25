@@ -12,7 +12,7 @@ This tutorial makes use of the following R package(s): **`tidyr`**, **`dplyr`** 
 
 # Introduction
 
-Let's start off by downloading a sample dataset.
+Let's start off by downloading a dataset.
 
 ```{r}
 library(ggplot2)
@@ -22,41 +22,41 @@ df <- read.csv("http://mgimond.github.io/ES218/Data/Sample1.csv")
 
 Next, we'll plot the data and fit a straight line.
 
-```{r fig.width=5, fig.height=3, small.mar=TRUE}
-ggplot(df, aes(x=x,y=y)) + geom_point(alpha=0.3) + stat_smooth(method="lm", se=FALSE)
+```{r fig.width=3.5, fig.height=2.5, small.mar=TRUE}
+ggplot(df, aes(x=x,y=y)) + geom_point(alpha=0.3) +
+  geom_smooth(method="lm", se=FALSE)
 ```
 
 The line seems to do a decent job in depicting the *overall* trend but the relationship does not appear perfectly linear. Let's check the residuals via a residual-dependence plot.
 
-```{r fig.width=5, fig.height=3, small.mar=TRUE}
+```{r fig.width=3.5, fig.height=2.5, small.mar=TRUE}
 M1    <- lm( y ~ x, df)
-df$R1 <- residuals(M1)
+df$residuals <- residuals(M1)
 
-ggplot(df, aes(x=x,y=R1)) + geom_point(alpha=0.3) + 
-           stat_smooth(method="loess", se=FALSE, span=0.2, 
-                       method.args=list(degree=1))
+ggplot(df, aes(x=x,y=residuals)) + geom_point(alpha=0.3) +
+  geom_smooth(method="loess", se=FALSE, span=0.2, method.args=list(degree=1))
 ```
 
 There appears to be a dip in residual values between ~95 and ~107 followed by an increase beyond ~107. The *kinks* in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slopes and intercepts). Note the use of a small loess span in the above code to reveal the kinks in the pattern.
 
-Sometimes, the data may represent outcomes from different processes given different ranges in independent (x) values. Since the residual plot seems to suggest that the kinks occur are `x=95` and `x=106`, we'll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled `1`, `2`, and `3` and will be assigned to a new column called `grp`. This new column will then be used to facet the scatter plots and associated loess curve. We'll use the `cut()` function to perform this task (note that we could have also used the `ifelse()` function used earlier in the course).
+Sometimes, the data may represent outcomes from different processes given different ranges in independent (x) values. Since the residual plot seems to suggest that the kinks occur are `x=95` and `x=106`, we'll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled `1`, `2`, and `3` and will be assigned to a new column called `grp`. This new column will then be used to facet the scatter plots and associated loess curve. We'll use the `cut()` function to perform this task (note that we could have also used embedded `ifelse()` functions however, `cut()` is syntactically cleaner).
 
 
-```{r fig.width=7, fig.height=3}
+```{r fig.width=6, fig.height=2.5}
 library(dplyr)
-df3 <- df %>% mutate(grp = cut(x,c(-Inf,95,106,Inf), labels = c(1,2,3)) )
+df$grp <- cut(df$x, c(-Inf,95,106,Inf), labels = c(1,2,3))
 
-ggplot(df3, aes(x=x,y=y)) + geom_point(col="grey") +
-              stat_smooth(method="loess", se=FALSE) + facet_grid(.~grp)
+ggplot(df, aes(x=x,y=y)) + geom_point(col="grey") +
+  geom_smooth(method="loess", se=FALSE) + facet_grid(. ~ grp)
 ```
 
 The segmented plots seem to confirm our earlier suspicion that the data followed three separate linear processes. We can extract the slope and intercept for each segment using the following chunk of code:
 
 ```{r}
-df3 %>% 
-      group_by(grp) %>% 
-      do( M1 = coef(lm(y ~ x,.) ) )  %>%
-      data.frame()
+df  %>% 
+  group_by(grp) %>% 
+  do( M1 = coef(lm(y ~ x, . ) ) )  %>%
+  data.frame()
 ```
 
 The second column represents the intercept and the third column represents the slope.
@@ -65,7 +65,7 @@ The second column represents the intercept and the third column represents the s
 
 > Disclaimer: the analysis presented here is only exploratory and does not mirror the complete analysis conducted by Vincent *et al.* nor the one conducted by Stone.
 
-The following data are pulled from the paper titled "*Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000*" (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90th and 10th percentiles respectively within each year. The percentiles are calculated for the 1961 to 2000 period.
+The following data are pulled from the paper titled "*Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000*" (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90^th^ and 10^th^ percentiles respectively within each year. The percentiles are calculated for the 1961 to 2000 period.
 
 
 
@@ -81,26 +81,27 @@ PerH <- c(8.62,10.1,6.67,11.13,5.71,9.48,7.63,8.12,7.2,9.64,8.42,5.71,11.72,
           11.32,7.2,7.17,7.46,13.17,9.28,8.75,12.38,10,13.83,17.59,10.14,
           9.84,11.23,14.39,9.44,8.26,12.15,12.45,13.14,13.67,15.22,11.79,11.16,
           20.37,17.56,11.13,11.49)
-d1 <- data.frame(Year, PerC, PerH)
+df2 <- data.frame(Year, PerC, PerH)
 
-d1.l <- gather(d1, key=Temp, value=Percent, -Year)
+df2.l <- gather(df2, key=Temp, value=Percent, -Year)
 ```
 
 Let's plot the data and fit a straight line to the points.
 
-```{r fig.width=6, fig.height=3}
-ggplot(d1.l, aes(x=Year, y=Percent)) + geom_point() +
-               stat_smooth(method="lm", se=FALSE) +facet_grid( . ~ Temp)
+```{r fig.width=4.5, fig.height=2.5}
+ggplot(df2.l, aes(x=Year, y=Percent)) + geom_point() +
+  geom_smooth(method="lm", se=FALSE) +facet_grid( . ~ Temp)
 ```
 
 The plot on the left is for percent cold nights and the one on the right is for percent hot nights. At first glance, the trends seem real and monotonic. 
 
 Next we'll fit a loess to see if the trends are indeed monotonic. To minimize the undue influence of end values in the plot, we'll implement loess' bisquare estimation method via `family=symmetric`. We'll also use a small span to help identify any "kinks" in the patterns.
 
-```{r fig.width=6, fig.height=3}
-ggplot(d1.l, aes(x=Year, y=Percent)) + geom_point() +
-             stat_smooth(method="loess", se=FALSE, span=0.5,
-             method.args=list(degree=1, family="symmetric"))  + facet_grid( . ~ Temp)
+```{r fig.width=4.5, fig.height=2.5}
+ggplot(df2.l, aes(x=Year, y=Percent)) + geom_point() +
+  geom_smooth(method="loess", se=FALSE, span=0.5, 
+              method.args=list(degree=1, family="symmetric"))  + 
+  facet_grid( . ~ Temp)
 ```
 
 The patterns seem to be segmented around the 1975-1980 period for both plots suggesting that the observed trends may not be monotonic. In fact, there appears to be a prominent kink in the percent cold data around the mid to late 1970`s. A similar, but not as prominent kink can also be observed in the percent hot data at around the same time period.
@@ -111,44 +112,44 @@ In a comment to *Vincent et al.*'s paper, R.J. Stone argues that the trend obser
 
 The following chunk of code loads the PDO data then summarizes by year before plotting the resulting dataset.
 
-```{r fig.width=7, fig.height=3.5}
-d1  <- read.table("http://mgimond.github.io/ES218/Data/PDO.dat", header=TRUE, na.strings = "-9999")
-dpo <- d1 %>%
-       gather(key=Month, value=DPO, -YEAR) %>%
-       group_by(YEAR) %>%
-       summarise(DPO = median(DPO) )
+```{r fig.width=5, fig.height=2.5}
+df3  <- read.table("http://mgimond.github.io/ES218/Data/PDO.dat", header=TRUE, na.strings = "-9999")
+dpo <- df3 %>%
+  gather(key=Month, value=DPO, -YEAR) %>%
+  group_by(YEAR) %>%
+  summarise(DPO = median(DPO) )
 
-ggplot(dpo, aes(x=YEAR, y=DPO)) + geom_line() + stat_smooth(se=F, span=1/4) + 
-             geom_vline(xintercept =c(1960, 1976,2000), lty=3)
+ggplot(dpo, aes(x=YEAR, y=DPO)) + geom_line() + geom_smooth(se=F, span=1/4) +
+  geom_vline(xintercept =c(1960, 1976,2000), lty=3)
 ```
 
 The contrast in PDO indexes between the 1960-1976 period and the 1976-2000 period is obvious with the pre-1977 index values appearing to remain relatively flat over a 15 year period and with the post-1977 index appearing to show a gradual increase towards a peak around the early 1990's.
 
-To see if distinct patterns emerge from the percent hot and cold data before and after 1976, we'll split the data into two segments using a cutoff year of 1976-1977. Values associated with a period prior to 1977 will be assigned a `seg` value of `0` and those associated with a post-1977 period will be assigned a `seg` value of `1`.
+To see if distinct patterns emerge from the percent hot and cold data before and after 1976, we'll split the data into two segments using a cutoff year of 1976-1977. Values associated with a period prior to 1977 will be assigned a `seg` value of `Before` and those associated with a post-1977 period will be assigned a `seg` value of `After`.
 
 ```{r}
-d2.l  <- d1.l  %>% 
-  mutate(seg = ifelse(Year < 1977, "0", "1"))
+df2.l$seg <- ifelse(Year < 1977, "Before", "After")
 ```
 
 Next, we'll plot the data across four facets:
 
-```{r fig.width=6, fig.height=5}
-ggplot(d2.l, aes(x=Year, y=Percent)) + geom_point() +
-               stat_smooth(method="lm", se=FALSE) + facet_grid( seg ~ Temp)
+```{r fig.width=5, fig.height=4}
+ggplot(df2.l, aes(x=Year, y=Percent)) + geom_point() +
+  geom_smooth(method="lm", se=FALSE) + facet_grid( seg ~ Temp)
 ```
  
 To test for "straightness" in the fits, we'll fit a loess to the points.
 
-```{r fig.width=6, fig.height=5}
-ggplot(d2.l, aes(x=Year, y=Percent)) + geom_point() +
-             stat_smooth(method="loess", se=FALSE,
-                         method.args=list(degree=1)) + 
-             facet_grid( seg ~ Temp)
+```{r fig.width=5, fig.height=4}
+ggplot(df2.l, aes(x=Year, y=Percent)) + geom_point() +
+  geom_smooth(method="loess", se=FALSE, method.args=list(degree=1)) + 
+  facet_grid( seg ~ Temp)
 ```
 
 
-The "stair-step" pattern for the percent cold nights becomes more obvious in this plot. Note too that the lines appear *flatter* suggesting little change over the course of the years within each segment. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period whereas the pre-1977 period seems to suggest little change in percent hot nights. 
+The "stair-step" pattern for the percent cold nights becomes more obvious in this plot. Note too that the lines appear *flatter* suggesting little change over the course of the years within each segment. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period whereas the pre-1977 period seems to suggest little change in percent hot nights. This could imply that in additon to the PDO effect, another process could be at play.
+
+It should be noted that in a followup to Stone's comment, Vincent *et al.* defend their analysis results. However, this little exercise highlights the ease in which an analysis can follow different (and seemingly sound) paths. 
 
 # Reference
 
