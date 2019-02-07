@@ -100,7 +100,7 @@ Note that in both cases, `typeof(x)` returns `r typeof(x)`. Also note that the `
 
 These data types are stored as either numeric, character or logical but have additional *attribute* information that allow these objects to be treated in special ways by certain functions in R. These attributes define an object's **class** and can be extracted from that object via the `class()` function. 
 
-## Factor
+## Factor {#factors_xtr}
 
 **Factors** are normally used to group variables into a fixed number of unique categories or **levels**. For example, a dataset may be grouped by gender or month of the year. Such data are usually loaded into R as a numeric or character data type requiring that they be converted to a factor using the `as.factor()` function.
 
@@ -111,25 +111,66 @@ a      <- c("M", "F", "F", "U", "F", "M", "M", "M", "F", "U")
 a.fact <- as.factor(a)
 ```
 
-To confirm that `a.fact` is indeed a factor, we call the `class` function.
+Note that `a` is of `character` data type. 
 
 ```{r}
-class(a.fact)
+typeof(a)
 ```
 
-Interestingly, if you look at `a.fact`'s mode, you'll note that it's stored as an integer even though values are character.
+However, the derived object `a.fact` is now stored as an `integer`!
 
 ```{r}
 typeof(a.fact)
 ```
 
-This is because a factor uses integers to point to one of the vectors' unique values stored in the vector's attribute header (more details are provided [later](#factors_xtr) in this chapter). 
+Yet, when displaying the contents of `a.fact` we see character values. 
 
-The unique values associated with `a.fact` can be extracted using the `levels` function.
+```{r}
+a.fact
+```
+
+How can this be? Well, `a.fact` is a more complicated object than the simple objects created thus far in that the factor is storing additional information not seen in its output. This hidden information is stored in **attributes**. To view these hidden attributes, use the `attributes` function.
+
+```{r}
+attributes(a.fact)
+```
+
+There are two attributes: `levels` and `class`. The `levels` attribute lists the three unique values in `a.fact`. The order in which these levels are listed reflect their *numeric* representation. So in essence, `a.fact` is storing each value as an integer that points to one of the three unique levels.
+
+![](img/levels1.png)
+
+So why doesn't R output the integer values when we output `a.fact`? To understand why, we first need to know that when we call the object name, R is wrapping that object name with the `print` command, so the following lines of code are identical.
+
+```{r eval = FALSE}
+a.fact
+print(a.fact)
+```
+
+The `print` function then looks for a `class` attribute in the object. The class type instructs the `print` function on how to generate the output. Since `a.fact` has a `factor` class attribute, the `print` function is instructed to replace the integer values with the level "tags". 
+
+Naturally, this all happens behind the scenes without user intervention. 
+
+Another way to determine `a.fact`'s class type is to call the `class` function.
+
+```{r}
+class(a.fact)
+```
+
+The unique levels of a factor, and the order in which they are stored can be extracted using the `levels` function.
 
 ```{r}
 levels(a.fact)
 ```
+
+Remember, the order in which the levels are displayed match their integer representation.
+
+Note that if a class attribute is not present, the `class` function will return the object's data type (though it will not distinguish between integer and double).
+
+```{r}
+class(a)
+```
+
+In such a case, the object is treated as a generic element.
 
 To appreciate the benefits of a factor we'll first create a dataframe (dataframes are data tables whose structure will be covered later in this tutorial). One column will be assigned  the `a.fact` factor and another will be assigned some random numeric values.
 
@@ -145,7 +186,7 @@ The `gender` column is now a factor with three levels: `F`, `M` and `U`. We can 
 str(dat)
 ```
 
-Many functions recognize factor data types and will allow you to split the output into groups defined by the factor's unique levels. For example, to create three boxplots of the value `x`, one for each gender group `F`, `M` and `U`, type the following:
+Many functions other than `print` will recognize factor data types and will allow you to split the output into groups defined by the factor's unique levels. For example, to create three boxplots of the value `x`, one for each gender group `F`, `M` and `U`, type the following:
 
 ```{r fig.width = 4, fig.height=2.5,echo=2}
 OP <- par( mar=c(2,2,0,0))
@@ -155,9 +196,11 @@ par(OP)
 
 The tilde `~` operator is used in the plot function to split (or *condition*) the data into separate plots based on the factor `gender`.
 
+Factors will prove to be quite useful in many analytical and graphical procedures as we'll see in subsequent sections.
+
 ### Rearranging level order
 
-A factor will define a hierarchy for its levels. When we invoked the `levels` function in the last example, you may have noted that the levels output were ordered `F`, `M` and`U`--this is the level hierarchy defined for `gender` (i.e. `F`>`M`>`U` ). This means that regardless of the order in which the factors appear in a table, anytime a plot or operation is conditioned by the factor the grouped elements will appear in the order defined by the levels' hierarchy. When we created the boxplot from our `dat` object, the plotting function ordered the boxplot (bottom to top) following `gender`'s level hierarchy (i.e. `F` first, then `M`, then `U`). 
+A factor will define a hierarchy for its levels. When we invoked the `levels` function in the last example, you may have noted that the levels output were ordered `F`, `M` and`U`--this is the level hierarchy defined for `gender` (i.e. `F`>`M`>`U` ). This means that regardless of the order in which the factors appear in a table, anytime a plot or operation is conditioned by the factor, the grouped elements will appear in the order defined by the levels' hierarchy. When we created the boxplot from our `dat` object, the plotting function ordered the boxplot (bottom to top) following `gender`'s level hierarchy (i.e. `F` first, then `M`, then `U`). 
 
 If we wanted the boxplots to be plotted in a different order (i.e. `U` first followed by `F` then `M`) we would need to modify the `gender` column by recreating the factor object as follows:
 
@@ -175,7 +218,7 @@ boxplot(x ~ gender, dat, horizontal = TRUE)
 par(OP)
 ```
 
-### Subsetting table by level and *re-leveling*
+### Subsetting table by level and dropping levels
 
 In this example, we can subset the table by level using the subset function. For example, to subset the values associated with `F` and `M`, type:
 
@@ -186,7 +229,7 @@ dat.f
 
 The double equality sign `==` differs from the single equality sign `=` in that the former asses a condition: it checks if the variable to the left of `==` equals the variable to the right.
 
-However, if you display the levels associated with this new dataframe, you'll see that level `U` is still listed even though it no longer appears in the `gender` column.
+However, if you display the levels associated with this new dataframe, you'll still see the level `U` even though it no longer exists in the `gender` column.
 
 ```{r}
 levels(dat.f$gender)
@@ -256,66 +299,73 @@ It's more common to find data tables with missing elements populated with `NA`'s
 `NA` has different data types. By default, it's a logical variable.
 
 ```{r}
-class(NA)
+typeof(NA)
 ```
 
-But it can be coerced to other types/classes such as character or date.
+But it can be coerced to other types/classes such as character.
 
 ```{r}
-class( as.character(NA))
+typeof( as.character(NA))
+```
+
+It can also be coerced to a derived data type such as a date.
+
+```{r}
 class( as.Date(NA))
 ```
 
-Alternativley, you can make use of built-in reserved words such as `NA_character_` and `NA_integer_`. Note that there is no reserved word for an `NA` date type.
+Note the use of `class` instead of `typeof` (recall that a date object is stored as a number but has a `Date` class attribute).
+
+Alternatively, you can make use of built-in reserved words such as `NA_character_` and `NA_integer_`. Note that there is no reserved word for an `NA` date type.
 
 ```{r}
-class(NA_character_)
-class(NA_integer_)
+typeof(NA_character_)
+typeof(NA_integer_)
 ```
 
 The distinction between `NA` types can be important in certain settings. Examples of these will be highlighted in [Week 03](Week03a.html#Conditional-statements).
 
 # Data structures
 
-A data type defines a single element (e.g. a single number or a single date), but most datasets we work with consist of many elements such as a table of temperature values or a list of survey results. These datasets are stored in R in one of several *data structures* such as **(atomic) vectors**, **matrices**, **data frames** and **lists**.
+Most datasets we work with consist of batches of values such as a table of temperature values or a list of survey results. These batches are stored in R in one of several *data structures*. These include **(atomic) vectors**, **matrices**, **data frames** and **lists**.
 
 ![](img/data_structures.png)
 
 ## (Atomic) Vectors
 
-The **atomic vector** (or vector for short) is the simplest data structure in R which consists of an ordered set of values of the same type (e.g. numeric, character, date, etc...). A vector can be created using the *combine* function `c()` as in
+The **atomic vector** (or **vector** for short) is the simplest data structure in R which consists of an ordered set of values of the same type and or class (e.g. numeric, character, date, etc...). A vector can be created using the *combine* function `c()` as in
 
 ```{r}
 x <- c(674 , 4186 , 5308 , 5083 , 6140 , 6381)
 x
 ```
 
-A vector object is an indexable collection of values which allows one to access a specific index number. For example, to access the third element of `x`, type
+A vector object is an indexable collection of values which allows one to access a specific index number. For example, to access the third element of `x`, type:
 
 ```{r}
 x[3]
 ```
 
-You can also select a subset of elements by index values using the combine function `c()`,
+You can also select a subset of elements by index values using the combine function `c()`.
 
 ```{r}
 x[c(1,3,4)]
 ```
 
-Or, if you are interested in a range of indexed values, use the `:` operator,
+Or, if you are interested in a range of indexed values such as index 2 through 4, use the `:` operator.
 
 ```{r}
 x[2:4]
 ```
 
-You can also assign new values to a specific index. For example, we can replace the second value in vector `x` with `0`,
+You can also assign new values to a specific index. For example, we can replace the second value in vector `x` with `0`.
 
 ```{r}
 x[2] <- 0
 x
 ```
 
-Note that a vector can store any data type such as characters or strings,
+Note that a vector can store any data type such as characters.
 
 ```{r}
 x <- c("all", "b", "olive")
@@ -325,18 +375,19 @@ x
 However, a vector can only be of one type. For example, you cannot mix numeric and character types as follows:
 
 ```{r}
-x <- c( 1.2, 5, "Rt", "9-16-2000")
+x <- c( 1.2, 5, "Rt", "2000")
 ```
 
 In such a situation, R will convert the element types to the **highest common mode** following the order **NULL < logical < integer < double < character**. In our working example, the elements are coerced to `character`:
 
 ```{r}
-mode(x)
+typeof(x)
 ```
+
 
 ## Matrices and arrays
 
-Matrices in R can be thought of as vectors indexed using *two* indices instead of one. For example, the following line of code creates a 3 by 3 matrix of randomly generated values. The parameters `nrow` and `ncol` define the matrix 2D dimension and the function `runif()` generates the nine random numbers that populate this matrix.
+Matrices in R can be thought of as vectors indexed using *two* indices instead of one. For example, the following line of code creates a 3 by 3 matrix of randomly generated values. The parameters `nrow` and `ncol` define the matrix dimension and the function `runif()` generates the nine random numbers that populate this matrix.
 
 ```{r}
 m <- matrix(runif(9,0,10), nrow = 3, ncol = 3)
@@ -365,20 +416,27 @@ A **data frame** is what comes closest to our perception of a data *table*. It's
 
 
 ```{r}
-Name   <- c("a1", "a2", "b3")
-Value1 <- c(23, 4, 12)
-Value2 <- c(1, 45, 5)
-dat    <- data.frame(Name, Value1, Value2)
+name   <- c("a1", "a2", "b3")
+value1 <- c(23, 4, 12)
+value2 <- c(1, 45, 5)
+dat    <- data.frame(name, value1, value2)
 dat
 ```
 
-To view each column's mode type:
+To view each column's data type use the structure `str` function.
 
 ```{r}
 str(dat)
 ```
 
-You'll notice that the `Value1` and `Value2` columns are stored as `numeric` (i.e. as doubles) and not as `integer` even though the numbers do not contain decimal places. R will assume that any number is `numeric` unless it is followed by `L` as in `Value1 <- c(23L, 4L, 12L)`
+You'll notice that the `value1` and `value2` columns are stored as `numeric` (i.e. as doubles) and not as `integer`. There is some inconsistency in R's characterization of data type. Here, `numeric` represents double whereas an integer datatype would display `integer`. For example: 
+
+
+```{r}
+value2 <- c(1L, 45L, 5L)
+dat    <- data.frame(name, value1, value2)
+str(dat)
+```
 
 Like a vector, elements of a data frame can be accessed by their index (aka subscripts). The first index represents the row number and the second index represents the column number. For example, to list the second row of the third column, type:
 
@@ -398,23 +456,40 @@ or if you wish to list the third row for all columns, leave the second index bla
 dat[ 3 , ]
 ```
 
-You can also reference columns by their names if you append the `$` character to the dataframe object name. For example, to list the values in the column named `Value2`, type:
+You can also reference columns by their names if you append the `$` character to the dataframe object name. For example, to list the values in the column named `value2`, type:
 
 ```{r}
-dat$Value2
+dat$value2
+```
+
+Dataframes also have attributes:
+
+```{r}
+attributes(dat)
+```
+
+It's class is `data.frame`. The `names` attribute lists the column names and can be extracted using the `names` function.
+
+```{r}
+names(dat)
+```
+
+It also has a `row.names` attribute. Since we did not explicitly define row names, R simply  assigned the row number as row names. You can extract the row names using the `rownames` function.
+
+```{r}
+rownames(dat)
 ```
 
 ## Lists
 
-A **list** is an ordered set of components stored in a 1D structure.  In fact, it's another kind of vector called a **recursive vector**  where each vector element can be of different data type and *structure*.  This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number to a three paragraph sentence to a five column table. 
+A **list** is an ordered set of components stored in a 1D vector.  In fact, it's another kind of vector called a **recursive vector**  where each vector element can be of different data type and *structure*.  This implies that each element of a list can hold complex objects such as matrices, data frames and other list objects too! Think of a list as a single column spreadsheet where each cell stores anything from a number, to a three paragraph sentence, to a five column table. 
 
-A list is constructed using the `list()` function. For example, the following list consists of 3 components: a two-column data frame (tagged `A`), a two element logical vector (tagged `B`) and a three element character vector (tagged `D`).
+A list is constructed using the `list()` function. For example, the following list consists of 3 components: a two-column data frame (tagged as component `A`), a two element logical vector (tagged as component `B`) and a three element character vector (tagged as component `D`).
 
 ```{r}
 A <- data.frame(
      x = c(7.3, 29.4, 29.4, 2.9, 12.3, 7.5, 36.0, 4.8, 18.8, 4.2),
-     y = c(5.2, 26.6, 31.2, 2.2, 13.8, 7.8, 35.2, 8.6, 20.3, 1.1)
-     )
+     y = c(5.2, 26.6, 31.2, 2.2, 13.8, 7.8, 35.2, 8.6, 20.3, 1.1) )
 B <- c(TRUE, FALSE)
 D <- c("apples", "oranges", "round")
 
@@ -427,7 +502,7 @@ You can view each component's structure using the `str()` function.
 str(lst)
 ```
 
-Each component of a list can be extracted using the `$` symbol followed by that component's **tag** name (the name that was assigned to each component when we constructed the list object). For example, to access component `A` from list `lst`, type:
+Each component of a list can be extracted using the `$` symbol followed by that component's  name. For example, to access component `A` from list `lst`, type:
 
 ```{r}
 lst$A
@@ -439,38 +514,38 @@ You can also access that same component using its *numerical index*. Since `A` i
 lst[[1]]
 ```
 
-Note that we are using **double brackets** to extract `A`. In doing so, we are extracting `A` in its *native data format* (a data frame in this example). Had we used single brackets, `A` would have been extracted as a *list* regardless of its native format. The following compares the different data structure outputs between single and double bracketed indices:
+Note that we are using **double brackets** to extract `A`. In doing so, we are extracting `A` in its *native data format* (a data frame in this example). Had we used single brackets, `A` would have been extracted as a single component *list* regardless of its native format. The following compares the different data structure outputs between single and double bracketed indices:
 
 ```{r}
 class(lst[[1]])
 class(lst[1])
 ```
 
-To list the tag names for each component in a list use the `names()` function:
+To list the names for each component in a list use the `names()` function:
 
 ```{r}
 names(lst)
 ```
 
-Note that lists do not require tag names for their components. For example, we could have created a list as follows (note the omission of `A=`, `B=`, etc...):
+Note that components do not require names. For example, we could have created a list as follows (note the omission of `A=`, `B=`, etc...):
 
 ```{r}
 lst.notags <- list(A, B, D)
 ```
 
-Listing its contents displays bracketed indices instead of tag names.
+Listing its contents displays bracketed indices instead of component names.
 
 ```{r}
 lst.notags
 ```
 
-When lists do not have tags, the `names()` function will return `NULL`.
+When lists do not have component names, the `names()` function will return `NULL`.
 
 ```{r}
 names(lst.notags)
 ```
 
-It's usually good practice to assign tags to list components as these can provide meaningful descriptions of each element.
+It's usually good practice to assign names to components as these can provide meaningful descriptions of each component.
 
 You'll find that many functions in R return list objects such as the linear regression model function `lm`. For example, run a regression analysis for vector elements `x` and `y` (in data frame `A`) and save the output of the regression analysis to an object called `M`:
 
@@ -478,25 +553,30 @@ You'll find that many functions in R return list objects such as the linear regr
 M <- lm( y ~ x, A)
 ```
 
-Now let's verify `M`'s data structure:
+Now let's verify `M`'s data structure. The following shows just the first few lines of the output.
 
-```{r}
-typeof(M)
+```{r eval=FALSE}
+str(M)
 ```
 
-The contents of the regression model object `M` consists of `r length(M)` components which include various diagnostic statistics, regression coefficients, and residuals. Let's extract each component's tag (i.e. element name):
+```{r echo=FALSE, results='hold'}
+str(M, list.len = 1)
+cat("...")
+```
+
+The contents of the regression model object `M` consists of `r length(M)` components which include various diagnostic statistics, regression coefficients, and residuals. Let's extract each component's name:
 
 ```{r}
 names(M)
 ```
 
-Fortunately, the regression function assigns descriptive tag names to each of its components making it easier to figure out what most of these components represent. For example, it's clear that the `residuals` tag stores the residual values from the regression model.
+Fortunately, the regression function assigns descriptive names to each of its components making it easier to figure out what most of these components represent. For example, it's clear that the `residuals` component stores the residual values from the regression model.
 
 ```{r}
 M$residuals
 ```
 
-The list `M` is more complex than the simple list `lst` we created earlier. In addition to having more components, it stores a *wider range* of data types and structures. For example, element `qr` is itself a list of five elements!
+The `M` list is more complex than the simple list `lst` we created earlier. In addition to having more components, it stores a *wider range* of data types and structures. For example, element `qr` is itself a list of five elements!
 
 ```{r}
 str(M$qr)
@@ -514,7 +594,7 @@ If we want to access `rank` using indices instead, and noting that `qr` is  the 
 M[[7]][[5]]
 ```
 
-This should illustrate the value in assigning *tags* to list elements; not only do the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.
+This should illustrate the value in assigning names to list components; not only do the double brackets clutter the expression, but finding the element numbers can be daunting in a complex list structure.
 
 # Coercing data from one type to another
 
@@ -526,7 +606,7 @@ y.c <- as.numeric(y)
 y.c
 ```
 
-The `as.numeric` function forces the vector to a double (you could have also used the `as.double` function). If you convert `y` to an integer, R will remove all values past the decimal point.
+The `as.numeric` function forces the vector to a double (you could have also used the `as.double` function). If you convert `y` to an integer, R will remove all fractional parts of the number.
 
 ```{r}
 as.integer(y)
@@ -548,42 +628,7 @@ charfac <- as.factor(y.c)
 charfac
 ```
 
-It's not uncommon for R’s file reading functions to create factors from character variables (columns). If you need to coerce a factor back to a character use the `as.character()` function.
-
-```{r}
-char <- as.character(charfac)
-char
-```
-
-## A word of caution when converting from factors {#factors_xtr}
-
-Numbers stored as factors can also be coerced back to numbers, but be careful, the following will not produce the expected output:
-
-```{r}
-num <- as.numeric(numfac)
-num
-```
-
-The output does not look like a numeric representation of the original elements in `numfac`. Instead it lists integers that **point** to a set of unique values called **levels** that are stored in the vector's attributes. To see the *unique* levels in our factor `numfac`, type:
-
-```{r}
-levels(numfac)
-```
-
-There are three unique values in our vector. The order in which the levels appear in the above output represents the ordered *pointer* values. So pointer `1` points to level `100.01`, pointer  `2` points to level `23.8`, and pointer `3` points to level `6`. So our earlier attempt at converting the factor to a number ended up outputting the pointer values instead.
-
-![](img/levels.png)
-
-So, to extract the actual values (and not the pointers), you must first convert the factor to character before converting to a numeric vector.
-
-```{r}
-num <- as.numeric(as.character(numfac))
-num
-
-```
-
-
-There are many coercion functions in R, a summary of some the most common ones we'll be using in this course follows:
+There are many other coercion functions in R, a summary of some the most common ones we'll be using in this course follows:
 
 +-----------------------------+-------------------------+
 |as.character()               | Convert to character    |
@@ -596,4 +641,40 @@ There are many coercion functions in R, a summary of some the most common ones w
 +-----------------------------+-------------------------+
 |as.logical()                 | Convert to a Boolean    |
 +-----------------------------+-------------------------+
+
+
+## A word of caution when converting from factors 
+
+If you need to coerce a factor whose levels represent characters to a `character` data type, use the `as.character()` function.
+
+```{r}
+char <- as.character(charfac)
+class(char)
+```
+
+Numbers stored as factors can also be coerced back to numbers, but be careful, the following will not produce the expected output:
+
+```{r}
+num <- as.numeric(numfac)
+num
+```
+
+The output does not look like a numeric representation of the original elements in `y`. Instead it lists the integers that *point* to the set of unique **levels** (see the earlier section on [factors](#factors_xtr)). To see the *unique* levels in `numfac`, type:
+
+```{r}
+levels(numfac)
+```
+
+There are three unique values in our vector. Recall that the order in which the levels appear in the above output represents the ordered *pointer* values. So `1` points to level `100.01`, `2` points to level `23.8`, and `3` points to level `6`. 
+
+So, to extract the actual values (and not the pointers), you must first convert the factor to character before converting to a numeric vector.
+
+```{r}
+num <- as.numeric(as.character(numfac))
+num
+
+```
+
+
+
 
