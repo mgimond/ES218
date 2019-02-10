@@ -6,7 +6,7 @@
 # will lead to greater understanding and new scientific insights.
 # The availability of these data does not constitute publication
 # of the data.  NOAA relies on the ethics and integrity of the user to
-# insure that ESRL receives fair credit for their work.  If the data 
+# ensure that ESRL receives fair credit for their work.  If the data 
 # are obtained for potential use in a publication or presentation, 
 # ESRL should be informed at the outset of the nature of this work.  
 # If the ESRL data are essential to the work, or if an important 
@@ -19,7 +19,7 @@
 # 
 # Contact:   Pieter Tans (303 497 6678; pieter.tans@noaa.gov)
 # 
-# File Creation:  Fri Dec  5 09:02:52 2014
+# File Creation:  Tue Feb  5 13:54:57 2019
 # 
 # RECIPROCITY
 # 
@@ -67,3 +67,4 @@
 # CO2 expressed as a mole fraction in dry air, micromol/mol, abbreviated as ppm
 #
 #  (-99.99 missing data;  -1 no data for #daily means in month)
+
