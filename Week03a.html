@@ -882,7 +882,7 @@ met2</code></pre></div>
 5  1.5  99   NA</code></pre>
 <p>or, we could reduce the separate <code>mutate</code> operations into a single <code>mutate_at</code> operation,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">met2 &lt;-<span class="st"> </span><span class="kw">mutate_at</span>( met, <span class="kw">vars</span>(Wind, Prec),
-                        <span class="kw">funs</span>(<span class="kw">ifelse</span>( . <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, .)))
+                        <span class="kw">list</span>(<span class="op">~</span><span class="st"> </span><span class="kw">ifelse</span>( . <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, .)))
 met2</code></pre></div>
 <pre><code>  Wind Dir Prec
 1  3.4 181   NA
@@ -890,7 +890,7 @@ met2</code></pre></div>
 3   NA  15  0.0
 4  4.1  15   NA
 5  1.5  99   NA</code></pre>
-<p>The dots <code>.</code> in the <code>funs()</code> function are placeholders for each column listed in the <code>vars()</code> function.</p>
+<p>The dot <code>.</code> is a placeholder for each column listed in the <code>list()</code> function. Also, note the <code>~</code> operator in lieu of <code>. =</code>.</p>
 </div>
 <div id="summarize-columns-summarise" class="section level2">
 <h2>Summarize columns: <code>summarise</code></h2>
@@ -1010,12 +1010,12 @@ Levels: apple banana pear Other</code></pre>
 <pre><code>[1] &quot;Degree&quot;      &quot;Fahrenheit&quot;  &quot;Celsius&quot;     &quot;Temperature&quot;</code></pre>
 <p>The last parameter, <code>TRUE ~ z</code> instructs R to keep all other values as is (not doing so would return <code>NA</code> values).</p>
 <p>As with the <code>if_else</code> function, <code>case_when</code> is strict about data type, so if the input is a character vector it expects the output to be character as well. So if you are to assign <code>NA</code> values in your output, avoid the following mistake.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(z <span class="op">==</span><span class="st"> &quot;deg&quot;</span> <span class="op">~</span><span class="st"> </span><span class="ot">NA</span>,  <span class="co"># NA is a logical type, this wil return an error</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(z <span class="op">==</span><span class="st"> &quot;deg&quot;</span> <span class="op">~</span><span class="st"> </span><span class="ot">NA</span>,  <span class="co"># NA is a logical type, this will return an error</span>
           z <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> &quot;Fahrenheit&quot;</span>,
           z <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> &quot;Celsius&quot;</span>,
           <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>z)</code></pre></div>
 <pre><code>Error: must be type logical, not character</code></pre>
-<p>As was the case with the earlier <code>if_else</code> example, <code>case_when</code> requires a character <code>NA</code> type. We can use either <code>as.character(NA)</code> or <code>NA_character_</code>.</p>
+<p>In this example, <code>case_when</code> requires a character <code>NA</code> type. We can use either <code>as.character(NA)</code> or <code>NA_character_</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(z <span class="op">==</span><span class="st"> &quot;deg&quot;</span> <span class="op">~</span><span class="st"> </span><span class="ot">NA_character_</span>,
           z <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> &quot;Fahrenheit&quot;</span>,
           z <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> &quot;Celsius&quot;</span>,
@@ -1042,7 +1042,7 @@ Levels: apple banana pear Other</code></pre>
 <h1>Miscellaneous</h1>
 <div id="outputting-a-vector-instead-of-a-table-using-pull" class="section level2">
 <h2>Outputting a vector instead of a table using <code>pull</code></h2>
-<p>Piping operations will normally output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:</p>
+<p>Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">oats &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
          Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -1052,7 +1052,7 @@ oats</code></pre></div>
 1  2169334</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(oats)</code></pre></div>
 <pre><code>[1] &quot;data.frame&quot;</code></pre>
-<p>There may be times when you want the output as a vector element and not a data table. To output a vector, use the <code>pull()</code> function.</p>
+<p>There may be times when you want to output as a vector element and not a data table. To output a vector, use the <code>pull()</code> function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">oats &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,
          Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -1095,7 +1095,7 @@ yield &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span clas
 
 <div class="footer">
 <hr/>
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2018)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2019)
 </br>
 
 

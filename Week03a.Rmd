@@ -165,10 +165,10 @@ or, we could reduce the separate `mutate` operations into a single `mutate_at` o
 
 ```{r}
 met2 <- mutate_at( met, vars(Wind, Prec),
-                        funs(ifelse( . == 99, NA, .)))
+                        list(~ ifelse( . == 99, NA, .)))
 met2
 ```
-The dots `.` in the `funs()` function are placeholders for each column listed in the `vars()` function.
+The dot `.` is a placeholder for each column listed in the `list()` function. Also, note the `~` operator in lieu of `. =`.
 
 ## Summarize columns: `summarise`
 
@@ -339,12 +339,12 @@ The last parameter, `TRUE ~ z` instructs R to keep all other values as is (not d
 As with the `if_else` function, `case_when` is strict about data type, so if the input is a character vector it expects the output to be character as well. So if you are to assign `NA` values in your output, avoid the following mistake.
 
 ```{r error=TRUE}
-case_when(z == "deg" ~ NA,  # NA is a logical type, this wil return an error
+case_when(z == "deg" ~ NA,  # NA is a logical type, this will return an error
           z == "F" ~ "Fahrenheit",
           z == "C" ~ "Celsius",
           TRUE ~ z)
 ```
-As was the case with the earlier `if_else` example, `case_when` requires a character `NA` type. We can use either `as.character(NA)` or `NA_character_`.
+In this example, `case_when` requires a character `NA` type. We can use either `as.character(NA)` or `NA_character_`.
 
 ```{r}
 case_when(z == "deg" ~ NA_character_,
@@ -369,7 +369,7 @@ head(dat1)
 
 ## Outputting a vector instead of a table using `pull`
 
-Piping operations will normally output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:
+Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:
 
 ```{r}
 oats <- dat %>% 
@@ -380,7 +380,7 @@ oats
 class(oats)
 ```
 
-There may be times when you want the output as a vector element and not a data table. To output a vector, use the `pull()` function.
+There may be times when you want to output as a vector element and not a data table. To output a vector, use the `pull()` function.
 
 ```{r}
 oats <- dat %>% 
