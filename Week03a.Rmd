@@ -271,7 +271,7 @@ Note that there is no reserved word for `NA` *date* types in which case you woul
 
 ## Recoding factors using `recode`
 
-When working with factors, however,  `if_else` (as of `dplyr` version `0.7`) will produce the following error:
+When working with factors, however, `if_else` (as of `dplyr` version `0.7`) will produce the following error:
 
 ```{r error=TRUE}
 if_else(x == "pear", "apple", x)
@@ -290,11 +290,19 @@ You can recode more than one factor level. In fact, you can even introduce new l
 recode(x , "pear" = "apple", "banana" = "pineapple" )
 ```
 
-Note that as with `if_else` and `case_when`, `recode` is strict about preserving data types. So if you want to recode a level to `NA` make sure to use `NA_character_` or `as.character(NA)`.
+As with `if_else` and `case_when`, `recode` is strict about preserving data types. So if you want to recode a level to `NA` make sure to use `NA_character_` or `as.character(NA)`.
 
-### Replacing NA factor levels
+Note that `recode` can also be used with numeric and character data types. For example,
 
-One operation you cannot perform with `recode` is converting an `NA` level to another level. For example, the following will generate an error message:
+```{r}
+# Example of recoding a character vector
+recode(x , "pear" = "apple", "banana" = "pineapple" )
+```
+
+
+### Note on replacing NA factor levels
+
+One operation you cannot perform with `recode` is converting an `NA` level to another factor level. For example, the following will generate an error message:
 
 ```{r}
 x[2] <- NA
@@ -322,36 +330,44 @@ x
 `ifelse` and `if_else` work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.
 
 ```{r}
-z <- c("deg","F","C", "Temperature")
-if_else( z == "deg", "Degree", if_else(z == "F", "Fahrenheit", "Celsius"))
+unit <- c("F","F","C", "K")
+if_else( unit == "C", "Celsius", if_else(unit == "F", "Fahrenheit", "Kelvin"))
 ```
 
-A better alternative is to use `case_when`.
+A simpler solution is to use the `recode` function discussed in the previous section.
+
+```{r} 
+recode(unit, "C" = "Celsius",
+             "F" = "Fahrenheit",
+             "K" = "Kelvin")
+```
+
+`recode` replaces values but it will not allow for more complex operations. For example, given two vectors, `unit` and `temp`, we would like to convert all `temp` values to Fahrenheit by applying a temperature conversion dependent on the `unit` value.
 
 ```{r}
-case_when(z == "deg" ~ "Degree",
-          z == "F" ~ "Fahrenheit",
-          z == "C" ~ "Celsius",
-          TRUE ~ z)
+temp <- c(45.2, 56.3, 11.0, 285)
 ```
-The last parameter, `TRUE ~ z` instructs R to keep all other values as is (not doing so would return `NA` values).
 
-As with the `if_else` function, `case_when` is strict about data type, so if the input is a character vector it expects the output to be character as well. So if you are to assign `NA` values in your output, avoid the following mistake.
-
-```{r error=TRUE}
-case_when(z == "deg" ~ NA,  # NA is a logical type, this will return an error
-          z == "F" ~ "Fahrenheit",
-          z == "C" ~ "Celsius",
-          TRUE ~ z)
-```
-In this example, `case_when` requires a character `NA` type. We can use either `as.character(NA)` or `NA_character_`.
+This operation is best performed using the `case_when` function.
 
 ```{r}
-case_when(z == "deg" ~ NA_character_,
-          z == "F" ~ "Fahrenheit",
-          z == "C" ~ "Celsius",
-          TRUE ~ z)
+case_when(unit == "F" ~ temp,
+          unit == "C" ~ (temp * 9/5) + 32,
+          TRUE ~ (temp - 273.15) * 9/5 + 32)
 ```
+
+The last parameter, `TRUE ~ `, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return `NA` values).
+
+Note that the order in which these conditions are listed matters since evaluation stops at the first `TRUE` outcome encountered. So, had the last condition been moved to the top of the stack, all `temp` values would be assigned the first conversion option.
+
+```{r}
+# What not to do ...
+case_when(TRUE ~ (temp - 273.15) * 9/5 + 32,
+          unit == "F" ~ temp,
+          unit == "C" ~ (temp * 9/5) + 32)
+```
+
+As with the `if_else` function, `case_when` is strict about data type in that all output must be of the same data type.
 
 Note that `ifelse`, `if_else`, `recode` and `case_when` can all be used inside of a `mutate` function. For example, to replace `Canada` and `United States of America` in variable `Country` with `CAN` and `USA` respectively and to create a new variable called `Type` which will take on the values of `1`, `2` or `3` depending on the values in variable `Source`, type the following: 
 

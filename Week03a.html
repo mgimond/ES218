@@ -978,10 +978,15 @@ Levels: apple banana</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">recode</span>(x , <span class="st">&quot;pear&quot;</span> =<span class="st"> &quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span> =<span class="st"> &quot;pineapple&quot;</span> )</code></pre></div>
 <pre><code>[1] apple     pineapple pineapple apple     apple    
 Levels: apple pineapple</code></pre>
-<p>Note that as with <code>if_else</code> and <code>case_when</code>, <code>recode</code> is strict about preserving data types. So if you want to recode a level to <code>NA</code> make sure to use <code>NA_character_</code> or <code>as.character(NA)</code>.</p>
-<div id="replacing-na-factor-levels" class="section level3">
-<h3>Replacing NA factor levels</h3>
-<p>One operation you cannot perform with <code>recode</code> is converting an <code>NA</code> level to another level. For example, the following will generate an error message:</p>
+<p>As with <code>if_else</code> and <code>case_when</code>, <code>recode</code> is strict about preserving data types. So if you want to recode a level to <code>NA</code> make sure to use <code>NA_character_</code> or <code>as.character(NA)</code>.</p>
+<p>Note that <code>recode</code> can also be used with numeric and character data types. For example,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Example of recoding a character vector</span>
+<span class="kw">recode</span>(x , <span class="st">&quot;pear&quot;</span> =<span class="st"> &quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span> =<span class="st"> &quot;pineapple&quot;</span> )</code></pre></div>
+<pre><code>[1] apple     pineapple pineapple apple     apple    
+Levels: apple pineapple</code></pre>
+<div id="note-on-replacing-na-factor-levels" class="section level3">
+<h3>Note on replacing NA factor levels</h3>
+<p>One operation you cannot perform with <code>recode</code> is converting an <code>NA</code> level to another factor level. For example, the following will generate an error message:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x[<span class="dv">2</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
 x</code></pre></div>
 <pre><code>[1] apple  &lt;NA&gt;   banana pear   apple 
@@ -999,28 +1004,29 @@ Levels: apple banana pear Other</code></pre>
 <div id="changing-values-based-on-multiple-conditions-case_when" class="section level2">
 <h2>Changing values based on multiple conditions: <code>case_when</code></h2>
 <p><code>ifelse</code> and <code>if_else</code> work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">z &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;deg&quot;</span>,<span class="st">&quot;F&quot;</span>,<span class="st">&quot;C&quot;</span>, <span class="st">&quot;Temperature&quot;</span>)
-<span class="kw">if_else</span>( z <span class="op">==</span><span class="st"> &quot;deg&quot;</span>, <span class="st">&quot;Degree&quot;</span>, <span class="kw">if_else</span>(z <span class="op">==</span><span class="st"> &quot;F&quot;</span>, <span class="st">&quot;Fahrenheit&quot;</span>, <span class="st">&quot;Celsius&quot;</span>))</code></pre></div>
-<pre><code>[1] &quot;Degree&quot;     &quot;Fahrenheit&quot; &quot;Celsius&quot;    &quot;Celsius&quot;   </code></pre>
-<p>A better alternative is to use <code>case_when</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(z <span class="op">==</span><span class="st"> &quot;deg&quot;</span> <span class="op">~</span><span class="st"> &quot;Degree&quot;</span>,
-          z <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> &quot;Fahrenheit&quot;</span>,
-          z <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> &quot;Celsius&quot;</span>,
-          <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>z)</code></pre></div>
-<pre><code>[1] &quot;Degree&quot;      &quot;Fahrenheit&quot;  &quot;Celsius&quot;     &quot;Temperature&quot;</code></pre>
-<p>The last parameter, <code>TRUE ~ z</code> instructs R to keep all other values as is (not doing so would return <code>NA</code> values).</p>
-<p>As with the <code>if_else</code> function, <code>case_when</code> is strict about data type, so if the input is a character vector it expects the output to be character as well. So if you are to assign <code>NA</code> values in your output, avoid the following mistake.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(z <span class="op">==</span><span class="st"> &quot;deg&quot;</span> <span class="op">~</span><span class="st"> </span><span class="ot">NA</span>,  <span class="co"># NA is a logical type, this will return an error</span>
-          z <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> &quot;Fahrenheit&quot;</span>,
-          z <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> &quot;Celsius&quot;</span>,
-          <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>z)</code></pre></div>
-<pre><code>Error: must be type logical, not character</code></pre>
-<p>In this example, <code>case_when</code> requires a character <code>NA</code> type. We can use either <code>as.character(NA)</code> or <code>NA_character_</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(z <span class="op">==</span><span class="st"> &quot;deg&quot;</span> <span class="op">~</span><span class="st"> </span><span class="ot">NA_character_</span>,
-          z <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> &quot;Fahrenheit&quot;</span>,
-          z <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> &quot;Celsius&quot;</span>,
-          <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>z)</code></pre></div>
-<pre><code>[1] NA            &quot;Fahrenheit&quot;  &quot;Celsius&quot;     &quot;Temperature&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">unit &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;F&quot;</span>,<span class="st">&quot;F&quot;</span>,<span class="st">&quot;C&quot;</span>, <span class="st">&quot;K&quot;</span>)
+<span class="kw">if_else</span>( unit <span class="op">==</span><span class="st"> &quot;C&quot;</span>, <span class="st">&quot;Celsius&quot;</span>, <span class="kw">if_else</span>(unit <span class="op">==</span><span class="st"> &quot;F&quot;</span>, <span class="st">&quot;Fahrenheit&quot;</span>, <span class="st">&quot;Kelvin&quot;</span>))</code></pre></div>
+<pre><code>[1] &quot;Fahrenheit&quot; &quot;Fahrenheit&quot; &quot;Celsius&quot;    &quot;Kelvin&quot;    </code></pre>
+<p>A simpler solution is to use the <code>recode</code> function discussed in the previous section.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">recode</span>(unit, <span class="st">&quot;C&quot;</span> =<span class="st"> &quot;Celsius&quot;</span>,
+             <span class="st">&quot;F&quot;</span> =<span class="st"> &quot;Fahrenheit&quot;</span>,
+             <span class="st">&quot;K&quot;</span> =<span class="st"> &quot;Kelvin&quot;</span>)</code></pre></div>
+<pre><code>[1] &quot;Fahrenheit&quot; &quot;Fahrenheit&quot; &quot;Celsius&quot;    &quot;Kelvin&quot;    </code></pre>
+<p><code>recode</code> replaces values but it will not allow for more complex operations. For example, given two vectors, <code>unit</code> and <code>temp</code>, we would like to convert all <code>temp</code> values to Fahrenheit by applying a temperature conversion dependent on the <code>unit</code> value.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">temp &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">45.2</span>, <span class="fl">56.3</span>, <span class="fl">11.0</span>, <span class="dv">285</span>)</code></pre></div>
+<p>This operation is best performed using the <code>case_when</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">case_when</span>(unit <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> </span>temp,
+          unit <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span>) <span class="op">+</span><span class="st"> </span><span class="dv">32</span>,
+          <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">-</span><span class="st"> </span><span class="fl">273.15</span>) <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span><span class="dv">32</span>)</code></pre></div>
+<pre><code>[1] 45.20 56.30 51.80 53.33</code></pre>
+<p>The last parameter, <code>TRUE ~</code>, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return <code>NA</code> values).</p>
+<p>Note that the order in which these conditions are listed matters since evaluation stops at the first <code>TRUE</code> outcome encountered. So, had the last condition been moved to the top of the stack, all <code>temp</code> values would be assigned the first conversion option.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># What not to do ...</span>
+<span class="kw">case_when</span>(<span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">-</span><span class="st"> </span><span class="fl">273.15</span>) <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span><span class="dv">32</span>,
+          unit <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> </span>temp,
+          unit <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span>) <span class="op">+</span><span class="st"> </span><span class="dv">32</span>)</code></pre></div>
+<pre><code>[1] -378.31 -358.33 -439.87   53.33</code></pre>
+<p>As with the <code>if_else</code> function, <code>case_when</code> is strict about data type in that all output must be of the same data type.</p>
 <p>Note that <code>ifelse</code>, <code>if_else</code>, <code>recode</code> and <code>case_when</code> can all be used inside of a <code>mutate</code> function. For example, to replace <code>Canada</code> and <code>United States of America</code> in variable <code>Country</code> with <code>CAN</code> and <code>USA</code> respectively and to create a new variable called <code>Type</code> which will take on the values of <code>1</code>, <code>2</code> or <code>3</code> depending on the values in variable <code>Source</code>, type the following:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat1 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Country =</span> <span class="kw">recode</span>(Country, <span class="st">&quot;Canada&quot;</span> =<span class="st"> &quot;CAN&quot;</span>,
