@@ -683,6 +683,8 @@ dat1w &lt;-<span class="st"> </span>dat1 <span class="op">%&gt;%</span>
 </div>
 <div id="dataset-dat2" class="section level2">
 <h2>Dataset <code>dat2</code></h2>
+<div id="a-tidy-table-dat2b" class="section level3">
+<h3>A tidy table: <code>dat2b</code></h3>
 <p><code>dat2</code> consists of county income and educational attainment for both the male and female population. A codebook <a href="http://mgimond.github.io/ES218/Data/Income_education_codebook.csv">available here</a> provides descriptions for the different codes. We will remove the cases (rows) from <code>dat2</code> for which values are missing (i.e. cases having a <code>NA</code> designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2 &lt;-<span class="st"> </span><span class="kw">na.omit</span>(dat2)</code></pre></div>
 <p>As with <code>dat1</code>, we will create a tidy version of <code>dat2</code> for use with packages such as <code>ggplot2</code>.</p>
@@ -708,11 +710,11 @@ st.reg &lt;-<span class="st"> </span><span class="kw">rbind</span>(st.reg , <spa
 <span class="co"># Start the piping operations</span>
 dat2b &lt;-<span class="st"> </span>dat2 <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> <span class="st">&quot;variable&quot;</span>, <span class="dt">value =</span> <span class="st">&quot;value&quot;</span>, <span class="op">-</span><span class="dv">1</span><span class="op">:-</span><span class="dv">2</span>)  <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">inner_join</span>(Edu.Gend, <span class="dt">by=</span><span class="st">&quot;variable&quot;</span> )              <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">left_join</span>(Edu.Gend, <span class="dt">by=</span><span class="st">&quot;variable&quot;</span> )              <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">select</span>(State, County, Level, Gender, value)       <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Level =</span> <span class="kw">factor</span>(Level, 
                         <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>,<span class="st">&quot;NoHS&quot;</span>,<span class="st">&quot;HS&quot;</span>, <span class="st">&quot;AD&quot;</span>, <span class="st">&quot;BD&quot;</span>, <span class="st">&quot;Grad&quot;</span>))) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">inner_join</span>(st.reg , <span class="dt">by=</span><span class="st">&quot;State&quot;</span>)
+<span class="st">  </span><span class="kw">left_join</span>(st.reg , <span class="dt">by=</span><span class="st">&quot;State&quot;</span>)
 <span class="kw">head</span>(dat2b)</code></pre></div>
 <pre><code>  State  County Level Gender value Region
 1    al Autauga   All    All 35881  South
@@ -729,38 +731,22 @@ dat2b &lt;-<span class="st"> </span>dat2 <span class="op">%&gt;%</span>
 55204    wy      Uinta  Grad      F 52321   West
 55205    wy   Washakie  Grad      F 50341   West
 55206    wy     Weston  Grad      F 56765   West</code></pre>
-<p>Note that we have eliminated references to variable names such as “B20004001” from <code>dat2b</code> making it easier to interpret the variable names/values.</p>
-<p>In <code>dat2b</code> the gender values are lumped under the variable called <code>Gender</code>. We may wish to have male and female incomes assigned their own columns so we will need to <em>widen</em> <code>dat2b</code> so that each gender value is given its own column. We will use the <code>spread</code> function from the <code>tidyr</code> package to create a new data frame called <code>dat2.gender</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">spread</span>(dat2b, <span class="dt">key =</span> Gender, <span class="dt">value =</span> value )</code></pre></div>
-<p>We will also take this opportunity to add a new field to dat2c called <code>Region</code> which will associate each state with a region. R has a built-in vector called <code>state.region</code> that assigns a region to each state.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">state.region</code></pre></div>
-<pre><code> [1] South         West          West          South         West          West          Northeast     South        
- [9] South         South         West          West          North Central North Central North Central North Central
-[17] South         South         Northeast     South         Northeast     North Central North Central South        
-[25] North Central West          North Central West          Northeast     Northeast     West          Northeast    
-[33] South         North Central North Central South         West          Northeast     Northeast     South        
-[41] North Central South         South         West          Northeast     South         West          South        
-[49] North Central West         
-Levels: Northeast South North Central West</code></pre>
-<p>However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called <code>state.abb</code> or <code>state.name</code>. We will combine <code>state.abb</code> with <code>state.region</code> to create a data frame “lookup table”. We will also need to convert the uppercase state abbreviations to lower case using <code>tolower</code> so that they match the <code>dat2b</code>’s lowercase state abbreviations.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st.reg &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">State =</span> <span class="kw">tolower</span>(state.abb), <span class="dt">Region =</span> state.region)</code></pre></div>
-<p>Our income dataset has data for all 50 states as well as the District of Columbia (D.C.) as shown in the following output:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(dat2c<span class="op">$</span>State)</code></pre></div>
-<pre><code> [1] &quot;ak&quot; &quot;al&quot; &quot;ar&quot; &quot;az&quot; &quot;ca&quot; &quot;co&quot; &quot;ct&quot; &quot;dc&quot; &quot;de&quot; &quot;fl&quot; &quot;ga&quot; &quot;hi&quot; &quot;ia&quot; &quot;id&quot; &quot;il&quot; &quot;in&quot; &quot;ks&quot; &quot;ky&quot; &quot;la&quot; &quot;ma&quot; &quot;md&quot; &quot;me&quot; &quot;mi&quot;
-[24] &quot;mn&quot; &quot;mo&quot; &quot;ms&quot; &quot;mt&quot; &quot;nc&quot; &quot;nd&quot; &quot;ne&quot; &quot;nh&quot; &quot;nj&quot; &quot;nm&quot; &quot;nv&quot; &quot;ny&quot; &quot;oh&quot; &quot;ok&quot; &quot;or&quot; &quot;pa&quot; &quot;ri&quot; &quot;sc&quot; &quot;sd&quot; &quot;tn&quot; &quot;tx&quot; &quot;ut&quot; &quot;va&quot;
-[47] &quot;vt&quot; &quot;wa&quot; &quot;wi&quot; &quot;wv&quot; &quot;wy&quot;</code></pre>
-<p>But D.C. is not included in the built-in states dataset, so we will add this record the the <code>st.reg</code> table and assign D.C. to the <code>South</code> region.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st.reg &lt;-<span class="st"> </span><span class="kw">rbind</span>(st.reg , <span class="kw">data.frame</span>(<span class="dt">State=</span><span class="st">&quot;dc&quot;</span>, <span class="dt">Region=</span><span class="st">&quot;South&quot;</span>) )</code></pre></div>
-<p>Now we’ll join this look-up table to the dat2c data frame. We’ll use dplyrs inner_join function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">inner_join</span>(dat2c, st.reg, <span class="dt">by =</span> <span class="st">&quot;State&quot;</span>)
+<p>Note that we have eliminated references to variable names such as “B20004001” from <code>dat2b</code> making it easier to interpret the variable names/values. Also note that we have re-leveled the educational attainment factor <code>Level</code> to reflect the implied order in educational attainment levels.</p>
+</div>
+<div id="spreading-gender-across-columns-dat2c" class="section level3">
+<h3>Spreading gender across columns: <code>dat2c</code></h3>
+<p>In <code>dat2b</code> the gender values are lumped under the variable called <code>Gender</code>. In some upcoming lectures, we will want to compare male and female incomes requiring that they be assigned their own columns. We will therefore <em>widen</em> <code>dat2b</code>. We will use the <code>spread</code> function from the <code>tidyr</code> package to create a new data frame called <code>dat2c</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat2c &lt;-<span class="st"> </span><span class="kw">spread</span>(dat2b, <span class="dt">key =</span> Gender, <span class="dt">value =</span> value )
+
 <span class="kw">head</span>(dat2c)</code></pre></div>
-<pre><code>  State                 County Level Region.x   All     F     M Region.y
-1    ak Aleutians East Borough   All     West 21953 20164 22940     West
-2    ak Aleutians East Borough  NoHS     West 21953 19250 22885     West
-3    ak Aleutians East Borough    HS     West 20770 19671 21192     West
-4    ak Aleutians East Borough    AD     West 26383 26750 26352     West
-5    ak Aleutians East Borough    BD     West 22431 19592 27875     West
-6    ak Aleutians East Borough  Grad     West 74000 74000 71250     West</code></pre>
+<pre><code>  State                 County Level Region   All     F     M
+1    ak Aleutians East Borough   All   West 21953 20164 22940
+2    ak Aleutians East Borough  NoHS   West 21953 19250 22885
+3    ak Aleutians East Borough    HS   West 20770 19671 21192
+4    ak Aleutians East Borough    AD   West 26383 26750 26352
+5    ak Aleutians East Borough    BD   West 22431 19592 27875
+6    ak Aleutians East Borough  Grad   West 74000 74000 71250</code></pre>
+</div>
 </div>
 
 

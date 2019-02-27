@@ -3,6 +3,7 @@ title: 'Data manipulation examples'
 ---
 ```{r echo=FALSE}
 source("libs/Common.R")
+options(width = 100)
 ```
 
 
@@ -57,6 +58,9 @@ head(dat1l2,15)
 
 ## Dataset `dat2`
 
+
+### A tidy table: `dat2b`
+
 `dat2` consists of county income and educational attainment for both the male and female population. A codebook [available here](http://mgimond.github.io/ES218/Data/Income_education_codebook.csv) provides descriptions for the different codes. We will remove the cases (rows) from `dat2` for which values are missing (i.e. cases having a `NA` designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).
 
 ```{r}
@@ -90,53 +94,27 @@ st.reg <- rbind(st.reg , data.frame(State="dc", Region="South") )
 # Start the piping operations
 dat2b <- dat2 %>%
   gather(key = "variable", value = "value", -1:-2)  %>%
-  inner_join(Edu.Gend, by="variable" )              %>%
+  left_join(Edu.Gend, by="variable" )              %>%
   select(State, County, Level, Gender, value)       %>%
   mutate(Level = factor(Level, 
                         levels = c("All","NoHS","HS", "AD", "BD", "Grad"))) %>%
-  inner_join(st.reg , by="State")
+  left_join(st.reg , by="State")
 head(dat2b)
 tail(dat2b)
 ```
 
-Note that we have eliminated references to variable names such as "B20004001" from `dat2b` making it easier to interpret the variable names/values.
+Note that we have eliminated references to variable names such as "B20004001" from `dat2b` making it easier to interpret the variable names/values. Also note that we have re-leveled the educational attainment factor `Level` to reflect the implied order in educational attainment levels.
 
-In `dat2b` the gender values are lumped under the variable called `Gender`. We may wish to have male and female incomes assigned their own columns so we will need to *widen* `dat2b` so that each gender value is given its own column. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2.gender`.
+### Spreading gender across columns: `dat2c`
+
+In `dat2b` the gender values are lumped under the variable called `Gender`. In some upcoming lectures, we will want to compare male and female incomes requiring that they be assigned their own columns. We will therefore *widen* `dat2b`. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2c`.
 
 ```{r}
 dat2c <- spread(dat2b, key = Gender, value = value )
-```
 
-We will also take this opportunity to add a new field to dat2c called `Region` which will associate each state with a region. R has a built-in vector called `state.region` that assigns a region to each state.
-
-```{r}
-state.region
-```
-
-However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called `state.abb` or `state.name`. We will combine `state.abb` with `state.region` to create a data frame “lookup table”. We will also need to convert the uppercase state abbreviations to lower case using `tolower` so that they match the `dat2b`’s lowercase state abbreviations.
-
-```{r}
-st.reg <- data.frame(State = tolower(state.abb), Region = state.region)
-```
-
-Our income dataset has data for all 50 states as well as the District of Columbia (D.C.) as shown in the following output:
-
-```{r}
-unique(dat2c$State)
-```
-
-But D.C. is not included in the built-in states dataset, so we will add this record the the `st.reg` table and assign D.C. to the `South` region.
-
-```{r}
-st.reg <- rbind(st.reg , data.frame(State="dc", Region="South") )
-```
-
-Now we’ll join this look-up table to the dat2c data frame. We’ll use dplyrs inner_join function.
-
-```{r}
-dat2c <- inner_join(dat2c, st.reg, by = "State")
 head(dat2c)
 ```
+
 
 
 
