@@ -5,14 +5,14 @@ editor_options:
 ---
 ```{r echo=FALSE}
 source("libs/Common.R")
+options(width = 1000)
 ```
 
-
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
-This tutorial makes use of the following R package(s): **`dplyr`**, **`ggplot2`**, **`forcats`** and **`scales`**
+This tutorial makes use of the following R package(s): **`dplyr`**, **`ggplot2`**, **`forcats`**, **`scales`** and **`hdrcde`**.
 </div>
 
-# The data
+# Loading the data
 
 The data files used in this tutorial were created in an [earlier exercise](Week03ab_examples.html). Type the following command to download the objects
 
@@ -20,13 +20,33 @@ The data files used in this tutorial were created in an [earlier exercise](Week0
 load(url("http://mgimond.github.io/ES218/Data/dat1_2.RData"))
 ```
 
-This should load several data frame objects into your R session (note that not all are used in this exercise). The first three lines of data frames used in the following sections are shown below:
+This should load several data frame objects into your R session (note that not all are used in this exercise). The `dat1l` dataframe is a long table version of the crop yield dataset.
 
 ```{r}
 head(dat1l, 3)
+```
+
+`dat1l2` adds `Country` to the `dat1l` dataframe.
+
+```{r}
 head(dat1l2, 3)
+```
+
+The `dat1w` dataframe is a wide table version of `dat1l`.
+
+```{r}
 head(dat1w, 3)
-head(dat2, 3)
+```
+
+The `dat2` dataframe is a wide table representation of income by county and by various income and educational attainment levels. The first few lines and columns are shown:
+
+```{r}
+dat2[1:3, 1:7]
+```
+
+`dat2c` is a long version of `dat2`
+
+```{r}
 head(dat2c, 3)
 ```
 
@@ -57,7 +77,7 @@ From a grammatical perspective, a scientific graph is the conversion of *data* t
 For example, if we want to generate a point plot of crop yield as a function of year using the `dat1l` data frame, we type:
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1l , aes(x=Year, y=Yield)) + geom_point()
+ggplot(dat1l , aes(x = Year, y = Yield)) + geom_point()
 ```
 
 where the function, `ggplot()`, is passed the data frame name whose content will be mapped; the `aes()` function is given data-to-geometry mapping instructions (`Year` is mapped to the x-axis and `Yield` is mapped to the y-axis); and `geom_line()` is the geometry type.
@@ -67,7 +87,7 @@ where the function, `ggplot()`, is passed the data frame name whose content will
 If we wanted to include a third variable, crop type, to the map, we would need to map its aesthetics: here we'll map `Crop` to the color element of the geom.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1l , aes(x=Year, y=Yield, color=Crop)) + geom_point()
+ggplot(dat1l , aes(x = Year, y = Yield, color = Crop)) + geom_point()
 ```
 
 The parameter `color` acts as a grouping parameter whereby the groups are assigned unique colors.
@@ -77,7 +97,7 @@ The parameter `color` acts as a grouping parameter whereby the groups are assign
 If we want to plot lines instead of points, simply substitute the geometry type with the `geom_line()` geometry.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1l , aes(x=Year, y=Yield, color=Crop)) + geom_line()
+ggplot(dat1l , aes(x = Year, y = Yield, color = Crop)) + geom_line()
 ```
 
 Note that the aesthetics are still mapped in the same way with `Year` mapped to the x coordinate, `Yield` mapped to the y coordinate and `Crop` mapped to the geom's color.
@@ -85,7 +105,7 @@ Note that the aesthetics are still mapped in the same way with `Year` mapped to 
 Note that the parameters `x=` and `y=` can be omitted from the syntax reducing the line of code to:
 
 ```{r eval = FALSE}
-ggplot(dat1l , aes(Year, Yield, color=Crop)) + geom_line()
+ggplot(dat1l , aes(Year, Yield, color = Crop)) + geom_line()
 ```
 
 # Geometries
@@ -97,13 +117,14 @@ Examples of a few available geometric elements follow.
 `geom_line` generates line geometries. We'll use data from `dat1w` to generate a simple plot of oat yield as a function of year.
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1w, aes(x=Year, y=Oats)) + geom_line() 
+ggplot(dat1w, aes(x = Year, y = Oats)) + geom_line() 
 ```
 
 Parameters such as color and linetype can be passed directly to the `geom_line()` function:
 
 ```{r fig.height=3, fig.width=5}
-ggplot(dat1w, aes(x=Year, y=Oats)) + geom_line(linetype=2, colour = "blue", size=0.4) 
+ggplot(dat1w, aes(x = Year, y = Oats)) + 
+  geom_line(linetype = 2, colour = "blue", size=0.4) 
 ```
 
 Note the difference in how `colour=` is implemented here. It's no longer **mapping** a variable's levels to a range of colors as when it's called inside of the `aes()` function, instead, it's **setting** the line color to `blue`.
@@ -113,27 +134,41 @@ Note the difference in how `colour=` is implemented here. It's no longer **mappi
 This generates point geometries. This is often used in generating scatterplots. For example, to plot male income (variable `B20004013`) vs female income (variable `B20004007`), type:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) 
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) 
 ```
 
 We modify the point's transparency by passing the `alpha=0.3` parameter to the `geom_point` function. Other parameters that can be passed to point geoms include `colour`, `pch` (point symbol type) and `cex` (point size as a fraction).
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(colour="red", pch=3 , alpha=0.3, cex=0.6) 
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + 
+  geom_point(colour = "red", pch=3 , alpha = 0.3, cex=0.6) 
 ```
+
+
+## `geom_hex`
+
+When a bivariate scatter plot has too many overlapping points, it may be helpful to *bin* the observations into regular hexagons. This provides the number of observations per bin.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + 
+  geom_hex(binwidth = c(1000, 1000))  
+```
+
+The `binwidth` argument defines the width and height of each bin in the variables' axes units.
 
 ## `geom_boxplot`
 
 In the following example, a boxplot of `Yield` is generated for each crop type.
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1l, aes(x=Crop, y=Yield)) + geom_boxplot(fill="bisque") 
+ggplot(dat1l, aes(x = Crop, y = Yield)) + geom_boxplot(fill = "bisque") 
 ```
 
 If we want to generate a single boxplot (for example for all yields irrespective of crop type) we need to pass a *dummy* variable to `x=`:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1l, aes(x="", y=Yield)) + geom_boxplot(fill="bisque") + xlab("All crops")
+ggplot(dat1l, aes(x = "", y = Yield)) + 
+  geom_boxplot(fill = "bisque") + xlab("All crops")
 ```
 
 ## `geom_violin`
@@ -141,7 +176,7 @@ ggplot(dat1l, aes(x="", y=Yield)) + geom_boxplot(fill="bisque") + xlab("All crop
 A violin plot is a symmetrical version of a density plot which provides greater detail of a sample's distribution than a boxplot. 
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1l, aes(x="", y=Yield)) + geom_violin(fill="bisque") 
+ggplot(dat1l, aes(x = "", y = Yield)) + geom_violin(fill = "bisque") 
 ```
 
 ## `geom_histogram`
@@ -149,19 +184,21 @@ ggplot(dat1l, aes(x="", y=Yield)) + geom_violin(fill="bisque")
 Histograms can be plotted for single variables only (unless faceting is used) as can be noted by the absence of a `y=` parameter in `aes()`:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1w, aes(x=Oats)) + geom_histogram(fill="grey50") 
+ggplot(dat1w, aes(x = Oats)) + geom_histogram(fill = "grey50") 
 ```
 
 The bin widths can be specified in terms of the value's units. In our example, the unit is yield of oats (in Hg/Ha). So if we want to generate bin widths that cover 1000 Hg/Ha, we can type,
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat1w, aes(x=Oats)) + geom_histogram(fill="grey50", binwidth = 1000) 
+ggplot(dat1w, aes(x = Oats)) + 
+  geom_histogram(fill = "grey50", binwidth = 1000) 
 ```
 
 If you want to control the number of bins, use the parameter `bins=` instead. For example, to set the number of bins to 8, modify the above code chunk as follows:
 
 ```{r eval=FALSE}
-ggplot(dat1w, aes(x=Oats)) + geom_histogram(fill="grey50", bins=8) 
+ggplot(dat1w, aes(x = Oats)) + 
+  geom_histogram(fill = "grey50", bins = 8) 
 ```
 
 ## `geom_bar`
@@ -197,7 +234,7 @@ head(dat2.ct)
 When using summarized data, we must pass the parameter `stat="identity"` to the `geom_bar` function. We must also explicitly map the *x* and *y* axes geometries. Note that since we are now generating bar heights from a value field and not a frequency, we will need to use another `forcats` ordering function called `fct_reorder`. This function takes three parameters: the variable to be ordered (`State`), the variable whose values will determine the order (`Counties`) and the function, `fun=`, which defines the statistic used to summaries the sorting variable. Since there is just one value per state, we can use any summary statistic such as `median`, `mean`, `sum`, `min` or `max`.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct, aes(x=fct_reorder(State, Counties, fun=median), y=Counties)) + geom_bar(stat="identity")
+ggplot(dat2.ct, aes(x=fct_reorder(State, Counties, fun=median), y = Counties)) + geom_bar(stat = "identity")
 ```
 
 Note that you can replace `fct_reorder` with the base function `reorder` for succinctness sake.
@@ -207,13 +244,13 @@ Note that you can replace `fct_reorder` with the base function `reorder` for suc
 The dot plot is an alternative way to visualize counts as a function of a categorical variable. Instead of mapping `State` to the x-axis, we'll map it to the y-axis.
 
 ```{r fig.height=4.5, fig.width=4}
-ggplot(dat2.ct , aes(x=Counties, y=State)) + geom_point()
+ggplot(dat2.ct , aes(x = Counties, y = State)) + geom_point()
 ```
 
 Dot plot graphics benefit from sorting--more so then bar plots. Here, we'll make use of `forcats::fct_reorder` function (see last section on `geom_bar`).
 
 ```{r fig.height=4.5, fig.width=4}
-ggplot(dat2.ct , aes(x=Counties, y=fct_reorder(State, Counties,fun=median))) + geom_point()
+ggplot(dat2.ct , aes(x = Counties, y = fct_reorder(State, Counties,fun = median))) +     geom_point()
 ```
 
 
@@ -222,23 +259,55 @@ ggplot(dat2.ct , aes(x=Counties, y=fct_reorder(State, Counties,fun=median))) + g
 Geometries can be layered. For example, to overlay a linear regression line to the data we can add the `geom_smooth` layer:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) + 
-                                              geom_smooth(method = "lm")
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + 
+  geom_point(alpha = 0.3) + 
+  geom_smooth(method = "lm")
 ```
 
 The `geom_smooth` can be used to fit other *lines* such as a loess:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-                                              geom_smooth(method = "loess")
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + 
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess")
 ```
 
-The confidence interval can be removed from the smooth geometry by specifying `se=FALSE`.
+The confidence interval can be removed from the smooth geometry by specifying `se = FALSE`.
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-                                              geom_smooth(method = "loess", se=FALSE)
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + 
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess", se = FALSE)
 ```
+
+## Combining datasets
+
+You can plot different datasets on the same ggplot canvas. This approach usually requires that each geom be assigned its own dataset and aesthetics. In the following example, we'll compute the High Density Region (HDR) boxplot parameters using the `hdrcde` package, then use these parametersto construct `geom_rect()` that will be added to a `geom_point` element that will be built from the parent dataset. When data and aesthetics are defined in a geom function, the `ggplot()` function must be explictly called right from the beginning.
+
+```{r fig.height=3, fig.width=2}
+library(hdrcde)
+
+# Compute the HDR boxplot
+hdr1d <- hdr(dat2$B20004013, prob = c(25, 50, 99))
+
+# Build the data frame that will store the geom_rect variables
+hdr.df <- data.frame(hdr1d$hdr)
+cols <- grey(1/(1:nrow(hdr.df)) )
+
+# Build the plot
+  ggplot() +
+  geom_point(data = dat2, aes(x = 0 , y = B20004013), pch = 16, alpha = 0.5) +
+  geom_rect(dat = hdr.df, aes(
+    xmin = -0.2, xmax = 0.2,
+    ymin = X1, ymax = X2),
+    fill = cols,  colour = "grey") +
+  theme(axis.title.x = element_blank(),  # Remove x-axis 
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+```
+
+The HBR boxplot is designed to visualize multi-modality on the dataset (i.e. data having more than one peak). In the above example, the boxes are encompassing 25%, 50% and 99% of the data. 
+
 
 
 # Tweaking a ggplot2 graph
@@ -248,7 +317,7 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
 You can add a plot title using the `ggtile` function.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2, aes(State)) + geom_bar() +ggtitle("Number of counties by state")
+ggplot(dat2, aes(State)) + geom_bar() + ggtitle("Number of counties by state")
 ```
 
 ## Axes titles
@@ -256,8 +325,8 @@ ggplot(dat2, aes(State)) + geom_bar() +ggtitle("Number of counties by state")
 Axes titles can be explicitly defined using the `xlab()` and `ylab()` functions.
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)")
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+    xlab("Female income ($)") + ylab("Male income ($)")
 ```
 
 To remove axis labels, simply pass `NULL` to the functions as in `xlab(NULL)` and `ylab(NULL)`.
@@ -267,28 +336,32 @@ To remove axis labels, simply pass `NULL` to the functions as in `xlab(NULL)` an
 You can customize an axis' label elements. If you are mapping continuous values along the x and y axes, use  the `scale_x_continuous()` and `scale_y_continuous()` functions. For example, to specify where to place the tics and the accompanying labels, type:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               scale_x_continuous(breaks=c(10000, 30000, 50000),
-                                  labels=c("$10,000", "$30,000", "$50,000"))
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+      xlab("Female income ($)") + ylab("Male income ($)") +
+      scale_x_continuous(breaks = c(10000, 30000, 50000),
+                         labels = c("$10,000", "$30,000", "$50,000"))
 ```
 
 If you want to change the label formats whereby the numbers are truncated to a thousandth of their original value, you can make use of `unit_format()` from the `scales` package:
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               scale_x_continuous(labels=scales::unit_format("k", 0.001, sep="")) +
-               scale_y_continuous(labels=scales::unit_format("k", 0.001, sep=""))
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       scale_x_continuous(labels=scales::unit_format(suffix="k", 
+                                                     scale=0.001, 
+                                                     sep="")) +
+       scale_y_continuous(labels=scales::unit_format(suffix="k", 
+                                                     scale=0.001, 
+                                                     sep=""))
 ```
 
 The `scales` package also has a `comma_format()` function that will add commas to large numbers:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               scale_x_continuous(labels=scales::comma_format()) +
-               scale_y_continuous(labels=scales::comma_format())
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+        xlab("Female income ($)") + ylab("Male income ($)") +
+        scale_x_continuous(labels = scales::comma_format()) +
+        scale_y_continuous(labels = scales::comma_format())
 ```
 
 
@@ -297,20 +370,20 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
 The axis range can be set using `xlim()` and `ylim()`. 
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               xlim( c(10000, 75000)) + ylim( c(10000, 75000)) 
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       xlim( c(10000, 75000)) + ylim( c(10000, 75000)) 
 ```
 
 However, if you are calling the `scale_x_continuous()` and `scale_y_continuous()` functions, you do not want to use `xlim` and `ylim` instead, you should add the `limit=` parameter to the aforementioned functions. For example,
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               scale_x_continuous(limit = c(10000, 75000),
-                                  labels=scales::comma_format()) +
-               scale_y_continuous(limit = c(10000, 75000),
-                                  labels=scales::comma_format())
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       scale_x_continuous(limit = c(10000, 75000),
+                          labels = scales::comma_format()) +
+       scale_y_continuous(limit = c(10000, 75000),
+                          labels = scales::comma_format())
 ```
 
 ## Axes and data transformations
@@ -318,9 +391,9 @@ ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
 If you wish to apply a non-linear transformation to either axes (while preserving the *untransformed* axis values) add the `coord_trans()` function as follows:
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               coord_trans(x = "log")
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       coord_trans(x = "log")
 ```
 
 You can also transform the y-axis by specifying the parameter `y=`. The `log` transformation defaults to the natural log. For a log base 10, use `"log10"` instead. For a square root transformation, use `"sqrt"`. For the inverse use `"reciprocal"`.
@@ -328,27 +401,27 @@ You can also transform the y-axis by specifying the parameter `y=`. The `log` tr
 Advanced transformations can be called via the `scales` package. For example, to implement the box-cox transformation (with a power of `-0.3`), type:
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               coord_trans(x = scales::boxcox_trans(-0.3))
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       coord_trans(x = scales::boxcox_trans(-0.3))
 ```
 
 Note that any statistical geom (such as the regression line) will be applied to the *un-transformed* data. So a linear model may end up looking non-linear after an axis transformation:
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               geom_smooth(method = "lm", se=FALSE) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               coord_trans(x = "log")
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       geom_smooth(method = "lm", se = FALSE) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       coord_trans(x = "log")
 ```
 
 If a linear fit is to be applied to the transformed data, a better alternative is to transform the values instead of the axes. The transformation can be done on the original data or it can be implemented in ggplot using the `scale_x_continuous` and `scale_y_continuous` functions.
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               geom_smooth(method = "lm", se=FALSE) +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               scale_x_continuous(trans = "log", breaks=seq(10000,60000,10000))
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       geom_smooth(method = "lm", se = FALSE) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       scale_x_continuous(trans = "log", breaks = seq(10000,60000,10000))
 ```
 
 The `scale_x_continuous` and `scale_y_continuous` functions will accept `scales` transformation parameters--e.g. `scale_x_continuous(trans = scales::boxcox_trans(-0.3))`. Note that the parameter `breaks` is not required but is used here to highlight the transformed nature of the axis.
@@ -358,10 +431,10 @@ The `scale_x_continuous` and `scale_y_continuous` functions will accept `scales`
 You can impose an aspect ratio to your plot using the `coord_equal()` function. For example, to set the axes units equal (in length) to one another set `ratio=1`:
 
 ```{r fig.height=3, fig.width=4}
-ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
-               geom_smooth(method = "lm") +
-               xlab("Female income ($)") + ylab("Male income ($)") +
-               coord_equal(ratio=1)
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       geom_smooth(method = "lm") +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       coord_equal(ratio = 1)
 ```
 
 ## Colors
@@ -394,25 +467,27 @@ head(dat2.ct2)
 The following chunk applies a green to red color gradient fill to each bar based on the median county incomes. Note that we are using the summarized count table (and not the original `dat2` table). Recall that when plotting bars from counts that are already tabulated we must specify `stat="identity"` in the `geom_bar` function.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct2, aes(x=fct_reorder(State, Counties), y=Counties, fill=Income)) + 
-                geom_bar(stat="identity") + 
-                scale_fill_gradient(low = "green", high = "red")
+ggplot(dat2.ct2, aes(x = fct_reorder(State, Counties), y = Counties, fill = Income)) + 
+       geom_bar(stat = "identity") + 
+       scale_fill_gradient(low = "green", high = "red")
 ```
 
 The following chunk applies a divergent color scheme while allowing one to specify the central value of this scheme. Note that the colors are symmetrical about the midpoint which may result in only a partial range of the full possible gradient of colors.
 
 ```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct2, aes(x=fct_reorder(State, Counties), y=Counties, fill=Income)) + 
-                geom_bar(stat="identity") + 
-                scale_fill_gradient2(low = "darkred", mid = "white",  high = "darkgreen", midpoint = 30892)
+ggplot(dat2.ct2, aes(x = fct_reorder(State, Counties), y = Counties, fill = Income)) + 
+       geom_bar(stat = "identity") + 
+       scale_fill_gradient2(low = "darkred", mid = "white",  high = "darkgreen", 
+                            midpoint = 30892)
 ```
 
 In the last two chunk, we *filled* the bars with colors (note the use of functions with the string `_fill_`). When assigning color to point or line symbols, use the function with the `_colour_` string. For example:
 
 ```{r fig.height=4.5, fig.width=4}
-ggplot(dat2.ct2, aes(y=fct_reorder(State, Counties), x=Counties, col=Income)) +
-                 geom_point() +
-                 scale_colour_gradient2(low = "darkred", mid = "white",  high = "darkgreen", midpoint = 30892)
+ggplot(dat2.ct2, aes(y = fct_reorder(State, Counties), x = Counties, col = Income)) +
+       geom_point() +
+       scale_colour_gradient2(low = "darkred", mid = "white",  high = "darkgreen", 
+                              midpoint = 30892)
 ```
 
 ### Categorical color schemes
@@ -420,15 +495,15 @@ ggplot(dat2.ct2, aes(y=fct_reorder(State, Counties), x=Counties, col=Income)) +
 In the following chunk, we assign colors manually to each level in the variable `Yield`. The order of the color names mirror the order of the variable levels.
 
 ```{r}
-ggplot(dat1l, aes(Year, Yield, col=Crop)) + 
-              geom_line() +
-              scale_colour_manual(values = c("red", "orange", "green", "blue", "yellow"))
+ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
+       geom_line() +
+       scale_colour_manual(values = c("red", "orange", "green", "blue", "yellow"))
 ```
 
 The following chunk applies a predefined discrete color scheme named `Dark2` to each level.  
 
 ```{r}
-ggplot(dat1l, aes(Year, Yield, col=Crop)) + 
+ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
               geom_line() +
               scale_colour_brewer(palette = "Dark2")
 ```
@@ -440,10 +515,9 @@ To see a list of predefined `scale_colour_brewer` colors, type  `?scale_colour_b
 You can embed math symbols using `plotmath`'s mathematical expressions by wrapping these expressions in an `expression()` function. For example,
 
 ```{r fig.height=2.5, fig.width=6}
-
-ggplot(dat2, aes(x=B20004013^0.333, y=sqrt(B20004007))) + geom_point(alpha=0.3) +
-               xlab( expression( ("Female income") ^ frac(1,3) ) ) + 
-               ylab( expression( sqrt("Male income") ) )
+ggplot(dat2, aes(x = B20004013^0.333, y = sqrt(B20004007))) + geom_point(alpha = 0.3) +
+       xlab( expression( ("Female income") ^ frac(1,3) ) ) + 
+       ylab( expression( sqrt("Male income") ) )
 ```
 
 To view the full list of mathematical expressions, type `?plotmath` at a command prompt.
@@ -455,8 +529,8 @@ To view the full list of mathematical expressions, type `?plotmath` at a command
 Faceting (or conditioning on a variable) can be implemented in `ggplot2` using the `facet_wrap()` function.
 
 ```{r fig.height=4, fig.width=6}
-ggplot(dat1l2, aes(x=Year, y=Yield, color=Crop)) + geom_line() + 
-                                    facet_wrap( ~ Country, nrow=1)
+ggplot(dat1l2, aes(x = Year, y = Yield, color = Crop)) + geom_line() + 
+       facet_wrap( ~ Country, nrow = 1)
 ```
 
 The parameter ` ~ Country` tells ggplot to condition the plots on country. If we wanted the plots to be stacked, we would set `nrow` to `2`. 
@@ -464,15 +538,15 @@ The parameter ` ~ Country` tells ggplot to condition the plots on country. If we
 We can also condition the plots on two variables such as `crop` and `Country`.
 
 ```{r fig.height=4, fig.width=8}
-ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() +
-                                    facet_wrap(Crop ~ Country, nrow=1)
+ggplot(dat1l2, aes(x = Year, y=Yield)) + geom_line() +
+       facet_wrap(Crop ~ Country, nrow = 1)
 ```
 
 This creates as many plots as there are unique combinations of variables `Crop` and `Country`. But such plots are usually best represented in a grid structure where one variable is spread along one axis and the other variable is spread along another axis of the plot layout. This can be accomplished using the `facet_grid` function:
 
 ```{r fig.height=4, fig.width=6} 
-ggplot(dat1l2, aes(x=Year, y=Yield)) + geom_line() + 
-                                       facet_grid( Crop ~ Country)
+ggplot(dat1l2, aes(x = Year, y = Yield)) + geom_line() + 
+       facet_grid( Crop ~ Country)
 ```
 
 ## Faceting by continuous variable
@@ -517,9 +591,9 @@ Note that the order in which the names are passed must match that of the origina
 Now we can facet male vs. female scatter plots by income ranges. We will also throw in a best fit line to the plots.
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
-ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20) +
-                               geom_smooth(method = "lm", col="red") +
-                               facet_grid( . ~ incrng) 
+ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha=0.2, pch=20) +
+       geom_smooth(method = "lm", col = "red") +
+       facet_grid( . ~ incrng) 
 ```
 
 One reason we would want to explore our data across different ranges of value is to assess the consistency in relationship between variables. In our example, this plot helps assess whether the relationship between male and female income is consistent across income groups.
@@ -528,13 +602,13 @@ To highlight differences in income, we will make a few changes to the plots. Fir
 
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
-ggplot(dat2c,  aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) + 
-                                ylim( c(0,150000)) +
-                                geom_smooth(method = "lm", col="red") + 
-                                facet_grid( . ~ incrng) + 
-                                coord_equal(ratio=1) + 
-                                geom_abline(intercept = 0, slope = 1, col="grey50") +
-                                scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+ggplot(dat2c,  aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) + 
+      ylim( c(0,150000)) +
+      geom_smooth(method = "lm", col = "red") + 
+      facet_grid( . ~ incrng) + 
+      coord_equal(ratio = 1) + 
+      geom_abline(intercept = 0, slope = 1, col = "grey50") +
+      scale_x_continuous(breaks = c(50000,100000), labels = c("50k", "100k"))
   
 ```
 
@@ -544,25 +618,25 @@ Now let's look at the same data but this time conditioned on educational attainm
 
 ```{r fig.height=3, fig.width=10, warning=FALSE}
 # Plot M vs F by educational attainment except for Level == All
-ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) +
-                               ylim( c(0,150000)) + 
-                               geom_smooth(method = "lm", col="red") +
-                               facet_grid( . ~ Level) +  
-                               coord_equal(ratio=1) + 
-                               geom_abline(intercept = 0, slope = 1, col="grey50") +
-                               scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) +
+       ylim(c(0, 150000)) + 
+       geom_smooth(method = "lm", col = "red") +
+       facet_grid( . ~ Level) +  
+       coord_equal(ratio = 1) + 
+       geom_abline(intercept = 0, slope = 1, col = "grey50") +
+       scale_x_continuous(breaks = c(50000,100000), labels  =c("50k", "100k"))
 ```
 
 We can also condition the plots on two variables: educational attainment and region.
 
 ```{r fig.height=8, fig.width=10, warning= FALSE}
-ggplot(dat2c, aes(x=F, y=M)) + geom_point(alpha=0.2, pch=20, cex=0.8) +
-                               ylim( c(0,150000)) + 
-                               geom_smooth(method = "lm", col="red") + 
-                               facet_grid( Region ~ Level) +  
-                               coord_equal(ratio=1) +
-                               geom_abline(intercept = 0, slope = 1, col="grey50") +
-                               scale_x_continuous(breaks=c(50000,100000), labels=c("50k", "100k"))
+ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) +
+       ylim( c(0, 150000)) + 
+       geom_smooth(method = "lm", col = "red") + 
+       facet_grid( Region ~ Level) +  
+       coord_equal(ratio = 1) +
+       geom_abline(intercept = 0, slope = 1, col = "grey50") +
+       scale_x_continuous(breaks = c(50000,100000), labels = c("50k", "100k"))
 ```                                        
 
 # Tile plots (aka heat maps)
@@ -575,7 +649,7 @@ dat2c.med <- dat2c %>%
   group_by(Level, Region) %>% 
   summarise(Income = median(All))
 
-ggplot(dat2c.med, aes(x=Region, y=Level, fill=Income)) + geom_tile() +
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
   scale_fill_gradient(low = "yellow", high = "red")
 ```
 
