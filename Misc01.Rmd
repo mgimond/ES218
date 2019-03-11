@@ -27,6 +27,8 @@ source("libs/Common.R")
 max-width: 50% ;
 }
 
+.ignore-css{table-layout : auto;}
+
 </style>
 
 
@@ -321,20 +323,29 @@ Note how the left and right adjusted columns in the output reflect the left and 
 
 ## Dynamic tables
 
-There are many R packages that specialize in table output formats such as `xtable` and `stargazer`. However, decent tables can be created with `knitr`'s `kable` function. Here's an example:
+There are many R packages that specialize in table output formats such as `xtable` and `stargazer`. However, decent tables can be created with `knitr`'s `kable` function in conjunction with `kableExtra`. Note that this requires the `magrittr` package (if the pipe `%>% ` is used). However, if `dplyr` is used elsewhere in the Rmd document, the `magrittr` package can be omitted.  Here's an example:
 
 <pre class="output_example">
-knitr::kable( head(mtcars), format="html" )
+library(magrittr)
+knitr::kable( head(mtcars), format="html" ) %>% 
+  kableExtra::kable_styling(bootstrap_options = "striped", 
+                            full_width = FALSE, position = "left")
 </pre>
 
 <div class="output_out">
-```{r echo=FALSE}
-knitr::kable( head(mtcars), format="html" )
+  <div class="ignore-css">
+```{r echo=FALSE, class.source='base'}
+library(magrittr)
+knitr::kable( head(mtcars[ , 1:4 ]), format="html" ) %>% 
+  kableExtra::kable_styling(bootstrap_options = "striped", 
+                            full_width = FALSE, position = "left")
 ```
 </div>
+</div>
 
+If the output file format is a Word document, substitute `format = "html"` with `format = "pandoc"`.
 
-If the output file format is a Word document, substitute `format="html"` with `format="pandoc"`.
+For more `kableExtra` options, visit its [website](https://haozhu233.github.io/kableExtra/awesome_table_in_html.html).
 
 # A complete example
 
