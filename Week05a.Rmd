@@ -23,12 +23,12 @@ Let's create two batches of numbers, `a` and `b`:
 ```{r}
 a  <- rep(12, 10)
 b  <- rep(15, 10)
-df <- data.frame(a,b)
+df <- data.frame(a, b)
 ```
 
 How do the two batches differ?
 
-```{r echo = FALSE, results='asis'}
+```{r echo = FALSE, results = 'asis'}
 pander::pandoc.table(df, justify = 'left')
 ```
 
@@ -39,8 +39,8 @@ If the difference wasn't obvious from the table view we can create a jittered po
 library(tidyr)
 library(ggplot2)
 
-dfl <- gather(df, key=Category, value=Value)
-ggplot(dfl,  aes(y = Value, x = Category, col=Category)) + 
+dfl <- gather(df, key = Category, value = Value)
+ggplot(dfl,  aes(y = Value, x = Category, col = Category)) + 
              geom_jitter(position = position_jitter(height = 0, width=0.4))
 ```
 
@@ -53,9 +53,10 @@ Now let's compare a more complicated batch of numbers.
 set.seed(23)
 a   <- round(runif(10, 5, 15))
 b   <- round(runif(10, 10, 20))
+
 # Create wide and long data frames
-df  <- data.frame(a,b)
-dfl <- gather(df, key=Category, value=Value)
+df  <- data.frame(a, b)
+dfl <- gather(df, key = Category, value = Value)
 
 ```
 
@@ -67,8 +68,8 @@ pander::pandoc.table(df, justify = 'left')
 
 ```{r fig.height=3, fig.width=4, echo=-1}
 set.seed(14)
-ggplot(dfl, aes(y = Value, x = Category, col=Category)) + 
-            geom_jitter(position = position_jitter(height = 0, width=0.4))
+ggplot(dfl, aes(y = Value, x = Category, col = Category)) + 
+            geom_jitter(position = position_jitter(height = 0, width = 0.2))
 ```
 
 So how do these batches differ? They seem to differ by their center value. For example, each batch's mean is:
@@ -87,18 +88,18 @@ dfl2 <- dfl %>%
   mutate(Spread = Value - mean(Value))
 
 # Now plot the leveled batches
-ggplot(dfl2, aes(y = Spread, x = Category, col=Category)) + 
-             geom_jitter(position = position_jitter(height = 0, width=0.4))
+ggplot(dfl2, aes(y = Spread, x = Category, col = Category)) + 
+             geom_jitter(position = position_jitter(height = 0, width=0.2))
 ```
 
-Removing the *location* (or mean in our example) from each value facilitates our comparison of both spreads. From our working example we can, at best, say that the batches share the same range. But a spread can be characterized in many more ways than by its range. Next, we'll focus on three exploratory tools that will help us explore and quantify a dataset's spread. These are the **histogram**, the **boxplot** and the **quantile plot**.
+Removing the *location* (or mean in our example) from each value facilitates our comparison of both spreads. From our working example we can, at best, say that the batches share the same range. But a spread can be characterized in many more ways than by its range. Next, we'll focus on four exploratory tools that will help us explore and quantify a dataset's spread. These are the **histogram**, the **boxplot**, the **density plot** and the **quantile plot**.
 
 # Histograms
 
 A histogram **bins** the values (usually in equal sized bins) and plots the frequency in which each *bin* is filled. For example, to create a histogram of batch `a` where each bin size covers **one** unit, we type:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x=a)) + geom_histogram(breaks = seq(6.5,16.5,by=1), colour="white")
+ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 1), colour = "white")
 ```
 
 Here, we are explicitly defining the bin width as 1 unit and the range as 6.5 to 16.5 via the parameter `breaks = seq(6.5,16.5,by=1)`. The `colour` parameter specifies the *outline* color. To change the fill color use the `fill` parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range. 
@@ -106,18 +107,158 @@ Here, we are explicitly defining the bin width as 1 unit and the range as 6.5 to
 We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x=a)) + geom_histogram(breaks = seq(6.5,16.5,by=2), colour="white")
+ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 2), colour = "white") 
 ```
 
 You'll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.
 
-You can also opt to have the function determine the bin ranges by simply specifying the number of bins using the `bin=` parameter:
+You can also opt to have the function determine the bin ranges by simply specifying the number of bins using the `bin =` parameter:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x=a)) + geom_histogram(bins=12, colour="white")
+ggplot(df, aes(x = a)) + geom_histogram(bins = 12, colour = "white")
 ```
 
+# Density plots
 
+The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the values `a`. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.
+
+```{r fig.height=2, fig.width=8, echo=FALSE}
+p1 <- ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 2), colour = "white") + geom_rug(col = "darkorange", cex = 2, alpha = 0.5) +
+  ggtitle("Bin starts at 6.5")
+p2 <- ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(5.8,15.8,by=2), colour = "white") + geom_rug(col = "darkorange", cex = 2, alpha = 0.5) +
+  ggtitle("Bin starts at 5.8")
+gridExtra::grid.arrange(p1, p2, nrow = 1)
+```
+
+The histogram can be represented as densities as opposed to counts. This is computed as the number of observations per bin divided by the product between the bin width and the total number of observations. For example, the first bin has one observation hence the density of observations within this bin interval is `1 / (2 * 10)` or `0.05`. The following histogram shows density values instead of counts on its y-axis.
+
+```{r fig.height=2, fig.width=4.5}
+ggplot(df, aes(x = a)) + 
+  geom_histogram(breaks = seq(5.8, 15.8, by = 2), colour = "white", aes(y = ..density..)) + 
+  geom_rug(col="darkorange", cex=2, alpha = 0.5)
+```
+
+The bins map the density of observations along the x-axis. However, as was noted earlier, the discontinuity between bin intervals suggests that the density is constant along the bin width (e.g. the density of observations remains constant between `a = 6` and `a = 8`) which may not necessarily be the case.
+
+One solution is to compute density values on *overlapping* bins. Let's take the first bin and have it count the number of values between 5 and 9 (exclusive) and divide that number by the total number of values and the bin width--this gives us two observations falling in the bin thus a density value of `2 / (10 * 4) = 0.05`. The following plot shows the bin with the orange dot representing the bin's midpoint.
+
+```{r fig.height=2, fig.width=4.5, echo=FALSE}
+bw <- 4
+xi <- seq(min(a)-bw/2, max(a) - bw/2, by=1)
+
+dens <- vector(length=length(xi))
+for (i in seq_along(xi)) {
+ dens[i] <- sum(( a >= xi[i] ) & (a < xi[i] + bw) )/ (bw * length(a))
+}
+
+dens.bins <- data.frame(xmin = xi,
+                  xmax = xi + bw,
+                  ymin = 0,
+                  ymax=dens)
+
+ggplot() +
+  geom_rect( dens.bins[1,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3) + 
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  xlim(range(dens.bins[, 1:2])) + ylim(range(dens.bins[, 3:4])) +
+  geom_segment(data=dens.bins[1,], aes(x=(xmin + xmax)/2, xend =(xmin + xmax)/2,
+                                  y=0, yend=ymax), lty=2, alpha=0.6) +
+    geom_point(dens.bins[1,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="orange", cex=2.5) 
+
+```
+
+Next, we shift the bin over by one `x` unit then calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps with the previous bin.
+
+```{r fig.height=2, fig.width=4.5, echo=FALSE}
+ggplot() +
+  geom_rect( dens.bins[1,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.1,col="white") +
+  geom_rect( dens.bins[2,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3) +
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  xlim(range(dens.bins[, 1:2])) + ylim(range(dens.bins[, 3:4])) +
+  geom_segment(data=dens.bins[2,], aes(x=(xmin + xmax)/2, xend =(xmin + xmax)/2,
+                                  y=0, yend=ymax), lty=2, alpha=0.6) +
+  geom_point(dens.bins[1:2,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="orange", cex=2.5) 
+
+```
+
+The same process is repeated for the third bin.
+
+```{r fig.height=2, fig.width=4.5, echo=FALSE}
+ggplot() +
+  geom_rect( dens.bins[1:2,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.1,col="white") +
+  geom_rect( dens.bins[3,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3) + 
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  xlim(range(dens.bins[, 1:2])) + ylim(range(dens.bins[, 3:4])) +
+  geom_segment(data=dens.bins[3,], aes(x=(xmin + xmax)/2, xend =(xmin + xmax)/2,
+                                  y=0, yend=ymax), lty=2, alpha=0.6) +
+  geom_point(dens.bins[1:3,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="orange", cex=2.5) 
+
+```
+
+The process is repeated for each bin until the last bin is reached.
+
+```{r fig.height=2, fig.width=4.5, echo=FALSE}
+ggplot() +
+  geom_rect( dens.bins[1:8,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.1,col="white") +
+  geom_rect( dens.bins[9,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.5) + 
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  xlim(range(dens.bins[, 1:2])) + ylim(range(dens.bins[, 3:4])) +
+  geom_segment(data=dens.bins[9,], aes(x=(xmin + xmax)/2, xend =(xmin + xmax)/2,
+                                  y=0, yend=ymax), lty=2, alpha=0.6) +
+  geom_point(dens.bins[1:9,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="orange", cex=2.5) 
+
+```
+
+If we remove the bins and connect the dots, we end up with a *density trace*. 
+
+```{r fig.height=2, fig.width=4.5, echo=FALSE}
+ggplot() +
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  xlim(range(dens.bins[, 1:2])) + ylim(range(dens.bins[, 3:4])) +
+    geom_line(dens.bins[1:9,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="black") +
+  geom_point(dens.bins[1:9,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="orange", cex=2.5) 
+
+```
+
+A property associated with the density trace is that the area under the curve sums to one since each density value represents the *local* density at `x`.
+
+The above density trace applies an equal weight to each point within the bin intervals thus adding some raggedness to the plot. To smooth out the plot, we can apply different weights to each point inside of the bin's intervals such that points closest to the bin's midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weighs assigned to the first two observations in the dataset.
+
+```{r fig.height=2, fig.width=4.5, echo = FALSE}
+
+p1 <- ggplot() +
+  geom_rect( dens.bins[1,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3) + 
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  xlim(5,15) + ylim(0,0.15)  + xlab(NULL)
+
+p2 <- ggplot( ) +
+   geom_density( data.frame(x = a[a < 9]), 
+             mapping=aes(x, weight = 1/length(a) ),kernel = "gaussian",
+             alpha=0.5, fill="grey60", alpha=0.3, bw=0.49, n=50, col=NA) + xlim(5,15) +
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  ylim(0,0.15) + xlab(NULL) + ylab(NULL)
+
+gridExtra::grid.arrange(p1, p2, nrow = 1)
+
+```
+
+You can generate a density trace of the data using the `geom_density` function.
+
+```{r fig.height=2, fig.width=4.5}
+ggplot(df, aes(x = a)) + geom_density(fill = "grey60")
+```
+
+The function adopts the `gaussian` weight function and will automatically define the bandwidth (analogous in concept to the bin width). If you want more detail in the density plot, simply reduce the bandwidth argument `bw`. The bandwidth defines the standard deviation of the gaussian function.
+
+```{r fig.height=2, fig.width=4.5}
+ggplot(df, aes(x = a)) + geom_density(fill = "grey60", bw = 1)
+```
+
+You can also add the observations along the x-axis to add to the *density* effect using the `geom_rug` function.
+
+```{r fig.height=2, fig.width=4.5}
+ggplot(df, aes(x = a)) + geom_density(fill = "grey60", col = NA, bw = 1) +
+  geom_rug(col = "darkred", size = 2, alpha = 0.4)
+```
 
 
 # Boxplots
@@ -125,8 +266,8 @@ ggplot(df, aes(x=a)) + geom_histogram(bins=12, colour="white")
 A boxplot is another popular plot used to explore distributions. In `ggplot2` we use the `geom_boxplot()` function as in,
 
 ```{r fig.height=1.2, fig.width=6.5}
-ggplot(df, aes(x=1, y=a)) + geom_boxplot() + 
-           xlab(NULL) + theme(axis.text.y=element_blank()) +
+ggplot(df, aes(x = 1, y = a)) + geom_boxplot() + 
+           xlab(NULL) + theme(axis.text.y = element_blank()) +
            coord_flip()
 ```
 
@@ -147,11 +288,11 @@ Sometimes, you will encounter values that fall outside of the lower and/or upper
 
 Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, some will compute a quantile as $( i - 0.5) / n$ where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. This is the method implemented by Bill Cleveland and we will refer to this method as *Cleveland's quantile method*. This also happens to be the method implemented by the base's `boxplot` function which explains the different boxplot output in our working example:
 
-```{r, fig.height=1.2, fig.width=6.5, echo=4}
+```{r, fig.height=1.2, fig.width=6.5, echo=2}
 OP <- par(mar=c(2,1,1,1), bty="n")
 boxplot(a, horizontal = TRUE)
-grid(lty=1, col="grey90")
-boxplot(a, horizontal = TRUE, add=TRUE)
+grid(lty = 1, col = "grey90")
+boxplot(a, horizontal = TRUE, add = TRUE)
 par(OP)
 ```
 
@@ -163,7 +304,7 @@ A quantile plot generates a point plot that joins the quantile to each value in 
 
 ![](./img/Quantile.png)
 
-The x-axis shows the $f$-values: the full range of fractions. The y-axis is the $f$-quantile, $q(f)$, which shows the sorted batch values (from smallest to largest). The points in the plot link the values on the y-axis to the $f$-values on the x-axis. For example, the $f$-value of 0.25 (~the 25^th^ percentile) is associated with the $q(f)$ value of 8 meaning that 25% of the values in the dataset have values of 9 or less. Likewise, the $f$-value of 0.5 (the median) is associated with a $q(f)$ value of 12.5 implying that half of the dataset's values are 12.5 or less. The boxplot is shown alongside the quantile plot to highlight the analogy.
+The x-axis shows the $f$-values: the full range of fractions. The y-axis is the $f$-quantile, $q(f)$, which shows the sorted batch values (from smallest to largest). The points in the plot link the values on the y-axis to the $f$-values on the x-axis. For example, the $f$-value of 0.25 (~the 25^th^ percentile) is associated with the $q(f)$ value of 9 meaning that 25% of the values in the dataset have values of 9 or less. Likewise, the $f$-value of 0.5 (the median) is associated with a $q(f)$ value of 12.5 implying that half of the dataset's values are 12.5 or less. The boxplot is shown alongside the quantile plot to highlight the analogy.
 
 ## Computing the $f$-quantile
 
@@ -190,7 +331,7 @@ For each value in `a`, the $f$ value is thus:
 ```{r}
 i     <- 1 : length(a)
 f.val <- (i - 0.5) / length(a)  # Compute the f-value
-a.fi  <- data.frame(a.o , f.val)
+a.fi  <- data.frame(a.o, f.val)
 ```
 
 Note that in the last line of code, we are appending the ordered representation of `a` to `f.val` given that `f.val` assumes an ordered dataset. The data frame `a.fi` should look like this:
@@ -202,19 +343,19 @@ pander::pandoc.table(a.fi, justify = 'left')
 It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in `a` associated with a quantile of $0.5$; this is because we have an even number of values in our dataset. The solution is to interpolate (or extrapolate) a value based on a desired quantile. The `quantile()` function does just that. For example, to find the value associated with a quantile of $0.5$:
 
 ```{r}
-quantile( a, 0.5)
+quantile(a, 0.5)
 ```
 
 If we want to get quantile values for a range of fractions, simply wrap the values with the `c()` function:
 
 ```{r}
-quantile( a, c(0.25, 0.5, 0.75))
+quantile(a, c(0.25, 0.5, 0.75))
 ```
 
 The `quantile` function is designed to accept different quantile algorithms. To see the list of algorithm options, type `?quantile` at a command prompt. By default, R adopts algorithm `type = 7`. To adopt Cleveland's algorithm, set `type = 5`. E.g.:
 
 ```{r}
-quantile( a, c(0.25, 0.5, 0.75), type = 5)
+quantile(a, c(0.25, 0.5, 0.75), type = 5)
 ```
 
 Note the difference in the upper quartile value.
@@ -224,15 +365,16 @@ Note the difference in the upper quartile value.
 A batch's quantile is best viewed as a plot where we plot the batch values as a function of the $f$-values:
 
 ```{r fig.height=3, fig.width=3}
-ggplot(a.fi, aes(x=f.val, y=a.o)) + geom_point() + xlab("f-value")
+ggplot(a.fi, aes(x = f.val, y = a.o)) + geom_point() + xlab("f-value")
 ```
 
 If you did not want to go through the trouble of computing the $f$-values and the dataframe `a.fi`, you could simply call the function `stat_qq()` as in:
 
 ```{r fig.height=3, fig.width=3}
-ggplot(df, aes(sample=a)) + stat_qq(distribution = qunif) + xlab("f-value")
+ggplot(df, aes(sample = a)) + stat_qq(distribution = qunif) + xlab("f-value")
 ```
 
 Note the slight change in mapping values to the `aes()` function:  `sample = a` where `a` is the (unsorted) variable being plotted.
+
 
 [^1]: Cleveland, William S. *Visualizing Data*. 1993. Hobart Press.
