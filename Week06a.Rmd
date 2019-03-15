@@ -16,16 +16,16 @@ This material can be read in conjunction with **section 2.4** of **Cleveland's b
 
 # Introduction
 
-Thus far, we have used the quantile-quantile plots to compare the distributions between two empirical (i.e. observational) datasets. This is sometimes referred to as an *empirical Q-Q plot*. We can also use the q-q plot to compare an empirical observation to a theoretical observation (i.e. one defined mathematically). Such a plot is usually referred to as a *theoretical Q-Q plot*. Examples of popular theoretical observations are the normal distribution (aka the Gaussian distribution), the chi-square distribution, and the exponential distribution just to name a few.
+Thus far, we have used the quantile-quantile plots to compare the distributions between two empirical (i.e. observational) datasets. This is sometimes referred to as an *empirical Q-Q plot*. We can also use the q-q plot to compare an empirical distribution to a theoretical distribution (i.e. one defined mathematically). Such a plot is usually referred to as a *theoretical Q-Q plot*. Examples of popular theoretical distribution are the normal distribution (aka the Gaussian distribution), the chi-square distribution, and the exponential distribution just to name a few.
 
 ```{r, fig.height=2, fig.width=7, echo=FALSE}
 OP <- par( mfrow=c(1,4))
 x <- seq(-5, 5, 0.1)
-plot(dnorm(x,0,1) ~ x, type="l",axes = FALSE, ylab=NA, xlab="Normal")
+plot(dnorm(x,0,1) ~ x, type = "l",axes = FALSE, ylab = NA, xlab = "Normal")
 x <- seq(0, 20, 0.1)
-plot(dchisq(x,3,1) ~ x, type="l",axes = FALSE, ylab=NA, xlab="Chi-square")
+plot(dchisq(x,3,1) ~ x, type = "l",axes = FALSE, ylab = NA, xlab = "Chi-square")
 x <- seq(0, 10, 0.1)
-plot(dexp(x,1) ~ x, type="l",axes = FALSE, ylab=NA, xlab=("Exponential"))
+plot(dexp(x,1) ~ x, type = "l",axes = FALSE, ylab = NA, xlab = ("Exponential"))
 par(OP)
 ```
 
@@ -76,17 +76,17 @@ Now we can plot the sorted `alto` values against the normal values.
 
 ```{r fig.height = 3, fig.width = 3, echo=2}
 OP <-par(mar=c(3,3,1,1))
-plot( alto ~ x.norm, type="p", xlab="Normal quantiles", pch=20)
+plot( alto ~ x.norm, type = "p", xlab = "Normal quantiles", pch = 20)
 par(OP)
 ```
 
-When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45° (or x=y) slope; the range of values between both sets of numbers do not match. Here, we are only seeking the **straightness** of the points.
+When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45&deg; (or x=y) slope; the range of values between both sets of numbers do not match. Here, we are only seeking the **straightness** of the point pattern.
 
 There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile of the q-q plot. The following chunk of code identifies the quantiles for both the `alto` dataset and the theoretical normal distribution. It then computes the slope and intercept from these coordinates.
 
 ```{r}
 # Find 1st and 3rd quartile for the Alto 1 data
-y <- quantile(alto, c(0.25, 0.75), type=5)
+y <- quantile(alto, c(0.25, 0.75), type = 5)
 
 # Find the 1st and 3rd quartile of the normal distribution
 x <- qnorm( c(0.25, 0.75))
@@ -101,8 +101,8 @@ Next, we add the line to the plot.
 
 ```{r, fig.height = 3, fig.width = 3, echo=3}
 OP <-par(mar=c(3,3,1,1))
-plot( alto ~ x.norm, type="p", xlab="Normal quantiles", pch=20)
-abline(a=int, b=slope )
+plot( alto ~ x.norm, type="p", xlab="Normal quantiles", pch = 20)
+abline(a = int, b = slope )
 par(OP)
 ```
 
@@ -114,7 +114,7 @@ R has two built-in functions that facilitate the plot building task when compari
 ```{r fig.height=3, fig.width=3, echo=2:3, results='hold'}
 OP <-par(mar=c(3,3,1,1))
 qqnorm(alto)
-qqline(alto, qtype=5)
+qqline(alto, qtype = 5)
 par(OP)
 ```
 
@@ -122,7 +122,32 @@ That's it. Just two lines of code!
 
 ## Using the ggplot2 plotting environment
 
-We can take advantage of the `stat_qq()` function to plot the points, but the equation for the line must be computed manually (as was done earlier). Those steps will be repeated here.
+### `ggplot2` version 3.0 or greater
+
+As of version 3.0, `ggplot` has  the `geom_qq_line` function (or `stat_qq_line`) that will generate the interquartile fit. So to generate the theoretical QQ plot, use the `geom_qq` function (or `stat_qq`) to generate the point plot, then call `geom_qq_line` to generate the IQR fit.
+
+```{r, fig.height=3, fig.width=3}
+library(ggplot2)
+
+ggplot() + aes(sample = alto) + geom_qq(distribution = qnorm) + 
+           geom_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height")
+
+```
+
+We can, of course, make use of `ggplot`'s faceting function to generate trellised plots. For example, the following plot replicates Cleveland's figure 2.11 (except for the layout which we'll setup as a single row of plots instead).
+
+```{r fig.height=3, fig.width=9}
+ggplot(df, aes(sample = height)) + geom_qq(distribution = qnorm) + 
+           geom_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height") +
+           facet_wrap(~ voice.part, nrow = 1) + ylab("Height")
+ 
+```
+
+The `geom_qq_line` function uses the built-in `quantile` function and as such will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This differs from Cleveland's approach to computing the f-value. This setting cannot be changed in `geom_qq_line`.
+
+### `ggplot2` version older than 3.0
+
+With an older version of `ggplot2`, you will need to construct the interquartile fit from scratch. We can still take advantage of the `geom_qq()` function to plot the points, but the equation for the line must be computed manually (as was done earlier). Those steps will be repeated here. Note that with this example, we are adopting Cleveland's f-value algorithm of $(i - 0.5)/n$.
 
 ```{r, fig.height=3, fig.width=3}
 library(ggplot2)
@@ -130,29 +155,29 @@ library(ggplot2)
 # Find the slope and intercept of the line that passes through the 1st and 3rd
 # quartile of the normal q-q plot
 
-y     <- quantile(alto, c(0.25, 0.75), type=5) # Find the 1st and 3rd quartiles
+y     <- quantile(alto, c(0.25, 0.75), type = 5) # Find the 1st and 3rd quartiles
 x     <- qnorm( c(0.25, 0.75))                 # Find the matching normal values on the x-axis
 slope <- diff(y) / diff(x)                     # Compute the line slope
 int   <- y[1] - slope * x[1]                   # Compute the line intercept
 
 # Generate normal q-q plot
 
-ggplot() + aes(sample=alto) + stat_qq(distribution=qnorm) + 
-           geom_abline(intercept=int, slope=slope) + ylab("Height")           
+ggplot() + aes(sample = alto) + stat_qq(distribution = qnorm) + 
+           geom_abline(intercept = int, slope = slope, col = "blue") + ylab("Height")           
 ```
 
-We can, of course, make use of `ggplot`'s faceting function to generate trellised plots. For example, the following plot replicates Cleveland's figure 2.11 (except for the layout which we'll setup as a single row of plots instead). But first, we will need to compute the slopes for each singer group. We'll use `dplyr`'s piping operations to create a new dataframe with singer group name, slope and intercept.
+To generated a faceted normal qq plot you first need to compute the slopes for each singer group. We'll use `dplyr`'s piping operations to create a new dataframe with singer group name, slope and intercept.
 
 ```{r}
 library(dplyr)
 intsl <- df %>% group_by(voice.part) %>% 
-       summarize(q25    = quantile(height,0.25, type=5),
-                 q75    = quantile(height,0.75, type=5),
+       summarize(q25    = quantile(height, 0.25, type = 5),
+                 q75    = quantile(height, 0.75, type = 5),
                  norm25 = qnorm( 0.25),
                  norm75 = qnorm( 0.75),
                  slope  = (q25 - q75) / (norm25 - norm75),
                  int    = q25 - slope * norm25) %>%
-       select(voice.part,slope, int) 
+       select(voice.part, slope, int) 
 ```
 
 The above chunk creates the following table.
@@ -165,8 +190,8 @@ It's important that the `voice.part` names match those in `df` letter-for-letter
 
 
 ```{r fig.height=3, fig.width=9}
-ggplot(df, aes(sample=height)) + stat_qq(distribution=qnorm) + 
-           geom_abline(data=intsl, aes(intercept=int, slope=slope), col="blue") +
-           facet_wrap(~voice.part,nrow=1) + ylab("Height") 
-```
+ggplot(df, aes(sample = height)) + geom_qq(distribution = qnorm) + 
+           geom_abline(data = intsl, aes(intercept = int, slope = slope), col = "blue") +
+           facet_wrap(~ voice.part, nrow = 1) + ylab("Height") 
+``` 
 
