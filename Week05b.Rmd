@@ -332,3 +332,62 @@ splom(~t2,  axis.text.cex=0.6, pch = 20,
         panel.abline(0,1,col="grey")
       })
 ```
+
+# How quantile plots behave in the face of skewed data
+
+It can be helpful to simulate distributions of difference skewness to see how a quantile plot may behave. In the following figure, the top row shows the different density distribution plots and the bottom row shows the **quantile plots** for each distribution (note that the x-axis maps the f-values).
+
+
+```{r, echo=FALSE, fig.width=9,fig.height=4}
+# q.q function
+# =============
+# Function will generate q-q  plot and line
+# given two vectors: a (y-axis) and b (x-axis)
+
+q.q <- function(a,b, lin=TRUE){
+  probs <-  c(0.25, 0.75)
+  la <- length(a)
+  lb <- length(b)
+  a  <- sort(a)
+  b  <- sort(b)
+  fa <- ( 1:la - 0.5) / la
+  fb <- ( 1:lb - 0.5) / lb
+  if (la < lb) {
+    b <- approx(fb, b, fa)$y 
+  } else if( la > lb) {
+    a <- approx(fa, a, fb)$y
+  } else{}
+  y <- quantile(a,probs)
+  x <- quantile(b,probs)
+  slope <- diff(y)/diff(x)
+  int <- y[1] - slope * x[1]
+  plot(a ~ b, cex=0.7, pch=20, col="blue")
+  if (lin == TRUE) {
+    abline(int,slope)
+  }
+}
+
+#################
+# Quantile plots
+#################
+
+# Set sample size and compute uniform
+# values
+
+n  <- 1000 # Number of simulated samples
+fi <- (1:n - 0.5)/n
+b.shp1 <- c(1, 5 , 50, 10, 10)
+b.shp2 <- c(10,  10 , 70, 5, 1)
+
+# Generate quantile plots (uniform q-q)
+
+b  <- fi
+
+OP <- par( mfcol = c(2,5), mar = c(2,2,1,1) )
+for (i in 1:5 ) {
+  a <- qbeta(fi,shape1=b.shp1[i], shape2 = b.shp2[i])
+  plot(density(a),main=NA,xlab=NA)
+  q.q(a,b, lin=FALSE)
+}
+par(OP)
+```

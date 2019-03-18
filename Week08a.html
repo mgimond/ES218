@@ -788,20 +788,6 @@ a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">
 <p><img src="Week08a_files/figure-html/unnamed-chunk-15-1.png" width="576" /></p>
 <p>In most cases, the choice between Box-Cox and Tukey will not matter. But it may be worth noting that a value of <code>1</code> will always be re-expressed as <code>0</code> in a Box-Cox transformation whereas a Tukey transformation will re-express <code>1</code> as <code>0</code>, <code>-1</code> or <code>1</code> depending of <code>p</code>’s value. Conversely, the Tukey method re-expresses <code>0</code> as <code>0</code> for all <code>p</code> values whereas the Box-Cox method does not. These differences may only matter if theory dictates it.</p>
 </div>
-<div id="how-quantile-plots-behave-in-the-face-of-skewed-data" class="section level1">
-<h1>How quantile plots behave in the face of skewed data</h1>
-<p>It can be helpful to simulate distributions of difference skewness to see how a quantile or a normal quantile plot may behave.</p>
-<div id="quantile-plots" class="section level2">
-<h2>Quantile plots</h2>
-<p>A beta distribution is used to simulate a range of distributions from right skew to left skew. The top row shows the different density distribution plots; the bottom row shows the <strong>quantile plots</strong> for each distribution (note that the x-axis maps the f-values).</p>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-16-1.png" width="864" /></p>
-</div>
-<div id="normal-q-q-plots" class="section level2">
-<h2>Normal q-q plots</h2>
-<p>A beta distribution is used to simulate a range of distributions from right skew to left skew. The top row shows the different density distribution plots; the bottom row shows the <strong>normal q-q plots</strong> for each distribution.</p>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-17-1.png" width="864" /></p>
-</div>
-</div>
 <div id="re-expressing-to-stabilize-spread" class="section level1">
 <h1>Re-expressing to stabilize spread</h1>
 <p>A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland’s book (see the section titled “Spread-location plot” on the course website for an alternative version of the plot). We will make use of a custom function called <code>sl</code> available in the <code>ES218.R</code> script to help construct the s-l plot using .</p>
@@ -814,13 +800,13 @@ df.sl &lt;-<span class="st"> </span><span class="kw">sl</span>(<span class="dt">
 
 <span class="co"># Plot spread vs median</span>
 <span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch=</span><span class="dv">16</span>)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-18-1.png" width="211.2" /></p>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-16-1.png" width="211.2" /></p>
 <p>The plot suggests a monotonic relationship between spread and median. Next, we’ll fit a line to this scatter plot and compute its slope. We’ll use the <code>lm()</code> function, but note that any other line fitting strategies could be used as well.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch=</span><span class="dv">16</span>)
 <span class="co"># Run regression model</span>
 M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl)
 <span class="kw">abline</span>(M, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-19-1.png" width="211.2" /></p>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-17-1.png" width="211.2" /></p>
 <p>The slope can be used to come up with the best power transformation to minimize the systematic increase in spread: <span class="math inline">\(p = 1 - slope\)</span>.</p>
 <p>The slope can be extracted from the model <code>M</code> using the <code>coef</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coef</span>(M)</code></pre></div>
@@ -831,7 +817,7 @@ M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd <span class="op"
 <p>Let’s compare boxplots between the original values with the re-expressed values.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Original data&quot;</span>)
 <span class="kw">boxplot</span>(re.mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Re-expressed data&quot;</span>)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-22-1.png" width="576" /></p>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-20-1.png" width="576" /></p>
 <p>Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have equalized the spreads across the three groups.</p>
 <p>We’ll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week’s <a href="file:///C:/Users/mgimond/Documents/GitHub/ES218/Week07b.html#constructing-the-s-l-plot">lecture</a>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
@@ -851,7 +837,7 @@ sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data=</span>sl.line,<span class="kw">aes</span>(<span class="dt">x=</span>location,<span class="dt">y=</span>res.med), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x=</span>sl.line<span class="op">$</span>location, <span class="dt">y=</span><span class="fl">1.75</span>, <span class="dt">label=</span>sl.line<span class="op">$</span>dimension)</code></pre></div>
-<p><img src="Week08a_files/figure-html/unnamed-chunk-23-1.png" width="307.2" /></p>
+<p><img src="Week08a_files/figure-html/unnamed-chunk-21-1.png" width="307.2" /></p>
 <p>The plot suggests that the re-expression does a great job in stabilizing the spread.</p>
 </div>
 
