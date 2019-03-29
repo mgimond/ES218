@@ -8,6 +8,7 @@ title: "Re-expressing values"
 
 ```{r echo=FALSE}
 source("libs/Common.R")
+options(width = 100)
 ```
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
@@ -142,9 +143,8 @@ The Tukey family of transformations offers a broader range of re-expression opti
 
 $$
 \begin{equation} T_{Tukey} = 
-\begin{cases} x^p , & p >  0 \\
-              log(x), & p = 0  \\
-              -x^p, & p < 0
+\begin{cases} x^p , & p \neq  0 \\
+              log(x), & p = 0  
 \end{cases}
 \end{equation}
 $$
@@ -154,10 +154,8 @@ A nifty solution to finding an appropriate $p$ is to create a function whose inp
 
 ```{r}
 RE <- function(x, p = 0) {
-  if(p > 0) {
+  if(p != 0) {
     z <- x^p
-  } else if(p < 0) {
-    z <- -x^p
   } else{
     z <- log(x)
   }
@@ -233,17 +231,19 @@ BC <- function(x, p = 0) {
 ```
 
 
-The Box-Cox method only differs in spread and location from the Tukey method. In other words, you will only see a difference in the re-expressed values but not a difference in the shape of the data as demonstrated in the following examples which pit the Box-Cox vs Tukey transformations for three different powers. 
+While both the Box-Cox and Tukey transformations method will generate similar distributions when the power `p` is `0` or greater, they will differ in distributions when the power is negative. For example, when re-expressing  `mtcars$mpg` using an inverse power (p = -1), Tukey’s re-expression will change the data order but the Box-Cox transformation will not as shown in the following plots:. 
 
 ```{r fig.width=6, fig.height=2, echo=2:4}
 OP <- par(mar=c(2,2,1.1,1), mfrow=c(1,3), cex.axis=0.8)
-plot(BC(mtcars$mpg,-1/2), RE(mtcars$mpg,-1/2), main="P = -1/2")
-plot(BC(mtcars$mpg, 0.0), RE(mtcars$mpg, 0.0), main="P = 0")
-plot(BC(mtcars$mpg, 1/2), RE(mtcars$mpg, 1/2), main="P = 1/2")
+plot(mpg ~ disp, mtcars, main = "Original data")
+plot(RE(mtcars$mpg, p = -1) ~ mtcars$disp, main="Tukey")
+plot(BC(mtcars$mpg, p = -1) ~ mtcars$disp, main="Box-Cox")
 par(OP)
 ```
 
-In most cases, the choice between Box-Cox and Tukey will not matter. But it may be worth noting that a value of `1` will always be re-expressed as `0` in a Box-Cox transformation whereas a Tukey transformation will re-express `1` as `0`, `-1` or `1` depending of `p`'s value. Conversely, the Tukey method re-expresses `0` as `0` for all `p` values whereas the Box-Cox method does not. These differences may only matter if theory dictates it.
+The original data shows a negative relationship between `mpg` and `disp`; the Tukey re-expression takes the inverse of `mpg` which changes the nature of the relationship between the y and x variables where whe have a positive relationship between the re-expressed `mpg` variable and `disp` variable (note that by simply changing the sign of the re-expressed value, `-x^(-1)` maintains the nature of the original relationship); the Box-Cox transformation, on the other hand, maintains this negative relationship.
+
+The choice of re-rexpression will depend on the analysis context. For example, if you want an easily interpretable transformation then opt for the Tukey re-expression. If you want to compare the shape of transformed variables, the Box-Cox approach will be better suited.
 
 # Re-expressing to stabilize spread
 
@@ -282,10 +282,10 @@ The slope can be extracted from the model `M` using the `coef` function:
 coef(M)
 ```
 
-The second value in the output is the slope. So the power to use is `1 - 2.65` or `-1.65`. We will use the custom Tukey power transformation function `RE`  to re-express the `mean.length` values. We'll add the re-expressed values as a new  column to `df`:
+The second value in the output is the slope. So the power to use is `1 - 2.65` or `-1.65`. We will use the  power transformation function `BC`  to re-express the `mean.length` values. We'll add the re-expressed values as a new  column to `df`:
 
 ```{r}
-df$re.mean.length <- RE(df$mean.length, -1.65)
+df$re.mean.length <- BC(df$mean.length, -1.65)
 ```
 
 Let's compare boxplots between the original values with the re-expressed values.
@@ -315,10 +315,10 @@ sl.line <- df1 %>%
             res.med  = median(Residuals))
 
 # Generate the s-l plot
-ggplot(df1, aes(x=Median, y=Residuals)) + geom_jitter(alpha=0.4,width=0.01,height=0) +
-  geom_line(data=sl.line,aes(x=location,y=res.med), col="red") +
+ggplot(df1, aes(x = Median, y=Residuals)) + geom_jitter(alpha = 0.4,width = 0.01,height = 0) +
+  geom_line(data = sl.line,aes(x = location,y = res.med), col = "red") +
   ylab(expression(sqrt( abs( " Residuals ")))) +
-  annotate("text", x=sl.line$location, y=1.75, label=sl.line$dimension)
+  annotate("text", x = sl.line$location, y = 1.75, label = sl.line$dimension)
 ```
 
 The plot suggests that the re-expression does a great job in stabilizing the spread.
