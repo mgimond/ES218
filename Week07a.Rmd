@@ -35,9 +35,9 @@ df <- singer
 Next, we'll plot the singer values using jittered points, then add an orange point to each batch which will represent each group's mean.
 
 ```{r fig.width = 6, fig.height=3}
-ggplot(df, aes(y=height, x=voice.part))         + 
-  geom_jitter(width = 0.1, height=0, alpha=0.1) +
-  stat_summary(fun.y = "mean", col="red", geom="point", cex=3, pch=21, bg="orange") 
+ggplot(df, aes(y = height, x = voice.part)) + 
+  geom_jitter(width = 0.1, height = 0, alpha = 0.1) +
+  stat_summary(fun.y = "mean", geom = "point", cex = 3, pch = 21, col = "red", bg = "orange") 
 ```
 
 We've **fitted** each group with the **mean**--a mathematical description of the batches. Note that we could have used other measures of location such as the median, but since the data seem to follow a symmetrical distribution, the mean is an adequate choice.
@@ -48,8 +48,9 @@ Now we'll subtract the group means from their respective group values: this will
 
 ```{r}
 # Add residual values to the data
-df2 <- df %>% group_by(voice.part) %>%
-              mutate( Height.res = ( height - mean(height)) ) 
+df2 <- df %>% 
+  group_by(voice.part) %>%
+  mutate(Height.res = height - mean(height))
 ```
 
 Next, we will generate a plot of the (jittered) residuals.
@@ -58,7 +59,7 @@ Next, we will generate a plot of the (jittered) residuals.
 # Now plot the data after fitting height with group mean
 ggplot(df2) + aes(y=Height.res, x=voice.part)             + 
   geom_jitter(width = 0.1, height=0, alpha=0.1) +
-  stat_summary(fun.y = "mean", col="red", geom="point", cex=3, pch=21, bg="orange")
+  stat_summary(fun.y = "mean", geom = "point", cex = 3, pch = 21, col = "red", bg="orange") 
 ```
 
 We've *normalized* the batches to a common location. Note that the values along the y-axis have changed: all values are now spread around `0`. Next, we'll check that the batches of residuals have similar spread.
@@ -74,10 +75,10 @@ If we want to compare *all* batches of residuals, we can create a pairwise q-q p
 ```{r fig.width = 5, fig.height= 5}
 f.rng <- min(tapply(df2$Height.res, df2$voice.part, length))
 fun1  <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
-t1    <- aggregate(df2$Height.res ~ df2$voice.part, FUN=fun1, f.rng=f.rng )
+t1    <- aggregate(df2$Height.res ~ df2$voice.part, FUN = fun1, f.rng = f.rng )
 t2    <- as.data.frame(t(t1[,-1]))
 names(t2) <- t1[,1]
-splom(~t2,  axis.text.cex=0.4, pch = 20,
+splom(~t2,  axis.text.cex = 0.4, pch = 20,
       varname.cex=0.5,
       pscales=3,
       prepanel.limits = function(x) (range(t2)), 
@@ -99,14 +100,14 @@ Since the spreads are homogeneous across the batches, we may choose to combine (
 df3 <- df2 %>%
   group_by(voice.part)  %>%
   arrange(Height.res)  %>% 
-  mutate(f.val    = (row_number() - 0.5) / n() )  %>%
+  mutate(f.val    = (row_number() - 0.5) / n())  %>%
   ungroup()  %>%
-  mutate(Pooled.res = quantile(Height.res, f.val))  %>%
+  mutate(Pooled.res = quantile(Height.res, probs = f.val))  %>%
   select(voice.part, Height.res, Pooled.res)
 
-ggplot(df3, aes(y=Height.res, x=Pooled.res)) + geom_point(alpha=0.5) + 
-              geom_abline(intercept=0, slope=1) +
-              facet_wrap(~ voice.part, nrow=1) 
+ggplot(df3, aes(y = Height.res, x = Pooled.res)) + geom_point(alpha = 0.5) + 
+              geom_abline(intercept = 0, slope = 1) +
+              facet_wrap(~ voice.part, nrow = 1) 
 ```
 
 All eight batches seem to have similar spreads. This makes it possible to compare batch means using a **residual-fit spread** plot (covered in the next section).
@@ -164,8 +165,8 @@ The spread between each batch's fitted mean is small compared to that of the com
 We'll use `lattice`'s `rfs` and `oneway` functions to generate the r-f plot for the singer data. Note that the plot displays the spread of the modeled means *after* subtracting these means with the overall mean (remember, the goal is to compare the spreads about a common central value and not to compare their absolute values).
 
 ```{r fig.height=3.5, fig.width=8}
-rfs(oneway(height~voice.part, data = singer, spread = 1), 
-    aspect=1, 
+rfs(oneway(height ~ voice.part, data = singer, spread = 1), 
+    aspect = 1, 
     ylab = "Height (inches)")
 ```
 
@@ -183,12 +184,8 @@ We'll  take advantage of the pooled residuals to give us a larger sample size fo
 
 ```{r fig.height=3, fig.width=3}
 # Find the equation for the line
-y     <- quantile(df3$Pooled.res, c(0.25, 0.75))
-x     <- qnorm( c(0.25, 0.75))        
-slope <- diff(y) / diff(x)             
-int   <- y[1] - slope * x[1]
-
-ggplot(df3, aes(sample=Pooled.res)) +stat_qq() +geom_abline(intercept = int, slope=slope)
+ggplot(df3, aes(sample = Pooled.res)) + stat_qq(distribution = qnorm) + 
+  geom_qq_line(distribution = qnorm)
 ```
 
 This dataset has behaved quite well. Its batches differed only by location, yet its spread remained homogeneous (enough) across the batches  to pool them and enable us to confirm, with greater confidence, that the spread follows a normal distribution. 
