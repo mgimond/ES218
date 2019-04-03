@@ -36,15 +36,10 @@ df1 <- df %>%
   mutate( Median = median(time),
           Residuals = sqrt( abs(time - Median)))
 
-# Compute the coordinate values needed to connect residual medians
-sl.line <- df1 %>%
-  group_by(nv.vv)  %>%
-  summarise(location = median(time),
-            res.med  = median(Residuals))
-
 # Generate the s-l plot
-ggplot(df1, aes(x = Median, y = Residuals)) + geom_jitter(alpha = 0.4, width = 0.2) +
-  geom_line(data = sl.line,aes(x = location, y = res.med), col = "red") +
+ggplot(df1, aes(x = Median, y = Residuals)) + 
+  geom_jitter(alpha = 0.4, width = 0.2) +
+  stat_summary(fun.y = median, geom = "line", col = "red") +
   ylab(expression(sqrt(abs(" Residuals "))))
 
 ```
@@ -62,23 +57,18 @@ On page 60, Cleveland compares spread vs location for three different batches of
 ```{r, fig.height=3,fig.width=3.5}
 df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
 
-# Create two new columns: group median and group residual
+# Create two new columns: group median and group residuals
 df1 <- df %>%
-  group_by(dimension)                            %>%
+  group_by(dimension)  %>%
   mutate( Median = median(mean.length),
           Residuals = sqrt( abs( mean.length - Median)))   
 
-# Compute the coordinate values needed to connect residual medians
-sl.line <- df1 %>%
-  group_by(dimension)  %>%
-  summarise(location = median(mean.length),
-            res.med  = median(Residuals))
-
 # Generate the s-l plot
-ggplot(df1, aes(x = Median, y = Residuals)) + geom_jitter(alpha = 0.4, width = 0.05, height = 0) +
-  geom_line(data = sl.line, aes(x = location, y = res.med), col = "red") +
+ggplot(df1, aes(x = Median, y = Residuals)) + 
+  geom_jitter(alpha = 0.4, width = 0.05, height = 0) +
+  stat_summary(fun.y = median, geom = "line", col = "red") +
   ylab(expression(sqrt( abs(" Residuals ")))) +
-  annotate("text", x = sl.line$location, y = 1.75, label = sl.line$dimension)
+  annotate("text", x = df1$Median, y = 1.75, label = df1$dimension)
 
 ```
 
@@ -93,21 +83,15 @@ df <- read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", head
 
 # Create two new columns: group median and group residual
 df1 <- df %>%
-       group_by(MM)                            %>%
+       group_by(MM)  %>%
        mutate(Median = median(WTMP),
               Residuals = sqrt(abs(WTMP - Median)))  
 
-# Compute the coordinate values needed to connect residual medians
-sl.line <- df1 %>%
-           group_by(MM)  %>%
-           summarise(location = median(WTMP),
-                     res.med  = median(Residuals))
-
 # Generate the s-l plot
 ggplot(df1, aes(x = Median, y = Residuals)) + geom_point(alpha = 0.1) +
-  geom_line(data = sl.line,aes(x = location,y = res.med), col = "red") +
+  stat_summary(fun.y = median, geom = "line", col = "red") +
   ylab(expression(sqrt(abs( " Residuals ")))) +
-  annotate("text", x = sl.line$location, y = 2.5, label = sl.line$MM, cex=3)
+  annotate("text", x = df1$Median, y = 2.5, label = df1$MM, cex=3)
 
 ```
 
