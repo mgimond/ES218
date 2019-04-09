@@ -25,6 +25,15 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-39623718-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-39623718-2');
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -118,7 +127,9 @@ h6 {
 
 <link rel="stylesheet" href="libs\style.css" type="text/css" />
 
+</head>
 
+<body>
 
 <style type = "text/css">
 .main-container {
@@ -236,6 +247,8 @@ $(document).ready(function () {
   menuAnchor.closest('li.dropdown').addClass('active');
 });
 </script>
+
+<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -393,16 +406,6 @@ div.tocify {
 
 
 </style>
-
-
-
-</head>
-
-<body>
-
-
-<div class="container-fluid main-container">
-
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -623,7 +626,7 @@ div.tocify {
 
 
 <div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
-<p>This tutorial makes use of the following R package(s): <strong><code>ggplot2</code></strong>.</p>
+<p>This tutorial makes use of the following R package(s): <strong><code>ggplot2</code></strong> and <strong><code>dplyr</code></strong> .</p>
 </div>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
@@ -640,9 +643,9 @@ y = log_b(x) \Leftrightarrow  x=b^y
 \]</span></p>
 <p>In R, the base is defined by passing the parameter <code>base=</code> to the <code>log()</code> function as in <code>log(x , base=10)</code>.</p>
 <p>Re-expressing with the log is particularly useful when the change in one value as a function of another is multiplicative and not additive. An example of such a dataset is the compounding interest. Let’s assume that we start off with $1000 in an investment account that yields 10% interest each year. We can calculate the size of our investment for the next 50 years as follows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rate &lt;-<span class="st"> </span><span class="fl">0.1</span>               <span class="co"># Rate is stored as a fraction</span>
-y    &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">length=</span><span class="dv">50</span>) <span class="co"># Create an empty vector that can hold 50 values</span>
-y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1000</span>              <span class="co"># Start 1st year with $1000</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rate &lt;-<span class="st"> </span><span class="fl">0.1</span>                 <span class="co"># Rate is stored as a fraction</span>
+y    &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">length =</span> <span class="dv">50</span>) <span class="co"># Create an empty vector that can hold 50 values</span>
+y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1000</span>                <span class="co"># Start 1st year with $1000</span>
 
 <span class="co"># Next, compute the investment ammount for years 2, 3, ..., 50.</span>
 <span class="co"># Each iteration of the loop computes the new amount for year i based </span>
@@ -662,7 +665,7 @@ y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1000
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Note that a scatter plot is created from 2 variables, however, if only one</span>
 <span class="co"># is passed to the plot() function, R will assume that the x variable is</span>
 <span class="co"># an equally spaced index.</span>
-<span class="kw">plot</span>(y, <span class="dt">pch=</span><span class="dv">20</span>)</code></pre></div>
+<span class="kw">plot</span>(y, <span class="dt">pch =</span> <span class="dv">20</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-4-1.png" width="384" /></p>
 <p>The change in difference between values from year to year is <strong>not additive</strong>, in other words, the difference between years 48 and 49 is different than that for years 3 and 4.</p>
 <table style="width:62%;">
@@ -749,7 +752,7 @@ y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1000
 <p>To use the custom function <code>RE</code> simply pass two vectors: the batch of numbers being re-expressed and the <span class="math inline">\(p\)</span> parameter.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create a skewed distribution of 50 random values</span>
 <span class="kw">set.seed</span>(<span class="dv">9</span>)
-a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">50</span>, <span class="dt">shape=</span><span class="dv">1</span>)
+a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">50</span>, <span class="dt">shape =</span> <span class="dv">1</span>)
 
 <span class="co"># Let&#39;s look at the skewed distribution</span>
 <span class="kw">boxplot</span>(a, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</code></pre></div>
@@ -788,38 +791,42 @@ a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">
 }</code></pre></div>
 <p>While both the Box-Cox and Tukey transformations method will generate similar distributions when the power <code>p</code> is <code>0</code> or greater, they will differ in distributions when the power is negative. For example, when re-expressing <code>mtcars$mpg</code> using an inverse power (p = -1), Tukey’s re-expression will change the data order but the Box-Cox transformation will not as shown in the following plots:.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(mpg <span class="op">~</span><span class="st"> </span>disp, mtcars, <span class="dt">main =</span> <span class="st">&quot;Original data&quot;</span>)
-<span class="kw">plot</span>(<span class="kw">RE</span>(mtcars<span class="op">$</span>mpg, <span class="dt">p =</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">~</span><span class="st"> </span>mtcars<span class="op">$</span>disp, <span class="dt">main=</span><span class="st">&quot;Tukey&quot;</span>)
-<span class="kw">plot</span>(<span class="kw">BC</span>(mtcars<span class="op">$</span>mpg, <span class="dt">p =</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">~</span><span class="st"> </span>mtcars<span class="op">$</span>disp, <span class="dt">main=</span><span class="st">&quot;Box-Cox&quot;</span>)</code></pre></div>
+<span class="kw">plot</span>(<span class="kw">RE</span>(mtcars<span class="op">$</span>mpg, <span class="dt">p =</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">~</span><span class="st"> </span>mtcars<span class="op">$</span>disp, <span class="dt">main =</span> <span class="st">&quot;Tukey&quot;</span>)
+<span class="kw">plot</span>(<span class="kw">BC</span>(mtcars<span class="op">$</span>mpg, <span class="dt">p =</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">~</span><span class="st"> </span>mtcars<span class="op">$</span>disp, <span class="dt">main =</span> <span class="st">&quot;Box-Cox&quot;</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-15-1.png" width="576" /></p>
 <p>The original data shows a negative relationship between <code>mpg</code> and <code>disp</code>; the Tukey re-expression takes the inverse of <code>mpg</code> which changes the nature of the relationship between the y and x variables where whe have a positive relationship between the re-expressed <code>mpg</code> variable and <code>disp</code> variable (note that by simply changing the sign of the re-expressed value, <code>-x^(-1)</code> maintains the nature of the original relationship); the Box-Cox transformation, on the other hand, maintains this negative relationship.</p>
 <p>The choice of re-rexpression will depend on the analysis context. For example, if you want an easily interpretable transformation then opt for the Tukey re-expression. If you want to compare the shape of transformed variables, the Box-Cox approach will be better suited.</p>
 </div>
 <div id="re-expressing-to-stabilize-spread" class="section level1">
 <h1>Re-expressing to stabilize spread</h1>
-<p>A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland’s book (see the section titled “Spread-location plot” on the course website for an alternative version of the plot). We will make use of a custom function called <code>sl</code> available in the <code>ES218.R</code> script to help construct the s-l plot using .</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;http://mgimond.github.io/ES218/es218.R&quot;</span>)
-
+<p>A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland’s book (see the section titled “Spread-location plot” on the course website for an alternative version of the plot).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
 df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Food_web.csv&quot;</span>)
 
-<span class="co"># Create s-l table from custom sl() function</span>
-df.sl &lt;-<span class="st"> </span><span class="kw">sl</span>(<span class="dt">x=</span>dimension, <span class="dt">y=</span>mean.length, df)
+<span class="co"># Create s-l table </span>
+df.sl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(dimension) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">med  =</span> <span class="kw">log</span>(<span class="kw">median</span>(mean.length)),
+            <span class="dt">IQR  =</span> <span class="kw">IQR</span>(mean.length),  
+            <span class="dt">sprd =</span> <span class="kw">log</span>(IQR))
 
 <span class="co"># Plot spread vs median</span>
-<span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch=</span><span class="dv">16</span>)</code></pre></div>
+<span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch =</span> <span class="dv">16</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-16-1.png" width="211.2" /></p>
 <p>The plot suggests a monotonic relationship between spread and median. Next, we’ll fit a line to this scatter plot and compute its slope. We’ll use the <code>lm()</code> function, but note that any other line fitting strategies could be used as well.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch=</span><span class="dv">16</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch =</span> <span class="dv">16</span>)
+
 <span class="co"># Run regression model</span>
 M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl)
-<span class="kw">abline</span>(M, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
+<span class="kw">abline</span>(M, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-17-1.png" width="211.2" /></p>
 <p>The slope can be used to come up with the best power transformation to minimize the systematic increase in spread: <span class="math inline">\(p = 1 - slope\)</span>.</p>
 <p>The slope can be extracted from the model <code>M</code> using the <code>coef</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coef</span>(M)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"> <span class="kw">coef</span>(M)</code></pre></div>
 <pre><code>(Intercept)         med 
-  -2.317414    2.649166 </code></pre>
-<p>The second value in the output is the slope. So the power to use is <code>1 - 2.65</code> or <code>-1.65</code>. We will use the power transformation function <code>BC</code> to re-express the <code>mean.length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df<span class="op">$</span>re.mean.length &lt;-<span class="st"> </span><span class="kw">BC</span>(df<span class="op">$</span>mean.length, <span class="op">-</span><span class="fl">1.65</span>)</code></pre></div>
+  -3.003785    2.969673 </code></pre>
+<p>The second value in the output is the slope. So the power to use is <code>1 - 2.97</code> or <code>-1.97</code>. We will use the power transformation function <code>BC</code> to re-express the <code>mean.length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df<span class="op">$</span>re.mean.length &lt;-<span class="st"> </span><span class="kw">BC</span>(df<span class="op">$</span>mean.length, <span class="op">-</span><span class="fl">1.97</span>)</code></pre></div>
 <p>Let’s compare boxplots between the original values with the re-expressed values.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Original data&quot;</span>)
 <span class="kw">boxplot</span>(re.mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Re-expressed data&quot;</span>)</code></pre></div>
@@ -828,7 +835,7 @@ M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd <span class="op"
 <p>We’ll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week’s <a href="file:///C:/Users/mgimond/Documents/GitHub/ES218/Week07b.html#constructing-the-s-l-plot">lecture</a>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
 df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(dimension)                            <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(dimension)  <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(re.mean.length),
           <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( re.mean.length <span class="op">-</span><span class="st"> </span>Median)))   
 
@@ -839,12 +846,13 @@ sl.line &lt;-<span class="st"> </span>df1 <span class="op">%&gt;%</span>
             <span class="dt">res.med  =</span> <span class="kw">median</span>(Residuals))
 
 <span class="co"># Generate the s-l plot</span>
-<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y=</span>Residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>,<span class="dt">width =</span> <span class="fl">0.01</span>,<span class="dt">height =</span> <span class="dv">0</span>) <span class="op">+</span>
+<span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>,<span class="dt">width =</span> <span class="fl">0.003</span>,<span class="dt">height =</span> <span class="dv">0</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> sl.line,<span class="kw">aes</span>(<span class="dt">x =</span> location,<span class="dt">y =</span> res.med), <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span>
-<span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x =</span> sl.line<span class="op">$</span>location, <span class="dt">y =</span> <span class="fl">1.75</span>, <span class="dt">label =</span> sl.line<span class="op">$</span>dimension)</code></pre></div>
+<span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x =</span> sl.line<span class="op">$</span>location, <span class="dt">y =</span> <span class="fl">0.6</span>, <span class="dt">label =</span> sl.line<span class="op">$</span>dimension)</code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-21-1.png" width="307.2" /></p>
-<p>The plot suggests that the re-expression does a great job in stabilizing the spread.</p>
+<p>The plot suggests that the re-expression does a good job in stabilizing the spread.</p>
 </div>
 
 
