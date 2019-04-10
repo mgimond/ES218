@@ -303,7 +303,7 @@ par(OP)
 
 Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have equalized the spreads across the three groups. 
 
-We'll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week's [lecture](file:///C:/Users/mgimond/Documents/GitHub/ES218/Week07b.html#constructing-the-s-l-plot).
+We'll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week's [lecture](./Week07b.html#constructing-the-s-l-plot).
 
 ```{r fig.height=2.5, fig.width=3.2}
 library(ggplot2)
@@ -312,18 +312,12 @@ df1 <- df %>%
   mutate( Median = median(re.mean.length),
           Residuals = sqrt( abs( re.mean.length - Median)))   
 
-# Compute the coordinate values needed to connect residual medians
-sl.line <- df1 %>%
-  group_by(dimension)  %>%
-  summarise(location = median(re.mean.length),
-            res.med  = median(Residuals))
-
 # Generate the s-l plot
 ggplot(df1, aes(x = Median, y = Residuals)) + 
   geom_jitter(alpha = 0.3,width = 0.003,height = 0) +
-  geom_line(data = sl.line,aes(x = location,y = res.med), col = "red") +
+  stat_summary(fun.y = median, geom = "line", col = "red") +
   ylab(expression(sqrt( abs( " Residuals ")))) +
-  annotate("text", x = sl.line$location, y = 0.6, label = sl.line$dimension)
+  geom_text(aes(x = Median, y = 0.6, label = dimension) )
 ```
 
 The plot suggests that the re-expression does a good job in stabilizing the spread.
