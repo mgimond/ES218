@@ -131,9 +131,42 @@ The 3-point summary fitting process can be extended by adding the residual slope
 
 ## Bisquare
 
-In his book (pages 112 - 119), Cleveland uses the *bisquare* estimation method to come up with a robust line. The first step is to run a linear regression model on the data then to extract the residuals. Next, a weighting scheme is fit to the residuals such that the points associated with outlier residuals are assigned the smallest weight and the points associated with the central residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals no longer show outliers. 
+In his book (pages 112 - 119), Cleveland uses the *bisquare* estimation method to come up with a robust line. The first step is to run a linear regression model on the data then to extract the residuals. Next, a weighting scheme is fit to the residuals such that the points associated with outlier residuals are assigned the smallest weight and the points associated with the central residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals no longer show outliers. The following figure shows three iterations of the bisquare function whereby the weights (shown as grey text next to each point) start off as `1` then are modified following the residuals derived from the most recent regression model.
 
-```{r fig.height=2.5, fig.width=6, small.mar=TRUE}
+```{r fig.height=2.5, fig.width=8, small.mar=TRUE, echo = FALSE}
+wt.bisquare <- function(u, c=6) {
+  ifelse( abs(u/c) < 1, (1-(u/c)^2)^2, 0)
+}
+
+# Initialize weights
+wt <- rep(1,length(x))
+ramp <- colorRamp(c("gold", "orange", "black"), interpolate="spline")
+
+OP <- par(mfrow = c(1,3))
+ # First plot
+ M <- lm(y ~ x, weights = wt)
+ plot(y ~ x, pch=20, xlim = c(0,11), cex = 2)
+ abline( M , col="blue")
+ text(x, y, labels = round(wt,2), pos = 2, offset = 0.5 , col = "grey30", font=1)
+
+  # Second plot
+ wt <- wt.bisquare( M$residuals/ median(abs(M$residuals)), c=6 )
+ M <- lm(y ~ x, weights = wt)
+ plot(y ~ x, pch=20, xlim = c(0,11), cex = 2)
+ abline( M , col="blue")
+ text(x, y, labels = round(wt,2), pos = 2, offset = 0.5 , col = "grey30", font=1)
+
+   # Third plot
+ wt <- wt.bisquare( M$residuals/ median(abs(M$residuals)), c=6 )
+ M <- lm(y ~ x, weights = wt)
+ plot(y ~ x, pch=20, xlim = c(0,11), cex = 2)
+ abline( M , col="blue")
+ text(x, y, labels = round(wt,2), pos = 2, offset = 0.5 , col = "grey30", font=1)
+ par(OP)
+```
+
+
+```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
 # Create the bisquare function
 wt.bisquare <- function(u, c=6) {
    ifelse( abs(u/c) < 1, (1-(u/c)^2)^2, 0)
