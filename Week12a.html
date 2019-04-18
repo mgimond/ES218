@@ -25,6 +25,15 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-39623718-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-39623718-2');
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -118,7 +127,9 @@ h6 {
 
 <link rel="stylesheet" href="libs\style.css" type="text/css" />
 
+</head>
 
+<body>
 
 <style type = "text/css">
 .main-container {
@@ -236,6 +247,8 @@ $(document).ready(function () {
   menuAnchor.closest('li.dropdown').addClass('active');
 });
 </script>
+
+<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -393,16 +406,6 @@ div.tocify {
 
 
 </style>
-
-
-
-</head>
-
-<body>
-
-
-<div class="container-fluid main-container">
-
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -622,54 +625,82 @@ div.tocify {
 </div>
 
 
-<p>Variables can be mapped in R using readily available CRAN packages such as <code>rgdal</code> and <code>maps</code>. The focus of this tutorial will be on mapping polygon vector (aka areal) data and not on raster (aka field) data.</p>
-<div id="using-the-maps-package" class="section level1">
-<h1>Using the <code>maps</code> package</h1>
-<div id="generating-a-basic-map" class="section level2">
-<h2>Generating a basic map</h2>
+<p>Variables can be mapped in R using packages such as <code>ggplot2</code> and <code>tmap</code>. The focus of this tutorial will be on mapping polygon (aka areal) data. For more information on mapping spatial data (both vector and raster) visit the <a href="https://mgimond.github.io/Spatial/mapping-data-in-r.html">GIS and Spatial Analysis pages</a>.</p>
+<div id="ggplot2-and-tmap" class="section level1">
+<h1><code>ggplot2</code> and <code>tmap</code></h1>
+<p>There are at least two mapping solutions in R: <code>ggplot2</code> and <code>tmap</code>. The bulk of this tutorial will make use of <code>tmap</code> but a brief example of <code>ggplot2</code>’s mapping capabilities will be presented next.</p>
+<div id="generating-a-basic-map-in-ggplot2" class="section level2">
+<h2>Generating a basic map in <code>ggplot2</code></h2>
 <p>Mapping values requires two datasets: the values to be mapped and the spatial boundaries of the areas being mapped. The <code>maps</code> package offers R-ready maps for US states/counties and administrative boundaries for other countries such as Canada, France and Italy.</p>
-<p>In the following example we will use <code>ggplot</code> to draw the US counties map. We will also color the counties based on the state they are located in. The state name column is labeled <code>region</code> and the county name column is labeled <code>subregion</code>.</p>
+<p>In the following example we will use <code>ggplot2</code> to draw the US counties map. We will also color the counties based on the state they are located in. The state name column is labeled <code>region</code> and the county name column is labeled <code>subregion</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(maps)
+<span class="kw">library</span>(sf)
 
 <span class="co"># Load the county data from the maps package</span>
-cnty &lt;-<span class="st"> </span><span class="kw">map_data</span>(<span class="st">&quot;county&quot;</span>)
+cnty &lt;-<span class="st"> </span><span class="kw">st_as_sf</span>(<span class="kw">map</span>(<span class="st">&quot;county&quot;</span>, <span class="dt">plot =</span> <span class="ot">FALSE</span>, <span class="dt">fill =</span> <span class="ot">TRUE</span>))
 
 <span class="co"># Plot the counties</span>
-<span class="kw">ggplot</span>(cnty, <span class="kw">aes</span>(long,lat, <span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> region), <span class="dt">colour =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="fl">0.2</span>)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>()</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-2-1.png" width="624" /></p>
-<p>The <code>x</code> and <code>y</code> values are assigned the <code>long</code> and <code>lat</code> columns that store the coordinate values for each vertex that delineates a county. The <code>group</code> parameter tells <code>ggplot</code> which polygon (county) a vertex is defining. The <code>geom_polygon()</code> function generates <em>filled</em> areas from those vertices. The <code>colour</code> parameter defines the polygon outline color. The option <code>legend.position=&quot;none&quot;</code> prevents the legend from being displayed and the <code>coord_quickmap()</code> function forces the aspect ratio to approximate that of the Mercator projection.</p>
-<p>If you want to change the map projection, you can substitute <code>coord_quickmap()</code> with <code>coord_map()</code>. The latter accepts as parameter projections available in the the <code>mapproj</code> package. For example, to project the continental US into a Bonne projection modify the above chunk as follows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cnty, <span class="kw">aes</span>(long,lat, <span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> region), <span class="dt">colour =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="fl">0.2</span>)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_map</span>(<span class="st">&quot;bonne&quot;</span>,  <span class="dt">param=</span><span class="dv">45</span>) </code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-3-1.png" width="624" /></p>
-<p>If we want to omit the background grid, we modify the chunk as follows (note that the <code>theme()</code> options gets overridden by the <code>theme_void()</code> option requiring that we pass the <code>show.legend = FALSE</code> option to <code>geom_polygon</code>).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cnty, <span class="kw">aes</span>(long,lat, <span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> region), <span class="dt">show.legend =</span> <span class="ot">FALSE</span>, <span class="dt">colour =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="fl">0.2</span>)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">coord_map</span>(<span class="st">&quot;bonne&quot;</span>,  <span class="dt">param=</span><span class="dv">45</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">theme_void</span>()</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-4-1.png" width="624" /></p>
+<span class="kw">ggplot</span>(cnty) <span class="op">+</span><span class="st">  </span><span class="kw">geom_sf</span>() </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-2-1.png" width="528" /></p>
+<p>The default ggplot grey theme works well for non-spatial data, but it may not be that suitable for spatial data. We can remove it with the <code>theme_bw()</code> option.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot the counties</span>
+<span class="kw">ggplot</span>(cnty) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">theme_bw</span>()</code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-3-1.png" width="528" /></p>
+<p>You can modify the map projection by passing the projection type to the <code>coord_sf</code> function. The projection is defined using <a href="https://proj4.org/apps/proj.html">PROJ4 formatted string</a>. For example, to project the continental US into a Lambert equal area projection, type:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Define the projection using PROJ4 syntax</span>
+ea &lt;-<span class="st"> &quot;+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs&quot;</span>
+
+<span class="kw">ggplot</span>(cnty) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">theme_bw</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs=</span>ea) </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-4-1.png" width="528" /></p>
+<p>To learn more on spatial projections in R <a href="https://mgimond.github.io/Spatial/coordinate-systems-in-r.html">click here</a>.</p>
 </div>
+<div id="generating-a-basic-map-in-tmap" class="section level2">
+<h2>Generating a basic map in <code>tmap</code></h2>
+<p>While <code>ggplot2</code> can handle basic mapping operations, it does not offer the ease and flexibility of the <code>tmap</code> package. Much like <code>ggplot2</code>, <code>tmap</code> adopts the same layering strategy. For example, to construct the above plot we first specify the layer to plot via the call to <code>tm_shape</code>, then the geometry to symbolize the spatial feature (<code>tm_polygons()</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tmap)
+
+<span class="kw">tm_shape</span>(cnty) <span class="op">+</span><span class="st">  </span><span class="kw">tm_polygons</span>()</code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-5-1.png" width="528" /></p>
+<p>To change the projection, pass the PROJ4 string to the <code>projection</code> parameter. To add a lat/long graticule, use the <code>tm_grid()</code> function. As with <code>ggplot2</code>, map elements are layered in the order in which they are called.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tm_shape</span>(cnty, <span class="dt">projection =</span> ea) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">tm_grid</span>(<span class="dt">projection =</span> <span class="st">&quot;+proj=longlat&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;grey&quot;</span>, <span class="dt">labels.inside.frame =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_polygons</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_layout</span>(<span class="dt">outer.margins =</span> <span class="kw">c</span>(.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">1</span>))</code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-6-1.png" width="528" /></p>
+<p>While grids are helpful in locating features on a map, they are not always necessary and can take away from the intended visual hierarchy. In what follows, we will be focusing on choropleth maps whereby the intended focus will be on the relative distribution of a variable across polygon units. We’ll therefore refrain from adding a grid to the map.</p>
+<p><a href="https://mgimond.github.io/Spatial/mapping-data-in-r.html">Click here</a> to explore additional mapping options with <code>tmap</code>.</p>
+</div>
+</div>
+<div id="joing-tables-to-spatial-objects" class="section level1">
+<h1>Joing tables to spatial objects</h1>
+<p>In the examples that follow, you will learn how to join census income data to a spatial object in one of two ways: by state and county name, and by FIPS (Federal Information Processing Standards) id.</p>
 <div id="joining-income-table-to-the-map-by-county-and-state-names" class="section level2">
 <h2>Joining income table to the map by county and state names</h2>
 <p>The next step is to <em>join</em> a dataset to the counties map. We will use the income-by-gender-education dataset used earlier in the course and limit the data to <em>median income per person</em> (<code>B20004001</code> column).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
 df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>)
-df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(<span class="dt">subregion=</span>County, <span class="dt">region=</span>State, B20004001 )</code></pre></div>
+df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(<span class="dt">subregion =</span> County, <span class="dt">region =</span> State, B20004001 )</code></pre></div>
 <p>Next, we need to join the census data to the county map using <em>two</em> columns: state name and county name (or <code>region</code> and <code>subregion</code> columns). Let’s compare the two dataframes by viewing the first few rows of each.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(cnty)</code></pre></div>
-<pre><code>       long      lat group order  region subregion
-1 -86.50517 32.34920     1     1 alabama   autauga
-2 -86.53382 32.35493     1     2 alabama   autauga
-3 -86.54527 32.36639     1     3 alabama   autauga
-4 -86.55673 32.37785     1     4 alabama   autauga
-5 -86.57966 32.38357     1     5 alabama   autauga
-6 -86.59111 32.37785     1     6 alabama   autauga</code></pre>
+<pre><code>Simple feature collection with 6 features and 1 field
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -88.01778 ymin: 30.24071 xmax: -85.06131 ymax: 34.2686
+epsg (SRID):    4326
+proj4string:    +proj=longlat +datum=WGS84 +no_defs
+                        geometry              ID
+1 MULTIPOLYGON (((-86.50517 3... alabama,autauga
+2 MULTIPOLYGON (((-87.93757 3... alabama,baldwin
+3 MULTIPOLYGON (((-85.42801 3... alabama,barbour
+4 MULTIPOLYGON (((-87.02083 3...    alabama,bibb
+5 MULTIPOLYGON (((-86.9578 33...  alabama,blount
+6 MULTIPOLYGON (((-85.66866 3... alabama,bullock</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(df1)</code></pre></div>
 <pre><code>  subregion region B20004001
 1   Autauga     al     35881
@@ -678,174 +709,64 @@ df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="
 4      Bibb     al     29016
 5    Blount     al     32035
 6   Bullock     al     26408</code></pre>
-<p>We note two problems. first, the <code>cnty</code> object encodes states using their full name and not their two letter abbreviation. Second, the county names in <code>cnty</code> are in <em>all</em> lower case. Before attempting to join the dataframes, we must first fix these discrepancies. We will choose to modify <code>df</code> so that its state and county names match those in the <code>cnty</code> (map) dataframe.</p>
+<p>We note two problems. First, the <code>cnty</code> object encodes states using their full name and not their two letter abbreviation. Second, the county names in <code>cnty</code> are in <em>all</em> lower case. Before attempting to join the dataframes, we must first fix these discrepancies. We will choose to modify <code>df</code> so that its state and county names match those in the <code>cnty</code> (map) dataframe.</p>
 <p>We will first create a state name/abbreviation look-up table using the built-in <code>state.name</code> and <code>state.abb</code> objects. Note that using these pre-existing objects will require that we add the District of Columbia to the table since it’s not present in either data objects.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">region=</span><span class="kw">tolower</span>(state.name), <span class="dt">State =</span> <span class="kw">tolower</span>(state.abb))
-st &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(st, <span class="kw">data.frame</span>(<span class="dt">region=</span><span class="st">&quot;district of columbia&quot;</span>, <span class="dt">State=</span><span class="st">&quot;dc&quot;</span>) )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">region=</span><span class="kw">tolower</span>(state.name), <span class="dt">State =</span> <span class="kw">tolower</span>(state.abb)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">      </span><span class="kw">bind_rows</span>( <span class="kw">data.frame</span>(<span class="dt">region=</span><span class="st">&quot;district of columbia&quot;</span>, <span class="dt">State=</span><span class="st">&quot;dc&quot;</span>) ) </code></pre></div>
 <p>Next, we join the <code>st</code> look-up table to <code>df</code> then make the additional changes needed to join the census data to the counties map. Note that we are overwriting the earlier instance of <code>df1</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">inner_join</span>(st, <span class="dt">by=</span><span class="st">&quot;State&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">subregion =</span> <span class="kw">tolower</span>(County))  <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(subregion, region, B20004001 )</code></pre></div>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ID =</span> <span class="kw">paste</span>(region,<span class="kw">tolower</span>(County), <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>))  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(ID, B20004001 )</code></pre></div>
 <p>We can now join <code>df1</code> to <code>cnty</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty, df1, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;region&quot;</span>, <span class="st">&quot;subregion&quot;</span>) )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty, df1, <span class="dt">by=</span><span class="st">&quot;ID&quot;</span> )</code></pre></div>
 <p>Now let’s map the income distribution.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cnty.df1, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> B20004001), <span class="dt">colour =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="fl">0.2</span>))  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>()</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-10-1.png" width="720" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tm_shape</span>(cnty.df1) <span class="op">+</span><span class="st"> </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-12-1.png" width="816" /></p>
 <p>You may notice that the counties map does not seem complete; most notable is the absence of <em>all</em> Louisiana counties. Let’s look at the rows in <code>cnty.df1</code> associated with the state of Louisiana.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">filter</span>(cnty.df1, region <span class="op">==</span><span class="st"> &quot;louisiana&quot;</span>)</code></pre></div>
-<pre><code>[1] long      lat       group     order     region    subregion B20004001
-&lt;0 rows&gt; (or 0-length row.names)</code></pre>
-<p>There are no rows returned. This suggests that the Louisiana counties did not properly join. Let’s compare the Louisiana county names between <code>df1</code> and <code>cnty</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df1 <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(region <span class="op">==</span><span class="st"> &quot;louisiana&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(subregion)</code></pre></div>
-<pre><code>                     subregion
-1                acadia parish
-2                 allen parish
-3             ascension parish
-4            assumption parish
-5             avoyelles parish
-6            beauregard parish
-7             bienville parish
-8               bossier parish
-9                 caddo parish
-10            calcasieu parish
-11             caldwell parish
-12              cameron parish
-13            catahoula parish
-14            claiborne parish
-15            concordia parish
-16              de soto parish
-17     east baton rouge parish
-18         east carroll parish
-19       east feliciana parish
-20           evangeline parish
-21             franklin parish
-22                grant parish
-23               iberia parish
-24            iberville parish
-25              jackson parish
-26            jefferson parish
-27      jefferson davis parish
-28            lafayette parish
-29            lafourche parish
-30              lasalle parish
-31              lincoln parish
-32           livingston parish
-33              madison parish
-34            morehouse parish
-35         natchitoches parish
-36              orleans parish
-37             ouachita parish
-38          plaquemines parish
-39        pointe coupee parish
-40              rapides parish
-41            red river parish
-42             richland parish
-43               sabine parish
-44          st. bernard parish
-45          st. charles parish
-46           st. helena parish
-47            st. james parish
-48 st. john the baptist parish
-49           st. landry parish
-50           st. martin parish
-51             st. mary parish
-52          st. tammany parish
-53           tangipahoa parish
-54               tensas parish
-55           terrebonne parish
-56                union parish
-57            vermilion parish
-58               vernon parish
-59           washington parish
-60              webster parish
-61     west baton rouge parish
-62         west carroll parish
-63       west feliciana parish
-64                 winn parish</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(region <span class="op">==</span><span class="st"> &quot;louisiana&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(subregion) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">unique</span>()</code></pre></div>
-<pre><code>               subregion
-1                 acadia
-45                 allen
-67             ascension
-106           assumption
-145            avoyelles
-211           beauregard
-243            bienville
-279              bossier
-372                caddo
-461            calcasieu
-493             caldwell
-527              cameron
-568            catahoula
-666            claiborne
-686            concordia
-791              de soto
-847     east baton rouge
-897         east carroll
-950       east feliciana
-978           evangeline
-1021            franklin
-1098               grant
-1145              iberia
-1203           iberville
-1258             jackson
-1274           jefferson
-1340     jefferson davis
-1382           lafayette
-1430           lafourche
-1498            la salle
-1547             lincoln
-1573          livingston
-1619             madison
-1687           morehouse
-1737        natchitoches
-1823             orleans
-1888            ouachita
-1922         plaquemines
-2044       pointe coupee
-2118             rapides
-2205           red river
-2248            richland
-2306              sabine
-2354          st bernard
-2435          st charles
-2474           st helena
-2493            st james
-2515 st john the baptist
-2551           st landry
-2596           st martin
-2681             st mary
-2752          st tammany
-2797          tangipahoa
-2835              tensas
-2906          terrebonne
-2982               union
-3009           vermilion
-3070              vernon
-3117          washington
-3137             webster
-3174    west baton rouge
-3213        west carroll
-3253      west feliciana
-3307                winn</code></pre>
-<p>It turns out that Louisiana does not divide its administrative areas into <em>counties</em> but <em>parishes</em> instead. The income data (originally downloaded from the Census Bureau) follows through with that designation convention by adding the word “parish” to each of its administrative area names. We therefore need to remove all instances of <code>parish</code> in the <code>subregion</code> names associated with Louisiana. We will therefore need to recreate the <code>df1</code> object:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
+<span class="kw">table</span>(<span class="kw">str_detect</span>(cnty.df1<span class="op">$</span>ID,  <span class="st">&quot;louisiana&quot;</span>) )</code></pre></div>
+<pre><code>
+FALSE 
+ 2971 </code></pre>
+<p>There are no rows returned (i.e. all cases returned <code>FALSE</code>). This suggests that the Louisiana counties did not properly join. Let’s compare the Louisiana county names between <code>df1</code> and <code>cnty</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df1 <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(ID,  <span class="st">&quot;louisiana&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>()</code></pre></div>
+<pre><code>                           ID B20004001
+1     louisiana,acadia parish     28678
+2      louisiana,allen parish     29870
+3  louisiana,ascension parish     43464
+4 louisiana,assumption parish     34269
+5  louisiana,avoyelles parish     26483
+6 louisiana,beauregard parish     33983</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(ID,  <span class="st">&quot;louisiana&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>()</code></pre></div>
+<pre><code>Simple feature collection with 6 features and 1 field
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -93.74163 ymin: 29.62765 xmax: -90.63619 ymax: 31.35225
+epsg (SRID):    4326
+proj4string:    +proj=longlat +datum=WGS84 +no_defs
+                    ID                       geometry
+1     louisiana,acadia MULTIPOLYGON (((-92.61863 3...
+2      louisiana,allen MULTIPOLYGON (((-92.5957 30...
+3  louisiana,ascension MULTIPOLYGON (((-91.12894 3...
+4 louisiana,assumption MULTIPOLYGON (((-91.23207 3...
+5  louisiana,avoyelles MULTIPOLYGON (((-92.32642 3...
+6 louisiana,beauregard MULTIPOLYGON (((-93.12856 3...</code></pre>
+<p>It turns out that Louisiana does not divide its administrative areas into <em>counties</em> but <em>parishes</em> instead. The income data (originally downloaded from the Census Bureau) follows through with that designation convention by adding the word “parish” to each of its administrative area names. We therefore need to remove all instances of <code>parish</code> in the <code>subregion</code> names associated with Louisiana. We will therefore need to recreate the <code>df1</code> object as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
 df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">inner_join</span>(st, <span class="dt">by=</span><span class="st">&quot;State&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>( <span class="dt">subregion =</span> <span class="kw">tolower</span>(County) ,
-          <span class="dt">subregion =</span> <span class="kw">ifelse</span>(region<span class="op">==</span><span class="st">&quot;louisiana&quot;</span>, 
-                             <span class="kw">str_replace</span>(subregion, <span class="st">&quot; parish&quot;</span>, <span class="st">&quot;&quot;</span>), subregion))  <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(subregion, region, B20004001 )</code></pre></div>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ID =</span> <span class="kw">paste</span>(region,<span class="kw">tolower</span>(County), <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>),
+         <span class="dt">ID =</span> <span class="kw">ifelse</span>(region<span class="op">==</span><span class="st">&quot;louisiana&quot;</span>, 
+                             <span class="kw">str_replace</span>(ID, <span class="st">&quot; parish&quot;</span>, <span class="st">&quot;&quot;</span>), ID))  <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(ID, B20004001 )</code></pre></div>
 <p>Let’s re-join the dataframes and re-plot the map.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty, df1, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;region&quot;</span>, <span class="st">&quot;subregion&quot;</span>) )
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty, df1, <span class="dt">by=</span><span class="st">&quot;ID&quot;</span> )
 
-<span class="kw">ggplot</span>(cnty.df1, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> B20004001), <span class="dt">colour =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="fl">0.2</span>))  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>()</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-14-1.png" width="720" /></p>
+<span class="kw">tm_shape</span>(cnty.df1) <span class="op">+</span><span class="st"> </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-16-1.png" width="816" /></p>
 <p>Most of Louisiana’s parishes are now mapped, but we are still missing a few parishes as well as a few counties. This is a result of differences in spelling for two-word county and parish names. For example, <code>df1</code> encodes St. Lucie county (Florida) as <code>st. lucie</code> whereas <code>cnty</code> omits the dot and encodes it as <code>st lucie</code>. Fixing these discrepancies will require additional labor. At this point, it may prove more fruitful to do away with state/county names as <em>joining</em> keys and use <strong>FIPS</strong> county codes instead. FIPS (Federal Information Processing Standards) codes assign each county/state a unique five number designation thus making it easier to join data to spatial features. However, neither our census data table nor the built-in counties map have FIPS codes. We will download another version of the income data (one that has FIPS codes). Note that FIPS codes are normally part of datasets provided by the Census Bureau. The <code>maps</code> package has a dataset called <code>county.fips</code> that can be used to match state/county names in the <code>county</code> map to FIPS codes.</p>
 </div>
 <div id="joining-income-table-by-fips-code" class="section level2">
@@ -864,19 +785,16 @@ df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="
 4 1007    alabama,bibb
 5 1009  alabama,blount
 6 1011 alabama,bullock</code></pre>
-<p>Note that the state and county names are aggregated into a single column; this does not match the data structure in <code>cnty</code> where states and counties are stored in separate columns. This will require some minor data prepping.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty2 &lt;-<span class="st"> </span>cnty <span class="op">%&gt;%</span>
-<span class="st">        </span><span class="kw">mutate</span>(<span class="dt">polyname =</span> <span class="kw">paste</span>(region,subregion,<span class="dt">sep=</span><span class="st">&quot;,&quot;</span>)) <span class="op">%&gt;%</span>
-<span class="st">        </span><span class="kw">left_join</span>(county.fips, <span class="dt">by=</span><span class="st">&quot;polyname&quot;</span>)</code></pre></div>
+<span class="st">         </span><span class="kw">left_join</span>(county.fips, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;ID&quot;</span> =<span class="st"> &quot;polyname&quot;</span>))</code></pre></div>
 <p>Now that the FIPS codes are part of the county map dataframe, let’s join the income data table to the county map, then map the income values.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty2.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty2, df1, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;fips&quot;</span> =<span class="st"> &quot;FIPS&quot;</span>) )
 
-<span class="kw">ggplot</span>(cnty2.df1, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> B20004001), <span class="dt">colour =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="fl">0.2</span>))  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>()</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-18-1.png" width="720" /></p>
+<span class="kw">tm_shape</span>(cnty2.df1) <span class="op">+</span><span class="st"> </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-20-1.png" width="816" /></p>
 <p>This is an improvement over the last map. But there are still a few counties missing. After a closer scrutiny of the data, it seems that the <code>county.fips</code> table splits some counties into two or more sub-regions. For example, Accomack county (Virginia) is split into two regions (and thus into two different names):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">county.fips <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>( <span class="kw">grepl</span>(<span class="st">&quot;^virginia,accomack&quot;</span>, polyname) )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">county.fips <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(polyname,  <span class="st">&quot;virginia,accomack&quot;</span>))</code></pre></div>
 <pre><code>   fips                       polyname
 1 51001         virginia,accomack:main
 2 51001 virginia,accomack:chincoteague</code></pre>
@@ -887,86 +805,57 @@ df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="
 <h1>Working with external GIS files</h1>
 <div id="reading-a-shapefile-into-r" class="section level2">
 <h2>Reading a shapefile into R</h2>
-<p>The Census Bureau maintains its own library of administrative boundary shapefiles (shapefiles are popular map data formats). This may prove to be the best map source to use since its areal units are designed to match the records in the income data table. Loading a shapefile can easily be accomplished using the <code>readOGR()</code> function from the <code>rgdal</code> package. One option is to download the shapefile from the Census Bureau’s website (usually in a zipped format) then unpack it in a local project folder before reading it into the current session with <code>readOGR()</code>. But we can maximize the replicability of the workflow by writing a chunk of code that will download the zipped shapefile into a temporary directory before unzipping it and loading the shapefile into an active R session as shown below.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rgdal)
+<p>The Census Bureau maintains its own library of administrative boundary shapefiles (shapefiles are popular map data formats). This may prove to be the best map source to use since its areal units are designed to match the records in the income data table. Loading a shapefile can easily be accomplished using the <code>st_read()</code> function from the <code>sf</code> package. One option is to download the shapefile from the Census Bureau’s website (usually in a zipped format) then unpack it in a local project folder before reading it into the current session with <code>st_read()</code>. But we can maximize the replicability of the workflow by writing a chunk of code that will download the zipped shapefile into a temporary directory before unzipping it and loading the shapefile into an active R session as shown below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sf)
 
 tmp &lt;-<span class="st"> </span><span class="kw">tempdir</span>()
 link &lt;-<span class="st"> &quot;http://www2.census.gov/geo/tiger/GENZ2010/gz_2010_us_050_00_20m.zip&quot;</span>
 filename &lt;-<span class="st"> </span><span class="kw">basename</span>(link)
 <span class="kw">download.file</span>(link, filename)
 <span class="kw">unzip</span>(filename, <span class="dt">exdir =</span> tmp )
-shapefile &lt;-<span class="st"> </span><span class="kw">readOGR</span>( <span class="dt">dsn=</span>tmp, <span class="dt">layer =</span> tools<span class="op">::</span><span class="kw">file_path_sans_ext</span>(filename) )</code></pre></div>
-<pre><code>OGR data source with driver: ESRI Shapefile 
-Source: &quot;C:\Users\mgimond\AppData\Local\Temp\RtmpEfNfGK&quot;, layer: &quot;gz_2010_us_050_00_20m&quot;
-with 3221 features
-It has 6 fields</code></pre>
-<p>The shapefile is unzipped into a temporary folder, <code>tmp</code>, then read from that same directory and stored in a <code>SpatialPolygonsDataFrame</code> object called <code>shapefile</code>. The chunk <code>tools::file_path_sans_ext(filename)</code> extracts the name of the zip file (minus the extension) which turns out to also be the name of the shapefile. Note that if the zip file was manually unpacked in a project folder then the only command that would have needed to be executed is the <code>readOGR</code> function as in <code>readOGR( dsn=&quot;../Data&quot;, layer = &quot;gz_2010_us_050_00_20m&quot; )</code> where the <code>dsn=</code> parameter points to the directory where the shapefile resides. Note too that the shapefile’s extension is omitted from the name passed to the <code>layer=</code> parameter.</p>
-<p>The Census shapefile has a field called <code>GEO_ID</code> that includes the county FIPS codes along with other superfluous county ID values. We only need the five digit county FIPS code so we’ll extract these codes into a new column called <code>FIPS</code>. We will also assign a unique ID value to each row of the dataset for use in a subsequent <code>fortify()</code> function call.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">shapefile<span class="op">$</span>FIPS &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">substr</span>(shapefile<span class="op">$</span>GEO_ID, <span class="dv">10</span>, <span class="dv">14</span>))
-shapefile<span class="op">$</span>id   &lt;-<span class="st"> </span><span class="kw">rownames</span>(shapefile<span class="op">@</span>data)</code></pre></div>
-<p>To plot the shapefile in <code>ggplot</code>, we need to convert the <code>SpatialPolygonsDataFrame</code> object to a dataframe using the <code>fortify()</code> function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty2 &lt;-<span class="st"> </span><span class="kw">fortify</span>(shapefile, <span class="dt">id=</span><span class="st">&quot;id&quot;</span>)</code></pre></div>
-<p>Next we can append the income table to the new <code>cnty2</code> object.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty2.cs &lt;-<span class="st"> </span>cnty2 <span class="op">%&gt;%</span>
-<span class="st">            </span><span class="kw">inner_join</span>(shapefile<span class="op">@</span>data, <span class="dt">by=</span><span class="st">&quot;id&quot;</span>) <span class="op">%&gt;%</span>
+shapefile &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="dt">dsn =</span> tmp, <span class="dt">layer =</span> tools<span class="op">::</span><span class="kw">file_path_sans_ext</span>(filename))</code></pre></div>
+<pre><code>Reading layer `gz_2010_us_050_00_20m&#39; from data source `C:\Users\mgimond\AppData\Local\Temp\Rtmp003anP&#39; using driver `ESRI Shapefile&#39;
+Simple feature collection with 3221 features and 6 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1473 ymin: 17.88481 xmax: 179.7785 ymax: 71.35256
+epsg (SRID):    4269
+proj4string:    +proj=longlat +datum=NAD83 +no_defs</code></pre>
+<p>The shapefile is unzipped into a temporary folder, <code>tmp</code>, then read from that same directory and stored in an <code>sf</code> object called <code>shapefile</code>. The code <code>tools::file_path_sans_ext(filename)</code> extracts the name of the zip file (minus the extension) which turns out to also be the name of the shapefile. Note that if the zip file was manually unpacked in a project folder then the only command that would have needed to be executed is the <code>st_read</code> function as in <code>st_read(&quot;gz_2010_us_050_00_20m.shp&quot; )</code>.</p>
+<p>The Census shapefile has a field called <code>GEO_ID</code> that includes the county FIPS codes along with other superfluous county ID values. We only need the last five digit county FIPS code so we’ll extract these codes into a new column called <code>FIPS</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">shapefile<span class="op">$</span>FIPS &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">str_sub</span>(shapefile<span class="op">$</span>GEO_ID, <span class="dv">10</span>, <span class="dv">14</span>))</code></pre></div>
+<p>Next we can append the income table to the <code>shapefile</code> object.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty2.cs &lt;-<span class="st"> </span>shapefile <span class="op">%&gt;%</span>
 <span class="st">            </span><span class="kw">inner_join</span>(df1, <span class="dt">by=</span><span class="st">&quot;FIPS&quot;</span>)</code></pre></div>
+<p>Now, we can plot the income distribution map. Note that the Census Bureau shapefile includes the 48 states, Alaska and Hawaii. If you want to limit the extent to the 48 states, define the boundary limits using the <code>bbox</code> parameter in the <code>tm_shape</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tm_shape</span>(cnty2.cs, 
+         <span class="dt">bbox =</span> <span class="kw">st_bbox</span>(<span class="kw">c</span>(<span class="dt">xmin =</span> <span class="op">-</span><span class="dv">125</span>, <span class="dt">xmax =</span> <span class="op">-</span><span class="dv">67</span> , <span class="dt">ymin =</span> <span class="dv">25</span>, <span class="dt">ymax =</span> <span class="dv">50</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>, <span class="dt">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-25-1.png" width="816" /></p>
 </div>
-<div id="generating-a-continuous-color-scheme" class="section level2">
-<h2>Generating a continuous color scheme</h2>
-<p>Now we can plot the income distribution map.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cnty2.cs, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> B20004001), <span class="dt">colour =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="fl">0.2</span>))  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlim</span>(<span class="op">-</span><span class="dv">125</span>, <span class="op">-</span><span class="st"> </span><span class="dv">67</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylim</span>( <span class="dv">25</span>,<span class="dv">50</span> )</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-24-1.png" width="720" /></p>
-<p>Depending on the size of your output extent, you might find the county outlines distracting–especially in the northeastern region where the county sizes are so small. We can omit the outline by setting the <code>colour</code> parameter to <code>NA</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cnty2.cs, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> B20004001), <span class="dt">colour =</span> <span class="ot">NA</span>)  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlim</span>(<span class="op">-</span><span class="dv">125</span>, <span class="op">-</span><span class="st"> </span><span class="dv">67</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylim</span>( <span class="dv">25</span>,<span class="dv">50</span> ) </code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-25-1.png" width="720" /></p>
-<p><code>ggplot</code> defaults to a <strong>continuous</strong> color scheme that ranges from a dark blue to a light blue. Continuous color schemes can be modified in ggplot by using the <code>scale_fill_gradient</code> function. For example, to use a light yellow to dark green color scheme modify the above chunk of code as follows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(cnty2.cs, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> B20004001), <span class="dt">colour =</span> <span class="ot">NA</span>)  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlim</span>(<span class="op">-</span><span class="dv">125</span>, <span class="op">-</span><span class="st"> </span><span class="dv">67</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylim</span>( <span class="dv">25</span>,<span class="dv">50</span> ) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_gradient</span>(<span class="dt">low=</span><span class="st">&quot;lightyellow2&quot;</span>, <span class="dt">high=</span><span class="st">&quot;darkgreen&quot;</span>)</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-26-1.png" width="720" /></p>
-<p>To see a list of available color names in R, type <code>colours()</code> at the console.</p>
-</div>
-<div id="generating-a-discrete-color-scheme" class="section level2">
-<h2>Generating a discrete color scheme</h2>
-<p>You can also create a <strong>discrete</strong> color scheme–i.e. one where the number of colors are fixed by a finite set of income value intervals. For example, to split the income values across six intervals (e.g. $0 to $20000, $20000 to $30000, $30000 to $40000, $40000 to $50000 , $50000 to $60000 and $60000 to $75000) we can use the <code>cut()</code> function to assign each income value in the table to one of the intervals, then add that interval value to the <code>ctny2.cs</code> map data frame object.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">interv &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">20000</span>,<span class="dv">30000</span>, <span class="dv">40000</span>,<span class="dv">50000</span>, <span class="dv">60000</span>, <span class="dv">75000</span>)
-
-cnty2.cs<span class="op">$</span>Income &lt;-<span class="st"> </span><span class="kw">cut</span>(cnty2.cs<span class="op">$</span>B20004001, <span class="dt">breaks =</span> interv , <span class="dt">labels =</span> <span class="kw">paste</span>(interv[<span class="op">-</span><span class="dv">1</span>]))</code></pre></div>
-<p>The <code>labels=</code> parameter allows us to define the output interval names. Here we assign the interval’s top dollar value to the interval names. Note that we could have created fancier intervals such as <code>$0 to $20k</code>, <code>$20k to $30k</code>, etc…</p>
-<p>Next we’ll map the data, but first we need to change the coloring scheme since we are now using a <em>discrete</em> color scheme as opposed to a <em>continuous</em> one. Cynthia Brewer of Penn State designed a website called <a href="http://colorbrewer2.org/" class="uri">http://colorbrewer2.org/</a> that recommends discrete color schemes to use for different map effects. Defining the colors, especially for a sequential color scheme where the hue is kept constant while its lightness level is modified, is not trivial. Fortunately, her color scheme recommendations are available in <code>ggplot</code> via the <code>scale_fill_brewer()</code> function. To see a list of Brewer color schemes, simply type <code>display.brewer.all()</code> in the console window. Note that we will need to load the <code>RColorBrewer</code> package first.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RColorBrewer)
-
-<span class="kw">display.brewer.all</span>()</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-28-1.png" width="720" /></p>
-<p>We’ll choose the <code>YlGn</code> color scheme. In case you did not run the last code chunk, we’ll load the <code>RColorBrewer</code> package once more.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RColorBrewer)
-
-<span class="kw">ggplot</span>(cnty2.cs, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> Income), <span class="dt">colour =</span> <span class="ot">NA</span>)  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlim</span>(<span class="op">-</span><span class="dv">125</span>, <span class="op">-</span><span class="st"> </span><span class="dv">67</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylim</span>( <span class="dv">25</span>,<span class="dv">50</span> ) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;YlGn&quot;</span>)</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-29-1.png" width="720" /></p>
-</div>
-<div id="generating-a-divergent-color-scheme" class="section level2">
-<h2>Generating a divergent color scheme</h2>
-<p>We might choose to map the income distribution using a <strong>divergent</strong> color scheme where we compare the counties to some overall value such as the counties’ median. We can use the <code>quantile()</code> function to break the income data into its percentiles. This will be helpful in generating symmetrical intervals about the median.</p>
+<div id="modifying-the-color-scheme" class="section level2">
+<h2>Modifying the color scheme</h2>
+<p>The classification scheme can be customized. For example, to split the income values across six intervals (e.g. $0 to $20000, $20000 to $30000, $30000 to $50000, and $50000 to $100000) and to label the values as dollars, type the following:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tm_shape</span>(cnty2.cs, 
+         <span class="dt">bbox =</span> <span class="kw">st_bbox</span>(<span class="kw">c</span>(<span class="dt">xmin =</span> <span class="op">-</span><span class="dv">125</span>, <span class="dt">xmax =</span> <span class="op">-</span><span class="dv">67</span> , <span class="dt">ymin =</span> <span class="dv">25</span>, <span class="dt">ymax =</span> <span class="dv">50</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>,
+          <span class="dt">style=</span><span class="st">&quot;fixed&quot;</span>, <span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">20000</span> , <span class="dv">30000</span>, <span class="dv">50000</span>, <span class="dv">100000</span> ),
+          <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;under $20k&quot;</span>, <span class="st">&quot;$20k - $30k&quot;</span>, <span class="st">&quot;$30k - $50k&quot;</span>, <span class="st">&quot;above $50k&quot;</span>),
+          <span class="dt">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-26-1.png" width="816" /></p>
+<p>We might choose to map the income distribution using a <strong>divergent</strong> color scheme where we compare the counties to some overall value such as the counties’ median income value. We can use the <code>quantile()</code> function to break the income data into its percentiles. This will be helpful in generating symmetrical intervals about the median.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">inc.qt &lt;-<span class="st"> </span><span class="kw">quantile</span>(df1<span class="op">$</span>B20004001, <span class="dt">probs =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.125</span>, .<span class="dv">25</span>, <span class="fl">0.5</span>, .<span class="dv">75</span>, .<span class="dv">875</span> , <span class="dv">1</span> ))</code></pre></div>
-<p>We’ll create new income intervals centered on the median of 30767.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnty2.cs<span class="op">$</span>Income &lt;-<span class="st"> </span><span class="kw">cut</span>(cnty2.cs<span class="op">$</span>B20004001, <span class="dt">breaks =</span> inc.qt , <span class="dt">labels =</span> <span class="kw">paste</span>(inc.qt[<span class="op">-</span><span class="dv">1</span>]))</code></pre></div>
-<p>A divergent color scheme consists of two different hues whose lightness values converge towards some central value (the median income in our case). We’ll use Brewer’s red-to-green color palette <code>RdYlGn</code> for this next map.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RColorBrewer)
-
-<span class="kw">ggplot</span>(cnty2.cs, <span class="kw">aes</span>(long, lat,<span class="dt">group =</span> group)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_polygon</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> Income), <span class="dt">colour =</span> <span class="ot">NA</span>)  <span class="op">+</span>
-<span class="st">  </span><span class="kw">coord_quickmap</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlim</span>(<span class="op">-</span><span class="dv">125</span>, <span class="op">-</span><span class="st"> </span><span class="dv">67</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylim</span>( <span class="dv">25</span>,<span class="dv">50</span> ) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;RdYlGn&quot;</span>)</code></pre></div>
-<p><img src="Week12a_files/figure-html/unnamed-chunk-32-1.png" width="720" /></p>
-<p>The divergent map gives us a different handle on the data. Here, we can identify the poorer than average regions such as the southeast and parts of the Mississippi river region as well as the wealthier regions such as the northeast (with the exception of Maine).</p>
+<p>A divergent color scheme consists of two different hues whose lightness values converge towards some central value (the median income in our case). We’ll use a red-to-green color palette, <code>RdYlGn</code>, for this next map where red hues highlight counties below the county median income and green hues highlight counties above the county median value.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tm_shape</span>(cnty2.cs,
+         <span class="dt">bbox =</span> <span class="kw">st_bbox</span>(<span class="kw">c</span>(<span class="dt">xmin =</span> <span class="op">-</span><span class="dv">125</span>, <span class="dt">xmax =</span> <span class="op">-</span><span class="dv">67</span> , <span class="dt">ymin =</span> <span class="dv">25</span>, <span class="dt">ymax =</span> <span class="dv">50</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;RdYlGn&quot;</span>,
+          <span class="dt">style=</span><span class="st">&quot;fixed&quot;</span>, <span class="dt">breaks =</span> inc.qt,
+          <span class="dt">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </code></pre></div>
+<p><img src="Week12a_files/figure-html/unnamed-chunk-28-1.png" width="816" /></p>
+<p>The divergent map gives us a different handle on the data. Here, we can identify the poorer than average counties such as the southeast and parts of the Mississippi river region as well as the wealthier counties such as the mid-atlantic region and the west coast.</p>
 </div>
 </div>
 
