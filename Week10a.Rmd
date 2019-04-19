@@ -7,7 +7,7 @@ source("libs/Common.R")
 ```
 
 <div style="color:#ff7535; background-color:#fff0ee ;	border-left-style: solid">
-This tutorial makes use of the following R package(s): **`tidyr`**, **`lubridate`** and **`ggplot2`**.
+This tutorial makes use of the following R package(s): **`dplyr`**, **`tidyr`**, **`lubridate`** and **`ggplot2`**.
 
 This material is intended to supplement **pages 159 to 169** of **Cleveland's book**.
 </div>
@@ -35,13 +35,13 @@ d2 <- d1 %>%
 Next, let's look at the data:
       
 ```{r fig.height=2, fig.width=6, message=FALSE}
-ggplot(d2, aes(x=Year , y=CO2)) + geom_point()
+ggplot(d2, aes(x = Year , y = CO2)) + geom_point(size = 0.6)
 ```
 
-Let's see if plotting the data using lines instead of points helps identify any underlying pattern.
+Let's see if plotting the data using lines instead of points helps identify any underlying patterns.
       
 ```{r fig.height=2, fig.width=6, message=FALSE}
-ggplot(d2, aes(x=Year , y=CO2)) + geom_line()
+ggplot(d2, aes(x = Year , y = CO2)) + geom_line()
 ```
 
 We note two patterns of interest: an overall upward trend, and a cyclical trend. We will first *smooth* out the overall trend by finding a model that best explains the overall variability, then we'll remove that trend from the data to explore the cyclical component.
@@ -53,21 +53,22 @@ We can attempt to model the overall trend by fitting a straight line to the data
 
 ```{r fig.height=2, fig.width=6}
 
-ggplot(d2, aes(x=Year, y=CO2)) + geom_line() + 
-             stat_smooth(method="lm", se=FALSE, col="red") 
+ggplot(d2, aes(x = Year, y = CO2)) + geom_line() + 
+             stat_smooth(method = "lm", se = FALSE, col = "red") 
 ```
 
 Next, we subtract the modeled line from the CO2 data and plot the result--this gives us the **residuals** and can be thought of as representing what the linear model does *not* explain about the data. But first, we will need to create a regression model object since it will provide us with the residuals needed to generate the residual plot.
 
 ```{r fig.height=2, fig.width=6}
-# Generate a model object of the regression line
-M1 <- lm(CO2 ~ Year, d2) # Generate model
+# Generate a model object from the regression fit
+M1 <- lm(CO2 ~ Year, d2) 
+d2$res1 <- M1$residuals
 
 # Plot the residuals from the model object
-ggplot() + aes(x=d2$Year, y=residuals(M1)) + geom_point()
+ggplot(d2, aes(x = Year, y = res1)) + geom_point()
 ```
 
-An overall trend is still present, despite having attempted to control for it. This implies that our simple line model does not do a good job in *smoothing* out the overall trend. 
+An overall trend is still present, despite having attempted to control for it. This suggests that our simple line model does not do a good job in *smoothing* out the overall trend. 
 
 It appears that the overall trend is slightly convex and has a small peak around the 1990's; we should try to fit the trend using a 3rd order polynomial of the form:
 
@@ -79,114 +80,120 @@ The fitted line looks like this:
 
 ```{r fig.height=2, fig.width=6, message=FALSE, warning=FALSE}
 # Third order polynomial
-M2 <- lm(CO2 ~ Year * I(Year^2) * I(Year^3), d2)
-ggplot(d2, aes(x=Year, y=CO2)) + geom_line() + 
-             stat_smooth(method="lm", formula=y ~ x + I(x^2) + I(x^3), se=FALSE, col="red")
+ggplot(d2, aes(x = Year, y = CO2)) + geom_line() + 
+           stat_smooth(method = "lm", formula = y ~ x + I(x^2) + I(x^3), 
+                       se = FALSE, col = "red")
 ```
 
 Now, let's look at the residuals. In helping discern any pattern in our residuals, we add a loess smooth to the plot.
 
 ```{r fig.height=2, fig.width=6, warning=FALSE}
-ggplot() + aes(x=d2$Year, y=residuals(M2)) + geom_point() +
-           stat_smooth(method="loess", se=FALSE)
+M2 <- lm(CO2 ~ Year + I(Year^2) + I(Year^3), d2)
+d2$res2 <- M2$residuals
+
+ggplot(d2 , aes(x = Year, y = res2)) + geom_point() +
+           stat_smooth(method = "loess", se = FALSE)
 ```
 
-This is an improvement over the simple line model (which was a 1st order polynomial fit).  So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a "W" shaped trend in the residuals which can hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth the trend even further, but at this point, we may opt for a non-parametric fit. When the goal is to *peel* off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data. An example of such a smoothing technique is the loess fit which is shown in the following figure.
+This is an improvement over the simple line model (which was a 1st order polynomial fit).  So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a "W" shaped trend in the residuals which can hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth the trend even further, but at this point, we may opt for a non-parametric fit. When the goal is to *peel* off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. An example of such a smoothing technique is the loess fit which is shown in the following figure.
 
 ```{r fig.height=2, fig.width=6}
-lo <- loess(CO2 ~ Year, d2, span=1/4)
-ggplot(d2, aes(x=Year, y=CO2)) + geom_line() + 
-             stat_smooth(span=1/4, se=FALSE, col="red")
+ggplot(d2, aes(x = Year, y = CO2)) + geom_line() + 
+             stat_smooth(span = 1/4, se = FALSE, col = "red")
 ```
 
 At first glance, this may not look any different from our 3rd order polynomial. But the resulting residuals suggest that the loess smooth did a good job in removing any overall trend in our batch of CO2 values.
 
 ```{r fig.height=2, fig.width=6}
-ggplot() + aes(x=d2$Year, y=residuals(lo)) + geom_point() +
-           stat_smooth(se=FALSE)
+lo <- loess(CO2 ~ Year, d2, span=1/4)
+d2$res3 <- lo$residuals
+
+ggplot(d2,  aes(x = Year, y = d2$res3)) + geom_point() +
+           stat_smooth(se = FALSE, span = 0.2)
 ```
 
 # Exploring the seasonal component
 
-Let's now explore the cyclical pattern in the residuals. Note the y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating nature along the overall trend is relatively small (the CO2 values have a range of [`r range(d2$CO2)`] whereas the residuals have a range of [`r round(range(residuals(lo)),2)`]).
+Let's now explore the cyclical pattern in the residuals. Note the y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating nature along the overall trend is relatively small (the CO2 values have a range of [`r range(d2$CO2)`] ppm whereas the residuals have a range of [`r round(range(residuals(lo)),2)`] ppm).
 
 Now, we may be tempted to fit a *smooth* (as Tukey would say) to the residuals but that may not prove to be fruitful. Instead let's see if the oscillation follows a 12 month cycle. We'll group all the residual values by month of the year. In other words, we will remove the year *tag* associated with each value and explore those values as a function of month alone. Each month's batch of values is distilled into a boxplot.
 
 ```{r fig.height=3, fig.width=6}
 # Aggregate residuals by year
 d2$Month <- month(d2$Date, label=TRUE) 
-d2$Resid <- residuals(lo)
-ggplot(d2, aes(x=Month, y=Resid)) + geom_boxplot()         
+
+ggplot(d2, aes(x = Month, y = res3)) + geom_boxplot()         
 ```
 
-It's clear from the plot that the oscillation we observed in the CO2 plot follows a yearly cycle: a peak in the spring and a dip in the fall. This cycle is explained in part by the increased land mass in the northern hemisphere relative to the southern hemisphere. Because plants (and by extension photosynthesis) goes dormant during the winter months in the northern hemisphere, atmospheric CO2 is no longer being photosynthesized; this despite the southern hemisphere's photosynthesis peak during the October-March period (a result of the southern hemisphere's smaller land mass). Other factors such as increased CO2 emissions during the winter months  may also contribute to the oscillatory nature of atmospheric CO2 concentrations.
+It's clear from the plot that the oscillation follows a yearly cycle: a peak in the spring and a dip in the fall. This cycle is explained in part by the increased land mass in the northern hemisphere relative to the southern hemisphere. Because plants (and by extension photosynthesis) goes dormant during the winter months in the northern hemisphere, atmospheric CO2 is no longer being photosynthesized; this despite the southern hemisphere's photosynthesis peak during the October-March period (a result of the southern hemisphere's smaller land mass). Other factors such as increased CO2 emissions during the winter months  may also contribute to the oscillatory nature of atmospheric CO2 concentrations.
 
 Thus far, we have uncovered two patterns of interest: an overall trend and a cyclical component. Note that to effectively explore the cyclical pattern we had to **de-trend** (or **smooth**) the data. Next, we should *smooth* the seasonal component of the data to see if another pattern emerges. We may, for example, smooth the data by subtracting the monthly median from each residual leaving us with the next batch of residual values to explore:
 
 ```{r fig.height=3, fig.width=8}
 d3 <- d2 %>% 
   group_by(month(Date)) %>%
-  mutate(Resid.lev = Resid - median(Resid)) 
+  mutate(Resid.lev = res3 - median(res3)) 
 
-ggplot(d3, aes(x=Month, y=Resid.lev)) + geom_boxplot()     
+ggplot(d3, aes(x = Month, y = Resid.lev)) + geom_boxplot()     
 ```
 
 Note that now, all the boxplots are lined up along their median values. We are now exploring the data after having accounted for both overall trend and seasonality. What can be gleaned from this dataset? We may want to explore the skewed nature of the residuals in March, or the narrower range of CO2 values for the fall months, for example. 
 
 We may also be interested in seeing if any trend in CO2 concentrations exists within each month. Let's explore this by fitting a first order polynomial to the monthly data.
 
-```{r fig.height=3, fig.width=8}
+```{r fig.height=2, fig.width=8}
 
-ggplot(d3, aes(x=Year, y=Resid.lev)) + geom_point(col="grey", cex=.6)  + 
-     stat_smooth(se=FALSE, method="lm") + facet_grid(. ~ Month)   
+ggplot(d3, aes(x = Year, y = Resid.lev)) + geom_point(col = "grey", cex = .6)  + 
+     stat_smooth(se = FALSE, method = "lm") + facet_wrap(~ Month, nrow = 1) +
+     theme(axis.text.x=element_text(angle=45, hjust = 1.5, vjust = 1.6,  size = 7))
 ```
 
 Note the overall increase in CO2 for the winter and spring months followed by a similar (but not as persistent) decrease in CO2 loss in the summer and fall months. This suggests an increase in cyclical amplitude with the deviation from a central value being possibly greater for the winter/spring months.
 
-Let's fit a loess to see if the trends within each month are monotonic.
+Let's fit a loess to see if the trends within each month are monotonic. We'll adopt a robust loess to control for possible 
 
-```{r fig.height=3, fig.width=8}
-ggplot(d3, aes(x=Year, y=Resid.lev)) + geom_point(col="grey", cex=.6)  + 
-     stat_smooth(method="loess", se=FALSE, 
-                 method.args=list(family="symmetric")) + 
-     facet_grid(. ~ Month)   
+```{r fig.height=2, fig.width=8}
+ggplot(d3, aes(x = Year, y = Resid.lev)) + geom_point(col = "grey", cex = .6)  + 
+     stat_smooth(method = "loess", se = FALSE, 
+                 method.args = list(family = "symmetric")) + 
+     facet_wrap(~ Month, nrow = 1) +
+     theme(axis.text.x=element_text(angle=45, hjust = 1.5, vjust = 1.6,  size = 7))
 ```
 
 The trends are clearly not monotonic suggesting that the processes driving the cyclical concentrations of CO2 are not systematic. However, despite the curved nature of the fits, the overall trends observed with the straight lines still remain.
 
 # Exploring what remains
 
-Now that we've fitted the monthly medians to the seasonal component of the data, let's plot the residuals across the years. 
+Now that we've fitted the monthly medians to the seasonal component of the data, let's plot the residuals across the years. We'll make use of the robust version of the loess given that the data may be quite noisy.
 
 ```{r fig.height=3, fig.width=8}
-ggplot(d3, aes(x=Year, y=Resid.lev)) +  geom_line(col="grey") + 
-     stat_smooth(method="loess", se=FALSE, span=0.1 ,
-                 method.args=list(family="symmetric", degree=2))    
+ggplot(d3, aes(x = Year, y = Resid.lev)) +  geom_line(col = "grey") + 
+     stat_smooth(method = "loess", se = FALSE, span = 0.1 ,
+                 method.args = list(family = "symmetric", degree = 2))    
 ```
 
-Recall that at this points, we have accounted for the overall increase (which has by far the greatest effect with a range of 75 ppm) and the seasonal component (which has a smaller effect with a range of about 6 ppm). The 3rd set of residuals account for about 2 ppm of the total variability in the dataset. Note that we can still make out the seasonal fluctuations if we look closely at the data. But we can also make out broader patterns of interest not consistent with random noise and not explained by seasonal variability. Some of the patterns could be explained by the southern oscillation index (SOI) which is a measure of the difference in atmospheric pressure across the pacific basin. When the index is positive the resulting winds drive upwelling currents that release additional CO2 into the atmosphere. 
+Recall that at this points, we have accounted for the overall trend (which has by far the greatest effect with a range of 75 ppm) and the seasonal component (which has a smaller effect with a range of about 6 ppm). The 3rd set of residuals account for about 2 ppm of the total variability in the dataset. Note that we can still make out the seasonal fluctuations if we look closely at the data. But we can also make out broader patterns of interest not consistent with random noise and not explained by seasonal variability. Some of the patterns could be explained by the southern oscillation index (SOI), for example,  which is a measure of the difference in atmospheric pressure across the pacific basin. When the index is positive the resulting winds drive upwelling currents that release additional CO2 into the atmosphere. 
 
 Let's overlay the SOI data on top of our last plot.
 
 ```{r fig.height=3, fig.width=8}
 library(tidyr)
-library(lubridate)
 
 soi <- read.csv("http://mgimond.github.io/ES218/Data/Southern_oscillation.csv")
 
-soi <- gather(soi,key=Month, value=Index, -1)
+soi <- gather(soi, key = Month, value = Index, -1)
 Date <- ymd(paste(soi$YEAR, soi$Month, 15) )
 soi$Yr <- decimal_date(Date)
 
-ggplot(d3, aes(x=Year, y=Resid.lev)) +  
-             geom_line(col="blue", alpha=0.2) + 
-             stat_smooth(method="loess", se=FALSE, span=0.1,
-                         method.args=list(family="symmetric", degree=2)) +
-             geom_line(dat=soi, aes(Yr, Index/2, colour="red"), alpha=0.3) +
-             stat_smooth(dat=soi, aes(Yr, Index/2, colour="red"),
-                         method="loess", se=FALSE, span=0.2,
-                         method.args=list(family="symmetric", degree=2)) +
-             guides(color=FALSE)
+ggplot(d3, aes(x = Year, y = Resid.lev)) +  
+             geom_line(col = "blue", alpha = 0.2) + 
+             stat_smooth(method = "loess", se = FALSE, span = 0.1,
+                         method.args = list(family = "symmetric", degree = 2)) +
+             geom_line(dat = soi, aes(Yr, Index/2, colour = "red"), alpha = 0.3) +
+             stat_smooth(dat = soi, aes(Yr, Index/2, colour = "red"),
+                         method = "loess", se = FALSE, span = 0.2,
+                         method.args = list(family = "symmetric", degree = 2)) +
+             guides(color = FALSE)
 ```
 
 The blue lines represent the residuals (with the bold blue line showing the loess fit) and the red lines represent the SOI trend (with the bold line showing its loess fit). Note that we halved the SOI values to match the range along the y-scale; the intent is to facilitate the comparison of SOI trend to CO2 trend. There appears to be matching maxima (notably around 1975 and 1988) but we also note some opposing trends such as in the period after 2010. When the index drops below 0, "El Nino" events become more prominent and upwelling flows are suppressed. Though this may prevent CO2 trapped in the deeper Pacific oceans from reaching the surface, "El Nino" events can also have a measurable impact on land climate thus influencing the rate of vegetation growth and, by extension, CO2 uptake. El nino is also believed to increase the rate of forest and brush fires around the world which may also contribute to atmospheric CO2 concentrations.  
