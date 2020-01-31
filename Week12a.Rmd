@@ -1,46 +1,54 @@
 ---
 title: "Mapping variables"
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r echo=FALSE}
 source("libs/Common.R")
 ```
+-------
+```{r echo = FALSE}
+pkg_ver(c("sf", "ggplot2", "tmap", "dplyr", "stringr", "maps"))
+```
+-------
 
 Variables can be mapped in R using packages such as `ggplot2` and `tmap`. The focus of this tutorial will be on mapping polygon (aka areal) data. For more information on mapping spatial data (both vector and raster) visit the [GIS and Spatial Analysis pages](https://mgimond.github.io/Spatial/mapping-data-in-r.html).
+
+# Loading a spatial data object
+
+Mapping values requires two datasets: the values to be mapped (usually in a dataframe) and the spatial boundaries of the areas being mapped. The latter is usually loaded into R as a spatial data file such as a *shapefile* or a *geopackage*. For this tutorial, you will load an `sf` spatial object from this website's repository. Later in this tutorial, you will learn to import a shapefile into an R session.
+
+```{r}
+library(sf)
+
+load(url("https://github.com/mgimond/ES218/blob/gh-pages/Data/counties48.RData?raw=true"))
+```
+
+The code chunk will add the `cnty` spatial object to your current session environment.
 
 # `ggplot2` and `tmap`
 
 There are at least two mapping solutions in R: `ggplot2` and `tmap`. The bulk of this tutorial will make use of `tmap` but a brief example of `ggplot2`'s mapping capabilities will be presented next.
 
-## Generating a basic map in `ggplot2`
 
-Mapping values requires two datasets: the values to be mapped and the spatial boundaries of the areas being mapped. The `maps` package offers R-ready maps for US states/counties and administrative boundaries for other countries such as Canada, France and Italy. 
+## Generating a basic map in `ggplot2`
 
 In the following example we will use `ggplot2` to draw the US counties map. We will also color the counties based on the state they are located in. The state name column is labeled `region` and the county name column is labeled `subregion`.
 
 ```{r fig.width=5.5,fig.height=2.5}
 library(ggplot2)
-library(maps)
-library(sf)
 
-# Load the county data from the maps package
-cnty <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
-
-# Plot the counties
 ggplot(cnty) +  geom_sf() 
 ```
 
 The default ggplot grey theme works well for non-spatial data, but it may not be that suitable for spatial data. We can remove it with the `theme_bw()` option.
 
 ```{r fig.width=5.5,fig.height=2.5}
-# Plot the counties
 ggplot(cnty) + 
   geom_sf() + 
   theme_bw()
 ```
-
 
 You can modify the map projection by passing the projection type to the `coord_sf` function. The projection is defined using [PROJ4 formatted string](https://proj4.org/apps/proj.html). For example, to project the continental US into a Lambert equal area projection, type:
 
@@ -48,13 +56,14 @@ You can modify the map projection by passing the projection type to the `coord_s
 # Define the projection using PROJ4 syntax
 ea <- "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
 
+# Plot the data
 ggplot(cnty) + 
   geom_sf() + 
   theme_bw() +
   coord_sf(crs=ea) 
 ```
 
-To learn more on spatial projections in R [click here](https://mgimond.github.io/Spatial/coordinate-systems-in-r.html).
+To learn more about manipulating spatial projections in R [click here](https://mgimond.github.io/Spatial/coordinate-systems-in-r.html).
 
 ## Generating a basic map in `tmap`
 
@@ -75,13 +84,13 @@ tm_shape(cnty, projection = ea) +
   tm_layout(outer.margins = c(.1,.1,.1,.1))
 ```
 
-While grids are helpful in locating features on a map, they are not always necessary and can take away from the intended visual hierarchy. In what follows, we will be focusing on choropleth maps whereby the intended focus will be on the relative distribution of a variable across polygon units. We'll therefore refrain from  adding a grid to the map.
+While grids are helpful in locating features on a map, they are not always necessary and can take away from the intended visual hierarchy. In what follows, we will be focusing on choropleth maps whereby the intended focus will be on the relative distribution of a variable across polygon units. We'll therefore refrain from  adding grids to the maps.
 
-[Click here](https://mgimond.github.io/Spatial/mapping-data-in-r.html) to explore additional mapping options with `tmap`. 
+To explore additional mapping options with `tmap` [Click here](https://mgimond.github.io/Spatial/mapping-data-in-r.html). 
 
-# Joing tables to spatial objects
+# Joining tables to spatial objects
 
-In the examples that follow, you will learn how to join census income data to a spatial object in one of two ways: by state and county name, and by FIPS (Federal Information Processing Standards) id.
+In the examples that follow, you will learn how to join census income data to a spatial object in one of two ways: First, by **state and county names**; Then, by **FIPS** (Federal Information Processing Standards) ids.
 
 ## Joining income table to the map by county and state names
 
@@ -177,11 +186,11 @@ df <- read.csv("http://mgimond.github.io/ES218/Data/Income_education_with_FIPS.c
 df1 <- df %>% select(FIPS, B20004001 )
 ```
 
-Next, we'll load the `county.fips` dataset.
+Next, we'll load the `county.fips` dataset from the `maps` package.
 
 ```{r}
 # Load the county.fips dataset
-data(county.fips)
+county.fips <- maps::county.fips
 head(county.fips)
 ```
 
@@ -282,4 +291,4 @@ tm_shape(cnty2.cs,
   tm_legend(outside = TRUE) 
 ```
 
-The divergent map gives us a different handle on the data. Here, we can identify the poorer than average counties such as the southeast and parts of the Mississippi river region as well as the wealthier counties such as the mid-atlantic region and the west coast.
+The divergent map gives us a different handle on the data. Here, we can identify the poorer than average counties such as the southeast and parts of the Mississippi river region as well as the wealthier counties such as the mid-Atlantic region and the west coast.

@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
-<title>CO2 analysis</title>
+<title>The third R of EDA: Residuals</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,6 +23,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -38,36 +39,62 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #0000ff; } /* Keyword */
-code > span.ch { color: #008080; } /* Char */
-code > span.st { color: #008080; } /* String */
-code > span.co { color: #008000; } /* Comment */
-code > span.ot { color: #ff4000; } /* Other */
-code > span.al { color: #ff0000; } /* Alert */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #008000; font-weight: bold; } /* Warning */
-code > span.cn { } /* Constant */
-code > span.sc { color: #008080; } /* SpecialChar */
-code > span.vs { color: #008080; } /* VerbatimString */
-code > span.ss { color: #008080; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { } /* Variable */
-code > span.cf { color: #0000ff; } /* ControlFlow */
-code > span.op { } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #ff4000; } /* Preprocessor */
-code > span.do { color: #008000; } /* Documentation */
-code > span.an { color: #008000; } /* Annotation */
-code > span.cv { color: #008000; } /* CommentVar */
-code > span.at { } /* Attribute */
-code > span.in { color: #008000; } /* Information */
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; } /* Alert */
+code span.an { color: #008000; } /* Annotation */
+code span.at { } /* Attribute */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #0000ff; } /* ControlFlow */
+code span.ch { color: #008080; } /* Char */
+code span.cn { } /* Constant */
+code span.co { color: #008000; } /* Comment */
+code span.cv { color: #008000; } /* CommentVar */
+code span.do { color: #008000; } /* Documentation */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.im { } /* Import */
+code span.in { color: #008000; } /* Information */
+code span.kw { color: #0000ff; } /* Keyword */
+code span.op { } /* Operator */
+code span.ot { color: #ff4000; } /* Other */
+code span.pp { color: #ff4000; } /* Preprocessor */
+code span.sc { color: #008080; } /* SpecialChar */
+code span.ss { color: #008080; } /* SpecialString */
+code span.st { color: #008080; } /* String */
+code span.va { } /* Variable */
+code span.vs { color: #008080; } /* VerbatimString */
+code span.wa { color: #008000; font-weight: bold; } /* Warning */
 
 </style>
 <script>
@@ -83,7 +110,7 @@ code > span.in { color: #008000; } /* Information */
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -127,9 +154,7 @@ h6 {
 
 <link rel="stylesheet" href="libs\style.css" type="text/css" />
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -143,7 +168,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -248,8 +272,6 @@ $(document).ready(function () {
 });
 </script>
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
 
 <style type="text/css">
@@ -294,6 +316,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -306,48 +329,9 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -361,6 +345,12 @@ $(document).ready(function ()  {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -396,8 +386,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -406,6 +394,16 @@ div.tocify {
 
 
 </style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -566,9 +564,6 @@ div.tocify {
     <li>
       <a href="Week10b.html">Detecting discontinuities in the data</a>
     </li>
-    <li>
-      <a href="http://mgimond.github.io/Stats-in-R/regression.html">Details of the OLS regression method (optional reading)</a>
-    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -581,9 +576,6 @@ div.tocify {
     <li class="dropdown-header">Week 12</li>
     <li>
       <a href="Week11a.html">Median polish/Mean polish</a>
-    </li>
-    <li>
-      <a href="http://mgimond.github.io/Stats-in-R/ANOVA.html">Details of an ANOVA (optional reading)</a>
     </li>
   </ul>
 </li>
@@ -620,141 +612,222 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">CO2 analysis</h1>
+<h1 class="title toc-ignore">The third R of EDA: Residuals</h1>
 
 </div>
 
 
-<div style="color:#ff7535; background-color:#fff0ee ;   border-left-style: solid">
-<p>This tutorial makes use of the following R package(s): <strong><code>dplyr</code></strong>, <strong><code>tidyr</code></strong>, <strong><code>lubridate</code></strong> and <strong><code>ggplot2</code></strong>.</p>
-<p>This material is intended to supplement <strong>pages 159 to 169</strong> of <strong>Cleveland’s book</strong>.</p>
-</div>
+<hr />
+<table class="table" style="width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:left;color: #555555 !important;background-color: #dddddd !important;text-align: center;border: 1px solid white !important;
+             font-family: &#39;Source Code Pro&#39;, &#39;Open Sans&#39;;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+dplyr
+</th>
+<th style="text-align:left;color: #555555 !important;background-color: #dddddd !important;text-align: center;border: 1px solid white !important;
+             font-family: &#39;Source Code Pro&#39;, &#39;Open Sans&#39;;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+ggplot2
+</th>
+<th style="text-align:left;color: #555555 !important;background-color: #dddddd !important;text-align: center;border: 1px solid white !important;
+             font-family: &#39;Source Code Pro&#39;, &#39;Open Sans&#39;;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+tidyr
+</th>
+<th style="text-align:left;color: #555555 !important;background-color: #dddddd !important;text-align: center;border: 1px solid white !important;
+             font-family: &#39;Source Code Pro&#39;, &#39;Open Sans&#39;;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+lubridate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
+             font-family: &#39;Open Sans&#39;, Arial;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+0.8.3
+</td>
+<td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
+             font-family: &#39;Open Sans&#39;, Arial;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+3.2.1
+</td>
+<td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
+             font-family: &#39;Open Sans&#39;, Arial;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+1.0.2
+</td>
+<td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
+             font-family: &#39;Open Sans&#39;, Arial;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+1.7.4
+</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em> This material is intended to supplement <strong>pages 159 to 169</strong> of <strong>Cleveland’s book</strong>. </em></p>
 <div id="an-eda-example-co2-analysis" class="section level1">
 <h1>An EDA example: CO2 analysis</h1>
 <p>Let’s start off by plotting the atmospheric CO2 concentrations (in ppm). The original dataset was pulled from <a href="http://www.esrl.noaa.gov/gmd/ccgg/trends/">NOAA’s website</a>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lubridate)
-<span class="kw">library</span>(dplyr)
-<span class="kw">library</span>(ggplot2)
-
-d1 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/CO2.csv&quot;</span>)
-
-d2 &lt;-<span class="st"> </span>d1 <span class="op">%&gt;%</span>
-<span class="st">      </span><span class="kw">mutate</span>( <span class="dt">Date =</span> <span class="kw">ymd</span>(<span class="kw">paste</span>(Year,<span class="st">&quot;/&quot;</span>, Month,<span class="st">&quot;/15&quot;</span>)),
-              <span class="dt">Year =</span> <span class="kw">as.numeric</span>(<span class="kw">decimal_date</span>(Date)),
-              <span class="dt">CO2 =</span> Interpolated)    <span class="op">%&gt;%</span>
-<span class="st">     </span><span class="kw">select</span>(Year, Date, CO2)</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(lubridate)</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(dplyr)</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="kw">library</span>(ggplot2)</a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5">d1 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/CO2.csv&quot;</span>)</a>
+<a class="sourceLine" id="cb1-6" title="6"></a>
+<a class="sourceLine" id="cb1-7" title="7">d2 &lt;-<span class="st"> </span>d1 <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb1-8" title="8"><span class="st">      </span><span class="kw">mutate</span>( <span class="dt">Date =</span> <span class="kw">ymd</span>(<span class="kw">paste</span>(Year,<span class="st">&quot;/&quot;</span>, Month,<span class="st">&quot;/15&quot;</span>)),</a>
+<a class="sourceLine" id="cb1-9" title="9">              <span class="dt">Year =</span> <span class="kw">as.numeric</span>(<span class="kw">decimal_date</span>(Date)),</a>
+<a class="sourceLine" id="cb1-10" title="10">              <span class="dt">CO2 =</span> Interpolated)    <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb1-11" title="11"><span class="st">     </span><span class="kw">select</span>(Year, Date, CO2)</a></code></pre></div>
 <p>Next, let’s look at the data:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year , <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.6</span>)</code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-3-1.png" width="576" /></p>
-<p>Let’s see if plotting the data using lines instead of points helps identify any underlying patterns.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year , <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>()</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year , <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.6</span>)</a></code></pre></div>
 <p><img src="Week10a_files/figure-html/unnamed-chunk-4-1.png" width="576" /></p>
+<p>Let’s see if plotting the data using lines instead of points helps identify any underlying patterns.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year , <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>()</a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-5-1.png" width="576" /></p>
 <p>We note two patterns of interest: an overall upward trend, and a cyclical trend. We will first <em>smooth</em> out the overall trend by finding a model that best explains the overall variability, then we’ll remove that trend from the data to explore the cyclical component.</p>
 </div>
 <div id="exploring-the-overall-trend" class="section level1">
 <h1>Exploring the overall trend</h1>
 <p>We can attempt to model the overall trend by fitting a straight line to the data using a standard regression analysis procedure. The fitted line is displayed in red in the following plot. We will use <code>ggplot2</code>’s built-in smoothing function to plot the regression line.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) </code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-5-1.png" width="576" /></p>
-<p>Next, we subtract the modeled line from the CO2 data and plot the result–this gives us the <strong>residuals</strong> and can be thought of as representing what the linear model does <em>not</em> explain about the data. But first, we will need to create a regression model object since it will provide us with the residuals needed to generate the residual plot.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Generate a model object from the regression fit</span>
-M1 &lt;-<span class="st"> </span><span class="kw">lm</span>(CO2 <span class="op">~</span><span class="st"> </span>Year, d2) 
-d2<span class="op">$</span>res1 &lt;-<span class="st"> </span>M1<span class="op">$</span>residuals
-
-<span class="co"># Plot the residuals from the model object</span>
-<span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> res1)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) </a></code></pre></div>
 <p><img src="Week10a_files/figure-html/unnamed-chunk-6-1.png" width="576" /></p>
+<p>Next, we subtract the modeled line from the CO2 data and plot the result–this gives us the <strong>residuals</strong> and can be thought of as representing what the linear model does <em>not</em> explain about the data. But first, we will need to create a regression model object since it will provide us with the residuals needed to generate the residual plot.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="co"># Generate a model object from the regression fit</span></a>
+<a class="sourceLine" id="cb5-2" title="2">M1 &lt;-<span class="st"> </span><span class="kw">lm</span>(CO2 <span class="op">~</span><span class="st"> </span>Year, d2) </a>
+<a class="sourceLine" id="cb5-3" title="3">d2<span class="op">$</span>res1 &lt;-<span class="st"> </span>M1<span class="op">$</span>residuals</a>
+<a class="sourceLine" id="cb5-4" title="4"></a>
+<a class="sourceLine" id="cb5-5" title="5"><span class="co"># Plot the residuals from the model object</span></a>
+<a class="sourceLine" id="cb5-6" title="6"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> res1)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()</a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-7-1.png" width="576" /></p>
 <p>An overall trend is still present, despite having attempted to control for it. This suggests that our simple line model does not do a good job in <em>smoothing</em> out the overall trend.</p>
 <p>It appears that the overall trend is slightly convex and has a small peak around the 1990’s; we should try to fit the trend using a 3rd order polynomial of the form:</p>
 <p><span class="math display">\[
 CO2_{trend} = a + b(Year) + c(Year^2) + d(Year^3)
 \]</span></p>
 <p>The fitted line looks like this:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Third order polynomial</span>
-<span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">           </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">formula =</span> y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">3</span>), 
-                       <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-7-1.png" width="576" /></p>
-<p>Now, let’s look at the residuals. In helping discern any pattern in our residuals, we add a loess smooth to the plot.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M2 &lt;-<span class="st"> </span><span class="kw">lm</span>(CO2 <span class="op">~</span><span class="st"> </span>Year <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Year<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Year<span class="op">^</span><span class="dv">3</span>), d2)
-d2<span class="op">$</span>res2 &lt;-<span class="st"> </span>M2<span class="op">$</span>residuals
-
-<span class="kw">ggplot</span>(d2 , <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> res2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span>
-<span class="st">           </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="co"># Third order polynomial</span></a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="st">           </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">formula =</span> y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">3</span>), </a>
+<a class="sourceLine" id="cb6-4" title="4">                       <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)</a></code></pre></div>
 <p><img src="Week10a_files/figure-html/unnamed-chunk-8-1.png" width="576" /></p>
-<p>This is an improvement over the simple line model (which was a 1st order polynomial fit). So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a “W” shaped trend in the residuals which can hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth the trend even further, but at this point, we may opt for a non-parametric fit. When the goal is to <em>peel</em> off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. An example of such a smoothing technique is the loess fit which is shown in the following figure.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span>
-<span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">span =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)</code></pre></div>
+<p>Now, let’s look at the residuals. In helping discern any pattern in our residuals, we add a loess smooth to the plot.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">M2 &lt;-<span class="st"> </span><span class="kw">lm</span>(CO2 <span class="op">~</span><span class="st"> </span>Year <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Year<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Year<span class="op">^</span><span class="dv">3</span>), d2)</a>
+<a class="sourceLine" id="cb7-2" title="2">d2<span class="op">$</span>res2 &lt;-<span class="st"> </span>M2<span class="op">$</span>residuals</a>
+<a class="sourceLine" id="cb7-3" title="3"></a>
+<a class="sourceLine" id="cb7-4" title="4"><span class="kw">ggplot</span>(d2 , <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> res2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb7-5" title="5"><span class="st">           </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 <p><img src="Week10a_files/figure-html/unnamed-chunk-9-1.png" width="576" /></p>
-<p>At first glance, this may not look any different from our 3rd order polynomial. But the resulting residuals suggest that the loess smooth did a good job in removing any overall trend in our batch of CO2 values.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lo &lt;-<span class="st"> </span><span class="kw">loess</span>(CO2 <span class="op">~</span><span class="st"> </span>Year, d2, <span class="dt">span=</span><span class="dv">1</span><span class="op">/</span><span class="dv">4</span>)
-d2<span class="op">$</span>res3 &lt;-<span class="st"> </span>lo<span class="op">$</span>residuals
-
-<span class="kw">ggplot</span>(d2,  <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> d2<span class="op">$</span>res3)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span>
-<span class="st">           </span><span class="kw">stat_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.2</span>)</code></pre></div>
+<p>This is an improvement over the simple line model (which was a 1st order polynomial fit). So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a “W” shaped trend in the residuals which can hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth the trend even further, but at this point, we may opt for a non-parametric fit. When the goal is to <em>peel</em> off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. An example of such a smoothing technique is the loess fit which is shown in the following figure.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> CO2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb8-2" title="2"><span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">span =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)</a></code></pre></div>
 <p><img src="Week10a_files/figure-html/unnamed-chunk-10-1.png" width="576" /></p>
+<p>At first glance, this may not look any different from our 3rd order polynomial. But the resulting residuals suggest that the loess smooth did a good job in removing any overall trend in our batch of CO2 values.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">lo &lt;-<span class="st"> </span><span class="kw">loess</span>(CO2 <span class="op">~</span><span class="st"> </span>Year, d2, <span class="dt">span=</span><span class="dv">1</span><span class="op">/</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb9-2" title="2">d2<span class="op">$</span>res3 &lt;-<span class="st"> </span>lo<span class="op">$</span>residuals</a>
+<a class="sourceLine" id="cb9-3" title="3"></a>
+<a class="sourceLine" id="cb9-4" title="4"><span class="kw">ggplot</span>(d2,  <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> d2<span class="op">$</span>res3)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb9-5" title="5"><span class="st">           </span><span class="kw">stat_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.2</span>)</a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
 </div>
 <div id="exploring-the-seasonal-component" class="section level1">
 <h1>Exploring the seasonal component</h1>
-<p>Let’s now explore the cyclical pattern in the residuals. Note the y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating nature along the overall trend is relatively small (the CO2 values have a range of [313.26, 401.83] ppm whereas the residuals have a range of [-4.35, 3.94] ppm).</p>
+<p>Let’s now explore the cyclical pattern in the residuals. Note the y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating nature along the overall trend is relatively small (the CO2 values have a range of [313.26, 411.24] ppm whereas the residuals have a range of [-4.34, 4.43] ppm).</p>
 <p>Now, we may be tempted to fit a <em>smooth</em> (as Tukey would say) to the residuals but that may not prove to be fruitful. Instead let’s see if the oscillation follows a 12 month cycle. We’ll group all the residual values by month of the year. In other words, we will remove the year <em>tag</em> associated with each value and explore those values as a function of month alone. Each month’s batch of values is distilled into a boxplot.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Aggregate residuals by year</span>
-d2<span class="op">$</span>Month &lt;-<span class="st"> </span><span class="kw">month</span>(d2<span class="op">$</span>Date, <span class="dt">label=</span><span class="ot">TRUE</span>) 
-
-<span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Month, <span class="dt">y =</span> res3)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()         </code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="co"># Aggregate residuals by year</span></a>
+<a class="sourceLine" id="cb10-2" title="2">d2<span class="op">$</span>Month &lt;-<span class="st"> </span><span class="kw">month</span>(d2<span class="op">$</span>Date, <span class="dt">label=</span><span class="ot">TRUE</span>) </a>
+<a class="sourceLine" id="cb10-3" title="3"></a>
+<a class="sourceLine" id="cb10-4" title="4"><span class="kw">ggplot</span>(d2, <span class="kw">aes</span>(<span class="dt">x =</span> Month, <span class="dt">y =</span> res3)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()         </a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-12-1.png" width="576" /></p>
 <p>It’s clear from the plot that the oscillation follows a yearly cycle: a peak in the spring and a dip in the fall. This cycle is explained in part by the increased land mass in the northern hemisphere relative to the southern hemisphere. Because plants (and by extension photosynthesis) goes dormant during the winter months in the northern hemisphere, atmospheric CO2 is no longer being photosynthesized; this despite the southern hemisphere’s photosynthesis peak during the October-March period (a result of the southern hemisphere’s smaller land mass). Other factors such as increased CO2 emissions during the winter months may also contribute to the oscillatory nature of atmospheric CO2 concentrations.</p>
 <p>Thus far, we have uncovered two patterns of interest: an overall trend and a cyclical component. Note that to effectively explore the cyclical pattern we had to <strong>de-trend</strong> (or <strong>smooth</strong>) the data. Next, we should <em>smooth</em> the seasonal component of the data to see if another pattern emerges. We may, for example, smooth the data by subtracting the monthly median from each residual leaving us with the next batch of residual values to explore:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d3 &lt;-<span class="st"> </span>d2 <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(<span class="kw">month</span>(Date)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Resid.lev =</span> res3 <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(res3)) 
-
-<span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Month, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()     </code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-12-1.png" width="768" /></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">d3 &lt;-<span class="st"> </span>d2 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb11-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(<span class="kw">month</span>(Date)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb11-3" title="3"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Resid.lev =</span> res3 <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(res3)) </a>
+<a class="sourceLine" id="cb11-4" title="4"></a>
+<a class="sourceLine" id="cb11-5" title="5"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Month, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>()     </a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-13-1.png" width="768" /></p>
 <p>Note that now, all the boxplots are lined up along their median values. We are now exploring the data after having accounted for both overall trend and seasonality. What can be gleaned from this dataset? We may want to explore the skewed nature of the residuals in March, or the narrower range of CO2 values for the fall months, for example.</p>
 <p>We may also be interested in seeing if any trend in CO2 concentrations exists within each month. Let’s explore this by fitting a first order polynomial to the monthly data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">col =</span> <span class="st">&quot;grey&quot;</span>, <span class="dt">cex =</span> .<span class="dv">6</span>)  <span class="op">+</span><span class="st"> </span>
-<span class="st">     </span><span class="kw">stat_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Month, <span class="dt">nrow =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">     </span><span class="kw">theme</span>(<span class="dt">axis.text.x=</span><span class="kw">element_text</span>(<span class="dt">angle=</span><span class="dv">45</span>, <span class="dt">hjust =</span> <span class="fl">1.5</span>, <span class="dt">vjust =</span> <span class="fl">1.6</span>,  <span class="dt">size =</span> <span class="dv">7</span>))</code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-13-1.png" width="768" /></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">col =</span> <span class="st">&quot;grey&quot;</span>, <span class="dt">cex =</span> <span class="fl">.6</span>)  <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb12-2" title="2"><span class="st">     </span><span class="kw">stat_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Month, <span class="dt">nrow =</span> <span class="dv">1</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb12-3" title="3"><span class="st">     </span><span class="kw">theme</span>(<span class="dt">axis.text.x=</span><span class="kw">element_text</span>(<span class="dt">angle=</span><span class="dv">45</span>, <span class="dt">hjust =</span> <span class="fl">1.5</span>, <span class="dt">vjust =</span> <span class="fl">1.6</span>,  <span class="dt">size =</span> <span class="dv">7</span>))</a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-14-1.png" width="768" /></p>
 <p>Note the overall increase in CO2 for the winter and spring months followed by a similar (but not as persistent) decrease in CO2 loss in the summer and fall months. This suggests an increase in cyclical amplitude with the deviation from a central value being possibly greater for the winter/spring months.</p>
 <p>Let’s fit a loess to see if the trends within each month are monotonic. We’ll adopt a robust loess to control for possible</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">col =</span> <span class="st">&quot;grey&quot;</span>, <span class="dt">cex =</span> .<span class="dv">6</span>)  <span class="op">+</span><span class="st"> </span>
-<span class="st">     </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, 
-                 <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="op">+</span><span class="st"> </span>
-<span class="st">     </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Month, <span class="dt">nrow =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">     </span><span class="kw">theme</span>(<span class="dt">axis.text.x=</span><span class="kw">element_text</span>(<span class="dt">angle=</span><span class="dv">45</span>, <span class="dt">hjust =</span> <span class="fl">1.5</span>, <span class="dt">vjust =</span> <span class="fl">1.6</span>,  <span class="dt">size =</span> <span class="dv">7</span>))</code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-14-1.png" width="768" /></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">col =</span> <span class="st">&quot;grey&quot;</span>, <span class="dt">cex =</span> <span class="fl">.6</span>)  <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb13-2" title="2"><span class="st">     </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, </a>
+<a class="sourceLine" id="cb13-3" title="3">                 <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>)) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb13-4" title="4"><span class="st">     </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Month, <span class="dt">nrow =</span> <span class="dv">1</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb13-5" title="5"><span class="st">     </span><span class="kw">theme</span>(<span class="dt">axis.text.x=</span><span class="kw">element_text</span>(<span class="dt">angle=</span><span class="dv">45</span>, <span class="dt">hjust =</span> <span class="fl">1.5</span>, <span class="dt">vjust =</span> <span class="fl">1.6</span>,  <span class="dt">size =</span> <span class="dv">7</span>))</a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-15-1.png" width="768" /></p>
 <p>The trends are clearly not monotonic suggesting that the processes driving the cyclical concentrations of CO2 are not systematic. However, despite the curved nature of the fits, the overall trends observed with the straight lines still remain.</p>
 </div>
 <div id="exploring-what-remains" class="section level1">
 <h1>Exploring what remains</h1>
 <p>Now that we’ve fitted the monthly medians to the seasonal component of the data, let’s plot the residuals across the years. We’ll make use of the robust version of the loess given that the data may be quite noisy.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">col =</span> <span class="st">&quot;grey&quot;</span>) <span class="op">+</span><span class="st"> </span>
-<span class="st">     </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.1</span> ,
-                 <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>, <span class="dt">degree =</span> <span class="dv">2</span>))    </code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-15-1.png" width="768" /></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">col =</span> <span class="st">&quot;grey&quot;</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb14-2" title="2"><span class="st">     </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.1</span> ,</a>
+<a class="sourceLine" id="cb14-3" title="3">                 <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>, <span class="dt">degree =</span> <span class="dv">2</span>))    </a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-16-1.png" width="768" /></p>
 <p>Recall that at this points, we have accounted for the overall trend (which has by far the greatest effect with a range of 75 ppm) and the seasonal component (which has a smaller effect with a range of about 6 ppm). The 3rd set of residuals account for about 2 ppm of the total variability in the dataset. Note that we can still make out the seasonal fluctuations if we look closely at the data. But we can also make out broader patterns of interest not consistent with random noise and not explained by seasonal variability. Some of the patterns could be explained by the southern oscillation index (SOI), for example, which is a measure of the difference in atmospheric pressure across the pacific basin. When the index is positive the resulting winds drive upwelling currents that release additional CO2 into the atmosphere.</p>
 <p>Let’s overlay the SOI data on top of our last plot.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyr)
-
-soi &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Southern_oscillation.csv&quot;</span>)
-
-soi &lt;-<span class="st"> </span><span class="kw">gather</span>(soi, <span class="dt">key =</span> Month, <span class="dt">value =</span> Index, <span class="op">-</span><span class="dv">1</span>)
-Date &lt;-<span class="st"> </span><span class="kw">ymd</span>(<span class="kw">paste</span>(soi<span class="op">$</span>YEAR, soi<span class="op">$</span>Month, <span class="dv">15</span>) )
-soi<span class="op">$</span>Yr &lt;-<span class="st"> </span><span class="kw">decimal_date</span>(Date)
-
-<span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st">  </span>
-<span class="st">             </span><span class="kw">geom_line</span>(<span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">alpha =</span> <span class="fl">0.2</span>) <span class="op">+</span><span class="st"> </span>
-<span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.1</span>,
-                         <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>, <span class="dt">degree =</span> <span class="dv">2</span>)) <span class="op">+</span>
-<span class="st">             </span><span class="kw">geom_line</span>(<span class="dt">dat =</span> soi, <span class="kw">aes</span>(Yr, Index<span class="op">/</span><span class="dv">2</span>, <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>), <span class="dt">alpha =</span> <span class="fl">0.3</span>) <span class="op">+</span>
-<span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">dat =</span> soi, <span class="kw">aes</span>(Yr, Index<span class="op">/</span><span class="dv">2</span>, <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>),
-                         <span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.2</span>,
-                         <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>, <span class="dt">degree =</span> <span class="dv">2</span>)) <span class="op">+</span>
-<span class="st">             </span><span class="kw">guides</span>(<span class="dt">color =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p><img src="Week10a_files/figure-html/unnamed-chunk-16-1.png" width="768" /></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1"><span class="kw">library</span>(tidyr)</a>
+<a class="sourceLine" id="cb15-2" title="2"></a>
+<a class="sourceLine" id="cb15-3" title="3">soi &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Southern_oscillation.csv&quot;</span>)</a>
+<a class="sourceLine" id="cb15-4" title="4"></a>
+<a class="sourceLine" id="cb15-5" title="5">soi &lt;-<span class="st"> </span><span class="kw">gather</span>(soi, <span class="dt">key =</span> Month, <span class="dt">value =</span> Index, <span class="dv">-1</span>)</a>
+<a class="sourceLine" id="cb15-6" title="6">Date &lt;-<span class="st"> </span><span class="kw">ymd</span>(<span class="kw">paste</span>(soi<span class="op">$</span>YEAR, soi<span class="op">$</span>Month, <span class="dv">15</span>) )</a>
+<a class="sourceLine" id="cb15-7" title="7">soi<span class="op">$</span>Yr &lt;-<span class="st"> </span><span class="kw">decimal_date</span>(Date)</a>
+<a class="sourceLine" id="cb15-8" title="8"></a>
+<a class="sourceLine" id="cb15-9" title="9"><span class="kw">ggplot</span>(d3, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Resid.lev)) <span class="op">+</span><span class="st">  </span></a>
+<a class="sourceLine" id="cb15-10" title="10"><span class="st">             </span><span class="kw">geom_line</span>(<span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">alpha =</span> <span class="fl">0.2</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb15-11" title="11"><span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.1</span>,</a>
+<a class="sourceLine" id="cb15-12" title="12">                         <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>, <span class="dt">degree =</span> <span class="dv">2</span>)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb15-13" title="13"><span class="st">             </span><span class="kw">geom_line</span>(<span class="dt">dat =</span> soi, <span class="kw">aes</span>(Yr, Index<span class="op">/</span><span class="dv">2</span>, <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>), <span class="dt">alpha =</span> <span class="fl">0.3</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb15-14" title="14"><span class="st">             </span><span class="kw">stat_smooth</span>(<span class="dt">dat =</span> soi, <span class="kw">aes</span>(Yr, Index<span class="op">/</span><span class="dv">2</span>, <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>),</a>
+<a class="sourceLine" id="cb15-15" title="15">                         <span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.2</span>,</a>
+<a class="sourceLine" id="cb15-16" title="16">                         <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>, <span class="dt">degree =</span> <span class="dv">2</span>)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb15-17" title="17"><span class="st">             </span><span class="kw">guides</span>(<span class="dt">color =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<p><img src="Week10a_files/figure-html/unnamed-chunk-17-1.png" width="768" /></p>
 <p>The blue lines represent the residuals (with the bold blue line showing the loess fit) and the red lines represent the SOI trend (with the bold line showing its loess fit). Note that we halved the SOI values to match the range along the y-scale; the intent is to facilitate the comparison of SOI trend to CO2 trend. There appears to be matching maxima (notably around 1975 and 1988) but we also note some opposing trends such as in the period after 2010. When the index drops below 0, “El Nino” events become more prominent and upwelling flows are suppressed. Though this may prevent CO2 trapped in the deeper Pacific oceans from reaching the surface, “El Nino” events can also have a measurable impact on land climate thus influencing the rate of vegetation growth and, by extension, CO2 uptake. El nino is also believed to increase the rate of forest and brush fires around the world which may also contribute to atmospheric CO2 concentrations.</p>
 <p>It’s important to realize that this is one of many ways in which we could have proceeded with the analysis. For example, we could have started off the analysis by removing the seasonal component from the data, then analyzed the long term trend. This is the approach taken by William Cleveland on page 165 of the course’s text.</p>
 </div>
@@ -762,7 +835,7 @@ soi<span class="op">$</span>Yr &lt;-<span class="st"> </span><span class="kw">de
 
 <div class="footer">
 <hr/>
-<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2019)
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2020)
 </br>
 
 
@@ -782,6 +855,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
