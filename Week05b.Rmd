@@ -44,7 +44,9 @@ df2 %>% group_by(voice.part) %>% summarise(median = median(height), count = n() 
 
 The basest tend to be slightly taller than the Tenor--this is one way to compare the batches. But how do their distributions differ? We will explore this in the next section.
 
-## Boxplots
+&nbsp;&nbsp;
+
+# Boxplots
 
 We can compare the batches using side-by-side boxplots.
 
@@ -66,7 +68,7 @@ ggplot(df2.med, aes(x=voice.part, y=NormHeight)) + geom_boxplot()
 
 Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the `Tenor 1` group has a slightly wider range of heights than the `Bass 2` group. About 50% of singers in the `Tenor 1` group have heights that range five inches whereas the singers in the `Bass 2` group have heights that range four inches. We also note that the `Tenor 1` height distribution tends to be skewed towards taller singers whereas the `Bass 2` height distribution tends to be a little less skewed toward smaller heights.
 
-## The quantile-quantile (Q-Q) plot
+# The quantile-quantile (Q-Q) plot
 
 A quantile-quantile plot (or Q-Q plot for short) combines two separate quantile plots from  different batches of values by pairing the point values by their common $f$-value.
 
@@ -110,7 +112,7 @@ We will explore two methods: a *manual* approach to constructing a q-q plot and 
 
 In all cases, we will add a 45&deg; line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
 
-### Manual construction of a q-q plot 
+## Manual construction of a q-q plot 
 
 To find a value in the larger dataset (i.e. `Bass 2`) that matches the 21 quantiles of the smaller dataset, `Tenor 1`, we can use the `approx()` function. 
 
@@ -155,7 +157,7 @@ ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) +
 ```
 
 
-### Using the base `qqplot`
+## Using the base `qqplot` 
 
 This approach is quicker and requires fewer lines of code, but it does not afford the insight into the inner workings of a q-q plot as does the manual approach from the previous section.
 
@@ -198,11 +200,11 @@ head(qq.out)
 > Note: 
 The difference in output between our manual approach and `qqplot`'s approach is small. If you want to faithfully recreate `qqplot`'s output using the manual approach, compute the f-values as $(i -1)/(n-1)$. 
 
-## q-q plots vs. traditional scatter plots
+# q-q plots vs. traditional scatter plots
 
 It's important to note the difference between a quantile-quantile plot and a *traditional* [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot) whereby the pairing of values between variables is explicitly defined  (for example average male and female income values paired by county). The singer data does not assume any pairing of observations (e.g. the height measurement for a singer in `Bass 2` is independent for that of a singer in `Tenor 2`).  This is made more evident with our working example which has unequal number of singers in both groups being compared. The pairing of values in a q-q plot is constructed from the *ordering* of values in each batch and nothing more.
 
-## What can we learn from a q-q plot?
+# What can we learn from a q-q plot?
 
 A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e. all the points of a q-q plot fall on the 45&deg; line) then we could characterize the relationship as `batch1 = batch2`. If the points follow a pattern mimicking a line parallel to the 45&deg; line as in the following plot,
 
@@ -262,7 +264,7 @@ ggplot(s1, aes(batch1,batch2 / 1.5 - 3.5)) + geom_point() + geom_abline( interce
 
 to get the approximate relationship of `batch2 = batch1 * 1.5 + 3.5`.
 
-### Is the relationship between tenor and bass additive or multiplicative?
+## Is the relationship between tenor and bass additive or multiplicative?
 
 Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we'll subtract the `Bass 2` value by about 2.5.
 
@@ -275,7 +277,7 @@ ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`  - 2.5)) +
 
 The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here. 
 
-## The Tukey mean-difference plot
+# The Tukey mean-difference plot
 
 Our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line.  All that is required is to subtract the y-value  (`Bass2`) from the x-value (`Tenor 2`) then compare the difference to the mean of the two values:
 
@@ -288,7 +290,7 @@ $$
 
 This forces the 45&deg; line in the previous q-q plots to a 0° slope. The final plot is a **Tukey mean-difference** plot or **m-d** for short.
 
-### Generating a Tukey m-d plot using `ggplot`
+## Generating a Tukey m-d plot using `ggplot`
 
 We continue with the `qq.out` dataset generated from the `qqplot` function.
 
@@ -303,7 +305,7 @@ ggplot(df.md,  aes(x = md.x, y = md.y)) + geom_point() + geom_abline( slope=0 ) 
 
 The units on both axes are in inches. It's clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.
 
-## Pairwise q-q plots
+# Pairwise q-q plots
 
 A **pairwise q-q plot** allows one to view all combinations of batch pairs. This requires that we first find the smallest batch of height values, then interpolate all other batch values to match the smallest batch quantiles. Note that the pairwise plot is symmetrical about the diagonal. Here, we'll make use of the `lattice` package to generate the pairwise q-q plots.
 
