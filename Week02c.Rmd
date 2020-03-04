@@ -39,8 +39,6 @@ x.date <- mdy(x)
 class(x.date)
 ```
 
-Note that using the `mode` or `typeof` functions will not help us determine if the object is an R *date* object. This is because a date is stored as a `numeric` (double) internally. Use the `class` function instead as shown in the above code chunk. 
-
 If you need to specify the time zone, add the parameter `tz=`. For example, to specify *Eastern Standard Time*, type:
 
 ```{r}
@@ -48,21 +46,9 @@ x.date <- mdy(x, tz="EST")
 x.date
 ```
 
-R does not maintain its own list of timezone names, instead, it relies on the operating system's naming convention. To list the supported timezone names for your particular R environment, type:
+Note that using the `mode` or `typeof` functions will not help us determine if the object is an R *date* object. This is because a date is stored as a `numeric` (double) internally. Use the `class` function instead as shown in the above code chunk. 
 
-```{r eval=FALSE}
-OlsonNames()
-```
-
-For example, to select Daylight Savings Time type `tz="EST5DST"`.
-
-Adding the timezone converts the R date object into another date object class called `POSIXt` or `POSIXct`. 
-
-```{r}
-class(x.date)
-```
-
-Turning our attention back to the function `mdy`, note that it can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same so long as the order remains month/day/year.
+The `mdy` function can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same so long as the order remains month/day/year.
 
 For different month/day/year arrangements, other `lubridate` functions need to be used:
 
@@ -100,9 +86,37 @@ Also, if a timezone is not explicitly defined for a time based date, the functio
 dmy_hm("23/6/2013 3:15")
 ```
 
+## Setting and modifying timezones
+
+R does not maintain its own list of timezone names, instead, it relies on the operating system's naming convention. To list the supported timezone names for your particular R environment, type:
+
+```{r eval=FALSE}
+OlsonNames()
+```
+
+For example, to select Daylight Savings Time type `tz="EST5DST"`.
+
+```{r}
+x.date <- mdy(x, tz="EST5DST")
+x.date
+```
+
+Adding the timezone converts the R date object into another date object class called `POSIXt` or `POSIXct`. 
+
+```{r}
+class(x.date)
+```
+
+If you need to convert the day/time to another timezone, use `lubridate`'s `with_tz()` function. For example, to convert `x.date` from it's current `EST5DST` timezone to the `US/Alaska` time zone, type:
+
+```{r}
+with_tz(x.date, tzone = "US/Alaska")
+```
+
+
 ## From separate date elements
 
-If your data table splits the date elements into separate vector objects or columns, use the `paste` function to combine the elements into a single date string before passing it to one of the lubridate functions. Let's look at an example:
+If your data table splits the date elements into separate vector objects or columns, use the `paste` function to combine the elements into a single date string before passing it to one of the `lubridate` functions. Let's look at an example:
 
 ```{r}
 dat1 <- read.csv("http://mgimond.github.io/ES218/Data/CO2.csv")
