@@ -287,7 +287,7 @@ ggplot(dat2, aes(x = B20004013, y = B20004007)) +
 
 ## Combining datasets
 
-You can plot different datasets on the same ggplot canvas. This approach usually requires that each geom be assigned its own dataset and aesthetics. In the following example, we'll compute the High Density Region (HDR) boxplot parameters using the `hdrcde` package, then use these parameters to construct `geom_rect()` that will be added to a `geom_point` element built from the parent dataset. When data and aesthetics are defined in a geom function, the `ggplot()` function must be explictly called right from the beginning.
+You can plot different datasets on the same ggplot canvas. This approach usually requires that each geom be assigned its own dataset and aesthetics. In the following example, we'll compute the High Density Region (HDR) boxplot parameters using the `hdrcde` package, then use these parameters to construct `geom_rect()` that will be added to a `geom_point` element built from the parent dataset. When data and aesthetics are defined in a geom function, the `ggplot()` function must be explicitly called right from the beginning.
 
 ```{r fig.height=3, fig.width=2}
 library(hdrcde)
@@ -370,6 +370,24 @@ ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
         scale_y_continuous(labels = scales::comma_format())
 ```
 
+You can rotate axes labels using the `theme` function.
+
+```{r fig.height=3, fig.width=4, warning=FALSE}
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+```
+
+The `hjust` argument justifies the values horizontally. Its value ranges from `0` to `1` where `0` is completely left-justified and `1` is  completely right-justified.  Note that the justification is *relative* to the text's orientation and *not* to the axis. So it may be best to first rotate the label values, then to adjust justification based on the plot's look as needed.
+
+If you want the label values rotated 90&deg; you might also need to justify vertically (relative to the text's orientation) using the `vjust` argument where `0` is completely top-justified and `1` is completely bottom-justified.
+
+```{r fig.height=3, fig.width=4, warning=FALSE}
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0)) 
+```
+
 
 ## Axes limits
 
@@ -381,16 +399,34 @@ ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
        xlim(10000, 75000) + ylim(10000, 75000)
 ```
 
-However, if you are calling the `scale_x_continuous()` and `scale_y_continuous()` functions, you do not want to use `xlim` and `ylim` instead, you should add the `limit=` parameter to the aforementioned functions. For example,
+However, if you are calling the `scale_x_continuous()` and `scale_y_continuous()` functions, you do not want to use `xlim` and `ylim` instead, you should add the `limit=` argument to the aforementioned functions. For example,
 
 ```{r fig.height=3, fig.width=4, warning=FALSE}
 ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
        xlab("Female income ($)") + ylab("Male income ($)") +
-       scale_x_continuous(limit = c(10000, 75000),
+       scale_x_continuous(limit  = c(10000, 75000),
                           labels = scales::comma_format()) +
-       scale_y_continuous(limit = c(10000, 75000),
+       scale_y_continuous(limit  = c(10000, 75000),
                           labels = scales::comma_format())
 ```
+
+## Axes breaks
+
+You can explicitly define the breaks with the `breaks` argument. Continuing with the last example, we get:
+
+```{r fig.height=3, fig.width=4, warning=FALSE}
+ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
+       xlab("Female income ($)") + ylab("Male income ($)") +
+       scale_x_continuous(limit  = c(10000, 75000),
+                          labels = scales::comma_format(),
+                          breaks = c(10000, 30000, 50000, 70000)) +
+       scale_y_continuous(limit  = c(10000, 75000),
+                          labels = scales::comma_format(),
+                          breaks = c(10000, 30000, 50000, 70000))
+```
+
+
+Note that the `breaks` argument can be used in conjunction with other arguments (as shown in this example), or by itself.
 
 ## Axes and data transformations
 
@@ -496,25 +532,54 @@ ggplot(dat2.ct2, aes(y = fct_reorder(State, Counties), x = Counties, col = Incom
                               midpoint = 30892)
 ```
 
-### Categorical color schemes
+
+### Discrete  color schemes
 
 In the following chunk, we assign colors manually to each level in the variable `Yield`. The order of the color names mirror the order of the variable levels.
 
-```{r}
+```{r fig.height=2.5, fig.width=4}
 ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
        geom_line() +
        scale_colour_manual(values = c("red", "orange", "green", "blue", "yellow"))
 ```
 
-The following chunk applies a predefined discrete color scheme named `Dark2` to each level.  
+The following chunk applies a predefined discrete color scheme using one of Brewer's preset qualitative colors, `Dark2`, to each level.  
 
-```{r}
+```{r fig.height=2.5, fig.width=4}
 ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
               geom_line() +
               scale_colour_brewer(palette = "Dark2")
 ```
 
-To see a list of predefined `scale_colour_brewer` colors, type  `?scale_colour_brewer` at the console.
+You can also apply sequential or divergent Brewer color schemes to variables having an implied order. 
+
+Let's assume that there is an implied order to the crop types. For example, we'll reorder the crop types based on their median yield (this creates an ordered factor from the  `Crop` variable). We can then use one of Brewer's sequential color schemes such as `Reds`. 
+
+```{r fig.height=2.5, fig.width=4}
+ggplot(dat1l, aes(Year, Yield, col = reorder(Crop, Yield, median))) + 
+              geom_line() +
+              guides(colour = guide_legend(title = "Crops")) +  
+              scale_colour_brewer(palette = "Reds") 
+```
+
+Note that we've added a `guides()` function to rename the legend title. This is not needed to generate the sequential colors.
+
+To reverse the color scheme, set the `direction` argument to `-1`.
+
+```{r fig.height=2.5, fig.width=4}
+ggplot(dat1l, aes(Year, Yield, col = reorder(Crop, Yield, median))) + 
+              geom_line() +
+              guides(colour = guide_legend(title = "Crops")) +  
+              scale_colour_brewer(palette = "Reds", direction = -1) 
+```
+
+You can view a list of predifined Brewer color schemes using `RColorBrewer::display.brewer.all()`.
+
+```{r fig.height=6.5, fig.width =10}
+RColorBrewer::display.brewer.all()
+```
+
+
 
 ## Adding mathematical symbols to a plot
 
@@ -534,6 +599,9 @@ To view the full list of mathematical expressions, type `?plotmath` at a command
 &nbsp;&nbsp;
 
 ## Faceting by categorical variable
+&nbsp;&nbsp;
+
+### `facet_wrap`
 
 Faceting (or conditioning on a variable) can be implemented in `ggplot2` using the `facet_wrap()` function.
 
@@ -544,23 +612,39 @@ ggplot(dat1l2, aes(x = Year, y = Yield, color = Crop)) + geom_line() +
 
 The parameter ` ~ Country` tells ggplot to condition the plots on country. If we wanted the plots to be stacked, we would set `nrow` to `2`. 
 
-We can also condition the plots on two variables such as `crop` and `Country`.
+We can also condition the plots on two variables such as `crop` and `Country`. In essence, this *stacks* the categories. (Note that we will also rotate the x-axis labels to prevent overlaps).
 
-```{r fig.height=4, fig.width=8}
+```{r fig.height=3, fig.width=8}
 ggplot(dat1l2, aes(x = Year, y=Yield)) + geom_line() +
-       facet_wrap(Crop ~ Country, nrow = 1)
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    facet_wrap(Crop ~ Country, nrow = 1)
 ```
 
-This creates as many plots as there are unique combinations of variables `Crop` and `Country`. But such plots are usually best represented in a grid structure where one variable is spread along one axis and the other variable is spread along another axis of the plot layout. This can be accomplished using the `facet_grid` function:
+
+### Wrapping facet headers
+
+You can wrap the facet headers using the `label_wrap_gen()` function as an argument value to `labeler`. For example, to wrap the  `United States of America` value, we'll specify the maximum number of characters per line using the `width` argument:
+
+```{r fig.height=3, fig.width=8}
+ggplot(dat1l2, aes(x = Year, y=Yield)) + geom_line() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  facet_wrap(Crop ~ Country, nrow = 1, labeller = label_wrap_gen(width = 12))
+```
+
+
+### `facet_grid`
+
+The above `facet_wrap` example generated unique combinations of the variables `Crop` and `Country`. But such plots are usually best represented in a grid structure where one variable is spread along one axis and the other variable is spread along another axis of the plot layout. This can be accomplished using the `facet_grid` function:
 
 ```{r fig.height=4, fig.width=6} 
 ggplot(dat1l2, aes(x = Year, y = Yield)) + geom_line() + 
        facet_grid( Crop ~ Country)
 ```
 
+
 ## Faceting by continuous variable
 
-In the above example, we are faceting the plots based on a categorical variable: `Country` and/or `crop`. But what if we want to facet the plots based on a continuous variable? For example,  we might be interested in comparing male and female incomes across different female income ranges. This requires that a new categorical field (a factor) be created assigning to each case (row) an income group. We can use the `cut()` function to accomplish this task (we'll also omit all values greater than 100,000):
+In the above examples, we are faceting the plots based on a categorical variable: `Country` and/or `crop`. But what if we want to facet the plots based on a continuous variable? For example,  we might be interested in comparing male and female incomes across different female income ranges. This requires that a new categorical field (a factor) be created assigning to each case (row) an income group. We can use the `cut()` function to accomplish this task (we'll also omit all values greater than 100,000):
 
 ```{r }
 dat2c$incrng <- cut(dat2c$F , breaks = c(0, 25000, 50000, 75000, 100000) )
@@ -652,7 +736,7 @@ ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) 
        scale_x_continuous(breaks = c(50000, 100000), labels = c("50k", "100k"))
 ```                                        
 
-# Tile plots (aka heat maps)
+# Tile plots (heat maps)
 
 You can create so-called *heat maps* by tiling the data. This typically requires the use of three variables--two of which are either categorical or have equally spaced continuous values that define a rectangular grid layout, and the third that defines the grid cells' color. For example, a tile plot can be created showing the median income (for all sexes) as a function of education level and region.
 
