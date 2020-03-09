@@ -771,7 +771,7 @@ tidyr
 <a class="sourceLine" id="cb2-2" title="2"><span class="kw">library</span>(tidyr)</a>
 <a class="sourceLine" id="cb2-3" title="3"><span class="kw">library</span>(ggplot2)</a>
 <a class="sourceLine" id="cb2-4" title="4"></a>
-<a class="sourceLine" id="cb2-5" title="5">dfl &lt;-<span class="st"> </span><span class="kw">gather</span>(df, <span class="dt">key =</span> Category, <span class="dt">value =</span> Value)</a>
+<a class="sourceLine" id="cb2-5" title="5">dfl &lt;-<span class="st"> </span><span class="kw">pivot_longer</span>(df, <span class="dt">names_to =</span> <span class="st">&quot;Category&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;Value&quot;</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>)</a>
 <a class="sourceLine" id="cb2-6" title="6"><span class="kw">ggplot</span>(dfl,  <span class="kw">aes</span>(<span class="dt">y =</span> Value, <span class="dt">x =</span> Category, <span class="dt">col =</span> Category)) <span class="op">+</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb2-7" title="7"><span class="st">             </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">height =</span> <span class="dv">0</span>, <span class="dt">width=</span><span class="fl">0.4</span>))</a></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-5-1.png" width="384" /></p>
@@ -784,7 +784,7 @@ tidyr
 <a class="sourceLine" id="cb3-5" title="5"></a>
 <a class="sourceLine" id="cb3-6" title="6"><span class="co"># Create wide and long data frames</span></a>
 <a class="sourceLine" id="cb3-7" title="7">df  &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a, b)</a>
-<a class="sourceLine" id="cb3-8" title="8">dfl &lt;-<span class="st"> </span><span class="kw">gather</span>(df, <span class="dt">key =</span> Category, <span class="dt">value =</span> Value)</a></code></pre></div>
+<a class="sourceLine" id="cb3-8" title="8">dfl &lt;-<span class="st"> </span><span class="kw">pivot_longer</span>(df, <span class="dt">names_to =</span> <span class="st">&quot;Category&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;Value&quot;</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>)</a></code></pre></div>
 <table style="width:14%;">
 <colgroup>
 <col width="6%" />
@@ -892,13 +892,14 @@ tidyr
 <p><img src="Week05a_files/figure-html/unnamed-chunk-17-1.png" width="432" /></p>
 <p>The same process is repeated for the third bin.</p>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-18-1.png" width="432" /></p>
-<p>The process is repeated for each bin until the last bin is reached.</p>
+<p>The process is repeated for each bin until the last bin is reached. Note that some of the <code>a</code> values are duplicates, hence the greater density values for the upper-end range.</p>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-19-1.png" width="432" /></p>
 <p>If we remove the bins and connect the dots, we end up with a <em>density trace</em>.</p>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-20-1.png" width="432" /></p>
 <p>A property associated with the density trace is that the area under the curve sums to one since each density value represents the <em>local</em> density at <code>x</code>.</p>
-<p>The above density trace applies an equal weight to each point within the bin intervals thus adding some raggedness to the plot. To smooth out the plot, we can apply different weights to each point inside of the bin’s intervals such that points closest to the bin’s midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weighs assigned to the first two observations in the dataset.</p>
+<p>The above density trace applies an equal weight to each point within the bin intervals thus adding some raggedness to the plot. To smooth out the plot, we can apply different weights to each point inside of the bin’s intervals such that points closest to the bin’s midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weights assigned to any point falling within the first bin whose range covers the interval 4 to 8 centered on 6.</p>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-21-1.png" width="432" /></p>
+<p>With the rectangular weight, all points within the bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center.</p>
 <p>You can generate a density trace of the data using the <code>geom_density</code> function.</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="dt">fill =</span> <span class="st">&quot;grey60&quot;</span>)</a></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-22-1.png" width="432" /></p>

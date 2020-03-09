@@ -42,7 +42,7 @@ If the difference wasn't obvious from the table view we can create a jittered po
 library(tidyr)
 library(ggplot2)
 
-dfl <- gather(df, key = Category, value = Value)
+dfl <- pivot_longer(df, names_to = "Category", values_to = "Value", 1:2)
 ggplot(dfl,  aes(y = Value, x = Category, col = Category)) + 
              geom_jitter(position = position_jitter(height = 0, width=0.4))
 ```
@@ -59,7 +59,7 @@ b   <- round(runif(10, 10, 20))
 
 # Create wide and long data frames
 df  <- data.frame(a, b)
-dfl <- gather(df, key = Category, value = Value)
+dfl <- pivot_longer(df, names_to = "Category", values_to = "Value", 1:2)
 
 ```
 
@@ -200,7 +200,7 @@ ggplot() +
 
 ```
 
-The process is repeated for each bin until the last bin is reached.
+The process is repeated for each bin until the last bin is reached. Note that some of the `a` values are duplicates, hence the greater density values for the upper-end range.
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 ggplot() +
@@ -229,25 +229,26 @@ ggplot() +
 
 A property associated with the density trace is that the area under the curve sums to one since each density value represents the *local* density at `x`.
 
-The above density trace applies an equal weight to each point within the bin intervals thus adding some raggedness to the plot. To smooth out the plot, we can apply different weights to each point inside of the bin's intervals such that points closest to the bin's midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weighs assigned to the first two observations in the dataset.
+The above density trace applies an equal weight to each point within the bin intervals thus adding some raggedness to the plot. To smooth out the plot, we can apply different weights to each point inside of the bin's intervals such that points closest to the bin's midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weights assigned to any point falling within the first bin whose range covers the interval 4 to 8 centered on 6.
 
 ```{r fig.height=2, fig.width=4.5, echo = FALSE}
 
-p1 <- ggplot() +
-  geom_rect( dens.bins[1,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3) + 
-  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
-  xlim(5,15) + ylim(0,0.15)  + xlab(NULL)
+d.rec <- density(6, from = 4, to = 8, width = 4, kernel = "rectangular")
+p1 <- ggplot() +  geom_area(data = data.frame(x= d.rec$x, y= d.rec$y), mapping = aes(x,y), fill="grey") +
+  geom_rug( data.frame(x=6), mapping=aes(x=x), col = "darkred", cex=2, alpha=0.5) + 
+  ylim(0,.65) + ylab("weight")
 
-p2 <- ggplot( ) +
-   geom_density( data.frame(x = a[a < 9]), 
-             mapping=aes(x, weight = 1/length(a) ),kernel = "gaussian",
-             alpha=0.5, fill="grey60", alpha=0.3, bw=0.49, n=50, col=NA) + xlim(5,15) +
-  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
-  ylim(0,0.15) + xlab(NULL) + ylab(NULL)
+d.gaus <- density(6, from = 4, to = 8, width = 2.5, kernel = "gaussian")
+p2 <- ggplot() +  geom_area(data = data.frame(x= d.gaus$x, y= d.gaus$y), mapping = aes(x,y), fill="grey") +
+  geom_rug( data.frame(x=6), mapping=aes(x=x), col = "darkred", cex=2, alpha=0.5) + 
+  ylim(0,.65) + ylab(NULL)
+
 
 gridExtra::grid.arrange(p1, p2, nrow = 1)
 
 ```
+
+With the rectangular weight, all points within the bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center.
 
 You can generate a density trace of the data using the `geom_density` function.
 
