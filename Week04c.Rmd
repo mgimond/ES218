@@ -16,7 +16,7 @@ pkg_ver(c("dplyr", "ggplot2","forcats","scales","hdrcde"))
 
 # Sample data
 
-The data files used in this tutorial were created in an [earlier exercise](Week03ab_examples.html). Type the following command to download the objects
+The data files used in this tutorial were created in an [earlier exercise](Week03ab_examples.html). Type the following command to download the objects.
 
 ```{r download_data}
 load(url("http://mgimond.github.io/ES218/Data/dat1_2.RData"))
@@ -749,4 +749,42 @@ dat2c.med <- dat2c %>%
 ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
   scale_fill_gradient(low = "yellow", high = "red")
 ```
+
+# Exporting to an image
+
+You can export a ggplot figure to an image using the `ggsave` function. For example,
+
+```{r}
+p1 <- ggplot(dat1l2, aes(x = Year, y = Yield, color = Crop)) + geom_line() + 
+  facet_wrap( ~ Country, nrow = 1) +
+  scale_y_continuous(labels = scales::comma_format())
+
+ggsave("fig0.png", plot = p1, width = 6, height = 2, units = "in", device = "png")
+```
+
+![](fig0.png)
+
+The `width` and `height` arguments are defined in units of inches, `in`. You can also specify these parameters in units of centimeters by setting `units = "cm"`. The `device` argument controls the image file type. Other file types include `"jpeg"`, `"tiff"`, `"bmp"` and `"svg"` just to name a few.
+
+For greater control of the font sizes, you need to make use of the `theme` function when buiding the plot. 
+
+```{r}
+p1 <- ggplot(dat1l2, aes(x = Year, y = Yield, color = Crop)) + geom_line() + 
+  facet_wrap( ~ Country, nrow = 1) +
+  scale_y_continuous(labels = scales::comma_format()) +
+  theme(axis.text    = element_text(size = 8, family = "mono"),
+        axis.title   = element_text(size = 11, face = "bold"),
+        strip.text   = element_text(size = 11, face="italic", family = "serif"),
+        legend.title = element_text(size = 10, family = "sans"),
+        legend.text  = element_text(size = 8,  color = "grey40"))
+
+ggsave("fig1.png", plot = p1, width = 6, height = 2, units = "in")
+        
+```
+
+![](fig1.png)
+
+The `family` argument controls the font type. It does not automatically access all the fonts in your operating system. The three R fonts accessible by default are `"serif"`, `"sans"` and `"mono"`. These are usually mapped to your system's fonts.
+
+To access other fonts on your operating system, you will need to make use of the `showtext` package. The package is not covered in this tutorial, instead, refer to the package's [website](https://github.com/yixuan/showtext) for instructions on using the package.
 
