@@ -307,6 +307,29 @@ par(OP)
 
 The upper and lower quartiles differ from those of `ggplot` since the three `15` values (these are the maximum values in batch `a`) end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers.  In most cases, however, the difference will not matter as long as you *adopt the same boxplot procedure when comparing batches*.
 
+## Implementing different quantile types in `geom_boxplot`
+
+If you wish to implement different $f$-value calculations offered by the ` quantile` function, you will need to create a custom function as follows:
+
+```{r fig.height=1.2, fig.width=6.5}
+# Function to extract quantiles given an f-value type
+qtl.bxp <- function(x, type = 5) {
+  qtl <- quantile(x, type = type)
+   df <- data.frame(ymin  = qtl[1], ymax = qtl[5], 
+                    upper = qtl[4], lower = qtl[2], middle = qtl[3])
+}
+
+# Plot the boxplot
+ggplot(df, aes(x = "", y = a)) + 
+  stat_summary(fun.data = qtl.bxp, fun.args = list(type = 5),
+               geom = 'boxplot') +
+  xlab(NULL) + theme(axis.text.y = element_blank()) +
+  coord_flip()
+
+```
+
+Note the use of `stat_summary` instead of `geom_boxplot`. The `type` argument is the quantile type implemented in the `quantile` function.
+
 # Quantile plots
 
 A quantile plot generates a point plot that joins the quantile to each value in a batch. The boxplot is a special case of the $f$-quantile function in that it only returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. The $f$-quantile returns the $full$ range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest.  The following figure describes the anatomy of a quantile plot. 

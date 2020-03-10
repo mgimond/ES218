@@ -931,6 +931,25 @@ tidyr
 <p><img src="Week05a_files/figure-html/unnamed-chunk-26-1.png" width="624" /></p>
 <p>The upper and lower quartiles differ from those of <code>ggplot</code> since the three <code>15</code> values (these are the maximum values in batch <code>a</code>) end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers. In most cases, however, the difference will not matter as long as you <em>adopt the same boxplot procedure when comparing batches</em>.</p>
 </div>
+<div id="implementing-different-quantile-types-in-geom_boxplot" class="section level2">
+<h2>Implementing different quantile types in <code>geom_boxplot</code></h2>
+<p>If you wish to implement different <span class="math inline">\(f\)</span>-value calculations offered by the <code>quantile</code> function, you will need to create a custom function as follows:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="co"># Function to extract quantiles given an f-value type</span></a>
+<a class="sourceLine" id="cb17-2" title="2">qtl.bxp &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">type =</span> <span class="dv">5</span>) {</a>
+<a class="sourceLine" id="cb17-3" title="3">  qtl &lt;-<span class="st"> </span><span class="kw">quantile</span>(x, <span class="dt">type =</span> type)</a>
+<a class="sourceLine" id="cb17-4" title="4">   df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ymin  =</span> qtl[<span class="dv">1</span>], <span class="dt">ymax =</span> qtl[<span class="dv">5</span>], </a>
+<a class="sourceLine" id="cb17-5" title="5">                    <span class="dt">upper =</span> qtl[<span class="dv">4</span>], <span class="dt">lower =</span> qtl[<span class="dv">2</span>], <span class="dt">middle =</span> qtl[<span class="dv">3</span>])</a>
+<a class="sourceLine" id="cb17-6" title="6">}</a>
+<a class="sourceLine" id="cb17-7" title="7"></a>
+<a class="sourceLine" id="cb17-8" title="8"><span class="co"># Plot the boxplot</span></a>
+<a class="sourceLine" id="cb17-9" title="9"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> a)) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb17-10" title="10"><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.data =</span> qtl.bxp, <span class="dt">fun.args =</span> <span class="kw">list</span>(<span class="dt">type =</span> <span class="dv">5</span>),</a>
+<a class="sourceLine" id="cb17-11" title="11">               <span class="dt">geom =</span> <span class="st">&#39;boxplot&#39;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb17-12" title="12"><span class="st">  </span><span class="kw">xlab</span>(<span class="ot">NULL</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>()) <span class="op">+</span></a>
+<a class="sourceLine" id="cb17-13" title="13"><span class="st">  </span><span class="kw">coord_flip</span>()</a></code></pre></div>
+<p><img src="Week05a_files/figure-html/unnamed-chunk-27-1.png" width="624" /></p>
+<p>Note the use of <code>stat_summary</code> instead of <code>geom_boxplot</code>. The <code>type</code> argument is the quantile type implemented in the <code>quantile</code> function.</p>
+</div>
 </div>
 <div id="quantile-plots" class="section level1">
 <h1>Quantile plots</h1>
@@ -940,8 +959,8 @@ tidyr
 <div id="computing-the-f-quantile" class="section level2">
 <h2>Computing the <span class="math inline">\(f\)</span>-quantile</h2>
 <p>Computing <span class="math inline">\(f\)</span> requires that the batch of numbers be ordered from smallest to largest.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1">a.o &lt;-<span class="st"> </span><span class="kw">sort</span>(a)</a>
-<a class="sourceLine" id="cb17-2" title="2">a.o</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">a.o &lt;-<span class="st"> </span><span class="kw">sort</span>(a)</a>
+<a class="sourceLine" id="cb18-2" title="2">a.o</a></code></pre></div>
 <pre><code> [1]  7  8  9 11 12 13 13 15 15 15</code></pre>
 <p>The concept of sorting values may seem benign, but it is fundamental to many EDA procedures that require robust techniques.</p>
 <p>With the numbers sorted, we can proceed with the computation of <span class="math inline">\(f\)</span> following <em>Cleveland’s</em> method:</p>
@@ -950,9 +969,9 @@ f_i = \frac{i - 0.5}{n}
 \]</span></p>
 <p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section, there are many ways one can compute a quantile, however, the differences may not matter much.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1">i     &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">:</span><span class="st"> </span><span class="kw">length</span>(a)</a>
-<a class="sourceLine" id="cb19-2" title="2">f.val &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(a)  <span class="co"># Compute the f-value</span></a>
-<a class="sourceLine" id="cb19-3" title="3">a.fi  &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a.o, f.val)</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">i     &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">:</span><span class="st"> </span><span class="kw">length</span>(a)</a>
+<a class="sourceLine" id="cb20-2" title="2">f.val &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(a)  <span class="co"># Compute the f-value</span></a>
+<a class="sourceLine" id="cb20-3" title="3">a.fi  &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a.o, f.val)</a></code></pre></div>
 <p>Note that in the last line of code, we are appending the ordered representation of <code>a</code> to <code>f.val</code> given that <code>f.val</code> assumes an ordered dataset. The data frame <code>a.fi</code> should look like this:</p>
 <table style="width:19%;">
 <colgroup>
@@ -1009,15 +1028,15 @@ f_i = \frac{i - 0.5}{n}
 </tbody>
 </table>
 <p>It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in <code>a</code> associated with a quantile of <span class="math inline">\(0.5\)</span>; this is because we have an even number of values in our dataset. The solution is to interpolate (or extrapolate) a value based on a desired quantile. The <code>quantile()</code> function does just that. For example, to find the value associated with a quantile of <span class="math inline">\(0.5\)</span>:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1"><span class="kw">quantile</span>(a, <span class="fl">0.5</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="kw">quantile</span>(a, <span class="fl">0.5</span>)</a></code></pre></div>
 <pre><code> 50% 
 12.5 </code></pre>
 <p>If we want to get quantile values for a range of fractions, simply wrap the values with the <code>c()</code> function:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">quantile</span>(a, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">quantile</span>(a, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</a></code></pre></div>
 <pre><code> 25%  50%  75% 
  9.5 12.5 14.5 </code></pre>
 <p>The <code>quantile</code> function is designed to accept different quantile algorithms. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="kw">quantile</span>(a, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="dt">type =</span> <span class="dv">5</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="kw">quantile</span>(a, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="dt">type =</span> <span class="dv">5</span>)</a></code></pre></div>
 <pre><code> 25%  50%  75% 
  9.0 12.5 15.0 </code></pre>
 <p>Note the difference in the upper quartile value.</p>
@@ -1025,13 +1044,13 @@ f_i = \frac{i - 0.5}{n}
 <div id="creating-a-quantile-plot" class="section level2">
 <h2>Creating a quantile plot</h2>
 <p>A batch’s quantile is best viewed as a plot where we plot the batch values as a function of the <span class="math inline">\(f\)</span>-values:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="kw">ggplot</span>(a.fi, <span class="kw">aes</span>(<span class="dt">x =</span> f.val, <span class="dt">y =</span> a.o)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</a></code></pre></div>
-<p><img src="Week05a_files/figure-html/unnamed-chunk-33-1.png" width="288" /></p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="kw">ggplot</span>(a.fi, <span class="kw">aes</span>(<span class="dt">x =</span> f.val, <span class="dt">y =</span> a.o)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</a></code></pre></div>
+<p><img src="Week05a_files/figure-html/unnamed-chunk-34-1.png" width="288" /></p>
 <div id="using-ggplots-qq-geom" class="section level3">
 <h3>Using ggplot’s <code>qq</code> geom</h3>
 <p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values and the dataframe <code>a.fi</code>, you could simply call the function <code>stat_qq()</code> as in:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution =</span> qunif) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</a></code></pre></div>
-<p><img src="Week05a_files/figure-html/unnamed-chunk-34-1.png" width="288" /></p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution =</span> qunif) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</a></code></pre></div>
+<p><img src="Week05a_files/figure-html/unnamed-chunk-35-1.png" width="288" /></p>
 <p>However, ggplot’s <code>stat_qq</code> function does not adopt Cleveland’s <span class="math inline">\(f\)</span>-value calculation. Hence, you’ll notice a slight offset in position along the x-axis. For example, the third-to-last point has an <span class="math inline">\(f\)</span>-value of <code>0.744</code> instead of an <span class="math inline">\(f\)</span>-value of <code>0.75</code> as calculated using Cleveland’s method.</p>
 <p>Also note the slight change in mapping values to the <code>aes()</code> function: <code>sample = a</code> where <code>a</code> is the (unsorted) variable being plotted.</p>
 </div>
