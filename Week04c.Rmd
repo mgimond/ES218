@@ -750,6 +750,35 @@ ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
   scale_fill_gradient(low = "yellow", high = "red")
 ```
 
+The above example adopts a continuous color scheme. If you want to bin the color swatches using user defined breaks, swap the `scale_fill_gradient` function with the `scale_fill_binned` function.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_binned(low = "yellow", high = "red",
+                    breaks = c(21000, 28000, 32000, 42000, 53000))
+```
+
+As of `ggplot2` version `3.3`, you can use the `guide_coloursteps` function to control the *look* of your legend. In the last figure, the breaks are not even, yet the legend splits the color swatches into equal length units. Setting the `even.steps` argument to `FALSE` scales the color swatches to match the true interval lengths.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_binned(low = "yellow", high = "red",
+                    breaks = c(21000, 28000, 32000, 42000, 53000),
+                    guide = guide_coloursteps(even.steps = FALSE))
+```
+
+The `scale_fill_binned` function offers additional control over the legend such as its height (`barheight`), width (`barwidth`) and the display of the minimum and maximum values (`show.limits`).
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_binned(low = "yellow", high = "red",
+                    breaks = c(21000, 28000, 32000, 42000, 53000),
+                    guide = guide_coloursteps(even.steps = FALSE,
+                                              barheight = unit(2.3, "in"),
+                                              barwidth = unit(0.1, "in"),
+                                              show.limits = TRUE))
+```
+
 # Exporting to an image
 
 You can export a ggplot figure to an image using the `ggsave` function. For example,
