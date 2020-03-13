@@ -15,9 +15,75 @@ pkg_ver(c("sf", "ggplot2", "tmap", "dplyr", "stringr", "maps"))
 
 Variables can be mapped in R using packages such as `ggplot2` and `tmap`. The focus of this tutorial will be on mapping polygon (aka areal) data. For more information on mapping spatial data (both vector and raster) visit the [GIS and Spatial Analysis pages](https://mgimond.github.io/Spatial/mapping-data-in-r.html).
 
-# Loading a spatial data object
 
-Mapping values requires two datasets: the values to be mapped (usually in a dataframe) and the spatial boundaries of the areas being mapped. The latter is usually loaded into R as a spatial data file such as a *shapefile* or a *geopackage*. For this tutorial, you will load an `sf` spatial object from this website's repository. Later in this tutorial, you will learn to import a shapefile into an R session.
+# Loading a sample dataset
+
+The following chunk loads a spatial dataset that is in an `sf` spatial format. The data represents the 2018 census tracts for the state of Maine (USA).
+
+```{r}
+library(sf)
+
+shp <- readRDS(gzcon(url("https://github.com/mgimond/ES218/blob/gh-pages/Data/maine_tracts.Rds?raw=true")))
+```
+
+
+This next chunk is a data table of the average commute time (in minutes) for each Maine census tract.
+
+```{r}
+dat <- read.csv("https://github.com/mgimond/ES218/blob/gh-pages/Data/maine_commute.csv")
+```
+
+
+# Joining a table to a spatial object
+
+Many mapping operations require that the data table be joined to an already created spatial dataset. If your data are aggregated at some administrative boundary level, you can find boundary files for most countries (and at different aggregate levels) in an `sf` format at [https://gadm.org/](https://gadm.org/).
+
+Here, we'll join the `dat` table to the `shp` spatial object using `Geo_FIPS` as the common key.
+
+```{r}
+library(dplyr)
+
+shp2 <- left_join(shp, dat, by = "Geo_FIPS")
+```
+
+# `ggplot2` and `tmap`
+
+There are at least two mapping solutions in R: `ggplot2` and `tmap`. The bulk of this tutorial will make use of `tmap` but a brief example of `ggplot2`'s mapping capabilities will be presented next.
+
+## Mapping with `ggplot2`
+
+
+```{r fig.height = 3}
+library(ggplot2) 
+
+ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + theme_minimal() +
+scale_fill_steps2(low = "#1A9641", high = "#D73027", mid = "#FFFFBF",
+                  midpoint = 25,
+                  breaks = c(5, 15, 20, 30, 35),
+                  guide = guide_coloursteps(even.steps = FALSE,
+                                            show.limits = TRUE))
+```
+
+
+```{r fig.height = 3}
+ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
+  coord_sf(crs = 26919) +
+  scale_fill_steps2(low = "#1A9641", high = "#D73027", mid = "#FFFFBF",
+                    midpoint = 25,
+                    breaks = c(5, 15, 20, 30, 35),
+                    guide = guide_coloursteps(even.steps = FALSE,
+                                              show.limits = TRUE,
+                                              title = "Commute time \n(min)",
+                                              barheight = unit(2.5, "in"),
+                                              barwidth = unit(0.2, "in"))) +
+  theme(panel.grid = element_line(color = "grey80"),
+        panel.background = element_rect(fill = "grey70"))
+```
+
+
+# Another example
+
+
 
 ```{r}
 library(sf)
@@ -26,11 +92,6 @@ load(url("https://github.com/mgimond/ES218/blob/gh-pages/Data/counties48.RData?r
 ```
 
 The code chunk will add the `cnty` spatial object to your current session environment.
-
-# `ggplot2` and `tmap`
-
-There are at least two mapping solutions in R: `ggplot2` and `tmap`. The bulk of this tutorial will make use of `tmap` but a brief example of `ggplot2`'s mapping capabilities will be presented next.
-
 
 ## Generating a basic map in `ggplot2`
 
