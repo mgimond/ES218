@@ -30,7 +30,7 @@ shp <- readRDS(gzcon(url("https://github.com/mgimond/ES218/blob/gh-pages/Data/ma
 This next chunk is a data table of the average commute time (in minutes) for each Maine census tract.
 
 ```{r}
-dat <- read.csv("https://github.com/mgimond/ES218/blob/gh-pages/Data/maine_commute.csv")
+dat <- read.csv("http://mgimond.github.io/ES218/Data/maine_commute.csv")
 ```
 
 
@@ -48,34 +48,64 @@ shp2 <- left_join(shp, dat, by = "Geo_FIPS")
 
 # `ggplot2` and `tmap`
 
-There are at least two mapping solutions in R: `ggplot2` and `tmap`. The bulk of this tutorial will make use of `tmap` but a brief example of `ggplot2`'s mapping capabilities will be presented next.
+There are at least two mapping solutions in R: `ggplot2` and `tmap`. Examples using both mapping environments follow.
 
 ## Mapping with `ggplot2`
 
 
+The ggplot grammar is no different here from what you've learned earlier in the course. We simply make use of the `geom_sf()` function to generate the map.
+
 ```{r fig.height = 3}
 library(ggplot2) 
 
-ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + theme_minimal() +
-scale_fill_steps2(low = "#1A9641", high = "#D73027", mid = "#FFFFBF",
-                  midpoint = 25,
-                  breaks = c(5, 15, 20, 30, 35),
-                  guide = guide_coloursteps(even.steps = FALSE,
-                                            show.limits = TRUE))
+ggplot(shp2) + geom_sf(aes(fill = Commute)) 
 ```
+
+The commute time variable, `commute`, is mapped to the map's `fill` aesthetic. You can overcome many of the plot' features's default behaviour. For example, you can bin the color scheme by assigning ranges of commute time values to a unique set of color swatches using one of the `scale_fill_steps*` family of functions. We'll also remove the polygon borders.
+
+
+```{r fig.height = 3}
+ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
+  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", "#D9EF8B", "#91CF60", "#1A9850") ,
+                    breaks = c(5, 15, 20, 30, 35))
+```
+
+It might help to darken the background panel using the `theme` function.
+
+```{r fig.height = 3}
+ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
+  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", "#D9EF8B", "#91CF60", "#1A9850") ,
+                    breaks = c(5, 15, 20, 30, 35)) +
+  theme(panel.grid = element_line(color = "grey80"),
+        panel.background = element_rect(fill = "grey70"))
+```
+
+Coordinate systems play an important role in both analyizing and visualizing spatial data. Use the `coord_sf` function to set the map's coordinate system. Here' we'll adopt a *UTM NAD83 Zone 19N* coordinate system using its `EPSG` code of `26919`. The axes will still adopt the lat/long designation.
+
+```{r fig.height = 3}
+ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
+  coord_sf(crs = 26919) +
+  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", 
+                               "#D9EF8B", "#91CF60", "#1A9850") ,
+                    breaks = c(5, 15, 20, 30, 35)) +
+  theme(panel.grid = element_line(color = "grey80"),
+        panel.background = element_rect(fill = "grey70"))
+```
+
+Finally, we'll modify the bin intervals by generating a non-uniform classification scheme. As such we'll scale the legend bar so as to reflect the non-uniform intervals using the `guide_coloursteps()` function and its `even.steps = FALSE` argument (note that this features is only available in `ggplot2 ver 3.3` or greater). We'll also modify the legend bar dimensions and title.
 
 
 ```{r fig.height = 3}
 ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
   coord_sf(crs = 26919) +
-  scale_fill_steps2(low = "#1A9641", high = "#D73027", mid = "#FFFFBF",
-                    midpoint = 25,
+  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", 
+                               "#D9EF8B", "#91CF60", "#1A9850") ,
                     breaks = c(5, 15, 20, 30, 35),
                     guide = guide_coloursteps(even.steps = FALSE,
                                               show.limits = TRUE,
                                               title = "Commute time \n(min)",
-                                              barheight = unit(2.5, "in"),
-                                              barwidth = unit(0.2, "in"))) +
+                                              barheight = unit(2.3, "in"),
+                                              barwidth = unit(0.15, "in"))) +
   theme(panel.grid = element_line(color = "grey80"),
         panel.background = element_rect(fill = "grey70"))
 ```
