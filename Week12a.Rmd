@@ -15,10 +15,10 @@ pkg_ver(c("sf", "ggplot2", "tmap", "dplyr", "stringr", "maps"))
 
 Variables can be mapped in R using packages such as `ggplot2` and `tmap`. The focus of this tutorial will be on mapping polygon (aka areal) data. For more information on mapping spatial data (both vector and raster) visit the [GIS and Spatial Analysis pages](https://mgimond.github.io/Spatial/mapping-data-in-r.html).
 
-
+ 
 # Loading a sample dataset
 
-The following chunk loads a spatial dataset that is in an `sf` spatial format. The data represents the 2018 census tracts for the state of Maine (USA).
+The following chunk loads a spatial dataset that is in an `sf` spatial format. The data represent the 2018 census tracts for the state of Maine (USA).
 
 ```{r}
 library(sf)
@@ -46,12 +46,11 @@ library(dplyr)
 shp2 <- left_join(shp, dat, by = "Geo_FIPS")
 ```
 
-# `ggplot2` and `tmap`
+# Mapping the data
 
 There are at least two mapping solutions in R: `ggplot2` and `tmap`. Examples using both mapping environments follow.
 
 ## Mapping with `ggplot2`
-
 
 The ggplot grammar is no different here from what you've learned earlier in the course. We simply make use of the `geom_sf()` function to generate the map.
 
@@ -61,26 +60,30 @@ library(ggplot2)
 ggplot(shp2) + geom_sf(aes(fill = Commute)) 
 ```
 
-The commute time variable, `commute`, is mapped to the map's `fill` aesthetic. You can overcome many of the plot' features's default behaviour. For example, you can bin the color scheme by assigning ranges of commute time values to a unique set of color swatches using one of the `scale_fill_steps*` family of functions. We'll also remove the polygon borders.
+The commute time variable, `commute`, is mapped to the map's `fill` aesthetic. You can overcome many of the plot features' default behavior. For example, you can bin the color schemes by assigning ranges of commute time values to a unique set of color swatches using one of the `scale_fill_steps*` family of functions. You can also remove the border colors by setting `col = NA`. This is demontrated next.
 
 
 ```{r fig.height = 3}
 ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
-  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", "#D9EF8B", "#91CF60", "#1A9850") ,
+  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", 
+                               "#D9EF8B", "#91CF60", "#1A9850") ,
                     breaks = c(5, 15, 20, 30, 35))
 ```
 
-It might help to darken the background panel using the `theme` function.
+Here, we make use of hex defined colors. Note that you can use the built-in color names or the `rgb()` function to define the palette colors.
+
+It might help to darken the background panel using the `theme` function. We'll assign the `grey70` color to the background and `grey80` to the grid lines.
 
 ```{r fig.height = 3}
 ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
-  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", "#D9EF8B", "#91CF60", "#1A9850") ,
+  scale_fill_stepsn(colors = c("#D73027", "#FC8D59", "#FEE08B", 
+                               "#D9EF8B", "#91CF60", "#1A9850") ,
                     breaks = c(5, 15, 20, 30, 35)) +
   theme(panel.grid = element_line(color = "grey80"),
         panel.background = element_rect(fill = "grey70"))
 ```
 
-Coordinate systems play an important role in both analyizing and visualizing spatial data. Use the `coord_sf` function to set the map's coordinate system. Here' we'll adopt a *UTM NAD83 Zone 19N* coordinate system using its `EPSG` code of `26919`. The axes will still adopt the lat/long designation.
+Coordinate systems can play an important role in both analyzing and visualizing spatial data. If you want to control the coordinate system used in your map, add the `coord_sf` function. Here we'll adopt a *UTM NAD83 Zone 19N* coordinate system using its `EPSG` code of `26919`. Note that the grid axes will still adopt the lat/long designation.
 
 ```{r fig.height = 3}
 ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
@@ -92,7 +95,7 @@ ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) +
         panel.background = element_rect(fill = "grey70"))
 ```
 
-Finally, we'll modify the bin intervals by generating a non-uniform classification scheme. As such we'll scale the legend bar so as to reflect the non-uniform intervals using the `guide_coloursteps()` function and its `even.steps = FALSE` argument (note that this features is only available in `ggplot2 ver 3.3` or greater). We'll also modify the legend bar dimensions and title.
+Finally, we'll modify the bin intervals by generating a non-uniform classification scheme. As such we'll scale the legend bar so as to reflect the non-uniform intervals using the `guide_coloursteps()` function and its `even.steps = FALSE` argument (note that this feature is only available in `ggplot2 ver 3.3` or greater). We'll also modify the legend bar dimensions and title.
 
 
 ```{r fig.height = 3}
@@ -111,9 +114,41 @@ ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) +
 ```
 
 
+## Mapping with `tmap`
+
+While `ggplot2` can handle basic mapping operations, it does not offer the ease and flexibility of the `tmap` package. Much like `ggplot2`, `tmap` adopts the same layering strategy. For example, to construct the above plot we first specify the layer to plot via the call to `tm_shape`, then the geometry to symbolize the spatial feature, `tm_fill()`.
+
+```{r fig.width=5.5,fig.height=2.5}
+library(tmap)
+
+tm_shape(shp2) +  tm_fill(col = "Commute")
+```
+
+To change the projection, pass the PROJ4 string to the `projection` parameter. To move the legend box outside of the map, set `tm_legend(outside = TRUE)`.
+
+```{r fig.width=5.5,fig.height=2.5}
+tm_shape(shp2, projection = 26919) + 
+  tm_fill(col = "Commute") +
+  tm_legend(outside = TRUE)
+```
+
+You can also modify the classification breaks and colors. For example, to break the values following quantiles, and assigning the same color scheme used with the ggplot output in an earlier code chunk, you would write:
+
+```{r fig.width=5.5,fig.height=2.5}
+tm_shape(shp2, projection = 26919) + 
+  tm_fill(col = "Commute", n = 6, style = "quantile",  
+          palette = c("#D73027", "#FC8D59", "#FEE08B", 
+                      "#D9EF8B", "#91CF60", "#1A9850")) +
+  tm_legend(outside = TRUE)
+```
+
+To explore additional mapping options with `tmap` [Click here](https://mgimond.github.io/Spatial/mapping-data-in-r.html). 
+
 # Another example
 
+In this section we explore a more complicated workflow that requires additional data manipulation steps to allow a proper join between US counties and Census data.
 
+First, we'll load the `cnty` spatial object to your current session environment.
 
 ```{r}
 library(sf)
@@ -121,63 +156,21 @@ library(sf)
 load(url("https://github.com/mgimond/ES218/blob/gh-pages/Data/counties48.RData?raw=true"))
 ```
 
-The code chunk will add the `cnty` spatial object to your current session environment.
+Next, we'll plot the data. Since the data spans the continental US, we'll change the projection to an equal area projection. This projection will be defined using a string (`ea` object)--note that a string is another way to define a projection.  To learn more about defining projections in R, [click here](https://mgimond.github.io/Spatial/coordinate-systems-in-r.html).
 
-## Generating a basic map in `ggplot2`
-
-In the following example we will use `ggplot2` to draw the US counties map. We will also color the counties based on the state they are located in. The state name column is labeled `region` and the county name column is labeled `subregion`.
-
-```{r fig.width=5.5,fig.height=2.5}
-library(ggplot2)
-
-ggplot(cnty) +  geom_sf() 
-```
-
-The default ggplot grey theme works well for non-spatial data, but it may not be that suitable for spatial data. We can remove it with the `theme_bw()` option.
-
-```{r fig.width=5.5,fig.height=2.5}
-ggplot(cnty) + 
-  geom_sf() + 
-  theme_bw()
-```
-
-You can modify the map projection by passing the projection type to the `coord_sf` function. The projection is defined using [PROJ4 formatted string](https://proj4.org/apps/proj.html). For example, to project the continental US into a Lambert equal area projection, type:
-
-```{r fig.width=5.5,fig.height=2.5}
-# Define the projection using PROJ4 syntax
-ea <- "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
-
-# Plot the data
-ggplot(cnty) + 
-  geom_sf() + 
-  theme_bw() +
-  coord_sf(crs=ea) 
-```
-
-To learn more about manipulating spatial projections in R [click here](https://mgimond.github.io/Spatial/coordinate-systems-in-r.html).
-
-## Generating a basic map in `tmap`
-
-While `ggplot2` can handle basic mapping operations, it does not offer the ease and flexibility of the `tmap` package. Much like `ggplot2`, `tmap` adopts the same layering strategy. For example, to construct the above plot we first specify the layer to plot via the call to `tm_shape`, then the geometry to symbolize the spatial feature (`tm_polygons()`).
-
-```{r fig.width=5.5,fig.height=2.5}
-library(tmap)
-
-tm_shape(cnty) +  tm_polygons()
-```
-
-To change the projection, pass the PROJ4 string to the `projection` parameter. To add a lat/long graticule, use the `tm_grid()` function. As with `ggplot2`, map elements are layered in the order in which they are called.
+Since we have no polygons to fill just yet, we'll simply draw the outline using `tm_polygons()`
 
 ```{r fig.width=5.5,fig.height=4.0}
+# Define the projection using PROJ4 syntax
+ea <- "+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 
+       +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"
+
+# Draw the map
 tm_shape(cnty, projection = ea) + 
-  tm_grid(projection = "+proj=longlat", col = "grey", labels.inside.frame = FALSE) +
   tm_polygons() +
   tm_layout(outer.margins = c(.1,.1,.1,.1))
 ```
 
-While grids are helpful in locating features on a map, they are not always necessary and can take away from the intended visual hierarchy. In what follows, we will be focusing on choropleth maps whereby the intended focus will be on the relative distribution of a variable across polygon units. We'll therefore refrain from  adding grids to the maps.
-
-To explore additional mapping options with `tmap` [Click here](https://mgimond.github.io/Spatial/mapping-data-in-r.html). 
 
 # Joining tables to spatial objects
 
@@ -185,7 +178,7 @@ In the examples that follow, you will learn how to join census income data to a 
 
 ## Joining income table to the map by county and state names
 
-The next step is to *join* a dataset to the counties map. We will use the income-by-gender-education dataset used earlier in the course and limit the data to *median income per person* (`B20004001` column).
+We will use the income-by-gender-education dataset used earlier in the course and limit the data to *median income per person* (`B20004001` column).
 
 ```{r}
 library(dplyr)
@@ -253,7 +246,7 @@ df1 <- df %>%
   inner_join(st, by="State") %>%
   mutate(ID = paste(region,tolower(County), sep = ","),
          ID = ifelse(region=="louisiana", 
-                             str_replace(ID, " parish", ""), ID))  %>%
+                     str_replace(ID, " parish", ""), ID))  %>%
   select(ID, B20004001 )
 ```
 
@@ -266,7 +259,9 @@ tm_shape(cnty.df1) + tm_fill(col = "B20004001", palette = "Greens") +
   tm_legend(outside = TRUE) 
 ```
 
-Most of Louisiana's parishes are now mapped, but we are still missing a few parishes as well as a few counties. This is a result of differences in spelling for two-word county and parish names. For example, `df1` encodes St. Lucie county (Florida) as `st. lucie` whereas `cnty` omits the dot and encodes it as `st lucie`. Fixing these discrepancies will require additional labor. At this point, it may prove more fruitful to do away with state/county names as *joining* keys and use **FIPS** county codes instead. FIPS (Federal Information Processing Standards) codes assign each county/state a unique five number designation thus making it easier to join data to spatial features. However, neither our census data table nor the built-in counties map have FIPS codes. We will download another version of the income data (one that has FIPS codes). Note that FIPS codes are normally part of datasets provided by the Census Bureau. The `maps` package has a dataset called `county.fips` that can be used to match state/county names in the `county` map to FIPS codes.
+Most of Louisiana's parishes are now mapped, but we are still missing a few parishes as well as a few counties. This is a result of differences in spelling for two-word county and parish names. For example, `df1` encodes St. Lucie county (Florida) as `st. lucie` whereas `cnty` omits the dot and encodes it as `st lucie`. Fixing these discrepancies will require additional labor. At this point, it may prove more fruitful to do away with state/county names as *joining* keys and use **FIPS** county codes instead. 
+
+FIPS (Federal Information Processing Standards) codes assign each county/state a unique five number designation thus making it easier to join data to spatial features. However, neither our census data table nor the built-in counties map have FIPS codes. We will download another version of the income data (one that has FIPS codes). Note that FIPS codes are normally part of datasets provided by the Census Bureau. The `maps` package has a dataset called `county.fips` that can be used to match state/county names in the `county` map to FIPS codes.
 
 ## Joining income table by FIPS code
 
