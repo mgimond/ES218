@@ -20,7 +20,7 @@ Bivariate data are datasets that store two variables measured from a same observ
 
 # Scatter plot
 
-A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed *dependent* on another variable; the latter being the *independent* variable. Cleveland refers to the former as the *response*  and the latter as the *factor*. The dependent variable is usually plotted on the y-axis and the independent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between them.
+A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed *dependent* on another variable; the latter being the *independent* variable. Cleveland refers to the former as the *response*  and the latter as the *factor* (this is not to be confused with the *factor* data type used in R as a grouping variable). The dependent variable is usually plotted on the y-axis and the independent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between them.
 
 A scatter plot can be generated using the base plotting environment as follows:
 
@@ -37,7 +37,7 @@ library(ggplot2)
 ggplot(df, aes(x = area, y = cp.ratio)) + geom_point()
 ```
 
-The data represent, on the y-axis,  the ratio between the ganglion cell density of a cat's central retina to that of its peripheral density (variable `cp.ratio`) and, on the x-axis, the cat's retina surface area (`area`) during its early development (ranging from 35 to 62 days of gestation).
+The data represent the ratio between the ganglion cell density of a cat's central retina to that of its peripheral density (variable `cp.ratio`) and the cat's retina surface area (`area`) during its early development (ranging from 35 to 62 days of gestation).
 
 # Fitting the data
 
@@ -54,7 +54,7 @@ In the base plotting environment, we can do the following:
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 M <- lm(cp.ratio ~ area, dat = df)
 plot(cp.ratio ~ area, dat = df)
-abline(M, col="red")
+abline(M, col = "red")
 ```
 
 In the `ggplot2` plotting environment, we can make use of the `stat_smooth` function to generate the regression line.
@@ -65,25 +65,25 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
              stat_smooth(method ="lm", se = FALSE)
 ```
 
-The `se=FALSE` option prevents R from drawing a confidence envelope around the regression line.
+The `se = FALSE` option prevents R from drawing a confidence envelope around the regression line.
 
-The straight line is a first order polynomial with two parameters, $a$ and $b$, that define an equation that best describes the relationship between the two variables:
+The straight line is a **first order polynomial** with two parameters, $a$ and $b$, that define an equation that best describes the relationship between the two variables:
 
 $$
-CP\ Ratio = a + b (Area)
+CP_{Ratio} = a + b (Area)
 $$
 
-where $a$ and $b$ can be extracted from the model `M` as follows:
+where $a$ and $b$ can be extracted from the regression model object `M` as follows:
 
 ```{r}
 coef(M)
 ```
 
-Thus $a$ =0.014 and $b$ = 0.11.
+Thus $a$ = 0.014 and $b$ = 0.11.
 
 ### Fitting a 2^nd^ order polynomial
 
-A second order polynomial is a three parameter function ($a$, $b$ and $c$) whose equation $y = a + bx + cx^2$ defines the curve that best fits the data. We define such a relationship in R using the formula `cp.ratio ~ area + I(area^2)`. Our new `lm` expression and resulting coefficients follow:
+A second order polynomial is a three parameter function ($a$, $b$ and $c$) whose equation $y = a + bx + cx^2$ defines the curve that best fits the data. We define such a relationship in R using the formula `cp.ratio ~ area + I(area^2)`. The *identity* function `I()` preserves the arithmetic interpretation of `area^2` as part of the model. Our new `lm` expression and resulting coefficients follow:
 
 ```{r}
 M2 <- lm(cp.ratio ~  area + I(area^2) , dat = df)
@@ -96,7 +96,7 @@ $$
 y = 2.87 - 0.012 x + 0.000839 x^2
 $$
 
-We cannot use `abline` to plot the predicted 2nd order polynomial curve since `abline` only draws straight lines. We will need to construct the line manually using the `predict` and `lines` functions.
+We cannot use `abline` to plot the predicted 2^nd^ order polynomial curve since `abline` only draws straight lines. We will need to construct the line manually using the `predict` and `lines` functions.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 plot(cp.ratio ~ area, dat=df)
@@ -115,11 +115,132 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
 
 ## Non-parametric fits
 
-### LOESS
+### Loess
 
-A more flexible curve fitting option is the LOESS curve (short for **local regression**). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the smooth curve. The range of x-values that contribute to each localized regression lines is defined by the $\alpha$ parameter which usually ranges from 0.2 to 1. The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a LOESS curve is $\lambda$: it defines the polynomial order of the localized regression line. This is usually set to 1 (though `ggplot2`'s implementation of the loess defaults to a 2^nd^ order polynomial).
+A more flexible curve fitting option is the **loess**  curve (short for **lo**cal regr**ess**ion; also known as the *local weighted regression*). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the smooth curve. The range of x-values that contribute to each localized regression lines is defined by the $\alpha$ parameter which usually ranges from 0.2 to 1. The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a loess curve is $\lambda$: it defines the polynomial order of the localized regression line. This is usually set to 1 (though `ggplot2`'s implementation of the loess defaults to a 2^nd^ order polynomial).
 
-The LOESS fit can be computed using the `loess()` function. It takes as arguments  `span` ($\alpha$), and `degree` ($\lambda$).
+```{r echo=FALSE}
+library(dplyr)
+library(purrr)
+
+alpha <-  0.5  
+strip.x <- nrow(df) * alpha # Number of points within band
+
+f.plot <- function(start , line = FALSE, point = FALSE, bnds =FALSE,
+                   w = FALSE, plot = TRUE, pts = FALSE, title = NULL){
+  # Find points closest to starting point
+  subset <-  df %>% 
+    mutate(dst = abs(area - start)) %>% 
+    arrange(dst) %>% 
+    mutate(j = row_number()) %>% 
+    filter(j <= strip.x ) %>% 
+    mutate(wt = dst / max(dst) * 3)
+  
+  # Assign weights
+  wts <- dnorm(subset$wt)/ 0.3989423
+  
+  # Regress with weights
+  M <- lm(cp.ratio ~ area, subset, weights = wts)
+  x.l <- coef(M)[1] + coef(M)[2] * start
+  
+  # Plot by option
+  if(plot == TRUE){
+    plot(cp.ratio ~ area, df,  yaxt='n', main = title,
+         axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+    axis(side=1, at=c(seq(10,150,30)))
+    abline(v = start, lty = 2)
+    if(bnds == TRUE){
+      abline(v = c(min(subset$area),max(subset$area)), lty = 3, col = "grey")
+      rect(min(subset$area), 0, max(subset$area), 20, col = rgb(0,0,1,0.1),
+           border = rgb(0,0,1,0.1))
+    }
+    
+    if(w == TRUE){
+      points(x = subset$area, y = subset$cp.ratio, col = rgb(0,0,1, wts), 
+             pch = 16,  cex=1.6)
+    }
+    if(line == TRUE){
+      clip(min(subset$area),max(subset$area),
+           min(df$cp.ratio),max(df$cp.ratio))
+      abline(M, col = "orange", lwd = 1.8)
+    }
+    if(point == TRUE){
+      points(x = start, y = x.l, pch = 16, col = "red", cex=1.8) 
+    }
+  }
+  
+  if(pts == TRUE){
+    return(c(start, x.l))
+  }  
+  
+}
+
+```
+
+### How a loess is constructed
+
+Behind the scenes, each point (x~i~,y~i~) that defines the loess curve is constructed as follows: 
+ 
+ a) A subset of data points closest to point x~i~ are identified. The number of points in the subset is computed by multiplying the bandwidth $\alpha$ by the total number of observations. In our current example, the number of points defining the subset is 0.5 * 14 = 7. The points are identified in the light blue area of the plot in panel (a) of the figure below.
+ b) The points in the subset are assigned weights. Greater weight is assigned to points closest to x~i~ and vice versa. The weights define the points' influence on the fitted line. Different weighting techniques can be implemented in a loess with the `gaussian` weight being the most common. Another weighting strategy we will also explore later in this course is the `symmetric` weight.
+ c) A regression line is fit to the subset of points. Points with smaller weights will have less leverage on the fitted line than points with larger weights. The fitted line can be either a first order polynomial fit or a second order polynomial fit.
+ d) Compute the value y~i~ from the regression line. This is shown a the red dot in panel (d). This is one of the points that will define the shape of the loess.
+   
+
+```{r fig.height = 2.7, fig.width = 10, echo = FALSE}
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+f.plot(start = 50, bnds = TRUE, title = "(a) Subset points") 
+f.plot(start = 50, bnds = TRUE, w = TRUE, title = "(b) Assign weights")
+f.plot(start = 50, bnds = TRUE, w = TRUE, line = TRUE, title = "(c) Fit line") 
+f.plot(start = 50,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+       title = "(d) Draw point")
+par(OP)
+```
+
+The above steps are repeated for as many x~i~ values practically possible. Note that when x~i~ approaches an x limit, the subset of points becomes skewed to one side of x~i~. For example, when estimating x~10~, the seven closest points to the right of x~10~ are selected.
+
+```{r fig.height = 2.5, fig.width = 10, echo = FALSE}
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+f.plot(start = 10,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+       title = expression(Left-most ~~  x[i] )) 
+f.plot(start = 140,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+       title = expression(Right-most ~~  x[i]) ) 
+par(OP)
+```
+
+
+In the following example, just under 30 loess points are computed at equal intervals. This defines the shape of the loess.
+
+```{r fig.height = 2.3, fig.width = 10, echo = FALSE}
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+l.pts <- seq(10,140,(110-20)/20) %>% map(function(x) f.plot(start = x, plot = FALSE, pts = TRUE)) %>% 
+  do.call(rbind, .) %>% as.data.frame()
+plot(cp.ratio ~ area, df,  yaxt='n', main = NULL,
+         axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+    axis(side=1, at=c(seq(10,150,30)))
+points(l.pts$V1, l.pts$`(Intercept)`, pch = 16, col = "red",
+       cex=1)
+par(OP)
+```
+
+It's more conventional to plot the line segments than it is to plot the points.
+
+```{r fig.height = 2.3, fig.width = 10, echo = FALSE}
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+l.pts <- seq(10,140,(110-20)/20) %>% map(function(x) f.plot(start = x, plot = FALSE, pts = TRUE)) %>% 
+  do.call(rbind, .) %>% as.data.frame()
+plot(cp.ratio ~ area, df,  yaxt='n', main = NULL,
+         axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+    axis(side=1, at=c(seq(10,150,30)))
+lines(l.pts$V1, l.pts$`(Intercept)`, col = "red")
+par(OP)
+```
+
+<br>
+
+### Plotting a loess in R
+
+The loess fit can be computed using the `loess()` function. It takes as arguments  `span` ($\alpha$), and `degree` ($\lambda$).
 
 ```{r}
 # Fit loess function
@@ -144,7 +265,7 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
              stat_smooth(method = "loess", se = FALSE, span = 0.5)
 ```
 
-However, `ggplot` (up to version 2.1, at least) defaults to a second degree loess (i.e. the small regression line elements that define the loess are defined by a 2^nd^ order polynomial and not a 1^st^ order polynomial). If a first order polynomial (`degree=1`) is desired, you need to include an argument list in the form of `method.args=list(degree=1)` to the `stat_smooth` function.
+However, `ggplot` (up to version 3.3) defaults to a second degree loess (i.e. the small regression line elements that define the loess are defined by a 2^nd^ order polynomial and not a 1^st^ order polynomial). If a first order polynomial (`degree=1`) is desired, you need to include an argument list in the form of `method.args=list(degree=1)` to the `stat_smooth` function.
 
 ```{r fig.width=2.5, fig.height=2.5}
 ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() + 
