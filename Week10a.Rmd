@@ -74,7 +74,7 @@ ggplot(d2, aes(x = Year, y = res1)) + geom_point()
 
 An overall trend is still present, despite having attempted to control for it. This suggests that our simple line model does not do a good job in *smoothing* out the overall trend. 
 
-It appears that the overall trend is slightly convex and has a small peak around the 1990's; we should try to fit the trend using a 3rd order polynomial of the form:
+It appears that the overall trend is slightly convex and has a small peak around the 1990's; we should try to fit the trend using a 3^rd^ order polynomial of the form:
 
 $$
 CO2_{trend} = a + b(Year) + c(Year^2) + d(Year^3)
@@ -99,14 +99,14 @@ ggplot(d2 , aes(x = Year, y = res2)) + geom_point() +
            stat_smooth(method = "loess", se = FALSE)
 ```
 
-This is an improvement over the simple line model (which was a 1st order polynomial fit).  So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a "W" shaped trend in the residuals which can hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth the trend even further, but at this point, we may opt for a non-parametric fit. When the goal is to *peel* off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. An example of such a smoothing technique is the loess fit which is shown in the following figure.
+This is an improvement over the simple line model (which was a 1^st^ order polynomial fit).  So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a "W" shaped trend in the residuals which can hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth the trend even further, but at this point, we may opt for a non-parametric fit. When the goal is to *peel* off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. An example of such a smoothing technique is the loess fit which is shown in the following figure.
 
 ```{r fig.height=2, fig.width=6}
 ggplot(d2, aes(x = Year, y = CO2)) + geom_line() + 
              stat_smooth(span = 1/4, se = FALSE, col = "red")
 ```
 
-At first glance, this may not look any different from our 3rd order polynomial. But the resulting residuals suggest that the loess smooth did a good job in removing any overall trend in our batch of CO2 values.
+At first glance, this may not look any different from our 2^nd^ or 3^rd^ order polynomial model. But the resulting residuals suggest that the loess smooth did a better job in removing any decadal patterns in our batch of CO2 values.
 
 ```{r fig.height=2, fig.width=6}
 lo <- loess(CO2 ~ Year, d2, span=1/4)
@@ -176,7 +176,7 @@ ggplot(d3, aes(x = Year, y = Resid.lev)) +  geom_line(col = "grey") +
                  method.args = list(family = "symmetric", degree = 2))    
 ```
 
-Recall that at this points, we have accounted for the overall trend (which has by far the greatest effect with a range of 75 ppm) and the seasonal component (which has a smaller effect with a range of about 6 ppm). The 3rd set of residuals account for about 2 ppm of the total variability in the dataset. Note that we can still make out the seasonal fluctuations if we look closely at the data. But we can also make out broader patterns of interest not consistent with random noise and not explained by seasonal variability. Some of the patterns could be explained by the southern oscillation index (SOI), for example,  which is a measure of the difference in atmospheric pressure across the pacific basin. When the index is positive the resulting winds drive upwelling currents that release additional CO2 into the atmosphere. 
+Recall that at this points, we have accounted for the overall trend (which has by far the greatest effect with a range of 90 ppm) and the seasonal component (which has a smaller effect with a range of about 6 ppm). The 3^rd^ set of residuals account for about 2 ppm of the total variability in the dataset. Note that we can still make out the seasonal fluctuations if we look closely at the data. But we can also make out broader patterns of interest not consistent with random noise and not explained by seasonal variability. Some of the patterns could be explained by the southern oscillation index (SOI), for example,  which is a measure of the difference in atmospheric pressure across the pacific basin. When the index is positive the resulting winds drive upwelling currents that release additional CO2 into the atmosphere. 
 
 Let's overlay the SOI data on top of our last plot.
 
