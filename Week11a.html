@@ -23,7 +23,9 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -36,12 +38,21 @@
   gtag('config', 'UA-39623718-2');
 </script>
 
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -51,14 +62,16 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -67,9 +80,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -152,7 +165,8 @@ h6 {
 }
 </style>
 
-<link rel="stylesheet" href="libs\style.css" type="text/css" />
+
+<link rel="stylesheet" href="libs/style.css" type="text/css" />
 
 
 
@@ -437,7 +451,7 @@ div.tocify {
       <ul class="nav navbar-nav">
         <li>
   <a href="index.html">
-    <span class="fa fa-home"></span>
+    <span class="fas fa-home"></span>
      
     
   </a>
@@ -671,7 +685,7 @@ tidyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-0.8.3
+1.0.2
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -680,7 +694,7 @@ tidyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.1.2
 </td>
 </tr>
 </tbody>
@@ -689,8 +703,8 @@ tidyr
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>Before tackling two-way tables, let’s explore a simpler one-way table. The following dataset shows mean annual income by occupation for the year 2014 (<em>src: <a href="http://www.bls.gov/oes/#tables">Bureau of Labor Statistics</a></em>)</p>
-<!-- html table generated in R 3.6.2 by xtable 1.8-4 package -->
-<!-- Fri Jan 31 14:59:00 2020 -->
+<!-- html table generated in R 4.0.3 by xtable 1.8-4 package -->
+<!-- Sun Feb 07 15:42:21 2021 -->
 <table border="1">
 <tr>
 <th>
@@ -914,37 +928,37 @@ y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 <div id="analysis-workflow" class="section level1">
 <h1>Analysis workflow</h1>
 <p>Let’s first create the dataframe.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">row.names =</span> <span class="kw">c</span>(<span class="st">&quot;NE&quot;</span>,<span class="st">&quot;NC&quot;</span>,<span class="st">&quot;S&quot;</span>,<span class="st">&quot;W&quot;</span>),</a>
-<a class="sourceLine" id="cb1-2" title="2">                 <span class="dt">ed8       =</span> <span class="kw">c</span>(<span class="fl">25.3</span>,<span class="fl">32.1</span>,<span class="fl">38.8</span>,<span class="fl">25.4</span>), </a>
-<a class="sourceLine" id="cb1-3" title="3">                 <span class="dt">ed9to11   =</span> <span class="kw">c</span>(<span class="fl">25.3</span>,<span class="dv">29</span>,<span class="dv">31</span>,<span class="fl">21.1</span>),</a>
-<a class="sourceLine" id="cb1-4" title="4">                 <span class="dt">ed12      =</span> <span class="kw">c</span>(<span class="fl">18.2</span>,<span class="fl">18.8</span>,<span class="fl">19.3</span>,<span class="fl">20.3</span>),</a>
-<a class="sourceLine" id="cb1-5" title="5">                 <span class="dt">ed13to15  =</span> <span class="kw">c</span>(<span class="fl">18.3</span>,<span class="fl">24.3</span>,<span class="fl">15.7</span>,<span class="dv">24</span>),</a>
-<a class="sourceLine" id="cb1-6" title="6">                 <span class="dt">ed16      =</span> <span class="kw">c</span>(<span class="fl">16.3</span>,<span class="dv">19</span>,<span class="fl">16.8</span>,<span class="fl">17.5</span>)</a>
-<a class="sourceLine" id="cb1-7" title="7">                 )</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">row.names =</span> <span class="kw">c</span>(<span class="st">&quot;NE&quot;</span>,<span class="st">&quot;NC&quot;</span>,<span class="st">&quot;S&quot;</span>,<span class="st">&quot;W&quot;</span>),</span>
+<span id="cb1-2"><a href="#cb1-2"></a>                 <span class="dt">ed8       =</span> <span class="kw">c</span>(<span class="fl">25.3</span>,<span class="fl">32.1</span>,<span class="fl">38.8</span>,<span class="fl">25.4</span>), </span>
+<span id="cb1-3"><a href="#cb1-3"></a>                 <span class="dt">ed9to11   =</span> <span class="kw">c</span>(<span class="fl">25.3</span>,<span class="dv">29</span>,<span class="dv">31</span>,<span class="fl">21.1</span>),</span>
+<span id="cb1-4"><a href="#cb1-4"></a>                 <span class="dt">ed12      =</span> <span class="kw">c</span>(<span class="fl">18.2</span>,<span class="fl">18.8</span>,<span class="fl">19.3</span>,<span class="fl">20.3</span>),</span>
+<span id="cb1-5"><a href="#cb1-5"></a>                 <span class="dt">ed13to15  =</span> <span class="kw">c</span>(<span class="fl">18.3</span>,<span class="fl">24.3</span>,<span class="fl">15.7</span>,<span class="dv">24</span>),</span>
+<span id="cb1-6"><a href="#cb1-6"></a>                 <span class="dt">ed16      =</span> <span class="kw">c</span>(<span class="fl">16.3</span>,<span class="dv">19</span>,<span class="fl">16.8</span>,<span class="fl">17.5</span>)</span>
+<span id="cb1-7"><a href="#cb1-7"></a>                 )</span></code></pre></div>
 <div id="visualizing-the-data" class="section level2">
 <h2>Visualizing the data</h2>
 <p>It’s often easier to look at a graphical representation of the data than a tabular one. Even a table as small as this can benefit from a plot.</p>
 <p>We will adopt Bill Cleveland’s dotplot for this purpose. R has a built-in dotplot function called <code>dotchart</code>. It requires that the table be stored as a matrix instead of a dataframe; we will therefore convert <code>df</code> to a matrix by wrapping it with the <code>as.matrix()</code> function.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">dotchart</span>( <span class="kw">as.matrix</span>(df), <span class="dt">cex=</span><span class="fl">0.7</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">dotchart</span>( <span class="kw">as.matrix</span>(df), <span class="dt">cex=</span><span class="fl">0.7</span>)</span></code></pre></div>
 <p><img src="Week11a_files/figure-html/unnamed-chunk-7-1.png" width="288" /></p>
 <p>The plot helps visualize any differences in mortality rates across different father educational attainment levels. There seems to be a gradual decrease in child mortality with increasing father educational attainment.</p>
 <p>But the plot does not help spot differences across regions (except for the <code>ed12</code> group). We can generate another plot where region becomes the main grouping factor. We do this by wrapping the matrix with the transpose function <code>t()</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">dotchart</span>( <span class="kw">t</span>(<span class="kw">as.matrix</span>(df)), <span class="dt">cex=</span><span class="fl">0.7</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">dotchart</span>( <span class="kw">t</span>(<span class="kw">as.matrix</span>(df)), <span class="dt">cex=</span><span class="fl">0.7</span>)</span></code></pre></div>
 <p><img src="Week11a_files/figure-html/unnamed-chunk-8-1.png" width="288" /></p>
 <p>At first glance, there seems to be higher death rates for the <code>NC</code> and <code>S</code> regions and relatively lower rates for the <code>W</code> and <code>NE</code> regions. But our eyes may be fooled by outliers in the data.</p>
 <p>Next, we’ll generate side-by-side boxplots to compare the effects between both categories. Note that we’ll need to create a <em>long</em> version of the table using the <code>tidyr</code> package.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">library</span>(tidyr)</a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="kw">library</span>(dplyr)</a>
-<a class="sourceLine" id="cb4-3" title="3"></a>
-<a class="sourceLine" id="cb4-4" title="4">df.l &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-5" title="5"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Region =</span> <span class="kw">as.factor</span>(<span class="kw">row.names</span>(.)) )  <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-6" title="6"><span class="st">  </span><span class="kw">gather</span>(<span class="dt">key=</span>Edu, <span class="dt">value =</span> Deaths, <span class="op">-</span>Region) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb4-7" title="7"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Edu =</span> <span class="kw">factor</span>(Edu, <span class="dt">levels=</span><span class="kw">names</span>(df)))</a>
-<a class="sourceLine" id="cb4-8" title="8"></a>
-<a class="sourceLine" id="cb4-9" title="9"><span class="co"># side-by-side plot</span></a>
-<a class="sourceLine" id="cb4-10" title="10">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</a>
-<a class="sourceLine" id="cb4-11" title="11"><span class="kw">plot</span>(Deaths <span class="op">~</span><span class="st"> </span>Region <span class="op">+</span><span class="st"> </span>Edu, df.l)</a>
-<a class="sourceLine" id="cb4-12" title="12"><span class="kw">par</span>(OP)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">library</span>(tidyr)</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">library</span>(dplyr)</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a>df.l &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Region =</span> <span class="kw">as.factor</span>(<span class="kw">row.names</span>(.)) )  <span class="op">%&gt;%</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="st">  </span><span class="kw">gather</span>(<span class="dt">key=</span>Edu, <span class="dt">value =</span> Deaths, <span class="op">-</span>Region) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Edu =</span> <span class="kw">factor</span>(Edu, <span class="dt">levels=</span><span class="kw">names</span>(df)))</span>
+<span id="cb4-8"><a href="#cb4-8"></a></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="co"># side-by-side plot</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a>OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="kw">plot</span>(Deaths <span class="op">~</span><span class="st"> </span>Region <span class="op">+</span><span class="st"> </span>Edu, df.l)</span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="kw">par</span>(OP)</span></code></pre></div>
 <p><img src="Week11a_files/figure-html/unnamed-chunk-9-1.png" width="576" /></p>
 <p>So at this point the plots suggest that there may be a father’s educational attainment effect as well as a regional effect on infant mortality with the former effect being possibly more important.</p>
 <p>Next we will attempt to quantify these effects using Tukey’s <strong>median polish</strong>.</p>
@@ -1027,12 +1041,12 @@ y_{ij} = \mu + \alpha_i + \beta_j + \alpha_i \beta_j / \mu  + \epsilon_{ij}
 <div id="implementing-the-median-polish-in-r" class="section level1">
 <h1>Implementing the median polish in R</h1>
 <p>The steps outlined in the previous section can be easily implemented using pen and paper or a spreadsheet environment for larger datasets. R has a built-in function called <code>medpolish()</code> which does this for us. We can define the maximum number of iterations by setting the <code>maxiter=</code> parameter but note that <code>medpolish</code> will, by default, automatically estimate the best number of iterations for us. We’ll set it to <code>3</code> to match the three iterations conducted in the previous selection.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">df.med &lt;-<span class="st"> </span><span class="kw">medpolish</span>( df , <span class="dt">maxiter=</span><span class="dv">3</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>df.med &lt;-<span class="st"> </span><span class="kw">medpolish</span>( df , <span class="dt">maxiter=</span><span class="dv">3</span>)</span></code></pre></div>
 <pre><code>1: 47.1
 2: 42.9
 3: 42.45</code></pre>
 <p>The three values printed to the console gives us the sum of absolute residuals at each iteration; we will ignore these numbers. The output from the model is stored in the <code>df.med</code> object. To see its contents , simply type it at the command line.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">df.med</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>df.med</span></code></pre></div>
 <pre><code>
 Median Polish Results (Dataset: &quot;df&quot;)
 
@@ -1054,7 +1068,7 @@ S  10.975   4.725 -0.025   -4.725  0.00
 W  -3.125  -5.875  0.275    2.875  0.00</code></pre>
 <p>All three effects are displayed as well as the residuals (note that the precision returned is greater than that used in our earlier analysis).</p>
 <p>To generate the Tukey additivity plot, simply wrap the median polish object with the <code>plot</code> command as in:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">plot</span>( df.med )</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">plot</span>( df.med )</span></code></pre></div>
 <p><img src="Week11a_files/figure-html/unnamed-chunk-13-1.png" width="288" /></p>
 </div>
 <div id="what-if-we-use-the-mean-instead-of-the-median" class="section level1">
@@ -1068,8 +1082,8 @@ W  -3.125  -5.875  0.275    2.875  0.00</code></pre>
 <p>A two-way ANOVA assesses whether the factors (categories) have a significant effect on the outcome. Its implementation can be conceptualized as a regression analysis where each row and column level is treated as a dummy variable. The computed regression coefficients are the same as the levels computed using the “mean” polish outlined in the previous step except for one notable difference: the ANOVA adds one of the column level values and one of the row level values to the grand mean then subtracts those values from their respective row/column effects.</p>
 <p><img src="img/twoway_12.png" /></p>
 <p>The resulting row/column levels are the regression coefficients:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">M &lt;-<span class="st"> </span><span class="kw">lm</span>(Deaths <span class="op">~</span><span class="st"> </span>Edu <span class="op">+</span><span class="st"> </span>Region, df.l)</a>
-<a class="sourceLine" id="cb10-2" title="2"><span class="kw">coef</span>(M)</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>M &lt;-<span class="st"> </span><span class="kw">lm</span>(Deaths <span class="op">~</span><span class="st"> </span>Edu <span class="op">+</span><span class="st"> </span>Region, df.l)</span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">coef</span>(M)</span></code></pre></div>
 <pre><code>(Intercept)  Edued9to11     Edued12 Edued13to15     Edued16    RegionNE     RegionS     RegionW 
      32.215      -3.800     -11.250      -9.825     -13.000      -3.960      -0.320      -2.980 </code></pre>
 <p>The regression formula takes on the form:</p>
@@ -1085,7 +1099,7 @@ Deaths = 32.21 - 3.8(0) -11.25(0) -9.83(0) -13(0) \\
        = 25.3
 \]</span></p>
 <p>To assess if any of the factors have a significant effect on the <code>Death</code> variables, simply wrap the regression with an <code>anova()</code> function.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">anova</span>(M)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">anova</span>(M)</span></code></pre></div>
 <pre><code>Analysis of Variance Table
 
 Response: Deaths
@@ -1119,7 +1133,7 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -1158,7 +1172,7 @@ $(document).ready(function ()  {
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
       },
       ignoreSelector: ".toc-ignore",
       scrollTo: 0

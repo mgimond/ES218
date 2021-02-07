@@ -23,7 +23,9 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -36,12 +38,21 @@
   gtag('config', 'UA-39623718-2');
 </script>
 
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -51,14 +62,16 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -67,9 +80,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -152,7 +165,8 @@ h6 {
 }
 </style>
 
-<link rel="stylesheet" href="libs\style.css" type="text/css" />
+
+<link rel="stylesheet" href="libs/style.css" type="text/css" />
 
 
 
@@ -437,7 +451,7 @@ div.tocify {
       <ul class="nav navbar-nav">
         <li>
   <a href="index.html">
-    <span class="fa fa-home"></span>
+    <span class="fas fa-home"></span>
      
     
   </a>
@@ -662,7 +676,7 @@ dplyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-0.8.3
+1.0.2
 </td>
 </tr>
 </tbody>
@@ -676,22 +690,22 @@ dplyr
 <div id="constructing-the-s-l-plot" class="section level1">
 <h1>Constructing the s-l plot</h1>
 <p>The plot compares a measure of the spread’s residual to the location (usually the median) for each batch of data. The spread is usually distilled down to its residual (what remains after subtracting each batch value by the batch median) then transformed by taking the square root of its absolute value. The following block of code recreates the s-l plot in figure 2.25 from Cleveland’s book.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(dplyr)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(ggplot2)</a>
-<a class="sourceLine" id="cb1-3" title="3"></a>
-<a class="sourceLine" id="cb1-4" title="4">df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/fusion.csv&quot;</span>)</a>
-<a class="sourceLine" id="cb1-5" title="5"></a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="co"># Create two new columns: group median and group residual</span></a>
-<a class="sourceLine" id="cb1-7" title="7">df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-8" title="8"><span class="st">  </span><span class="kw">group_by</span>(nv.vv)   <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-9" title="9"><span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(time),</a>
-<a class="sourceLine" id="cb1-10" title="10">          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>(time <span class="op">-</span><span class="st"> </span>Median)))</a>
-<a class="sourceLine" id="cb1-11" title="11"></a>
-<a class="sourceLine" id="cb1-12" title="12"><span class="co"># Generate the s-l plot</span></a>
-<a class="sourceLine" id="cb1-13" title="13"><span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb1-14" title="14"><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>, <span class="dt">width =</span> <span class="fl">0.2</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb1-15" title="15"><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> median, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb1-16" title="16"><span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>(<span class="kw">abs</span>(<span class="st">&quot; Residuals &quot;</span>))))</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a>df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/fusion.csv&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5"></a></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="co"># Create two new columns: group median and group residual</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="st">  </span><span class="kw">group_by</span>(nv.vv)   <span class="op">%&gt;%</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(time),</span>
+<span id="cb1-10"><a href="#cb1-10"></a>          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>(time <span class="op">-</span><span class="st"> </span>Median)))</span>
+<span id="cb1-11"><a href="#cb1-11"></a></span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="co"># Generate the s-l plot</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a><span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>, <span class="dt">width =</span> <span class="fl">0.2</span>) <span class="op">+</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> median, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>(<span class="kw">abs</span>(<span class="st">&quot; Residuals &quot;</span>))))</span></code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-3-1.png" width="288" /></p>
 <p>The red line in the plot helps identify the type of relationship between spread and location (defined by the group median in this plot). If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.</p>
 <p>In the data fusion example, there is an obvious increase in spread as a function of location.   </p>
@@ -702,39 +716,39 @@ dplyr
 <div id="clevelands-food-web-data" class="section level2">
 <h2>Cleveland’s food web data</h2>
 <p>On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the number of hierarchical prey-predator links in the web) for the three different ecosystem types.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Food_web.csv&quot;</span>)</a>
-<a class="sourceLine" id="cb2-2" title="2"></a>
-<a class="sourceLine" id="cb2-3" title="3"><span class="co"># Create two new columns: group median and group residuals</span></a>
-<a class="sourceLine" id="cb2-4" title="4">df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-5" title="5"><span class="st">  </span><span class="kw">group_by</span>(dimension)  <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(mean.length),</a>
-<a class="sourceLine" id="cb2-7" title="7">          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( mean.length <span class="op">-</span><span class="st"> </span>Median)))   </a>
-<a class="sourceLine" id="cb2-8" title="8"></a>
-<a class="sourceLine" id="cb2-9" title="9"><span class="co"># Generate the s-l plot</span></a>
-<a class="sourceLine" id="cb2-10" title="10"><span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb2-11" title="11"><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>, <span class="dt">width =</span> <span class="fl">0.05</span>, <span class="dt">height =</span> <span class="dv">0</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb2-12" title="12"><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> median, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb2-13" title="13"><span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>(<span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span></a>
-<a class="sourceLine" id="cb2-14" title="14"><span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> <span class="fl">1.75</span>, <span class="dt">label =</span> dimension))</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Food_web.csv&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="co"># Create two new columns: group median and group residuals</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="st">  </span><span class="kw">group_by</span>(dimension)  <span class="op">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(mean.length),</span>
+<span id="cb2-7"><a href="#cb2-7"></a>          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( mean.length <span class="op">-</span><span class="st"> </span>Median)))   </span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="co"># Generate the s-l plot</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>, <span class="dt">width =</span> <span class="fl">0.05</span>, <span class="dt">height =</span> <span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> median, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>(<span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a><span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> <span class="fl">1.75</span>, <span class="dt">label =</span> dimension))</span></code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-4-1.png" width="336" /></p>
 <p>A monotonic spread is apparent in this dataset too, i.e. as the median chain length increases, so does the spread.</p>
 </div>
 <div id="buoy-data" class="section level2">
 <h2>Buoy data</h2>
 <p>In this next example, we will compare water temperature spreads with median temperatures across 12 months using Gulf of Maine buoy data. Since we have many categories to work with, we will do without the jitter and stack the points within each month group.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">df &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;</span>, <span class="dt">header=</span>T)</a>
-<a class="sourceLine" id="cb3-2" title="2"></a>
-<a class="sourceLine" id="cb3-3" title="3"><span class="co"># Create two new columns: group median and group residual</span></a>
-<a class="sourceLine" id="cb3-4" title="4">df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-5" title="5"><span class="st">       </span><span class="kw">group_by</span>(MM)  <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-6" title="6"><span class="st">       </span><span class="kw">mutate</span>(<span class="dt">Median =</span> <span class="kw">median</span>(WTMP),</a>
-<a class="sourceLine" id="cb3-7" title="7">              <span class="dt">Residuals =</span> <span class="kw">sqrt</span>(<span class="kw">abs</span>(WTMP <span class="op">-</span><span class="st"> </span>Median)))  </a>
-<a class="sourceLine" id="cb3-8" title="8"></a>
-<a class="sourceLine" id="cb3-9" title="9"><span class="co"># Generate the s-l plot</span></a>
-<a class="sourceLine" id="cb3-10" title="10"><span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.1</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb3-11" title="11"><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> median, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb3-12" title="12"><span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>(<span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span></a>
-<a class="sourceLine" id="cb3-13" title="13"><span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> <span class="fl">2.5</span>, <span class="dt">label =</span> MM), <span class="dt">cex =</span> <span class="dv">3</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>df &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;</span>, <span class="dt">header=</span>T)</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co"># Create two new columns: group median and group residual</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="st">       </span><span class="kw">group_by</span>(MM)  <span class="op">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="st">       </span><span class="kw">mutate</span>(<span class="dt">Median =</span> <span class="kw">median</span>(WTMP),</span>
+<span id="cb3-7"><a href="#cb3-7"></a>              <span class="dt">Residuals =</span> <span class="kw">sqrt</span>(<span class="kw">abs</span>(WTMP <span class="op">-</span><span class="st"> </span>Median)))  </span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co"># Generate the s-l plot</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.1</span>) <span class="op">+</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> median, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>(<span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> <span class="fl">2.5</span>, <span class="dt">label =</span> MM), <span class="dt">cex =</span> <span class="dv">3</span>)</span></code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-5-1.png" width="768" /></p>
 <p>Note that the discrete appearance of the values reflects the level of precision used to record water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread as a function of increasing water temperature is not immediately apparent.</p>
 </div>
@@ -744,20 +758,20 @@ dplyr
 <p>Another version of the S-L plot (and one that seems to be the most popular) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).</p>
 <p>This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week’s lecture) via <strong>power = 1 - slope</strong>.</p>
 <p>This variant of the s-l plot can be computed in R as follows (we will use the buoy data as an example).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">sl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(MM)  <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-3" title="3"><span class="st">  </span><span class="kw">summarise</span> (<span class="dt">level  =</span> <span class="kw">log</span>(<span class="kw">median</span>(WTMP)),</a>
-<a class="sourceLine" id="cb4-4" title="4">                <span class="dt">IQR =</span> <span class="kw">IQR</span>(WTMP),  <span class="co"># Computes the interquartile range</span></a>
-<a class="sourceLine" id="cb4-5" title="5">             <span class="dt">spread =</span> <span class="kw">log</span>(IQR))</a>
-<a class="sourceLine" id="cb4-6" title="6"></a>
-<a class="sourceLine" id="cb4-7" title="7"><span class="kw">ggplot</span>(sl, <span class="kw">aes</span>(<span class="dt">x =</span> level, <span class="dt">y =</span> spread)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb4-8" title="8"><span class="st">  </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb4-9" title="9"><span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Median (log)&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Spread (log)&quot;</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb4-10" title="10"><span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> level, <span class="dt">y =</span> spread, <span class="dt">label =</span> MM), <span class="dt">vjust =</span> <span class="fl">1.21</span>, <span class="dt">cex =</span> <span class="fl">2.8</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>sl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="st">  </span><span class="kw">group_by</span>(MM)  <span class="op">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="st">  </span><span class="kw">summarise</span> (<span class="dt">level  =</span> <span class="kw">log</span>(<span class="kw">median</span>(WTMP)),</span>
+<span id="cb4-4"><a href="#cb4-4"></a>                <span class="dt">IQR =</span> <span class="kw">IQR</span>(WTMP),  <span class="co"># Computes the interquartile range</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>             <span class="dt">spread =</span> <span class="kw">log</span>(IQR))</span>
+<span id="cb4-6"><a href="#cb4-6"></a></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="kw">ggplot</span>(sl, <span class="kw">aes</span>(<span class="dt">x =</span> level, <span class="dt">y =</span> spread)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="st">  </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Median (log)&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Spread (log)&quot;</span>) <span class="op">+</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> level, <span class="dt">y =</span> spread, <span class="dt">label =</span> MM), <span class="dt">vjust =</span> <span class="fl">1.21</span>, <span class="dt">cex =</span> <span class="fl">2.8</span>)</span></code></pre></div>
 <p><img src="Week07b_files/figure-html/unnamed-chunk-6-1.png" width="268.8" /></p>
 <p>Note how this plot differs from Cleveland’s plot in that we are only displaying each month’s median spread value and we are fitting a straight line to the points.</p>
 <p>The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression model indicates that the slope may not be significantly different from 0 (the p-value of 0.12 suggests that there is a 12% chance that the computed slope is consistent with a slope we would expect to get if there was no linear relationship between spread and location values).</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">summary</span>(<span class="kw">lm</span>(spread <span class="op">~</span><span class="st"> </span>level, sl))</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">summary</span>(<span class="kw">lm</span>(spread <span class="op">~</span><span class="st"> </span>level, sl))</span></code></pre></div>
 <pre><code>
 Call:
 lm(formula = spread ~ level, data = sl)
@@ -792,7 +806,7 @@ F-statistic: 2.807 on 1 and 10 DF,  p-value: 0.1248</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -831,7 +845,7 @@ $(document).ready(function ()  {
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
       },
       ignoreSelector: ".toc-ignore",
       scrollTo: 0

@@ -34,15 +34,15 @@ dat1w <- dat1 %>%
                 Country     =="United States of America", 
                 Crop       %in% c("Oats", "Maize", "Barley", "Buckwheat","Rye")) %>%
          select(Year, Crop, Value)                                          %>%
-         spread(key = Crop, value="Value")
+         pivot_wider(names_from = Crop, values_from="Value")
 head(dat1w)
 ```
 
 The *long* form version of the subset will be called `dat1l` and will be a *long* form representation of `dat1w` (yield by crop and year).
 
 ```{r message =FALSE}
-dat1l <- gather(dat1w, key = "Crop", value = "Yield", 2:6)
-head(dat1l,10)
+dat1l <- pivot_longer(dat1w, names_to = "Crop", values_to = "Yield", cols=2:6)
+head(dat1l, 10)
 ```
 
 Another subset will be used in subsequent exercises and will consist of total yields for each year by crop and country.
@@ -94,12 +94,13 @@ st.reg <- rbind(st.reg , data.frame(State="dc", Region="South") )
 
 # Start the piping operations
 dat2b <- dat2 %>%
-  gather(key = "variable", value = "value", -1:-2)  %>%
+  pivot_longer(names_to = "variable", values_to = "value", cols=-1:-2)  %>%
   left_join(Edu.Gend, by="variable" )              %>%
   select(State, County, Level, Gender, value)       %>%
   mutate(Level = factor(Level, 
                         levels = c("All","NoHS","HS", "AD", "BD", "Grad"))) %>%
   left_join(st.reg , by="State")
+
 head(dat2b)
 tail(dat2b)
 ```
@@ -108,10 +109,10 @@ Note that we have eliminated references to variable names such as "B20004001" fr
 
 ### Spreading gender across columns: `dat2c`
 
-In `dat2b` the gender values are lumped under the variable called `Gender`. In some upcoming lectures, we will want to compare male and female incomes requiring that they be assigned their own columns. We will therefore *widen* `dat2b`. We will use the `spread` function from the `tidyr` package to create a new data frame called `dat2c`.
+In `dat2b` the gender values are lumped under the variable called `Gender`. In some upcoming lectures, we will want to compare male and female incomes requiring that they be assigned their own columns. We will therefore *widen* `dat2b`. We will use the `pivot_wider` function from the `tidyr` package to create a new data frame called `dat2c`.
 
 ```{r}
-dat2c <- spread(dat2b, key = Gender, value = value )
+dat2c <- pivot_wider(dat2b, names_from = Gender, values_from = value )
 
 head(dat2c)
 ```

@@ -23,7 +23,9 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -36,12 +38,21 @@
   gtag('config', 'UA-39623718-2');
 </script>
 
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -51,14 +62,16 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -67,9 +80,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -152,7 +165,8 @@ h6 {
 }
 </style>
 
-<link rel="stylesheet" href="libs\style.css" type="text/css" />
+
+<link rel="stylesheet" href="libs/style.css" type="text/css" />
 
 
 
@@ -437,7 +451,7 @@ div.tocify {
       <ul class="nav navbar-nav">
         <li>
   <a href="index.html">
-    <span class="fa fa-home"></span>
+    <span class="fas fa-home"></span>
      
     
   </a>
@@ -671,7 +685,7 @@ ggplot2
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-0.8.3
+1.0.2
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -680,7 +694,7 @@ ggplot2
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-3.2.1
+3.3.3
 </td>
 </tr>
 </tbody>
@@ -689,30 +703,30 @@ ggplot2
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>The data represent 1,2,3,4-tetrachlorobenzen (<strong>TCB</strong>) concentrations (in ppb) for two site locations: a reference site free of external contaminants and a <em>cleaned</em> contaminated site (Millard <em>et al.</em>, p. 416-417).</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="co"># Create the two data objects (TCB concentrations for reference and contaminated sites)</span></a>
-<a class="sourceLine" id="cb1-2" title="2">Ref &lt;-<span class="st">  </span><span class="kw">c</span>(<span class="fl">0.22</span>,<span class="fl">0.23</span>,<span class="fl">0.26</span>,<span class="fl">0.27</span>,<span class="fl">0.28</span>,<span class="fl">0.28</span>,<span class="fl">0.29</span>,<span class="fl">0.33</span>,<span class="fl">0.34</span>,<span class="fl">0.35</span>,<span class="fl">0.38</span>,<span class="fl">0.39</span>,</a>
-<a class="sourceLine" id="cb1-3" title="3">          <span class="fl">0.39</span>,<span class="fl">0.42</span>,<span class="fl">0.42</span>,<span class="fl">0.43</span>,<span class="fl">0.45</span>,<span class="fl">0.46</span>,<span class="fl">0.48</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.51</span>,<span class="fl">0.52</span>,<span class="fl">0.54</span>,</a>
-<a class="sourceLine" id="cb1-4" title="4">          <span class="fl">0.56</span>,<span class="fl">0.56</span>,<span class="fl">0.57</span>,<span class="fl">0.57</span>,<span class="fl">0.6</span>,<span class="fl">0.62</span>,<span class="fl">0.63</span>,<span class="fl">0.67</span>,<span class="fl">0.69</span>,<span class="fl">0.72</span>,<span class="fl">0.74</span>,<span class="fl">0.76</span>,</a>
-<a class="sourceLine" id="cb1-5" title="5">          <span class="fl">0.79</span>,<span class="fl">0.81</span>,<span class="fl">0.82</span>,<span class="fl">0.84</span>,<span class="fl">0.89</span>,<span class="fl">1.11</span>,<span class="fl">1.13</span>,<span class="fl">1.14</span>,<span class="fl">1.14</span>,<span class="fl">1.2</span>,<span class="fl">1.33</span>)</a>
-<a class="sourceLine" id="cb1-6" title="6">Cont &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.09</span>,<span class="fl">0.09</span>,<span class="fl">0.09</span>,<span class="fl">0.12</span>,<span class="fl">0.12</span>,<span class="fl">0.14</span>,<span class="fl">0.16</span>,<span class="fl">0.17</span>,<span class="fl">0.17</span>,<span class="fl">0.17</span>,<span class="fl">0.18</span>,<span class="fl">0.19</span>,</a>
-<a class="sourceLine" id="cb1-7" title="7">          <span class="fl">0.2</span>,<span class="fl">0.2</span>,<span class="fl">0.21</span>,<span class="fl">0.21</span>,<span class="fl">0.22</span>,<span class="fl">0.22</span>,<span class="fl">0.22</span>,<span class="fl">0.23</span>,<span class="fl">0.24</span>,<span class="fl">0.25</span>,<span class="fl">0.25</span>,<span class="fl">0.25</span>,</a>
-<a class="sourceLine" id="cb1-8" title="8">          <span class="fl">0.25</span>,<span class="fl">0.26</span>,<span class="fl">0.28</span>,<span class="fl">0.28</span>,<span class="fl">0.29</span>,<span class="fl">0.31</span>,<span class="fl">0.33</span>,<span class="fl">0.33</span>,<span class="fl">0.33</span>,<span class="fl">0.34</span>,<span class="fl">0.37</span>,<span class="fl">0.38</span>,</a>
-<a class="sourceLine" id="cb1-9" title="9">          <span class="fl">0.39</span>,<span class="fl">0.4</span>,<span class="fl">0.43</span>,<span class="fl">0.43</span>,<span class="fl">0.47</span>,<span class="fl">0.48</span>,<span class="fl">0.48</span>,<span class="fl">0.49</span>,<span class="fl">0.51</span>,<span class="fl">0.51</span>,<span class="fl">0.54</span>,<span class="fl">0.6</span>,</a>
-<a class="sourceLine" id="cb1-10" title="10">          <span class="fl">0.61</span>,<span class="fl">0.62</span>,<span class="fl">0.75</span>,<span class="fl">0.82</span>,<span class="fl">0.85</span>,<span class="fl">0.92</span>,<span class="fl">0.94</span>,<span class="fl">1.05</span>,<span class="fl">1.1</span>,<span class="fl">1.1</span>,<span class="fl">1.19</span>,<span class="fl">1.22</span>,</a>
-<a class="sourceLine" id="cb1-11" title="11">          <span class="fl">1.33</span>,<span class="fl">1.39</span>,<span class="fl">1.39</span>,<span class="fl">1.52</span>,<span class="fl">1.53</span>,<span class="fl">1.73</span>,<span class="fl">2.35</span>,<span class="fl">2.46</span>,<span class="fl">2.59</span>,<span class="fl">2.61</span>,<span class="fl">3.06</span>,<span class="fl">3.29</span>,</a>
-<a class="sourceLine" id="cb1-12" title="12">          <span class="fl">5.56</span>,<span class="fl">6.61</span>,<span class="fl">18.4</span>,<span class="fl">51.97</span>,<span class="fl">168.64</span>)</a>
-<a class="sourceLine" id="cb1-13" title="13"></a>
-<a class="sourceLine" id="cb1-14" title="14"><span class="co"># We&#39;ll create a long-form version of the data for use with some of the functions</span></a>
-<a class="sourceLine" id="cb1-15" title="15"><span class="co"># in this exercise</span></a>
-<a class="sourceLine" id="cb1-16" title="16">df &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">Site =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;Cont&quot;</span>,<span class="kw">length</span>(Cont) ), <span class="kw">rep</span>(<span class="st">&quot;Ref&quot;</span>,<span class="kw">length</span>(Ref) ) ),</a>
-<a class="sourceLine" id="cb1-17" title="17">                  <span class="dt">TCB  =</span> <span class="kw">c</span>(Cont, Ref ) )</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Create the two data objects (TCB concentrations for reference and contaminated sites)</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>Ref &lt;-<span class="st">  </span><span class="kw">c</span>(<span class="fl">0.22</span>,<span class="fl">0.23</span>,<span class="fl">0.26</span>,<span class="fl">0.27</span>,<span class="fl">0.28</span>,<span class="fl">0.28</span>,<span class="fl">0.29</span>,<span class="fl">0.33</span>,<span class="fl">0.34</span>,<span class="fl">0.35</span>,<span class="fl">0.38</span>,<span class="fl">0.39</span>,</span>
+<span id="cb1-3"><a href="#cb1-3"></a>          <span class="fl">0.39</span>,<span class="fl">0.42</span>,<span class="fl">0.42</span>,<span class="fl">0.43</span>,<span class="fl">0.45</span>,<span class="fl">0.46</span>,<span class="fl">0.48</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.51</span>,<span class="fl">0.52</span>,<span class="fl">0.54</span>,</span>
+<span id="cb1-4"><a href="#cb1-4"></a>          <span class="fl">0.56</span>,<span class="fl">0.56</span>,<span class="fl">0.57</span>,<span class="fl">0.57</span>,<span class="fl">0.6</span>,<span class="fl">0.62</span>,<span class="fl">0.63</span>,<span class="fl">0.67</span>,<span class="fl">0.69</span>,<span class="fl">0.72</span>,<span class="fl">0.74</span>,<span class="fl">0.76</span>,</span>
+<span id="cb1-5"><a href="#cb1-5"></a>          <span class="fl">0.79</span>,<span class="fl">0.81</span>,<span class="fl">0.82</span>,<span class="fl">0.84</span>,<span class="fl">0.89</span>,<span class="fl">1.11</span>,<span class="fl">1.13</span>,<span class="fl">1.14</span>,<span class="fl">1.14</span>,<span class="fl">1.2</span>,<span class="fl">1.33</span>)</span>
+<span id="cb1-6"><a href="#cb1-6"></a>Cont &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.09</span>,<span class="fl">0.09</span>,<span class="fl">0.09</span>,<span class="fl">0.12</span>,<span class="fl">0.12</span>,<span class="fl">0.14</span>,<span class="fl">0.16</span>,<span class="fl">0.17</span>,<span class="fl">0.17</span>,<span class="fl">0.17</span>,<span class="fl">0.18</span>,<span class="fl">0.19</span>,</span>
+<span id="cb1-7"><a href="#cb1-7"></a>          <span class="fl">0.2</span>,<span class="fl">0.2</span>,<span class="fl">0.21</span>,<span class="fl">0.21</span>,<span class="fl">0.22</span>,<span class="fl">0.22</span>,<span class="fl">0.22</span>,<span class="fl">0.23</span>,<span class="fl">0.24</span>,<span class="fl">0.25</span>,<span class="fl">0.25</span>,<span class="fl">0.25</span>,</span>
+<span id="cb1-8"><a href="#cb1-8"></a>          <span class="fl">0.25</span>,<span class="fl">0.26</span>,<span class="fl">0.28</span>,<span class="fl">0.28</span>,<span class="fl">0.29</span>,<span class="fl">0.31</span>,<span class="fl">0.33</span>,<span class="fl">0.33</span>,<span class="fl">0.33</span>,<span class="fl">0.34</span>,<span class="fl">0.37</span>,<span class="fl">0.38</span>,</span>
+<span id="cb1-9"><a href="#cb1-9"></a>          <span class="fl">0.39</span>,<span class="fl">0.4</span>,<span class="fl">0.43</span>,<span class="fl">0.43</span>,<span class="fl">0.47</span>,<span class="fl">0.48</span>,<span class="fl">0.48</span>,<span class="fl">0.49</span>,<span class="fl">0.51</span>,<span class="fl">0.51</span>,<span class="fl">0.54</span>,<span class="fl">0.6</span>,</span>
+<span id="cb1-10"><a href="#cb1-10"></a>          <span class="fl">0.61</span>,<span class="fl">0.62</span>,<span class="fl">0.75</span>,<span class="fl">0.82</span>,<span class="fl">0.85</span>,<span class="fl">0.92</span>,<span class="fl">0.94</span>,<span class="fl">1.05</span>,<span class="fl">1.1</span>,<span class="fl">1.1</span>,<span class="fl">1.19</span>,<span class="fl">1.22</span>,</span>
+<span id="cb1-11"><a href="#cb1-11"></a>          <span class="fl">1.33</span>,<span class="fl">1.39</span>,<span class="fl">1.39</span>,<span class="fl">1.52</span>,<span class="fl">1.53</span>,<span class="fl">1.73</span>,<span class="fl">2.35</span>,<span class="fl">2.46</span>,<span class="fl">2.59</span>,<span class="fl">2.61</span>,<span class="fl">3.06</span>,<span class="fl">3.29</span>,</span>
+<span id="cb1-12"><a href="#cb1-12"></a>          <span class="fl">5.56</span>,<span class="fl">6.61</span>,<span class="fl">18.4</span>,<span class="fl">51.97</span>,<span class="fl">168.64</span>)</span>
+<span id="cb1-13"><a href="#cb1-13"></a></span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="co"># We&#39;ll create a long-form version of the data for use with some of the functions</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="co"># in this exercise</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a>df &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">Site =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;Cont&quot;</span>,<span class="kw">length</span>(Cont) ), <span class="kw">rep</span>(<span class="st">&quot;Ref&quot;</span>,<span class="kw">length</span>(Ref) ) ),</span>
+<span id="cb1-17"><a href="#cb1-17"></a>                  <span class="dt">TCB  =</span> <span class="kw">c</span>(Cont, Ref ) )</span></code></pre></div>
 <p>Our goal is to assess if, overall, the concentrations of TCB at the contaminated site are greater than those at the reference.</p>
 </div>
 <div id="a-typical-statistical-approach-the-two-sample-t-test" class="section level1">
 <h1>A typical statistical approach: the two sample t-Test</h1>
 <p>We are interested in answering the question: “Did the cleanup at the contaminated site reduce the concentration of TCB down to background (reference) levels?”. If the question being addressed is part of a decision making process such as “Should we continue with the remediation?” we might want to assess if the difference in TCBs between both sites is “significant” enough to conclude that the TCBs are higher than would be expected if chance alone was the process at play.</p>
 <p>A popular statistical procedure used to help address this question is the two sample <a href="http://mgimond.github.io/Tutorial--Stats/02_z_t_tests.html#assumption-of-equal-variance">t-Test</a>. The test is used to assess whether or not the mean concentration between both batches of values are significantly different from one another. The test can be framed in one of three ways: We can see if the batches are similar, if one batch is greater than the other batch, or if one batch is smaller than the other batch. In our case, we will assess if the <code>Cont</code> batch is greater than the <code>Ref</code> batch (this is the <em>alternative</em> hypothesis). We’ll make use of the <code>t.test</code> function and set the parameter <code>alt</code> to <code>"greater"</code> (indicating that we are assessing if the <code>Cont</code> mean is significantly greater than that of <code>Ref</code>).</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">t.test</span>(Cont, Ref, <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">t.test</span>(Cont, Ref, <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>)</span></code></pre></div>
 <pre><code>
     Welch Two Sample t-test
 
@@ -735,25 +749,25 @@ mean of x mean of y
 </blockquote>
 <p>The spread for the contaminated site is several orders of magnitude greater than that of the reference site. But are these reconstructed distributions really representative of the data?</p>
 <p>Let’s plot the density distributions for both batches:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">2</span>))</a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="kw">plot</span>(<span class="kw">density</span>(Ref))</a>
-<a class="sourceLine" id="cb4-3" title="3"><span class="kw">plot</span>(<span class="kw">density</span>(Cont))</a>
-<a class="sourceLine" id="cb4-4" title="4"><span class="kw">par</span>(OP)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">2</span>))</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">plot</span>(<span class="kw">density</span>(Ref))</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">plot</span>(<span class="kw">density</span>(Cont))</span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="kw">par</span>(OP)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-7-1.png" width="576" /></p>
 <p>These are clearly different looking distributions from those assumed by the t-test which should put the t-test results into question.</p>
 <p>The t-test is clearly not properly representing the distribution of the two batches. The contaminated site, <code>Cont</code>, has several extreme values that is severely skewing the distribution. We can create a normal q-q plot to see how many values are skewing the distribution.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">  <span class="kw">qqnorm</span>(Cont, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.4</span>))</a>
-<a class="sourceLine" id="cb5-2" title="2">  <span class="kw">qqline</span>(Cont,<span class="dt">lty=</span><span class="dv">3</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>  <span class="kw">qqnorm</span>(Cont, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.4</span>))</span>
+<span id="cb5-2"><a href="#cb5-2"></a>  <span class="kw">qqline</span>(Cont,<span class="dt">lty=</span><span class="dv">3</span>)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-8-1.png" width="288" /></p>
 <p>It looks like at least four values (which represent ~5% of the data) are contributing to the strong skew and to a much distorted representation of location and spread. The mean and standard deviation are <strong>not robust</strong> to extreme values. In essence, all it takes is one single outlier to heavily distort the representation of location and spread in our data. We say that the mean and standard deviation have a breakdown point of <code>1/n</code> where <code>n</code> is the sample size.</p>
 <p>The median and interquartile range are less sensitive to extreme values. In fact, the median has a breakdown point of <code>n/2</code>. In other words, half of the values would have to be modified to alter the median.</p>
 <p>The boxplot makes use of these robust measures of location and spread; let’s compare the batches with and without the extreme (outlier) values.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb6-2" title="2"><span class="co"># Boxplot with outliers</span></a>
-<a class="sourceLine" id="cb6-3" title="3"><span class="kw">boxplot</span>(TCB <span class="op">~</span><span class="st"> </span>Site, df, <span class="dt">main=</span><span class="st">&quot;With outliers&quot;</span>)</a>
-<a class="sourceLine" id="cb6-4" title="4"><span class="co"># Boxplot without outliers</span></a>
-<a class="sourceLine" id="cb6-5" title="5"><span class="kw">boxplot</span>(TCB <span class="op">~</span><span class="st"> </span>Site, df, <span class="dt">main=</span><span class="st">&quot;Without outliers&quot;</span>, <span class="dt">outline=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb6-6" title="6"><span class="kw">par</span>(OP)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co"># Boxplot with outliers</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">boxplot</span>(TCB <span class="op">~</span><span class="st"> </span>Site, df, <span class="dt">main=</span><span class="st">&quot;With outliers&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co"># Boxplot without outliers</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="kw">boxplot</span>(TCB <span class="op">~</span><span class="st"> </span>Site, df, <span class="dt">main=</span><span class="st">&quot;Without outliers&quot;</span>, <span class="dt">outline=</span><span class="ot">FALSE</span>)</span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="kw">par</span>(OP)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-9-1.png" width="576" /></p>
 <p>Note that because of the robust nature of the median and interquartile range, the boxplot helps us to spot the outliers. In fact, the boxplot has a breakdown point of <code>n/4</code> (i.e. 25% of the values must be extreme before we see any masking of extreme values). The standard deviation, on the other hand, can be inflated by <em>one</em> extreme value thus <em>masking</em> the potentially problematic values.</p>
 <p>One observation that can also be gleaned from this plot is the skewed nature of the <code>Cont</code> data within the interquartile range (IQR). This suggests that even if we were to remove the outliers, the data would violate the normal distribution requirements.</p>
@@ -761,23 +775,23 @@ mean of x mean of y
 <div id="re-expression" class="section level1">
 <h1>Re-expression</h1>
 <p>If we are to use the t-test, we need to make sure that the distributional requirements are met. Even Welch’s modification has one requirement about the distribution: <strong>both spreads must follow a normal distribution</strong>. Let’s compare the batches to a theoretical normal distribution via a theoretical q-q plot:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="kw">qqnorm</span>(Ref, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</a>
-<a class="sourceLine" id="cb7-3" title="3"><span class="kw">qqline</span>(Ref)</a>
-<a class="sourceLine" id="cb7-4" title="4"><span class="kw">qqnorm</span>(Cont, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</a>
-<a class="sourceLine" id="cb7-5" title="5"><span class="kw">qqline</span>(Cont)</a>
-<a class="sourceLine" id="cb7-6" title="6"><span class="kw">par</span>(OP)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">qqnorm</span>(Ref, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="kw">qqline</span>(Ref)</span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="kw">qqnorm</span>(Cont, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="kw">qqline</span>(Cont)</span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="kw">par</span>(OP)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-10-1.png" width="576" /></p>
 <p>These batches do not follow the straight line suggesting skewness in the distribution (as was noted with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb8-2" title="2"><span class="kw">qqnorm</span>(<span class="kw">log</span>(Ref), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</a>
-<a class="sourceLine" id="cb8-3" title="3"><span class="kw">qqline</span>(<span class="kw">log</span>(Ref))</a>
-<a class="sourceLine" id="cb8-4" title="4"><span class="kw">qqnorm</span>(<span class="kw">log</span>(Cont), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</a>
-<a class="sourceLine" id="cb8-5" title="5"><span class="kw">qqline</span>(<span class="kw">log</span>(Cont))</a>
-<a class="sourceLine" id="cb8-6" title="6"><span class="kw">par</span>(OP)</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">qqnorm</span>(<span class="kw">log</span>(Ref), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="kw">qqline</span>(<span class="kw">log</span>(Ref))</span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="kw">qqnorm</span>(<span class="kw">log</span>(Cont), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="kw">qqline</span>(<span class="kw">log</span>(Cont))</span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="kw">par</span>(OP)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
 <p>Log-transforming the concentrations seems to have done a good job in creating normally distributed numbers. Let’s re-run the t-Test on the log-transformed values.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">t.test</span>(<span class="kw">log</span>(Cont), <span class="kw">log</span>(Ref), <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">t.test</span>(<span class="kw">log</span>(Cont), <span class="kw">log</span>(Ref), <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>)</span></code></pre></div>
 <pre><code>
     Welch Two Sample t-test
 
@@ -796,57 +810,57 @@ sample estimates:
 <h1>Fine-tuning the re-expression</h1>
 <p>The log transformation is one of many re-expressions that can be applied to the data. Let’s explore the skewness across different “depths” of the <code>Cont</code> values to see if the skewness is systematic. We’ll use letter value summary plots to help guide us to a reasonable re-expression.</p>
 <p>First, we’ll look at the raw contaminated site data:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">source</span>(<span class="st">&quot;http://mgimond.github.io/ES218/es218.R&quot;</span>) <span class="co"># Needed to run the lsum() function</span></a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="kw">library</span>(ggplot2)</a>
-<a class="sourceLine" id="cb11-3" title="3"></a>
-<a class="sourceLine" id="cb11-4" title="4"><span class="co"># Generate letter value summary table</span></a>
-<a class="sourceLine" id="cb11-5" title="5">Cont.lsum &lt;-<span class="st"> </span><span class="kw">lsum</span>(Cont, <span class="dt">l=</span><span class="dv">7</span>)</a>
-<a class="sourceLine" id="cb11-6" title="6"></a>
-<a class="sourceLine" id="cb11-7" title="7"><span class="co"># Plot the letter values</span></a>
-<a class="sourceLine" id="cb11-8" title="8"><span class="kw">ggplot</span>(Cont.lsum) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-9" title="9"><span class="st">                    </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">source</span>(<span class="st">&quot;http://mgimond.github.io/ES218/es218.R&quot;</span>) <span class="co"># Needed to run the lsum() function</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb11-3"><a href="#cb11-3"></a></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="co"># Generate letter value summary table</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a>Cont.lsum &lt;-<span class="st"> </span><span class="kw">lsum</span>(Cont, <span class="dt">l=</span><span class="dv">7</span>)</span>
+<span id="cb11-6"><a href="#cb11-6"></a></span>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="co"># Plot the letter values</span></span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="kw">ggplot</span>(Cont.lsum) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb11-9"><a href="#cb11-9"></a><span class="st">                    </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-13-1.png" width="384" /></p>
 <p>The data become strongly skewed for 1/32<sup>th</sup> of the data (depth letter <code>C</code>). Let’s now look at the reference site.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">Ref.lsum &lt;-<span class="st"> </span><span class="kw">lsum</span>(Ref, <span class="dt">l=</span><span class="dv">7</span>)</a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="kw">ggplot</span>(Ref.lsum) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb12-3" title="3"><span class="st">                   </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>Ref.lsum &lt;-<span class="st"> </span><span class="kw">lsum</span>(Ref, <span class="dt">l=</span><span class="dv">7</span>)</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="kw">ggplot</span>(Ref.lsum) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="st">                   </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-14-1.png" width="384" /></p>
 <p>A skew is also prominent here but a bit more consistent across the depths with a slight drop between depths <code>D</code> and <code>C</code> (16<sup>th</sup> and 32<sup>nd</sup> extreme values).</p>
 <p>Next, we will find a power function that re-expresses the values to satisfy the t-test distribution shape requirement. We’ll first look at the log transformation implemented in the last section. Note that we are using the custom Box-cox function <code>bc</code> from the <code>ES218.R</code> source script to transform the data (recall that the log transformation is one of a large family of Box-Cox transformations).</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">library</span>(dplyr)</a>
-<a class="sourceLine" id="cb13-2" title="2"></a>
-<a class="sourceLine" id="cb13-3" title="3">df  <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb13-4" title="4"><span class="st">  </span><span class="kw">group_by</span>(Site) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb13-5" title="5"><span class="st">  </span><span class="kw">do</span>(<span class="kw">lsum</span>( <span class="kw">bc</span>(.<span class="op">$</span>TCB,<span class="dv">0</span>), <span class="dt">l=</span><span class="dv">7</span>) ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb13-6" title="6"><span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb13-7" title="7"><span class="st">  </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>Site)</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">library</span>(dplyr)</span>
+<span id="cb13-2"><a href="#cb13-2"></a></span>
+<span id="cb13-3"><a href="#cb13-3"></a>df  <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="st">  </span><span class="kw">group_by</span>(Site) <span class="op">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="st">  </span><span class="kw">do</span>(<span class="kw">lsum</span>( <span class="kw">bc</span>(.<span class="op">$</span>TCB,<span class="dv">0</span>), <span class="dt">l=</span><span class="dv">7</span>) ) <span class="op">%&gt;%</span></span>
+<span id="cb13-6"><a href="#cb13-6"></a><span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb13-7"><a href="#cb13-7"></a><span class="st">  </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>Site)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-15-1.png" width="480" /></p>
 <p>The log transformation seems to work well with the reference site, but it’s not aggressive enough for the contaminated site. Recall that to ensure symmetry across <em>all</em> levels of the batches, the letter values must follow a straight (horizontal) line. Let’s try a power of -1/2:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">df  <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(Site) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-3" title="3"><span class="st">  </span><span class="kw">do</span>(<span class="kw">lsum</span>( <span class="kw">bc</span>(.<span class="op">$</span>TCB,<span class="op">-</span><span class="fl">0.5</span>), <span class="dt">l=</span><span class="dv">7</span>) ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-4" title="4"><span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-5" title="5"><span class="st">  </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>Site)</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>df  <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="st">  </span><span class="kw">group_by</span>(Site) <span class="op">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="st">  </span><span class="kw">do</span>(<span class="kw">lsum</span>( <span class="kw">bc</span>(.<span class="op">$</span>TCB,<span class="op">-</span><span class="fl">0.5</span>), <span class="dt">l=</span><span class="dv">7</span>) ) <span class="op">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="st">  </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>Site)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-16-1.png" width="480" /></p>
 <p>This seems to be too aggressive. We are facing a situation where attempting to normalize one batch distorts the other batch. Let’s try a compromise and use -.35.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">df  <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb15-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(Site) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb15-3" title="3"><span class="st">  </span><span class="kw">do</span>(<span class="kw">lsum</span>( <span class="kw">bc</span>(.<span class="op">$</span>TCB,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">l=</span><span class="dv">7</span>) ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb15-4" title="4"><span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb15-5" title="5"><span class="st">  </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>Site)</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>df  <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="st">  </span><span class="kw">group_by</span>(Site) <span class="op">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="st">  </span><span class="kw">do</span>(<span class="kw">lsum</span>( <span class="kw">bc</span>(.<span class="op">$</span>TCB,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">l=</span><span class="dv">7</span>) ) <span class="op">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>depth, <span class="dt">y=</span>mid, <span class="dt">label=</span>letter) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="st">  </span><span class="kw">scale_x_reverse</span>() <span class="op">+</span><span class="kw">geom_text</span>(<span class="dt">vjust=</span><span class="op">-</span>.<span class="dv">5</span>, <span class="dt">size=</span><span class="dv">4</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(.<span class="op">~</span>Site)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-17-1.png" width="480" /></p>
 <p>This seems to be a bit better. It’s obvious that we will not find a power transformation that will satisfy both batches, so we will need to make a judgement call and work with a power of -.35 for now.</p>
 <p>Let’s compare the re-expressed batches with a normal distribution.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb16-2" title="2"><span class="kw">qqnorm</span>(<span class="kw">bc</span>(Ref,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>), <span class="dt">main=</span><span class="st">&quot;Reference&quot;</span>)</a>
-<a class="sourceLine" id="cb16-3" title="3"><span class="kw">qqline</span>(<span class="kw">bc</span>(Ref,<span class="op">-</span><span class="fl">0.35</span>))</a>
-<a class="sourceLine" id="cb16-4" title="4"><span class="kw">qqnorm</span>(<span class="kw">bc</span>(Cont,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>), <span class="dt">main=</span><span class="st">&quot;Contaminated&quot;</span>)</a>
-<a class="sourceLine" id="cb16-5" title="5"><span class="kw">qqline</span>(<span class="kw">bc</span>(Cont,<span class="op">-</span><span class="fl">0.35</span>))</a>
-<a class="sourceLine" id="cb16-6" title="6"><span class="kw">par</span>(OP)</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>OP &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="kw">qqnorm</span>(<span class="kw">bc</span>(Ref,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>), <span class="dt">main=</span><span class="st">&quot;Reference&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="kw">qqline</span>(<span class="kw">bc</span>(Ref,<span class="op">-</span><span class="fl">0.35</span>))</span>
+<span id="cb16-4"><a href="#cb16-4"></a><span class="kw">qqnorm</span>(<span class="kw">bc</span>(Cont,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">col=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>), <span class="dt">main=</span><span class="st">&quot;Contaminated&quot;</span>)</span>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="kw">qqline</span>(<span class="kw">bc</span>(Cont,<span class="op">-</span><span class="fl">0.35</span>))</span>
+<span id="cb16-6"><a href="#cb16-6"></a><span class="kw">par</span>(OP)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-18-1.png" width="480" /></p>
 <p>The distributions do not look too bad when viewed in a q-q plot. Note how the letter values summary plot can pick up on subtle skewness that may not be apparent in a q-q plot. But is the observed skewed distribution after applying a power transformation really significant? I.e. is it small enough not to bias our t-test results?</p>
 <p>Let’s run the t-test.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">t.test</span>(<span class="kw">bc</span>(Cont,<span class="op">-</span><span class="fl">0.35</span>), <span class="kw">bc</span>(Ref,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">t.test</span>(<span class="kw">bc</span>(Cont,<span class="op">-</span><span class="fl">0.35</span>), <span class="kw">bc</span>(Ref,<span class="op">-</span><span class="fl">0.35</span>), <span class="dt">alt=</span><span class="st">&quot;greater&quot;</span>)</span></code></pre></div>
 <pre><code>
     Welch Two Sample t-test
 
@@ -866,42 +880,42 @@ sample estimates:
 <div id="permutation-test" class="section level2">
 <h2>Permutation test</h2>
 <p>The idea here is that if concentrations of TCB come from an identical site, then it should not matter which batch (<code>Ref</code> or <code>Cont</code>) a concentration comes from. By mixing up (permuting) the values across batches, we can come up with a distribution of mean (or median) concentration differences between batches we would expect to get if there was no difference, then compare our observed mean (or median) differences to that of the distribution of simulated mean (or median) differences. In the following example, we will we choose the median over the mean because of its robust measure of location.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="co"># Pool the concentrations</span></a>
-<a class="sourceLine" id="cb19-2" title="2">Pool &lt;-<span class="st"> </span><span class="kw">c</span>(Ref, Cont)</a>
-<a class="sourceLine" id="cb19-3" title="3"></a>
-<a class="sourceLine" id="cb19-4" title="4"><span class="co"># Create an empty vector that will store the simulated median differences</span></a>
-<a class="sourceLine" id="cb19-5" title="5">med.dif &lt;-<span class="st"> </span><span class="kw">vector</span>()</a>
-<a class="sourceLine" id="cb19-6" title="6"></a>
-<a class="sourceLine" id="cb19-7" title="7"><span class="co"># Run simulations</span></a>
-<a class="sourceLine" id="cb19-8" title="8"><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">999</span>){</a>
-<a class="sourceLine" id="cb19-9" title="9">  <span class="co"># Permute the pooled data then assign the resampled data to each batch</span></a>
-<a class="sourceLine" id="cb19-10" title="10">  Pool.rnd &lt;-<span class="st"> </span><span class="kw">sample</span>(Pool, <span class="dt">replace=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb19-11" title="11">  <span class="co"># Grab the first batch of values</span></a>
-<a class="sourceLine" id="cb19-12" title="12">  Cont.rnd &lt;-<span class="st"> </span>Pool.rnd[<span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(Cont)]</a>
-<a class="sourceLine" id="cb19-13" title="13">  <span class="co"># Grab the second batch of values</span></a>
-<a class="sourceLine" id="cb19-14" title="14">  Ref.rnd &lt;-<span class="st"> </span>Pool.rnd[ (<span class="kw">length</span>(Cont)<span class="op">+</span><span class="dv">1</span>)<span class="op">:</span><span class="kw">length</span>(Pool)]</a>
-<a class="sourceLine" id="cb19-15" title="15">  <span class="co"># Compute median differences</span></a>
-<a class="sourceLine" id="cb19-16" title="16">  med.dif[i] &lt;-<span class="st"> </span><span class="kw">median</span>(Cont.rnd) <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Ref.rnd)</a>
-<a class="sourceLine" id="cb19-17" title="17">}</a>
-<a class="sourceLine" id="cb19-18" title="18"></a>
-<a class="sourceLine" id="cb19-19" title="19"><span class="co"># Plot the distribution of median differences  </span></a>
-<a class="sourceLine" id="cb19-20" title="20"><span class="kw">hist</span>(med.dif)</a>
-<a class="sourceLine" id="cb19-21" title="21"><span class="co"># Now let&#39;s see where our observed difference in median concentration lies</span></a>
-<a class="sourceLine" id="cb19-22" title="22"><span class="kw">abline</span>(<span class="dt">v =</span> <span class="kw">median</span>(Cont) <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Ref), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lw=</span><span class="dv">2</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co"># Pool the concentrations</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a>Pool &lt;-<span class="st"> </span><span class="kw">c</span>(Ref, Cont)</span>
+<span id="cb19-3"><a href="#cb19-3"></a></span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="co"># Create an empty vector that will store the simulated median differences</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a>med.dif &lt;-<span class="st"> </span><span class="kw">vector</span>()</span>
+<span id="cb19-6"><a href="#cb19-6"></a></span>
+<span id="cb19-7"><a href="#cb19-7"></a><span class="co"># Run simulations</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">999</span>){</span>
+<span id="cb19-9"><a href="#cb19-9"></a>  <span class="co"># Permute the pooled data then assign the resampled data to each batch</span></span>
+<span id="cb19-10"><a href="#cb19-10"></a>  Pool.rnd &lt;-<span class="st"> </span><span class="kw">sample</span>(Pool, <span class="dt">replace=</span><span class="ot">FALSE</span>)</span>
+<span id="cb19-11"><a href="#cb19-11"></a>  <span class="co"># Grab the first batch of values</span></span>
+<span id="cb19-12"><a href="#cb19-12"></a>  Cont.rnd &lt;-<span class="st"> </span>Pool.rnd[<span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(Cont)]</span>
+<span id="cb19-13"><a href="#cb19-13"></a>  <span class="co"># Grab the second batch of values</span></span>
+<span id="cb19-14"><a href="#cb19-14"></a>  Ref.rnd &lt;-<span class="st"> </span>Pool.rnd[ (<span class="kw">length</span>(Cont)<span class="op">+</span><span class="dv">1</span>)<span class="op">:</span><span class="kw">length</span>(Pool)]</span>
+<span id="cb19-15"><a href="#cb19-15"></a>  <span class="co"># Compute median differences</span></span>
+<span id="cb19-16"><a href="#cb19-16"></a>  med.dif[i] &lt;-<span class="st"> </span><span class="kw">median</span>(Cont.rnd) <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Ref.rnd)</span>
+<span id="cb19-17"><a href="#cb19-17"></a>}</span>
+<span id="cb19-18"><a href="#cb19-18"></a></span>
+<span id="cb19-19"><a href="#cb19-19"></a><span class="co"># Plot the distribution of median differences  </span></span>
+<span id="cb19-20"><a href="#cb19-20"></a><span class="kw">hist</span>(med.dif)</span>
+<span id="cb19-21"><a href="#cb19-21"></a><span class="co"># Now let&#39;s see where our observed difference in median concentration lies</span></span>
+<span id="cb19-22"><a href="#cb19-22"></a><span class="kw">abline</span>(<span class="dt">v =</span> <span class="kw">median</span>(Cont) <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Ref), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lw=</span><span class="dv">2</span>)</span></code></pre></div>
 <p><img src="Week08c_files/figure-html/unnamed-chunk-20-1.png" width="384" /></p>
 <p>We can compute a <em>pseudo</em> p-value from the above. Note that we are interested in the number of simulated values that are <em>different</em> than our observed value (i.e. we’re not concerned with the direction of our value), we are therefore conducting a <em>two-side</em> test whose p-value can be computed as:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">N.greater &lt;-<span class="st"> </span><span class="kw">sum</span>( (<span class="kw">median</span>(Cont) <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Ref)) <span class="op">&gt;=</span><span class="st"> </span>med.dif) <span class="co"># Number of simulated differences</span></a>
-<a class="sourceLine" id="cb20-2" title="2">                                                           <span class="co"># greater than the observed value</span></a>
-<a class="sourceLine" id="cb20-3" title="3">n &lt;-<span class="st"> </span><span class="kw">length</span>(med.dif) <span class="co">#number of simulated values</span></a>
-<a class="sourceLine" id="cb20-4" title="4">p &lt;-<span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">min</span>(N.greater <span class="op">+</span><span class="st"> </span><span class="dv">1</span>, n <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>N.greater) <span class="op">/</span><span class="st"> </span>(n <span class="op">+</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb20-5" title="5">p</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>N.greater &lt;-<span class="st"> </span><span class="kw">sum</span>( (<span class="kw">median</span>(Cont) <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Ref)) <span class="op">&gt;=</span><span class="st"> </span>med.dif) <span class="co"># Number of simulated differences</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a>                                                           <span class="co"># greater than the observed value</span></span>
+<span id="cb20-3"><a href="#cb20-3"></a>n &lt;-<span class="st"> </span><span class="kw">length</span>(med.dif) <span class="co">#number of simulated values</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>p &lt;-<span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">min</span>(N.greater <span class="op">+</span><span class="st"> </span><span class="dv">1</span>, n <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>N.greater) <span class="op">/</span><span class="st"> </span>(n <span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb20-5"><a href="#cb20-5"></a>p</span></code></pre></div>
 <pre><code>[1] 0.15</code></pre>
 <p>Here, the p-value gives us the probability that our observed difference in median concentration value is consistent with the expected difference if the two sites were identical. In our example, that probability is around 0.15 suggesting that <em>overall</em>, the concentrations at both sites are relatively the same.</p>
 </div>
 <div id="wilcoxon-rank-sum-test" class="section level2">
 <h2>Wilcoxon rank sum test</h2>
 <p>This is another popular alternative to the t-Test. The technical implementation and interpretation is identical to that of the t-Test. It differs from the t-Test in that it is based on the observation ranks as opposed to the observation means. Here, we implement a two-sided test addressing the question <em>“are the differences in concentrations between the sites significant”</em>.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">wilcox.test</span>(Cont, Ref, <span class="dt">alternative =</span> <span class="st">&quot;two.sided&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">wilcox.test</span>(Cont, Ref, <span class="dt">alternative =</span> <span class="st">&quot;two.sided&quot;</span>)</span></code></pre></div>
 <pre><code>
     Wilcoxon rank sum test with continuity correction
 
@@ -936,7 +950,7 @@ alternative hypothesis: true location shift is not equal to 0</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -975,7 +989,7 @@ $(document).ready(function ()  {
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
       },
       ignoreSelector: ".toc-ignore",
       scrollTo: 0
