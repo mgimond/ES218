@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Extarcting and replacing with base functions</title>
+
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-39623718-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-39623718-2');
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; } /* Alert */
+code span.an { color: #008000; } /* Annotation */
+code span.at { } /* Attribute */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #0000ff; } /* ControlFlow */
+code span.ch { color: #008080; } /* Char */
+code span.cn { } /* Constant */
+code span.co { color: #008000; } /* Comment */
+code span.cv { color: #008000; } /* CommentVar */
+code span.do { color: #008000; } /* Documentation */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.im { } /* Import */
+code span.in { color: #008000; } /* Information */
+code span.kw { color: #0000ff; } /* Keyword */
+code span.op { } /* Operator */
+code span.ot { color: #ff4000; } /* Other */
+code span.pp { color: #ff4000; } /* Preprocessor */
+code span.sc { color: #008080; } /* SpecialChar */
+code span.ss { color: #008080; } /* SpecialString */
+code span.st { color: #008080; } /* String */
+code span.va { } /* Variable */
+code span.vs { color: #008080; } /* VerbatimString */
+code span.wa { color: #008000; font-weight: bold; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+<link rel="stylesheet" href="libs/style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fas fa-home"></span>
+     
+    
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Introduction
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Week01.html">Course Introduction</a>
+    </li>
+    <li>
+      <a href="R_vs_RStudio.html">R vs RStudio</a>
+    </li>
+    <li>
+      <a href="The_R_environment.html">The R/RStudio environments</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Data Manipulation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Week 02</li>
+    <li>
+      <a href="Week02a.html">Data types</a>
+    </li>
+    <li>
+      <a href="Week02b.html">Reading and writing data files</a>
+    </li>
+    <li>
+      <a href="Week02c.html">Working with date objects</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 03</li>
+    <li>
+      <a href="Week03a.html">Manipulating dataframes with dplyr</a>
+    </li>
+    <li>
+      <a href="Week03d.html">Working with string objects</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 04</li>
+    <li>
+      <a href="Week03ab_groupby.html">Grouping and summarizing tables</a>
+    </li>
+    <li>
+      <a href="Week03b.html">Tidying/reshaping tables using tidyr</a>
+    </li>
+    <li>
+      <a href="Week03c.html">Joining data tables</a>
+    </li>
+    <li>
+      <a href="Week03ab_examples.html">Example of data manipulation workflows</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Plots
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Week 05</li>
+    <li>
+      <a href="Week04a.html">The base plotting environment</a>
+    </li>
+    <li>
+      <a href="Week04b.html">The lattice plotting environment</a>
+    </li>
+    <li>
+      <a href="Week04c.html">The ggplot plotting environment</a>
+    </li>
+    <li>
+      <a href="Week04d.html">Manipulating colors in R</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Univariate
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Week 06</li>
+    <li>
+      <a href="Week05a.html">Visualizing univariate data</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 07</li>
+    <li>
+      <a href="Week05b.html">Comparing univariate data distributions</a>
+    </li>
+    <li>
+      <a href="Week06a.html">Theoretical Q-Q plot</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 08</li>
+    <li>
+      <a href="Week07a.html">Fits and residuals</a>
+    </li>
+    <li>
+      <a href="Week07b.html">Spread-location plot</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 09</li>
+    <li>
+      <a href="Week08a.html">Re-expressing data</a>
+    </li>
+    <li>
+      <a href="Week08b.html">Letter value summaries</a>
+    </li>
+    <li>
+      <a href="Week08c.html">The Two R’s of EDA</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Bivariate
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Week 10</li>
+    <li>
+      <a href="Week09a.html">Bivariate analysis</a>
+    </li>
+    <li>
+      <a href="Week09b.html">Resistant lines</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Week 11</li>
+    <li>
+      <a href="Week10a.html">The third R of EDA: Residuals</a>
+    </li>
+    <li>
+      <a href="Week10b.html">Detecting discontinuities in the data</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Two-way tables
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Week 12</li>
+    <li>
+      <a href="Week11a.html">Median polish/Mean polish</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Misc
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Misc01.html">R markdown documents</a>
+    </li>
+    <li class="dropdown-header">Week 13</li>
+    <li>
+      <a href="Week12a.html">Creating maps in R</a>
+    </li>
+    <li class="dropdown-header">Connecting to relational databases</li>
+  </ul>
+</li>
+<li>
+  <a href="Data.html">Datasets</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans%7CSource+Code+Pro" rel="stylesheet">
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Extarcting and replacing with base functions</h1>
+
+</div>
+
+
+<div id="using-the-subset-function" class="section level1">
+<h1>Using the <code>subset</code> function</h1>
+<p>You can subset a dataframe object by criteria using the <code>subset</code> function.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subset</span>(mtcars, mpg <span class="sc">&gt;</span> <span class="dv">25</span>)</span></code></pre></div>
+<pre><code>                mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+Fiat 128       32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+Honda Civic    30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+Toyota Corolla 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+Fiat X1-9      27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+Porsche 914-2  26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+Lotus Europa   30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2</code></pre>
+<p>You can combine individual criterion using boolean operators when selecting by row.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subset</span>(mtcars, (mpg <span class="sc">&gt;</span> <span class="dv">25</span>) <span class="sc">&amp;</span> (hp <span class="sc">&gt;</span> <span class="dv">65</span>)  )</span></code></pre></div>
+<pre><code>               mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+Fiat 128      32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+Fiat X1-9     27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+Porsche 914-2 26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+Lotus Europa  30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2</code></pre>
+<p>You can also subset by column. To select columns, add the <code>select =</code> parameter.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subset</span>(mtcars, (mpg <span class="sc">&gt;</span> <span class="dv">25</span>) <span class="sc">&amp;</span> (hp <span class="sc">&gt;</span> <span class="dv">65</span>) , <span class="at">select =</span> <span class="fu">c</span>(mpg, cyl, hp))</span></code></pre></div>
+<pre><code>               mpg cyl  hp
+Fiat 128      32.4   4  66
+Fiat X1-9     27.3   4  66
+Porsche 914-2 26.0   4  91
+Lotus Europa  30.4   4 113</code></pre>
+</div>
+<div id="subset-using-indices" class="section level1">
+<h1>Subset using indices</h1>
+<p>You’ve already learned how to identify elements in an atomic vector or a data frame in an <a href="https://mgimond.github.io/ES218/Week02a.html">earlier tutorial</a>. For example, to extract the second and fourth element of the following vector,</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;f&quot;</span>, <span class="st">&quot;a&quot;</span>, <span class="st">&quot;d&quot;</span>, <span class="st">&quot;a&quot;</span>)</span></code></pre></div>
+<p>type,</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>x[<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)]</span></code></pre></div>
+<pre><code>[1] &quot;f&quot; &quot;a&quot;</code></pre>
+<p>To subset a dataframe by index, define both dimension’s index. For example, to extract the first 20 rows and the first and third columns of the built-in <code>mtcars</code> dataset type.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mtcars[ <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>, <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>)]</span></code></pre></div>
+<pre style="max-height: 100px;"><code>                     mpg  hp
+Mazda RX4           21.0 110
+Mazda RX4 Wag       21.0 110
+Datsun 710          22.8  93
+Hornet 4 Drive      21.4 110
+Hornet Sportabout   18.7 175
+Valiant             18.1 105
+Duster 360          14.3 245
+Merc 240D           24.4  62
+Merc 230            22.8  95
+Merc 280            19.2 123
+Merc 280C           17.8 123
+Merc 450SE          16.4 180
+Merc 450SL          17.3 180
+Merc 450SLC         15.2 180
+Cadillac Fleetwood  10.4 205
+Lincoln Continental 10.4 215
+Chrysler Imperial   14.7 230
+Fiat 128            32.4  66
+Honda Civic         30.4  52
+Toyota Corolla      33.9  65</code></pre>
+<p>Note that we have to add <code>mtcars$</code> to the expression since the variable <code>mpg</code> does not exist as a standalone object.</p>
+<p>You can also reference columns by names as in,</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>mtcars[ <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>, <span class="fu">c</span>(<span class="st">&quot;mpg&quot;</span>, <span class="st">&quot;hp&quot;</span>)]</span></code></pre></div>
+<pre style="max-height: 100px;"><code>                     mpg  hp
+Mazda RX4           21.0 110
+Mazda RX4 Wag       21.0 110
+Datsun 710          22.8  93
+Hornet 4 Drive      21.4 110
+Hornet Sportabout   18.7 175
+Valiant             18.1 105
+Duster 360          14.3 245
+Merc 240D           24.4  62
+Merc 230            22.8  95
+Merc 280            19.2 123
+Merc 280C           17.8 123
+Merc 450SE          16.4 180
+Merc 450SL          17.3 180
+Merc 450SLC         15.2 180
+Cadillac Fleetwood  10.4 205
+Lincoln Continental 10.4 215
+Chrysler Imperial   14.7 230
+Fiat 128            32.4  66
+Honda Civic         30.4  52
+Toyota Corolla      33.9  65</code></pre>
+</div>
+<div id="extracting-using-logical-expression-and-indices" class="section level1">
+<h1>Extracting using logical expression and indices</h1>
+<p>We can apply conditions to indices in identifying which elements of a vector or a table satisfy one or more criterion.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>x[ x <span class="sc">==</span> <span class="st">&quot;a&quot;</span> ]</span></code></pre></div>
+<pre><code>[1] &quot;a&quot; &quot;a&quot; &quot;a&quot;</code></pre>
+<p>Let’s breakdown the above expression. The output of the expression <code>x == "a"</code> is <code>TRUE FALSE TRUE FALSE TRUE</code>, a logical vector with the same number of elements as <code>x</code>. The logical elements are then passed to the indexing brackets where they act as a “mask” as shown in the following graphic.</p>
+<p><img src="img/logical_mask.png" width="262" /></p>
+<p>The elements that make it through the <em>extraction mask</em> are then combined into a new vector element.</p>
+<p>The same operation can be applied to dataframes. For example, to extract all rows where <code>mpg &gt; 30</code> type:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mtcars[ mtcars<span class="sc">$</span>mpg <span class="sc">&gt;</span> <span class="dv">30</span>, ]</span></code></pre></div>
+<pre><code>                mpg cyl disp  hp drat    wt  qsec vs am gear carb
+Fiat 128       32.4   4 78.7  66 4.08 2.200 19.47  1  1    4    1
+Honda Civic    30.4   4 75.7  52 4.93 1.615 18.52  1  1    4    2
+Toyota Corolla 33.9   4 71.1  65 4.22 1.835 19.90  1  1    4    1
+Lotus Europa   30.4   4 95.1 113 3.77 1.513 16.90  1  1    5    2</code></pre>
+</div>
+<div id="replacing-values-using-logical-expressions" class="section level1">
+<h1>Replacing values using logical expressions</h1>
+<p>We can adopt the same masking properties of logical variables to <strong>replace</strong> values in a vector. For example, to replace all instances of <code>a</code> in vector <code>x</code> with <code>z</code>, we first <em>expose</em> the elements equal to <code>a</code>, then assign a new value to those elements.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>x[ x <span class="sc">==</span> <span class="st">&quot;a&quot;</span> ] <span class="ot">&lt;-</span> <span class="st">&quot;z&quot;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>x</span></code></pre></div>
+<pre><code>[1] &quot;z&quot; &quot;f&quot; &quot;z&quot; &quot;d&quot; &quot;z&quot;</code></pre>
+<p><img src="img/logical_mask_replace.png" width="262" /></p>
+<p>You can think of the logical <em>mask</em> as a template applied to a street surface and a spray can spraying “z” over the template. Only the exposed portion of the street surface will be sprayed with the “z” values.</p>
+<p>You can apply this technique to dataframes as well. For example, to replace all elements in <code>mpg</code> with <code>-1</code> if <code>mpg &lt; 25</code>, type:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>mtcars2 <span class="ot">&lt;-</span> mtcars </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>mtcars2[ mtcars2<span class="sc">$</span>mpg <span class="sc">&lt;</span> <span class="dv">25</span>, <span class="st">&quot;mpg&quot;</span>]  <span class="ot">&lt;-</span>  <span class="sc">-</span><span class="dv">1</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>mtcars2</span></code></pre></div>
+<pre style="max-height: 100px;"><code>                     mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4           -1.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag       -1.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710          -1.0   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+Hornet 4 Drive      -1.0   6 258.0 110 3.08 3.215 19.44  1  0    3    1
+Hornet Sportabout   -1.0   8 360.0 175 3.15 3.440 17.02  0  0    3    2
+Valiant             -1.0   6 225.0 105 2.76 3.460 20.22  1  0    3    1
+Duster 360          -1.0   8 360.0 245 3.21 3.570 15.84  0  0    3    4
+Merc 240D           -1.0   4 146.7  62 3.69 3.190 20.00  1  0    4    2
+Merc 230            -1.0   4 140.8  95 3.92 3.150 22.90  1  0    4    2
+Merc 280            -1.0   6 167.6 123 3.92 3.440 18.30  1  0    4    4
+Merc 280C           -1.0   6 167.6 123 3.92 3.440 18.90  1  0    4    4
+Merc 450SE          -1.0   8 275.8 180 3.07 4.070 17.40  0  0    3    3
+Merc 450SL          -1.0   8 275.8 180 3.07 3.730 17.60  0  0    3    3
+Merc 450SLC         -1.0   8 275.8 180 3.07 3.780 18.00  0  0    3    3
+Cadillac Fleetwood  -1.0   8 472.0 205 2.93 5.250 17.98  0  0    3    4
+Lincoln Continental -1.0   8 460.0 215 3.00 5.424 17.82  0  0    3    4
+Chrysler Imperial   -1.0   8 440.0 230 3.23 5.345 17.42  0  0    3    4
+Fiat 128            32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+Honda Civic         30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+Toyota Corolla      33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+Toyota Corona       -1.0   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+Dodge Challenger    -1.0   8 318.0 150 2.76 3.520 16.87  0  0    3    2
+AMC Javelin         -1.0   8 304.0 150 3.15 3.435 17.30  0  0    3    2
+Camaro Z28          -1.0   8 350.0 245 3.73 3.840 15.41  0  0    3    4
+Pontiac Firebird    -1.0   8 400.0 175 3.08 3.845 17.05  0  0    3    2
+Fiat X1-9           27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+Porsche 914-2       26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+Lotus Europa        30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+Ford Pantera L      -1.0   8 351.0 264 4.22 3.170 14.50  0  1    5    4
+Ferrari Dino        -1.0   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+Maserati Bora       -1.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
+Volvo 142E          -1.0   4 121.0 109 4.11 2.780 18.60  1  1    4    2</code></pre>
+<p>Note that we had to specify the column into which we are replacing the values. Had we left the second index empty, we would have replaced values across <em>all</em> columns.</p>
+</div>
+
+
+<div class="footer">
+<hr/>
+<a rel="license" href="https://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>  Manny Gimond (2021)
+</br>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
