@@ -33,6 +33,23 @@ Note that not all data file formats can be readily loaded directly from a websit
 
 To read other text formats that use different delimiters invoke the command `read.table()` and define the type of delimiter using the `sep=` parameter. For example, to read a tab delimited data file called *ACS.txt*, run the command `read.table("ACS.txt", sep="\t")`.
 
+Note that if a number or a string is identified as being a placeholder for missing values in the data file, you can use the `na.strings =` parameter in the `read.csv` function. For example, assume that the word `"missing"` was used in the csv file to denote a missing value, the function would be modified as follows:
+
+```{r eval=FALSE, tidy=FALSE, warning=FALSE}
+dat <- read.csv("http://mgimond.github.io/ES218/Data/ACS.csv", 
+                na.strings = "missing")
+```
+
+If more than one value is used as a placeholder for a missing value, you will need to combine the values using the `c()` operator. For example, if in addition to the word `"missing"` the value of `-9999` was used to designate missing values, you would modify the above chunk of code as follows:
+
+```{r eval=FALSE, tidy=FALSE, warning=FALSE}
+dat <- read.csv("http://mgimond.github.io/ES218/Data/ACS.csv", 
+                na.strings = c("missing", "-9999") )
+```
+
+Note how the number is wrapped in double quotes. Also, note that the `na.strings` parameter is applied to *all* columns in the dataframe. So if the word `"missing"` or the number `-9999` are valid values for some of the columns, you should not use this option. Instead, you would need to selectively replace the missing values after the dataset is loaded. This option will be explored in subsequent tutorials.
+
+
 ## Reading from a R data file
 
 R has its own data file format--it's usually saved using the *.rds* extension. To read a R data file, invoke the `readRDS()` function.
