@@ -1,0 +1,112 @@
+---
+title: "Relational and boolean operations"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r echo=FALSE}
+source("libs/Common.R")
+options(width = 80)
+```
+
+You've already been exposed to a few examples of relational and boolean operations in earlier tutorials. A formal exploration of these techniques follow.
+
+# Relational operations
+
+Relational operations play an important role in data manipulation. Anytime you subset a dataset based on one or more criterion, you are making use of a relational operation. The relational operators (also known as *logical binary operators*) include `==`, `!=`, `<`, `<=`, `>` and `>=`. The output of a condition is a logical vector `TRUE` or `FALSE`.  
+<br>  
+
++-----------------------+--------+------------------+
+| Relational operator   | Syntax | Example          |
++=======================+========+==================+
+| Exact equality        | `==`   |  3 == 4 -> FALSE |
++-----------------------+--------+------------------+
+| Exact inequality      | `!=`   |  3 != 4 -> TRUE  |
++-----------------------+--------+------------------+
+| Less than             | `<`    |  3 < 4  -> TRUE  |
++-----------------------+--------+------------------+
+| Less than or equal    | `<=`   |  4 <= 4 -> TRUE  |
++-----------------------+--------+------------------+
+| Greater than          | `>`    |  3 > 4  -> FALSE |
++-----------------------+--------+------------------+
+| Greater than or equal | `>=`   |  4 >= 4 -> TRUE  |
++-----------------------+--------+------------------+
+
+# Boolean operations
+
+Boolean operations can be used to piece together multiple evaluations.
+
+R has three boolean operators: The **AND** operator, `&`; The **NOT** operator, `!`; And the **OR** operator, `|`.
+
+The `&` operator requires that the conditions on both sides of the boolean operator be satisfied. You would normally use this operator when addressing a question along the lines of *"`x` must be satisfied AND `y` must be satisfied"*.
+
+The `|` operator requires that at least one condition be met on either side of the boolean operator. You would normally use this operator when addressing a question along the lines of "`x` must be satisfied OR `y` must be satisfied". Note that the output will also be TRUE if *both* conditions are met.
+
+The `!` operator is a *negation* operator. It will reverse the outcome of a condition. It can be interpreted as *"I do NOT want `x` to be true"*. So if the outcome of an expression is `TRUE`, preceding that expression with `!` will reverse the outcome to `FALSE` and vice-versa.  
+<br> 
+  
++----------+----------+------------------------+--------------+
+| Boolean  | Syntax   | Example                | Outcome      |
+| operator |          |                        |              |
++==========+==========+========================+==============+
+| AND      | `&`      | 4 == 3 `&` 1 == 1 <br> | FALSE  <br>  |
+|          |          | 4 == 4 `&` 1 == 1      | TRUE         |
++----------+----------+------------------------+--------------+
+| OR       | `|`      | 4 == 4 `|` 1 == 1 <br> | TRUE  <br>   |
+|          |          | 4 == 3 `|` 1 == 1 <br> | TRUE  <br>   |
+|          |          | 4 == 3 `|` 1 == 2      | FALSE        |
++----------+----------+------------------------+--------------+
+| NOT      | `!`      | `!`(4 == 3) <br>       | TRUE  <br>   |
+|          |          | `!`(4 == 4)            | FALSE        |
++----------+----------+------------------------+--------------+
+
+The following table breaks down all possible Boolean outcomes where `T` = `TRUE` and `F` = `FALSE`:
+
++-------------------+------------+
+| Boolean operation | Outcome    |
++===================+============+
+| T `&` T           | TRUE       |
++-------------------+------------+
+| T `&` F           | FALSE      |
++-------------------+------------+
+| F `&` F           | FALSE      |
++-------------------+------------+
+| T `|` T           | TRUE       |
++-------------------+------------+
+| T `|` F           | TRUE       |
++-------------------+------------+
+| F `|` F           | FALSE      |
++-------------------+------------+
+| `!`T              | FALSE      |
++-------------------+------------+
+| `!`F              | TRUE       |
++-------------------+------------+
+
+If the input values to a boolean operation are numeric vectors and not logical vectors, the numeric values will be interpreted as `FALSE` if zero and `TRUE` otherwise. For example:
+
+```{r}
+1 & 2
+1 & 0
+```
+
+## A word of caution
+
+Note that the operation `a == (3 | 4)` is **not** the same as `(a == 3) | (a == 4)`. The former will return `FALSE` whereas the latter will return `TRUE` if `a = 3`. This is because the Boolean operator evaluates both sides of its expression as separate **logical** outcomes (i.e. `T` and `F` values). In the latter case, the Boolean expression is asking *"is `a` equal to `3` OR is `a` equal to `4`"*. Since one of the conditions is true, the expression ends up evaluating `TRUE | FALSE` which returns `TRUE` (see above table).
+
+```{r}
+a <- 3
+b <- 4
+(a == 3) | (a == 4)
+```
+
+In the former expression, the boolean operator `|` is evaluating `3` OR `4` on its right-hand side. As mentioned in the previous section, logical values take on a value of `0` for FALSE and any non-zero value for TRUE, so when evaluating `3 | 4`, it's really seeing `TRUE | TRUE` which, according to the aforementioned table will output `TRUE`.
+
+```{r}
+3 | 4
+```
+
+So in the end, the expression `a == (3 | 4)` is really evaluating the condition `a == TRUE` which returns false (since 3 is not equal to the logical value `TRUE`).
+
+```{r}
+a == (3 | 4)
+```
