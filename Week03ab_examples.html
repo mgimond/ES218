@@ -13,6 +13,7 @@
 
 <title>Data manipulation examples</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -697,7 +702,7 @@ stringr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -722,22 +727,22 @@ stringr
 </table>
 <hr />
 <p>The following data are used in some of the subsequent tutorials (including the one on <code>ggplot2</code>) and make use of some advanced data manipulation routines. The input data file formats are provided as is by their source and are modified to facilitate ingestion into some the plotting routines covered in later exercises. Data used in this tutorial include grain harvest for north america and income/education census data for the US.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dat1 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>dat2 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <div id="dataset-dat1" class="section level2">
 <h2>Dataset <code>dat1</code></h2>
 <p><code>dat1</code> consists of grain yields by north american countries and by year. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
 <p>A subset of <code>dat1</code> will be used in later tutorials in both a <em>wide</em> form and a <em>long</em> form. The wide form will be called <code>dat1w</code> and will be a table of year vs. crop yields.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">library</span>(tidyr)</span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a>dat1w &lt;-<span class="st"> </span>dat1 <span class="op">%&gt;%</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="st">         </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb2-6"><a href="#cb2-6"></a>                Country     <span class="op">==</span><span class="st">&quot;United States of America&quot;</span>, </span>
-<span id="cb2-7"><a href="#cb2-7"></a>                Crop       <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a><span class="st">         </span><span class="kw">select</span>(Year, Crop, Value)                                          <span class="op">%&gt;%</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="st">         </span><span class="kw">pivot_wider</span>(<span class="dt">names_from =</span> Crop, <span class="dt">values_from=</span><span class="st">&quot;Value&quot;</span>)</span>
-<span id="cb2-10"><a href="#cb2-10"></a><span class="kw">head</span>(dat1w)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>dat1w <span class="ot">&lt;-</span> dat1 <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>         <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                Country     <span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>, </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                Crop       <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>         <span class="fu">select</span>(Year, Crop, Value)                                          <span class="sc">%&gt;%</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>         <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Crop, <span class="at">values_from=</span><span class="st">&quot;Value&quot;</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1w)</span></code></pre></div>
 <pre><code># A tibble: 6 x 6
    Year Barley Buckwheat   Maize   Oats    Rye
   &lt;int&gt;  &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
@@ -748,8 +753,8 @@ stringr
 5  2008 34195.    10000   96596. 22836. 18618.
 6  2007 32278.    10000   94584. 21565. 15719.</code></pre>
 <p>The <em>long</em> form version of the subset will be called <code>dat1l</code> and will be a <em>long</em> form representation of <code>dat1w</code> (yield by crop and year).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>dat1l &lt;-<span class="st"> </span><span class="kw">pivot_longer</span>(dat1w, <span class="dt">names_to =</span> <span class="st">&quot;Crop&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;Yield&quot;</span>, <span class="dt">cols=</span><span class="dv">2</span><span class="op">:</span><span class="dv">6</span>)</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">head</span>(dat1l, <span class="dv">10</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat1l <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(dat1w, <span class="at">names_to =</span> <span class="st">&quot;Crop&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;Yield&quot;</span>, <span class="at">cols=</span><span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1l, <span class="dv">10</span>)</span></code></pre></div>
 <pre><code># A tibble: 10 x 3
     Year Crop       Yield
    &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
@@ -764,12 +769,12 @@ stringr
  9  2011 Oats      20492.
 10  2011 Rye       16409.</code></pre>
 <p>Another subset will be used in subsequent exercises and will consist of total yields for each year by crop and country.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>dat1l2 &lt;-<span class="st"> </span>dat1 <span class="op">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="st">          </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb6-3"><a href="#cb6-3"></a>                 Crop       <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a><span class="st">          </span><span class="kw">select</span>( Year, Crop, Country,  <span class="dt">Yield =</span> Value)  <span class="co"># Note that we are renaming the Value field</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a></span>
-<span id="cb6-6"><a href="#cb6-6"></a><span class="kw">head</span>(dat1l2,<span class="dv">15</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat1l2 <span class="ot">&lt;-</span> dat1 <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>          <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                 Crop       <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>,<span class="st">&quot;Rye&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>          <span class="fu">select</span>( Year, Crop, Country,  <span class="at">Yield =</span> Value)  <span class="co"># Note that we are renaming the Value field</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1l2,<span class="dv">15</span>)</span></code></pre></div>
 <pre><code>   Year      Crop                  Country    Yield
 1  2012    Barley                   Canada 38894.66
 2  2012     Maize                   Canada 83611.49
@@ -792,34 +797,34 @@ stringr
 <div id="a-tidy-table-dat2b" class="section level3">
 <h3>A tidy table: <code>dat2b</code></h3>
 <p><code>dat2</code> consists of county income and educational attainment for both the male and female population. A codebook <a href="http://mgimond.github.io/ES218/Data/Income_education_codebook.csv">available here</a> provides descriptions for the different codes. We will remove the cases (rows) from <code>dat2</code> for which values are missing (i.e. cases having a <code>NA</code> designation) since these rows will serve no purpose (such cases may be associated with counties having no year-round residents or a resident population too small for data dissemination).</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>dat2 &lt;-<span class="st"> </span><span class="kw">na.omit</span>(dat2)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(dat2)</span></code></pre></div>
 <p>As with <code>dat1</code>, we will create a tidy version of <code>dat2</code> for use with packages such as <code>ggplot2</code>.</p>
 <p>The <code>dat2</code> dataset has income data broken down by educational attainment and gender aggregated at the county level. It would therefore be convenient for plot operations if two variables, <code>Gender</code> and (educational) <code>Level</code>, were added to the long table version of <code>dat2</code>.</p>
 <p><img src="img/Census_table_1.png" /></p>
 <p>We will first generate a lookup table, <code>Edu.Gend</code>, of variable elements that will match each census category (e.g. <code>B20004001</code>, <code>B20004002</code>, …) to its matching pair of <code>Level</code> and <code>Gender</code> types.</p>
 <p>We will also create a State/Region lookup table, <code>st.reg</code>, that will store two variables: the two letter state abbreviation variable <code>State</code> and its matching region variable <code>Region</code>. R has a built-in vector called <code>state.region</code> that assigns a region to each state. However, you’ll note that this vector only has region names but makes no reference to states. It’s intended to be used with another built-in data vector called <code>state.abb</code> or <code>state.name</code>. We will combine <code>state.abb</code> with <code>state.region</code> to create <code>st.reg</code>. We will also need to convert the uppercase state abbreviations to lower case using <code>tolower</code> so that they match the <code>dat2</code>’s lowercase state abbreviations. Note that D.C. is not included in the built-in states dataset, so we will add this record the <code>st.reg</code> table and assign D.C. to the <code>South</code> region.</p>
 <p>Finally, the two tables, <code>Edu.gend</code> and <code>st.reg</code>, will be joined to the long version of <code>dat2</code> such that each observation will be assigned a <code>Level</code>, <code>Gender</code> and <code>Region</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">library</span>(stringr)</span>
-<span id="cb9-2"><a href="#cb9-2"></a><span class="co"># Create a variable/Level/Gender join table</span></span>
-<span id="cb9-3"><a href="#cb9-3"></a>Edu.Gend &lt;-<span class="st"> </span><span class="kw">data.frame</span>( </span>
-<span id="cb9-4"><a href="#cb9-4"></a>               <span class="dt">variable   =</span> <span class="kw">paste</span>(<span class="st">&quot;B200040&quot;</span>, <span class="kw">str_pad</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">18</span>, <span class="dt">width=</span><span class="dv">2</span> , <span class="dt">pad=</span><span class="st">&quot;0&quot;</span>),<span class="dt">sep=</span><span class="st">&quot;&quot;</span> ),</span>
-<span id="cb9-5"><a href="#cb9-5"></a>               <span class="dt">Level      =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;NoHS&quot;</span>,<span class="st">&quot;HS&quot;</span>,<span class="st">&quot;AD&quot;</span>,<span class="st">&quot;BD&quot;</span>,<span class="st">&quot;Grad&quot;</span>), <span class="dt">times=</span><span class="dv">3</span>),</span>
-<span id="cb9-6"><a href="#cb9-6"></a>               <span class="dt">Gender     =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;M&quot;</span>,<span class="st">&quot;F&quot;</span>), <span class="dt">each=</span><span class="dv">6</span>) )</span>
-<span id="cb9-7"><a href="#cb9-7"></a></span>
-<span id="cb9-8"><a href="#cb9-8"></a><span class="co"># Create a region/state join table</span></span>
-<span id="cb9-9"><a href="#cb9-9"></a>st.reg &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">State =</span> <span class="kw">tolower</span>(state.abb), <span class="dt">Region =</span> state.region)</span>
-<span id="cb9-10"><a href="#cb9-10"></a>st.reg &lt;-<span class="st"> </span><span class="kw">rbind</span>(st.reg , <span class="kw">data.frame</span>(<span class="dt">State=</span><span class="st">&quot;dc&quot;</span>, <span class="dt">Region=</span><span class="st">&quot;South&quot;</span>) )</span>
-<span id="cb9-11"><a href="#cb9-11"></a></span>
-<span id="cb9-12"><a href="#cb9-12"></a><span class="co"># Start the piping operations</span></span>
-<span id="cb9-13"><a href="#cb9-13"></a>dat2b &lt;-<span class="st"> </span>dat2 <span class="op">%&gt;%</span></span>
-<span id="cb9-14"><a href="#cb9-14"></a><span class="st">  </span><span class="kw">pivot_longer</span>(<span class="dt">names_to =</span> <span class="st">&quot;variable&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;value&quot;</span>, <span class="dt">cols=</span><span class="op">-</span><span class="dv">1</span><span class="op">:-</span><span class="dv">2</span>)  <span class="op">%&gt;%</span></span>
-<span id="cb9-15"><a href="#cb9-15"></a><span class="st">  </span><span class="kw">left_join</span>(Edu.Gend, <span class="dt">by=</span><span class="st">&quot;variable&quot;</span> )              <span class="op">%&gt;%</span></span>
-<span id="cb9-16"><a href="#cb9-16"></a><span class="st">  </span><span class="kw">select</span>(State, County, Level, Gender, value)       <span class="op">%&gt;%</span></span>
-<span id="cb9-17"><a href="#cb9-17"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Level =</span> <span class="kw">factor</span>(Level, </span>
-<span id="cb9-18"><a href="#cb9-18"></a>                        <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>,<span class="st">&quot;NoHS&quot;</span>,<span class="st">&quot;HS&quot;</span>, <span class="st">&quot;AD&quot;</span>, <span class="st">&quot;BD&quot;</span>, <span class="st">&quot;Grad&quot;</span>))) <span class="op">%&gt;%</span></span>
-<span id="cb9-19"><a href="#cb9-19"></a><span class="st">  </span><span class="kw">left_join</span>(st.reg , <span class="dt">by=</span><span class="st">&quot;State&quot;</span>)</span>
-<span id="cb9-20"><a href="#cb9-20"></a></span>
-<span id="cb9-21"><a href="#cb9-21"></a><span class="kw">head</span>(dat2b)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a variable/Level/Gender join table</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>Edu.Gend <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">variable   =</span> <span class="fu">paste</span>(<span class="st">&quot;B200040&quot;</span>, <span class="fu">str_pad</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">18</span>, <span class="at">width=</span><span class="dv">2</span> , <span class="at">pad=</span><span class="st">&quot;0&quot;</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span> ),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">Level      =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;NoHS&quot;</span>,<span class="st">&quot;HS&quot;</span>,<span class="st">&quot;AD&quot;</span>,<span class="st">&quot;BD&quot;</span>,<span class="st">&quot;Grad&quot;</span>), <span class="at">times=</span><span class="dv">3</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">Gender     =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;M&quot;</span>,<span class="st">&quot;F&quot;</span>), <span class="at">each=</span><span class="dv">6</span>) )</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a region/state join table</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>st.reg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">State =</span> <span class="fu">tolower</span>(state.abb), <span class="at">Region =</span> state.region)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>st.reg <span class="ot">&lt;-</span> <span class="fu">rbind</span>(st.reg , <span class="fu">data.frame</span>(<span class="at">State=</span><span class="st">&quot;dc&quot;</span>, <span class="at">Region=</span><span class="st">&quot;South&quot;</span>) )</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Start the piping operations</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>dat2b <span class="ot">&lt;-</span> dat2 <span class="sc">%&gt;%</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">names_to =</span> <span class="st">&quot;variable&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;value&quot;</span>, <span class="at">cols=</span><span class="sc">-</span><span class="dv">1</span><span class="sc">:-</span><span class="dv">2</span>)  <span class="sc">%&gt;%</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Edu.Gend, <span class="at">by=</span><span class="st">&quot;variable&quot;</span> )              <span class="sc">%&gt;%</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(State, County, Level, Gender, value)       <span class="sc">%&gt;%</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Level =</span> <span class="fu">factor</span>(Level, </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                        <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;All&quot;</span>,<span class="st">&quot;NoHS&quot;</span>,<span class="st">&quot;HS&quot;</span>, <span class="st">&quot;AD&quot;</span>, <span class="st">&quot;BD&quot;</span>, <span class="st">&quot;Grad&quot;</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(st.reg , <span class="at">by=</span><span class="st">&quot;State&quot;</span>)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat2b)</span></code></pre></div>
 <pre><code># A tibble: 6 x 6
   State County  Level Gender value Region
   &lt;chr&gt; &lt;chr&gt;   &lt;fct&gt; &lt;chr&gt;  &lt;int&gt; &lt;fct&gt; 
@@ -829,7 +834,7 @@ stringr
 4 al    Autauga AD    All    35327 South 
 5 al    Autauga BD    All    54917 South 
 6 al    Autauga Grad  All    63317 South </code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">tail</span>(dat2b)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(dat2b)</span></code></pre></div>
 <pre><code># A tibble: 6 x 6
   State County Level Gender value Region
   &lt;chr&gt; &lt;chr&gt;  &lt;fct&gt; &lt;chr&gt;  &lt;int&gt; &lt;fct&gt; 
@@ -844,9 +849,9 @@ stringr
 <div id="spreading-gender-across-columns-dat2c" class="section level3">
 <h3>Spreading gender across columns: <code>dat2c</code></h3>
 <p>In <code>dat2b</code> the gender values are lumped under the variable called <code>Gender</code>. In some upcoming lectures, we will want to compare male and female incomes requiring that they be assigned their own columns. We will therefore <em>widen</em> <code>dat2b</code>. We will use the <code>pivot_wider</code> function from the <code>tidyr</code> package to create a new data frame called <code>dat2c</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>dat2c &lt;-<span class="st"> </span><span class="kw">pivot_wider</span>(dat2b, <span class="dt">names_from =</span> Gender, <span class="dt">values_from =</span> value )</span>
-<span id="cb13-2"><a href="#cb13-2"></a></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="kw">head</span>(dat2c)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dat2c <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(dat2b, <span class="at">names_from =</span> Gender, <span class="at">values_from =</span> value )</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat2c)</span></code></pre></div>
 <pre><code># A tibble: 6 x 7
   State County  Level Region   All     M     F
   &lt;chr&gt; &lt;chr&gt;   &lt;fct&gt; &lt;fct&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt;

@@ -13,6 +13,7 @@
 
 <title>Lattice plotting environment</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -688,24 +693,24 @@ lattice
 <div id="data" class="section level1">
 <h1>Data</h1>
 <p>The data files used in this tutorial were created in an <a href="Week03ab_examples.html">earlier exercise</a>. Type the following command to download the objects</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">load</span>(<span class="kw">url</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/dat1_2.RData&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="fu">url</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/dat1_2.RData&quot;</span>))</span></code></pre></div>
 <p>This should load several data frame objects into your R session (note that not all are used in this exercise). The first three lines of data frames used in the following sections are shown below:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">head</span>(dat1l, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1l, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Year   Crop    Yield
 1 1961 Barley 16488.52
 2 1962 Barley 18839.00
 3 1963 Barley 18808.27</code></pre>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">head</span>(dat1w, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1w, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Year   Barley Buckwheat    Maize     Oats      Rye
 1 1961 16488.52  10886.67 39183.63 15171.26 11121.79
 2 1962 18839.00  11737.50 40620.80 16224.60 12892.77
 3 1963 18808.27  11995.00 42595.55 16253.04 11524.11</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">head</span>(dat2b, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat2b, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  State  County Level Gender value Region
 1    al Autauga   All    All 35881  South
 2    al Baldwin   All    All 31439  South
 3    al Barbour   All    All 25201  South</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">head</span>(dat2c, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat2c, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  State                 County Level Region   All     F     M
 1    ak Aleutians East Borough   All   West 21953 20164 22940
 2    ak Aleutians East Borough  NoHS   West 21953 19250 22885
@@ -718,31 +723,31 @@ lattice
 <p>In the following example, a scatter plot is produced for different crime types by US region.</p>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
 <p>Examples of some of the most common lattice plot types follow. Note that you will need to load the <code>lattice</code> package to run the following chunks of code.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">library</span>(lattice)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lattice)</span></code></pre></div>
 </div>
 <div id="displaying-univariate-distributions" class="section level1">
 <h1>Displaying univariate distributions</h1>
 <p>Let’s look at a simple example where the density distribution of yields (across all years) is conditioned on crop type.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">densityplot</span>( <span class="op">~</span><span class="st"> </span>Yield <span class="op">|</span><span class="st"> </span>Crop, dat1l, <span class="dt">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">densityplot</span>( <span class="sc">~</span> Yield <span class="sc">|</span> Crop, dat1l, <span class="at">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>The <code>layout=c(5,1)</code> parameter instructs the lattice function to layout the panels along 5 column and 1 row. If you wanted the plots to be displayed in 5 rows and 1 column you would simply type <code>layout=c(1,5)</code>.</p>
 <p>The first thing to note is that the x-scale axis range is the same for all five plots. At first, this may seem as an inefficient use of the range of x values–for example, the buckwheat density plot is squeezed in the left-hand side of the plot, but it is important to understand the purpose of a trellis plot: <strong>to facilitate comparison of plots</strong>. By ensuring that all scale ranges remain the same, we can easily compare the plot shape. In the above plot, it is clear that the yield of buckwheat remains consistent across the years compared to Maize which displays the greatest variability across the years.</p>
 <p>The <code>lattice</code> package also has a histogram function:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">histogram</span>( <span class="op">~</span><span class="st"> </span>Yield <span class="op">|</span><span class="st"> </span>Crop, dat1l, <span class="dt">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="dt">nint =</span> <span class="dv">20</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">histogram</span>( <span class="sc">~</span> Yield <span class="sc">|</span> Crop, dat1l, <span class="at">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="at">nint =</span> <span class="dv">20</span>, <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>Note the importance of having a table shaped in “long form”. The density plots are conditioned on <em>crop type</em> which requires that crop type be treated as different values of a same variable (i.e. column <code>Crop</code> in <code>dat1l</code>). The above plot could not be generated had crop types been treated as variables (i.e. columns) as in <code>dat1w</code>.</p>
 <p>You can also compare the distributions to a <em>normal</em> distribution (i.e. a Q-Q plot):</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">qqmath</span>( <span class="op">~</span><span class="st"> </span>Yield <span class="op">|</span><span class="st"> </span>Crop, dat1l, <span class="dt">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qqmath</span>( <span class="sc">~</span> Yield <span class="sc">|</span> Crop, dat1l, <span class="at">plot.points =</span> <span class="st">&quot;&quot;</span>, <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">1</span>))</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Boxplots are another popular way to view the distribution of values. In the following example, we create boxplots of income values as a function of gender (<code>value ~ Gender</code>) and condition this comparison on educational levels (<code>| Level</code>). Since the variable <code>Gender</code> contains three unique values (<code>M</code>, <code>F</code> and <code>All</code>) we will remove all records tied to the whole population (<code>All</code>) by passing a condition, <code>dat2b$Gender != "All"</code> (where <code>!=</code> is interpreted as “not equal to”), to the <code>dat2b</code> index.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">bwplot</span>(value <span class="op">~</span><span class="st"> </span>Gender <span class="op">|</span><span class="st"> </span>Level, dat2b[dat2b<span class="op">$</span>Gender <span class="op">!=</span><span class="st"> &quot;All&quot;</span>,] , <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bwplot</span>(value <span class="sc">~</span> Gender <span class="sc">|</span> Level, dat2b[dat2b<span class="sc">$</span>Gender <span class="sc">!=</span> <span class="st">&quot;All&quot;</span>,] , <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">1</span>))</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>Note that <code>bwplot</code> automatically orders the conditional variable lexicographically unless the variable’s order is defined by its levels (the latter being the case in this example).</p>
 <p>We may remove the outliers by passing the <code>do.out = FALSE</code> parameter to <code>bwplot</code>:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">bwplot</span>(value <span class="op">~</span><span class="st"> </span>Gender <span class="op">|</span><span class="st"> </span>Level, dat2b[dat2b<span class="op">$</span>Gender <span class="op">!=</span><span class="st"> &quot;All&quot;</span>,] , <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>), <span class="dt">do.out =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bwplot</span>(value <span class="sc">~</span> Gender <span class="sc">|</span> Level, dat2b[dat2b<span class="sc">$</span>Gender <span class="sc">!=</span> <span class="st">&quot;All&quot;</span>,] , <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">1</span>), <span class="at">do.out =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>But note that the y-axis range still reflects the outlier values. We will need to explicitly define the y limits using the <code>ylim=</code> parameter.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">bwplot</span>(value <span class="op">~</span><span class="st"> </span>Gender <span class="op">|</span><span class="st"> </span>Level, dat2b[dat2b<span class="op">$</span>Gender <span class="op">!=</span><span class="st"> &quot;All&quot;</span>,] , <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>), <span class="dt">do.out =</span> <span class="ot">FALSE</span>, <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">125000</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bwplot</span>(value <span class="sc">~</span> Gender <span class="sc">|</span> Level, dat2b[dat2b<span class="sc">$</span>Gender <span class="sc">!=</span> <span class="st">&quot;All&quot;</span>,] , <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">1</span>), <span class="at">do.out =</span> <span class="cn">FALSE</span>, <span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">125000</span>))</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
 <div id="visualizing-multivariate-data" class="section level1">
@@ -751,24 +756,24 @@ lattice
 <div id="basic-line-plots" class="section level2">
 <h2>Basic line plots</h2>
 <p>The Lattice package allows us to plot several variables on a same plot. For example, we can plot yields vs year for each crop on a same plot:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">xyplot</span>(Barley <span class="op">+</span><span class="st"> </span>Buckwheat <span class="op">+</span><span class="st"> </span>Maize <span class="op">+</span><span class="st"> </span>Oats <span class="op">+</span><span class="st"> </span>Rye <span class="op">~</span><span class="st"> </span>Year , dat1w, <span class="dt">type =</span> <span class="st">&quot;o&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>,</span>
-<span id="cb17-2"><a href="#cb17-2"></a>        <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">lines =</span> <span class="ot">TRUE</span>, <span class="dt">space =</span> <span class="st">&quot;right&quot;</span>),</span>
-<span id="cb17-3"><a href="#cb17-3"></a>        <span class="dt">main =</span> <span class="st">&quot;Grain yield&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;Yield&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Year&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">xyplot</span>(Barley <span class="sc">+</span> Buckwheat <span class="sc">+</span> Maize <span class="sc">+</span> Oats <span class="sc">+</span> Rye <span class="sc">~</span> Year , dat1w, <span class="at">type =</span> <span class="st">&quot;o&quot;</span>, <span class="at">pch=</span><span class="dv">20</span>,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">auto.key =</span> <span class="fu">list</span>(<span class="at">lines =</span> <span class="cn">TRUE</span>, <span class="at">space =</span> <span class="st">&quot;right&quot;</span>),</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">main =</span> <span class="st">&quot;Grain yield&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;Yield&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Year&quot;</span>)</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-13-1.png" width="576" /></p>
 <p>Note the use of the wide version (<code>dat1w</code>) of the original <code>dat1</code> dataset. Each crop is treated as its own variable (column) and is added to the plot using the <code>+</code> symbol.</p>
 <p>We can also split the plots across a Trellis system by conditioning yields on crop type. But this now requires the use of the long form of the data (i.e. <code>dat1l</code>). The next plot also differs from the previous plot in that we substitute a point-line symbol (<code>type="o"</code>) with a line symbol only (<code>type="l"</code>).</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">xyplot</span>(Yield <span class="op">~</span><span class="st"> </span>Year <span class="op">|</span><span class="st"> </span>Crop, dat1l, <span class="dt">type =</span> <span class="st">&quot;l&quot;</span>, <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">5</span>,<span class="dv">1</span>),</span>
-<span id="cb18-2"><a href="#cb18-2"></a>       <span class="dt">main =</span> <span class="st">&quot;Grain yield&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;Yield&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Year&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">xyplot</span>(Yield <span class="sc">~</span> Year <span class="sc">|</span> Crop, dat1l, <span class="at">type =</span> <span class="st">&quot;l&quot;</span>, <span class="at">pch=</span><span class="dv">20</span>, <span class="at">layout=</span><span class="fu">c</span>(<span class="dv">5</span>,<span class="dv">1</span>),</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> <span class="st">&quot;Grain yield&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;Yield&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Year&quot;</span>)</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 </div>
 <div id="scatter-plots" class="section level2">
 <h2>Scatter plots</h2>
 <p>One key benefit of a Trellis system is its ability to generate bivariate scatter plots conditioned on one or more variables. For example, we may wish to compare incomes between female and male for each county and condition this relationship on educational attainment. This requires that male and female be assigned their own columns (since they are now treated as variables) and that educational attainment be assigned as another column whose values are each levels of educational attainment. We will therefore use <code>dat2c</code>.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>dat2c<span class="op">$</span>Level &lt;-<span class="st"> </span><span class="kw">factor</span>(dat2c<span class="op">$</span>Level, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;NoHS&quot;</span>, <span class="st">&quot;HS&quot;</span>, <span class="st">&quot;AD&quot;</span>, <span class="st">&quot;BD&quot;</span>, <span class="st">&quot;Grad&quot;</span> )) </span>
-<span id="cb19-2"><a href="#cb19-2"></a></span>
-<span id="cb19-3"><a href="#cb19-3"></a><span class="kw">xyplot</span>( M <span class="op">~</span><span class="st"> </span>F <span class="op">|</span><span class="st"> </span>Level, dat2c, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.6</span>,</span>
-<span id="cb19-4"><a href="#cb19-4"></a>        <span class="dt">col.symbol=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="dt">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="dt">abline=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>),</span>
-<span id="cb19-5"><a href="#cb19-5"></a>        <span class="dt">xlab=</span><span class="st">&quot;Female income ($)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Male income($)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dat2c<span class="sc">$</span>Level <span class="ot">&lt;-</span> <span class="fu">factor</span>(dat2c<span class="sc">$</span>Level, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;NoHS&quot;</span>, <span class="st">&quot;HS&quot;</span>, <span class="st">&quot;AD&quot;</span>, <span class="st">&quot;BD&quot;</span>, <span class="st">&quot;Grad&quot;</span> )) </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">xyplot</span>( M <span class="sc">~</span> F <span class="sc">|</span> Level, dat2c, <span class="at">type =</span> <span class="fu">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="at">pch=</span><span class="dv">20</span>, <span class="at">cex=</span><span class="fl">0.6</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.symbol=</span><span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="at">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="at">abline=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">layout=</span><span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">1</span>),</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">xlab=</span><span class="st">&quot;Female income ($)&quot;</span>, <span class="at">ylab=</span><span class="st">&quot;Male income($)&quot;</span>)</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-15-1.png" width="768" /></p>
 <p>The <code>xyplot</code> function is passed several parameters. The parameter <code>type = c("p","g")</code> instructs the function to generate both points, <code>"p"</code>, and a background grid ,<code>"g"</code>. Parameter <code>type</code> can accept many other options, a few are listed in the following table:</p>
 <table>
@@ -815,22 +820,22 @@ lattice
 </table>
 <p>The parameters <code>pch</code> and <code>cex</code> define the symbol shape and size. The parameter <code>col.symbol</code> defines the point color. The parameter <code>aspect="iso"</code> sets the aspect ratio in such a way that a unit of measure along x matches that of y, this facilitates income comparison between both sexes since the scales match exactly. The parameter <code>abline=c(0,1)</code> generated a 45° line. If median incomes for male and female were identical in each county, the points would line up along the 45° line. Most points are above the line indicating that male income is greater than female income when aggregated at the county level.</p>
 <p>Note that the point distribution seems skewed. We can warp the values in a <code>log()</code> function to help reveal the relationship between male and female income:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">xyplot</span>( <span class="kw">log</span>(M) <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(F) <span class="op">|</span><span class="st"> </span>Level, dat2c, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.6</span>,</span>
-<span id="cb20-2"><a href="#cb20-2"></a>        <span class="dt">col.symbol=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="dt">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="dt">abline=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">1</span>),</span>
-<span id="cb20-3"><a href="#cb20-3"></a>        <span class="dt">xlab=</span><span class="st">&quot;Log of female income ($)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Log of male income($)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">xyplot</span>( <span class="fu">log</span>(M) <span class="sc">~</span> <span class="fu">log</span>(F) <span class="sc">|</span> Level, dat2c, <span class="at">type =</span> <span class="fu">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="at">pch=</span><span class="dv">20</span>, <span class="at">cex=</span><span class="fl">0.6</span>,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.symbol=</span><span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="at">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="at">abline=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">layout=</span><span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">1</span>),</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">xlab=</span><span class="st">&quot;Log of female income ($)&quot;</span>, <span class="at">ylab=</span><span class="st">&quot;Log of male income($)&quot;</span>)</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-16-1.png" width="768" /></p>
 <p>We can take this a step further. We could condition the relationship in income between male and female on both educational attainment and states or regions. We won’t condition the scatterplot on states as this would generate 50 x 6 separate plots, so we will condition the plots on region.</p>
 <p>Note that since the output will consist of 6 (levels) x 4 (regions) we will need to modify the <code>layout</code> parameter to <code>layout=c(6,4)</code>. We will also stick with the log transformation of income since it seems to do a good job in helping reveal the relationship between both income values.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">xyplot</span>( M <span class="op">~</span><span class="st"> </span>F <span class="op">|</span><span class="st"> </span>Level <span class="op">+</span><span class="st"> </span>Region, dat2c, <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="dt">pch=</span><span class="dv">20</span>, <span class="dt">cex=</span><span class="fl">0.6</span>,</span>
-<span id="cb21-2"><a href="#cb21-2"></a>        <span class="dt">col.symbol=</span><span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="dt">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="dt">abline=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="dt">layout=</span><span class="kw">c</span>(<span class="dv">6</span>,<span class="dv">4</span>),</span>
-<span id="cb21-3"><a href="#cb21-3"></a>        <span class="dt">xlab=</span><span class="st">&quot;Log of female income ($)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Log of male income($)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">xyplot</span>( M <span class="sc">~</span> F <span class="sc">|</span> Level <span class="sc">+</span> Region, dat2c, <span class="at">type =</span> <span class="fu">c</span>(<span class="st">&quot;p&quot;</span>,<span class="st">&quot;g&quot;</span>), <span class="at">pch=</span><span class="dv">20</span>, <span class="at">cex=</span><span class="fl">0.6</span>,</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.symbol=</span><span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="at">aspect=</span><span class="st">&quot;iso&quot;</span>, <span class="at">abline=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">layout=</span><span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">4</span>),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">xlab=</span><span class="st">&quot;Log of female income ($)&quot;</span>, <span class="at">ylab=</span><span class="st">&quot;Log of male income($)&quot;</span>)</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-17-1.png" width="768" /></p>
 </div>
 </div>
 <div id="customizing-trellis-plots" class="section level1">
 <h1>Customizing trellis plots</h1>
 <p>Various elements of a trellis plot can be customized by passing the graphic parameters to the <code>trellis.par.set()</code> function. To get the list of graphic parameters and their values call the <code>trellis.par.get()</code> function.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">trellis.par.get</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">trellis.par.get</span>()</span></code></pre></div>
 <p>Output for three parameters is shown below:</p>
 <pre><code> $ fontsize         :List of 2
   ..$ text  : num 12
@@ -846,26 +851,26 @@ lattice
 <p>Each parameter consists of a list of elements. For example, the graphic parameter <code>fontsize</code> is made up of two modifiable elements: <code>text</code> and <code>points</code>. The following figure shows a few of the parameters and their associated graphical element:</p>
 <p><img src="img/Trellis_anatomy.png" /></p>
 <p>For example, we will modify the Titanic survival barchart by changing the strip background colors, the bar polygon colors, the text size and color and the label size and color as follows:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="co"># Define an array of colors. The first array generates unique hues while the </span></span>
-<span id="cb24-2"><a href="#cb24-2"></a><span class="co"># second generates different shades of grey</span></span>
-<span id="cb24-3"><a href="#cb24-3"></a>col.qual &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#FBB4AE&quot;</span>,<span class="st">&quot;#B3CDE3&quot;</span>,<span class="st">&quot;#CCEBC5&quot;</span>,<span class="st">&quot;#DECBE4&quot;</span>,<span class="st">&quot;#FED9A6&quot;</span>,<span class="st">&quot;#FFFFCC&quot;</span>,<span class="st">&quot;#E5D8BD&quot;</span>)</span>
-<span id="cb24-4"><a href="#cb24-4"></a>col.grey &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#DFDFDF&quot;</span>,<span class="st">&quot;#BFBFBF&quot;</span>,<span class="st">&quot;#9F9F9F&quot;</span>,<span class="st">&quot;#808080&quot;</span>,<span class="st">&quot;#606060&quot;</span>,<span class="st">&quot;#404040&quot;</span>,<span class="st">&quot;#202020&quot;</span>)</span>
-<span id="cb24-5"><a href="#cb24-5"></a></span>
-<span id="cb24-6"><a href="#cb24-6"></a><span class="co"># Modify the Trellis parameters</span></span>
-<span id="cb24-7"><a href="#cb24-7"></a><span class="kw">trellis.par.set</span>(<span class="dt">superpose.polygon =</span> <span class="kw">list</span>(<span class="dt">col =</span> col.qual, <span class="dt">border =</span> <span class="st">&quot;black&quot;</span>))</span>
-<span id="cb24-8"><a href="#cb24-8"></a><span class="kw">trellis.par.set</span>(<span class="dt">strip.background =</span> <span class="kw">list</span>(<span class="dt">col =</span> col.grey))</span>
-<span id="cb24-9"><a href="#cb24-9"></a><span class="kw">trellis.par.set</span>(<span class="dt">add.text =</span> <span class="kw">list</span>(<span class="dt">cex =</span> <span class="fl">0.8</span>, <span class="dt">col=</span><span class="st">&quot;grey20&quot;</span>))</span>
-<span id="cb24-10"><a href="#cb24-10"></a><span class="kw">trellis.par.set</span>(<span class="dt">par.xlab.text =</span> <span class="kw">list</span>(<span class="dt">cex =</span> <span class="fl">0.8</span>, <span class="dt">col=</span><span class="st">&quot;grey20&quot;</span>))</span>
-<span id="cb24-11"><a href="#cb24-11"></a></span>
-<span id="cb24-12"><a href="#cb24-12"></a><span class="co"># Now generate the strip charts</span></span>
-<span id="cb24-13"><a href="#cb24-13"></a><span class="kw">barchart</span>(Class <span class="op">~</span><span class="st"> </span>Freq <span class="op">|</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age, <span class="dt">data =</span> <span class="kw">as.data.frame</span>(Titanic), </span>
-<span id="cb24-14"><a href="#cb24-14"></a>         <span class="dt">groups =</span> Survived, <span class="dt">stack =</span> <span class="ot">TRUE</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
-<span id="cb24-15"><a href="#cb24-15"></a>         <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">title =</span> <span class="st">&quot;Survived&quot;</span>, <span class="dt">columns =</span> <span class="dv">2</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define an array of colors. The first array generates unique hues while the </span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># second generates different shades of grey</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>col.qual <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;#FBB4AE&quot;</span>,<span class="st">&quot;#B3CDE3&quot;</span>,<span class="st">&quot;#CCEBC5&quot;</span>,<span class="st">&quot;#DECBE4&quot;</span>,<span class="st">&quot;#FED9A6&quot;</span>,<span class="st">&quot;#FFFFCC&quot;</span>,<span class="st">&quot;#E5D8BD&quot;</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>col.grey <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;#DFDFDF&quot;</span>,<span class="st">&quot;#BFBFBF&quot;</span>,<span class="st">&quot;#9F9F9F&quot;</span>,<span class="st">&quot;#808080&quot;</span>,<span class="st">&quot;#606060&quot;</span>,<span class="st">&quot;#404040&quot;</span>,<span class="st">&quot;#202020&quot;</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Modify the Trellis parameters</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="fu">trellis.par.set</span>(<span class="at">superpose.polygon =</span> <span class="fu">list</span>(<span class="at">col =</span> col.qual, <span class="at">border =</span> <span class="st">&quot;black&quot;</span>))</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="fu">trellis.par.set</span>(<span class="at">strip.background =</span> <span class="fu">list</span>(<span class="at">col =</span> col.grey))</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="fu">trellis.par.set</span>(<span class="at">add.text =</span> <span class="fu">list</span>(<span class="at">cex =</span> <span class="fl">0.8</span>, <span class="at">col=</span><span class="st">&quot;grey20&quot;</span>))</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="fu">trellis.par.set</span>(<span class="at">par.xlab.text =</span> <span class="fu">list</span>(<span class="at">cex =</span> <span class="fl">0.8</span>, <span class="at">col=</span><span class="st">&quot;grey20&quot;</span>))</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Now generate the strip charts</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="fu">barchart</span>(Class <span class="sc">~</span> Freq <span class="sc">|</span> Sex <span class="sc">+</span> Age, <span class="at">data =</span> <span class="fu">as.data.frame</span>(Titanic), </span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">groups =</span> Survived, <span class="at">stack =</span> <span class="cn">TRUE</span>, <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">auto.key =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&quot;Survived&quot;</span>, <span class="at">columns =</span> <span class="dv">2</span>))</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 <p>You’ll note that some of the elements are composed of more than one value such as <code>strip.background</code>’s <code>col</code> element which takes on 7 distinct color values. We did not need to modify all seven since only the first two were used (one for age group and the other for gender). Had we conditioned the plot on a third parameter, a third strip would have been added and the third color in <code>col.grey</code> would have been used. For example:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">barchart</span>(Class <span class="op">~</span><span class="st"> </span>Freq <span class="op">|</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Survived, <span class="dt">data =</span> <span class="kw">as.data.frame</span>(Titanic), </span>
-<span id="cb25-2"><a href="#cb25-2"></a>         <span class="dt">groups =</span> Survived, <span class="dt">stack =</span> <span class="ot">TRUE</span>, <span class="dt">layout =</span> <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">2</span>),</span>
-<span id="cb25-3"><a href="#cb25-3"></a>         <span class="dt">auto.key =</span> <span class="kw">list</span>(<span class="dt">title =</span> <span class="st">&quot;Survived&quot;</span>, <span class="dt">columns =</span> <span class="dv">2</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barchart</span>(Class <span class="sc">~</span> Freq <span class="sc">|</span> Sex <span class="sc">+</span> Age <span class="sc">+</span> Survived, <span class="at">data =</span> <span class="fu">as.data.frame</span>(Titanic), </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">groups =</span> Survived, <span class="at">stack =</span> <span class="cn">TRUE</span>, <span class="at">layout =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">2</span>),</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">auto.key =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&quot;Survived&quot;</span>, <span class="at">columns =</span> <span class="dv">2</span>))</span></code></pre></div>
 <p><img src="Week04b_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 <p>Note the third strip (Yes vs No) with the third background color (#9F9F9F) in the color array <code>col.grey</code>.</p>
 </div>

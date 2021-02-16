@@ -13,6 +13,7 @@
 
 <title>Visualizing univariate distributions</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -697,7 +702,7 @@ tidyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -725,9 +730,9 @@ tidyr
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>Let’s create two batches of numbers, <code>a</code> and <code>b</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>a  &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">12</span>, <span class="dv">10</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>b  &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">15</span>, <span class="dv">10</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a>df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a, b)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>a  <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">12</span>, <span class="dv">10</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>b  <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">15</span>, <span class="dv">10</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a, b)</span></code></pre></div>
 <p>How do the two batches differ?</p>
 <table style="width:14%;">
 <colgroup>
@@ -784,24 +789,24 @@ tidyr
 </tbody>
 </table>
 <p>If the difference wasn’t obvious from the table view we can create a jittered point plot from the data.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># To plot across categories, we need the data in a long (tidy) form</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">library</span>(tidyr)</span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">library</span>(ggplot2)</span>
-<span id="cb2-4"><a href="#cb2-4"></a></span>
-<span id="cb2-5"><a href="#cb2-5"></a>dfl &lt;-<span class="st"> </span><span class="kw">pivot_longer</span>(df, <span class="dt">names_to =</span> <span class="st">&quot;Category&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;Value&quot;</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>)</span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">ggplot</span>(dfl,  <span class="kw">aes</span>(<span class="dt">y =</span> Value, <span class="dt">x =</span> Category, <span class="dt">col =</span> Category)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb2-7"><a href="#cb2-7"></a><span class="st">             </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">height =</span> <span class="dv">0</span>, <span class="dt">width=</span><span class="fl">0.4</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># To plot across categories, we need the data in a long (tidy) form</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>dfl <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df, <span class="at">names_to =</span> <span class="st">&quot;Category&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;Value&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dfl,  <span class="fu">aes</span>(<span class="at">y =</span> Value, <span class="at">x =</span> Category, <span class="at">col =</span> Category)) <span class="sc">+</span> </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_jitter</span>(<span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">height =</span> <span class="dv">0</span>, <span class="at">width=</span><span class="fl">0.4</span>))</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-5-1.png" width="384" /></p>
 <p>It’s clear that both batches differ by their uniform values, batch <code>a</code> is made up of the identical numbers, <code>12</code>, and batch <code>b</code> is made up of a different set of identical values, <code>15</code>. Note that because so many values overlapped, we made use of the <code>geom_jitter()</code> function which randomly <em>jitters</em> the data about their actual location.</p>
 <p>Now let’s compare a more complicated batch of numbers.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Randomly pick 10 values from a uniform distribution</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">set.seed</span>(<span class="dv">23</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a>a   &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">runif</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">15</span>))</span>
-<span id="cb3-4"><a href="#cb3-4"></a>b   &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">runif</span>(<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">20</span>))</span>
-<span id="cb3-5"><a href="#cb3-5"></a></span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="co"># Create wide and long data frames</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a>df  &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a, b)</span>
-<span id="cb3-8"><a href="#cb3-8"></a>dfl &lt;-<span class="st"> </span><span class="kw">pivot_longer</span>(df, <span class="dt">names_to =</span> <span class="st">&quot;Category&quot;</span>, <span class="dt">values_to =</span> <span class="st">&quot;Value&quot;</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Randomly pick 10 values from a uniform distribution</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>a   <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">15</span>))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>b   <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">20</span>))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create wide and long data frames</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>df  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a, b)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>dfl <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df, <span class="at">names_to =</span> <span class="st">&quot;Category&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;Value&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)</span></code></pre></div>
 <table style="width:14%;">
 <colgroup>
 <col width="6%" />
@@ -856,41 +861,41 @@ tidyr
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">ggplot</span>(dfl, <span class="kw">aes</span>(<span class="dt">y =</span> Value, <span class="dt">x =</span> Category, <span class="dt">col =</span> Category)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="st">            </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">height =</span> <span class="dv">0</span>, <span class="dt">width =</span> <span class="fl">0.2</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dfl, <span class="fu">aes</span>(<span class="at">y =</span> Value, <span class="at">x =</span> Category, <span class="at">col =</span> Category)) <span class="sc">+</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>            <span class="fu">geom_jitter</span>(<span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">height =</span> <span class="dv">0</span>, <span class="at">width =</span> <span class="fl">0.2</span>))</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-8-1.png" width="384" /></p>
 <p>So how do these batches differ? They seem to differ by their center value. For example, each batch’s mean is:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb5-2"><a href="#cb5-2"></a>dfl <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(Category) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarize</span>(<span class="dt">mean =</span> <span class="kw">mean</span>(Value) )</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>dfl <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(Category) <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="at">mean =</span> <span class="fu">mean</span>(Value) )</span></code></pre></div>
 <pre><code># A tibble: 2 x 2
   Category  mean
-  &lt;chr&gt;    &lt;dbl&gt;
+* &lt;chr&gt;    &lt;dbl&gt;
 1 a         11.8
 2 b         15.8</code></pre>
 <p>The center value (aka <strong>location</strong>), is one summary statistic we can use to compare batches. Another property of a batch that we might also want to compare is its distribution (aka <strong>spread</strong>). For example, does the <strong>spread</strong> between the two batches differ as well? It’s difficult to tell from the above plot given that the batches are offset, so we’ll <strong>level</strong> the batches by subtracting the means from their respective batches.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># Subtract the batch mean from each batch value</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a>dfl2 &lt;-<span class="st"> </span>dfl <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="st">  </span><span class="kw">group_by</span>(Category) <span class="op">%&gt;%</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Spread =</span> Value <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(Value))</span>
-<span id="cb7-5"><a href="#cb7-5"></a></span>
-<span id="cb7-6"><a href="#cb7-6"></a><span class="co"># Now plot the leveled batches</span></span>
-<span id="cb7-7"><a href="#cb7-7"></a><span class="kw">ggplot</span>(dfl2, <span class="kw">aes</span>(<span class="dt">y =</span> Spread, <span class="dt">x =</span> Category, <span class="dt">col =</span> Category)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb7-8"><a href="#cb7-8"></a><span class="st">             </span><span class="kw">geom_jitter</span>(<span class="dt">position =</span> <span class="kw">position_jitter</span>(<span class="dt">height =</span> <span class="dv">0</span>, <span class="dt">width=</span><span class="fl">0.2</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Subtract the batch mean from each batch value</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>dfl2 <span class="ot">&lt;-</span> dfl <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Category) <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Spread =</span> Value <span class="sc">-</span> <span class="fu">mean</span>(Value))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Now plot the leveled batches</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dfl2, <span class="fu">aes</span>(<span class="at">y =</span> Spread, <span class="at">x =</span> Category, <span class="at">col =</span> Category)) <span class="sc">+</span> </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_jitter</span>(<span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">height =</span> <span class="dv">0</span>, <span class="at">width=</span><span class="fl">0.2</span>))</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-10-1.png" width="384" /></p>
 <p>Removing the <em>location</em> (or mean in our example) from each value facilitates our comparison of both spreads. From our working example we can, at best, say that the batches share the same range. But a spread can be characterized in many more ways than by its range. Next, we’ll focus on four exploratory tools that will help us explore and quantify a dataset’s spread. These are the <strong>histogram</strong>, the <strong>boxplot</strong>, the <strong>density plot</strong> and the <strong>quantile plot</strong>.</p>
 </div>
 <div id="histograms" class="section level1">
 <h1>Histograms</h1>
 <p>A histogram <strong>bins</strong> the values (usually in equal sized bins) and plots the frequency in which each <em>bin</em> is filled. For example, to create a histogram of batch <code>a</code> where each bin size covers <strong>one</strong> unit, we type:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="dt">by =</span> <span class="dv">1</span>), <span class="dt">colour =</span> <span class="st">&quot;white&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="at">by =</span> <span class="dv">1</span>), <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-11-1.png" width="432" /></p>
 <p>Here, we are explicitly defining the bin width as 1 unit and the range as 6.5 to 16.5 via the parameter <code>breaks = seq(6.5,16.5,by=1)</code>. The <code>colour</code> parameter specifies the <em>outline</em> color. To change the fill color use the <code>fill</code> parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range.</p>
 <p>We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="dt">by =</span> <span class="dv">2</span>), <span class="dt">colour =</span> <span class="st">&quot;white&quot;</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">6.5</span>,<span class="fl">16.5</span>,<span class="at">by =</span> <span class="dv">2</span>), <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>) </span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-12-1.png" width="432" /></p>
 <p>You’ll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.</p>
 <p>You can also opt to have the function determine the bin ranges by simply specifying the number of bins using the <code>bin =</code> parameter:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">bins =</span> <span class="dv">12</span>, <span class="dt">colour =</span> <span class="st">&quot;white&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">12</span>, <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-13-1.png" width="432" /></p>
 </div>
 <div id="density-plots" class="section level1">
@@ -898,9 +903,9 @@ tidyr
 <p>The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the values <code>a</code>. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.</p>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-14-1.png" width="768" /></p>
 <p>The histogram can be represented as densities as opposed to counts. This is computed as the number of observations per bin divided by the product between the bin width and the total number of observations. For example, the first bin has one observation hence the density of observations within this bin interval is <code>1 / (2 * 10)</code> or <code>0.05</code>. The following histogram shows density values instead of counts on its y-axis.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="fl">5.8</span>, <span class="fl">15.8</span>, <span class="dt">by =</span> <span class="dv">2</span>), <span class="dt">colour =</span> <span class="st">&quot;white&quot;</span>, <span class="kw">aes</span>(<span class="dt">y =</span> ..density..)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb11-3"><a href="#cb11-3"></a><span class="st">  </span><span class="kw">geom_rug</span>(<span class="dt">col=</span><span class="st">&quot;darkorange&quot;</span>, <span class="dt">cex=</span><span class="dv">2</span>, <span class="dt">alpha =</span> <span class="fl">0.5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">5.8</span>, <span class="fl">15.8</span>, <span class="at">by =</span> <span class="dv">2</span>), <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>, <span class="fu">aes</span>(<span class="at">y =</span> ..density..)) <span class="sc">+</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_rug</span>(<span class="at">col=</span><span class="st">&quot;darkorange&quot;</span>, <span class="at">cex=</span><span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-15-1.png" width="432" /></p>
 <p>The bins map the density of observations along the x-axis. However, as was noted earlier, the discontinuity between bin intervals suggests that the density is constant along the bin width (e.g. the density of observations remains constant between <code>a = 6</code> and <code>a = 8</code>) which may not necessarily be the case.</p>
 <p>One solution is to compute density values on <em>overlapping</em> bins. Let’s take the first bin and have it count the number of values between 5 and 9 (exclusive) and divide that number by the total number of values and the bin width–this gives us two observations falling in the bin thus a density value of <code>2 / (10 * 4) = 0.05</code>. The following plot shows the bin with the orange dot representing the bin’s midpoint.</p>
@@ -918,22 +923,22 @@ tidyr
 <p><img src="Week05a_files/figure-html/unnamed-chunk-21-1.png" width="432" /></p>
 <p>With the rectangular weight, all points within the bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center.</p>
 <p>You can generate a density trace of the data using the <code>geom_density</code> function.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="dt">fill =</span> <span class="st">&quot;grey60&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">&quot;grey60&quot;</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-22-1.png" width="432" /></p>
 <p>The function adopts the <code>gaussian</code> weight function and will automatically define the bandwidth (analogous in concept to the bin width). If you want more detail in the density plot, simply reduce the bandwidth argument <code>bw</code>. The bandwidth defines the standard deviation of the gaussian function.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="dt">fill =</span> <span class="st">&quot;grey60&quot;</span>, <span class="dt">bw =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">&quot;grey60&quot;</span>, <span class="at">bw =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-23-1.png" width="432" /></p>
 <p>You can also add the observations along the x-axis to add to the <em>density</em> effect using the <code>geom_rug</code> function.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="dt">fill =</span> <span class="st">&quot;grey60&quot;</span>, <span class="dt">col =</span> <span class="ot">NA</span>, <span class="dt">bw =</span> <span class="dv">1</span>) <span class="op">+</span></span>
-<span id="cb14-2"><a href="#cb14-2"></a><span class="st">  </span><span class="kw">geom_rug</span>(<span class="dt">col =</span> <span class="st">&quot;darkred&quot;</span>, <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">alpha =</span> <span class="fl">0.4</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">&quot;grey60&quot;</span>, <span class="at">col =</span> <span class="cn">NA</span>, <span class="at">bw =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_rug</span>(<span class="at">col =</span> <span class="st">&quot;darkred&quot;</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.4</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-24-1.png" width="432" /></p>
 </div>
 <div id="boxplots" class="section level1">
 <h1>Boxplots</h1>
 <p>A boxplot is another popular plot used to explore distributions. In <code>ggplot2</code> we use the <code>geom_boxplot()</code> function as in,</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="dv">1</span>, <span class="dt">y =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>() <span class="op">+</span><span class="st"> </span></span>
-<span id="cb15-2"><a href="#cb15-2"></a><span class="st">           </span><span class="kw">xlab</span>(<span class="ot">NULL</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>()) <span class="op">+</span></span>
-<span id="cb15-3"><a href="#cb15-3"></a><span class="st">           </span><span class="kw">coord_flip</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> a)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>           <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">coord_flip</span>()</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-25-1.png" width="624" /></p>
 <p>Note that the <code>coord_flip()</code> function flips the boxplot on its side (the boxplot is normally plotted upright). The <code>geom_boxplot</code> function requires that both x and y axes be mapped a variable; usually, the x-axis is assigned a category, but since we are looking at a unique batch, we artificially map a value of 1 to the x-axis (we could have used any value). This requires that we mask the x-axis’s label and text so as not to confuse the reader using the options <code>xlab(NULL) + theme(axis.text.y=element_blank())</code>.</p>
 <p>The following figure describes the anatomy of a boxplot.</p>
@@ -944,26 +949,26 @@ tidyr
 <div id="not-all-boxplots-are-created-equal" class="section level2">
 <h2>Not all boxplots are created equal!</h2>
 <p>Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, some will compute a quantile as <span class="math inline">\(( i - 0.5) / n\)</span> where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. This is the method implemented by Bill Cleveland and we will refer to this method as <em>Cleveland’s quantile method</em>. This also happens to be the method implemented by the base’s <code>boxplot</code> function which explains the different boxplot output compared to <code>ggplot_boxplot</code> in our working example:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">boxplot</span>(a, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-26-1.png" width="624" /></p>
 <p>The upper and lower quartiles differ from those of <code>ggplot</code> since the three <code>15</code> values (these are the maximum values in batch <code>a</code>) end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers. In most cases, however, the difference will not matter as long as you <em>adopt the same boxplot procedure when comparing batches</em>.</p>
 </div>
 <div id="implementing-different-quantile-types-in-geom_boxplot" class="section level2">
 <h2>Implementing different quantile types in <code>geom_boxplot</code></h2>
 <p>If you wish to implement different <span class="math inline">\(f\)</span>-value calculations offered by the <code>quantile</code> function, you will need to create a custom function as follows:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co"># Function to extract quantiles given an f-value type</span></span>
-<span id="cb17-2"><a href="#cb17-2"></a>qtl.bxp &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">type =</span> <span class="dv">5</span>) {</span>
-<span id="cb17-3"><a href="#cb17-3"></a>  qtl &lt;-<span class="st"> </span><span class="kw">quantile</span>(x, <span class="dt">type =</span> type)</span>
-<span id="cb17-4"><a href="#cb17-4"></a>   df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">ymin  =</span> qtl[<span class="dv">1</span>], <span class="dt">ymax =</span> qtl[<span class="dv">5</span>], </span>
-<span id="cb17-5"><a href="#cb17-5"></a>                    <span class="dt">upper =</span> qtl[<span class="dv">4</span>], <span class="dt">lower =</span> qtl[<span class="dv">2</span>], <span class="dt">middle =</span> qtl[<span class="dv">3</span>])</span>
-<span id="cb17-6"><a href="#cb17-6"></a>}</span>
-<span id="cb17-7"><a href="#cb17-7"></a></span>
-<span id="cb17-8"><a href="#cb17-8"></a><span class="co"># Plot the boxplot</span></span>
-<span id="cb17-9"><a href="#cb17-9"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> a)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb17-10"><a href="#cb17-10"></a><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.data =</span> qtl.bxp, <span class="dt">fun.args =</span> <span class="kw">list</span>(<span class="dt">type =</span> <span class="dv">5</span>),</span>
-<span id="cb17-11"><a href="#cb17-11"></a>               <span class="dt">geom =</span> <span class="st">&#39;boxplot&#39;</span>) <span class="op">+</span></span>
-<span id="cb17-12"><a href="#cb17-12"></a><span class="st">  </span><span class="kw">xlab</span>(<span class="ot">NULL</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>()) <span class="op">+</span></span>
-<span id="cb17-13"><a href="#cb17-13"></a><span class="st">  </span><span class="kw">coord_flip</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to extract quantiles given an f-value type</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>qtl.bxp <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">type =</span> <span class="dv">5</span>) {</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  qtl <span class="ot">&lt;-</span> <span class="fu">quantile</span>(x, <span class="at">type =</span> type)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>   df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">ymin  =</span> qtl[<span class="dv">1</span>], <span class="at">ymax =</span> qtl[<span class="dv">5</span>], </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">upper =</span> qtl[<span class="dv">4</span>], <span class="at">lower =</span> qtl[<span class="dv">2</span>], <span class="at">middle =</span> qtl[<span class="dv">3</span>])</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the boxplot</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">&quot;&quot;</span>, <span class="at">y =</span> a)) <span class="sc">+</span> </span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun.data =</span> qtl.bxp, <span class="at">fun.args =</span> <span class="fu">list</span>(<span class="at">type =</span> <span class="dv">5</span>),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">geom =</span> <span class="st">&#39;boxplot&#39;</span>) <span class="sc">+</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-27-1.png" width="624" /></p>
 <p>Note the use of <code>stat_summary</code> instead of <code>geom_boxplot</code>. The <code>type</code> argument is the quantile type implemented in the <code>quantile</code> function.</p>
 </div>
@@ -976,8 +981,8 @@ tidyr
 <div id="computing-the-f-quantile" class="section level2">
 <h2>Computing the <span class="math inline">\(f\)</span>-quantile</h2>
 <p>Computing <span class="math inline">\(f\)</span> requires that the batch of numbers be ordered from smallest to largest.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>a.o &lt;-<span class="st"> </span><span class="kw">sort</span>(a)</span>
-<span id="cb18-2"><a href="#cb18-2"></a>a.o</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>a.o <span class="ot">&lt;-</span> <span class="fu">sort</span>(a)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>a.o</span></code></pre></div>
 <pre><code> [1]  7  8  9 11 12 13 13 15 15 15</code></pre>
 <p>The concept of sorting values may seem benign, but it is fundamental to many EDA procedures that require robust techniques.</p>
 <p>With the numbers sorted, we can proceed with the computation of <span class="math inline">\(f\)</span> following <em>Cleveland’s</em> method:</p>
@@ -986,9 +991,9 @@ f_i = \frac{i - 0.5}{n}
 \]</span></p>
 <p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section, there are many ways one can compute a quantile, however, the differences may not matter much.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>i     &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">:</span><span class="st"> </span><span class="kw">length</span>(a)</span>
-<span id="cb20-2"><a href="#cb20-2"></a>f.val &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(a)  <span class="co"># Compute the f-value</span></span>
-<span id="cb20-3"><a href="#cb20-3"></a>a.fi  &lt;-<span class="st"> </span><span class="kw">data.frame</span>(a.o, f.val)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>f.val <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(a)  <span class="co"># Compute the f-value</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val)</span></code></pre></div>
 <p>Note that in the last line of code, we are appending the ordered representation of <code>a</code> to <code>f.val</code> given that <code>f.val</code> assumes an ordered dataset. The data frame <code>a.fi</code> should look like this:</p>
 <table style="width:19%;">
 <colgroup>
@@ -1045,15 +1050,15 @@ f_i = \frac{i - 0.5}{n}
 </tbody>
 </table>
 <p>It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in <code>a</code> associated with a quantile of <span class="math inline">\(0.5\)</span>; this is because we have an even number of values in our dataset. The solution is to interpolate (or extrapolate) a value based on a desired quantile. The <code>quantile()</code> function does just that. For example, to find the value associated with a quantile of <span class="math inline">\(0.5\)</span>:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">quantile</span>(a, <span class="fl">0.5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fl">0.5</span>)</span></code></pre></div>
 <pre><code> 50% 
 12.5 </code></pre>
 <p>If we want to get quantile values for a range of fractions, simply wrap the values with the <code>c()</code> function:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">quantile</span>(a, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code></pre></div>
 <pre><code> 25%  50%  75% 
  9.5 12.5 14.5 </code></pre>
 <p>The <code>quantile</code> function is designed to accept different quantile algorithms. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">quantile</span>(a, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="dt">type =</span> <span class="dv">5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code></pre></div>
 <pre><code> 25%  50%  75% 
  9.0 12.5 15.0 </code></pre>
 <p>Note the difference in the upper quartile value.</p>
@@ -1061,12 +1066,12 @@ f_i = \frac{i - 0.5}{n}
 <div id="creating-a-quantile-plot" class="section level2">
 <h2>Creating a quantile plot</h2>
 <p>A batch’s quantile is best viewed as a plot where we plot the batch values as a function of the <span class="math inline">\(f\)</span>-values:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">ggplot</span>(a.fi, <span class="kw">aes</span>(<span class="dt">x =</span> f.val, <span class="dt">y =</span> a.o)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-34-1.png" width="288" /></p>
 <div id="using-ggplots-qq-geom" class="section level3">
 <h3>Using ggplot’s <code>qq</code> geom</h3>
 <p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values and the dataframe <code>a.fi</code>, you could simply call the function <code>stat_qq()</code> as in:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample =</span> a)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution =</span> qunif) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">&quot;f-value&quot;</span>)</span></code></pre></div>
 <p><img src="Week05a_files/figure-html/unnamed-chunk-35-1.png" width="288" /></p>
 <p>However, ggplot’s <code>stat_qq</code> function does not adopt Cleveland’s <span class="math inline">\(f\)</span>-value calculation. Hence, you’ll notice a slight offset in position along the x-axis. For example, the third-to-last point has an <span class="math inline">\(f\)</span>-value of <code>0.744</code> instead of an <span class="math inline">\(f\)</span>-value of <code>0.75</code> as calculated using Cleveland’s method.</p>
 <p>Also note the slight change in mapping values to the <code>aes()</code> function: <code>sample = a</code> where <code>a</code> is the (unsorted) variable being plotted.</p>

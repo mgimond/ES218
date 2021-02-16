@@ -13,6 +13,7 @@
 
 <title>Re-expressing values</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -688,7 +693,7 @@ ggplot2
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -718,16 +723,16 @@ y = log_b(x) \Leftrightarrow  x=b^y
 \]</span></p>
 <p>In R, the base is defined by passing the parameter <code>base=</code> to the <code>log()</code> function as in <code>log(x , base=10)</code>.</p>
 <p>Re-expressing with the log is particularly useful when the change in one value as a function of another is multiplicative and not additive. An example of such a dataset is the compounding interest. Let’s assume that we start off with $1000 in an investment account that yields 10% interest each year. We can calculate the size of our investment for the next 50 years as follows:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>rate &lt;-<span class="st"> </span><span class="fl">0.1</span>                 <span class="co"># Rate is stored as a fraction</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>y    &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">length =</span> <span class="dv">50</span>) <span class="co"># Create an empty vector that can hold 50 values</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>y[<span class="dv">1</span>] &lt;-<span class="st"> </span><span class="dv">1000</span>                <span class="co"># Start 1st year with $1000</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="co"># Next, compute the investment ammount for years 2, 3, ..., 50.</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="co"># Each iteration of the loop computes the new amount for year i based </span></span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="co"># on the previous year&#39;s amount (i-1).</span></span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">2</span><span class="op">:</span><span class="kw">length</span>(y)){</span>
-<span id="cb1-9"><a href="#cb1-9"></a>  y[i] &lt;-<span class="st"> </span>y[i<span class="dv">-1</span>] <span class="op">+</span><span class="st"> </span>(y[i<span class="dv">-1</span>] <span class="op">*</span><span class="st"> </span>rate)  <span class="co"># Or y[i-1] * (1 + rate)</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>rate <span class="ot">&lt;-</span> <span class="fl">0.1</span>                 <span class="co"># Rate is stored as a fraction</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y    <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="at">length =</span> <span class="dv">50</span>) <span class="co"># Create an empty vector that can hold 50 values</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>y[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1000</span>                <span class="co"># Start 1st year with $1000</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Next, compute the investment ammount for years 2, 3, ..., 50.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Each iteration of the loop computes the new amount for year i based </span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># on the previous year&#39;s amount (i-1).</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">length</span>(y)){</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  y[i] <span class="ot">&lt;-</span> y[i<span class="dv">-1</span>] <span class="sc">+</span> (y[i<span class="dv">-1</span>] <span class="sc">*</span> rate)  <span class="co"># Or y[i-1] * (1 + rate)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>The vector <code>y</code> gives us the amount of our investment for each year over the course of 50 years.</p>
 <pre><code> [1]   1000.000   1100.000   1210.000   1331.000   1464.100   1610.510   1771.561   1948.717
  [9]   2143.589   2357.948   2593.742   2853.117   3138.428   3452.271   3797.498   4177.248
@@ -737,10 +742,10 @@ y = log_b(x) \Leftrightarrow  x=b^y
 [41]  45259.256  49785.181  54763.699  60240.069  66264.076  72890.484  80179.532  88197.485
 [49]  97017.234 106718.957</code></pre>
 <p>We can plot the values as follows:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Note that a scatter plot is created from 2 variables, however, if only one</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="co"># is passed to the plot() function, R will assume that the x variable is</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="co"># an equally spaced index.</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">plot</span>(y, <span class="dt">pch =</span> <span class="dv">20</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note that a scatter plot is created from 2 variables, however, if only one</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># is passed to the plot() function, R will assume that the x variable is</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># an equally spaced index.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y, <span class="at">pch =</span> <span class="dv">20</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-5-1.png" width="384" /></p>
 <p>The change in difference between values from year to year is <strong>not additive</strong>, in other words, the difference between years 48 and 49 is different than that for years 3 and 4.</p>
 <table style="width:64%;">
@@ -790,14 +795,14 @@ y = log_b(x) \Leftrightarrow  x=b^y
 </table>
 <p>We say that the change in value is <em>multiplicative</em> across the years. In other words, the value amount 6 years out is <span class="math inline">\(value(6) = (yearly\_increase)^{6} \times 1000\)</span> or <code>1.1^6 * 1000</code> = 1771.561 which matches value <code>y[7]</code>.</p>
 <p>When we expect a variable to change multiplicatively as a function of another variable, it is usually best to transform the variable using the logarithm. To see why, plot the log of <code>y</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">plot</span>(<span class="kw">log</span>(y), <span class="dt">pch=</span><span class="dv">20</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">log</span>(y), <span class="at">pch=</span><span class="dv">20</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-6-1.png" width="384" /></p>
 <p>Note the change from a curved line to a perfectly straight line. The logarithm will produce a straight line if the rate of change for <code>y</code> is constant over the range of <code>x</code>. This is a nifty property since it makes it so much easier to see if and where the rate of change differs. For example, let’s look at the population growth rate of the US from 1850 to 2013.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>dat &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://personal.colby.edu/personal/m/mgimond/R/Data/Population.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">plot</span>(US <span class="op">~</span><span class="st"> </span>Year, dat, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://personal.colby.edu/personal/m/mgimond/R/Data/Population.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(US <span class="sc">~</span> Year, dat, <span class="at">type=</span><span class="st">&quot;l&quot;</span>) </span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-7-1.png" width="384" /></p>
 <p>The population count for the US follows a slightly curved (convex) pattern. It’s difficult to see from this plot if the rate of growth is consistent across the years (though there is an obvious jump in population count around the 1950’s). Let’s log the population count.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">plot</span>(<span class="kw">log</span>(US) <span class="op">~</span><span class="st"> </span>Year, dat, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>)  </span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">log</span>(US) <span class="sc">~</span> Year, dat, <span class="at">type=</span><span class="st">&quot;l&quot;</span>)  </span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-8-1.png" width="384" /></p>
 <p>It’s clear from the log plot that the rate of growth for the US has not been consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate over the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).</p>
 <p>A logarithm is defined by a base. Some of the most common bases are <code>10</code>, <code>2</code> and <code>exp(1)</code> with the latter being the natural log. The bases can be defined in the call to <code>log()</code> by adding a second parameter to that function. For example, to apply the log base 2 to the 5<sup>th</sup> value of the vector <code>y</code>, type <code>log( y[5], 2)</code>. To apply the natural log to that same value, simply type <code>log( y[5], exp(1))</code>. If you don’t specify a base, <code>R</code> will default to the natural log.</p>
@@ -816,33 +821,33 @@ y = log_b(x) \Leftrightarrow  x=b^y
 \end{equation}
 \]</span> The objective is to find a value for <span class="math inline">\(p\)</span> from a “ladder” of powers (e.g. -2, -1, -1/2, 0, 1/2, 1, 2) that does a good job in re-expressing the batch of values. Technically, <span class="math inline">\(p\)</span> can take on any value. But in practice, we normally pick a value for <span class="math inline">\(p\)</span> that may be “interpretable” in the context of our analysis. For example, a log transformation (<code>p=0</code>) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of <span class="math inline">\(p\)</span> may not be directly interpretable or may not be of concern to the analyst.</p>
 <p>A nifty solution to finding an appropriate <span class="math inline">\(p\)</span> is to create a function whose input is the vector (that we want to re-express) and a <span class="math inline">\(p\)</span> parameter we want to explore.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>RE &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">p =</span> <span class="dv">0</span>) {</span>
-<span id="cb7-2"><a href="#cb7-2"></a>  <span class="cf">if</span>(p <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>) {</span>
-<span id="cb7-3"><a href="#cb7-3"></a>    z &lt;-<span class="st"> </span>x<span class="op">^</span>p</span>
-<span id="cb7-4"><a href="#cb7-4"></a>  } <span class="cf">else</span>{</span>
-<span id="cb7-5"><a href="#cb7-5"></a>    z &lt;-<span class="st"> </span><span class="kw">log</span>(x)</span>
-<span id="cb7-6"><a href="#cb7-6"></a>  }</span>
-<span id="cb7-7"><a href="#cb7-7"></a>  <span class="kw">return</span>(z)</span>
-<span id="cb7-8"><a href="#cb7-8"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>RE <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">p =</span> <span class="dv">0</span>) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(p <span class="sc">!=</span> <span class="dv">0</span>) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    z <span class="ot">&lt;-</span> x<span class="sc">^</span>p</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span>{</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    z <span class="ot">&lt;-</span> <span class="fu">log</span>(x)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(z)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>To use the custom function <code>RE</code> simply pass two vectors: the batch of numbers being re-expressed and the <span class="math inline">\(p\)</span> parameter.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># Create a skewed distribution of 50 random values</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">set.seed</span>(<span class="dv">9</span>)</span>
-<span id="cb8-3"><a href="#cb8-3"></a>a &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">50</span>, <span class="dt">shape =</span> <span class="dv">1</span>)</span>
-<span id="cb8-4"><a href="#cb8-4"></a></span>
-<span id="cb8-5"><a href="#cb8-5"></a><span class="co"># Let&#39;s look at the skewed distribution</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a><span class="kw">boxplot</span>(a, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a skewed distribution of 50 random values</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">9</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">rgamma</span>(<span class="dv">50</span>, <span class="at">shape =</span> <span class="dv">1</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Let&#39;s look at the skewed distribution</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-11-1.png" width="288" /></p>
 <p>The batch is strongly skewed to the right. Let’s first try a square-root transformation (<code>p=1/2</code>)</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>a.re &lt;-<span class="st"> </span><span class="kw">RE</span>(a, <span class="dt">p =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>)   </span>
-<span id="cb9-2"><a href="#cb9-2"></a><span class="kw">boxplot</span>(a.re, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>a.re <span class="ot">&lt;-</span> <span class="fu">RE</span>(a, <span class="at">p =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>)   </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a.re, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-12-1.png" width="288" /></p>
 <p>That certainly helps minimize the skew, but the distribution still lacks symmetry. Let’s try a log transformation (<code>p=0</code>):</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>a.re &lt;-<span class="st"> </span><span class="kw">RE</span>(a, <span class="dt">p =</span> <span class="dv">0</span>)   </span>
-<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">boxplot</span>(a.re, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>a.re <span class="ot">&lt;-</span> <span class="fu">RE</span>(a, <span class="at">p =</span> <span class="dv">0</span>)   </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a.re, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-13-1.png" width="288" /></p>
 <p>That’s a little too much over-correction; we don’t want to substitute a right skew for a left skew. Let’s try a power in between (i.e. <code>p=1/4</code>):</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>a.re &lt;-<span class="st"> </span><span class="kw">RE</span>(a, <span class="dt">p =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">4</span>)   </span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">boxplot</span>(a.re, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>a.re <span class="ot">&lt;-</span> <span class="fu">RE</span>(a, <span class="at">p =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>)   </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a.re, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-14-1.png" width="288" /></p>
 <p>That’s much better. The distribution is now nicely balanced about its median.</p>
 </div>
@@ -856,18 +861,18 @@ y = log_b(x) \Leftrightarrow  x=b^y
 \end{cases}
 \end{equation}
 \]</span> Just as we can create a custom Tukey transformation function, we can create a Box-Cox transformation function too:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>BC &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">p =</span> <span class="dv">0</span>) {</span>
-<span id="cb12-2"><a href="#cb12-2"></a>  <span class="cf">if</span>(p <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {</span>
-<span id="cb12-3"><a href="#cb12-3"></a>    z &lt;-<span class="st"> </span><span class="kw">log</span>(x)</span>
-<span id="cb12-4"><a href="#cb12-4"></a>  } <span class="cf">else</span> {</span>
-<span id="cb12-5"><a href="#cb12-5"></a>    z &lt;-<span class="st"> </span>(x<span class="op">^</span>p <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)<span class="op">/</span>p</span>
-<span id="cb12-6"><a href="#cb12-6"></a>  }</span>
-<span id="cb12-7"><a href="#cb12-7"></a>  <span class="kw">return</span>(z)</span>
-<span id="cb12-8"><a href="#cb12-8"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>BC <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">p =</span> <span class="dv">0</span>) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(p <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    z <span class="ot">&lt;-</span> <span class="fu">log</span>(x)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    z <span class="ot">&lt;-</span> (x<span class="sc">^</span>p <span class="sc">-</span> <span class="dv">1</span>)<span class="sc">/</span>p</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(z)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>While both the Box-Cox and Tukey transformations method will generate similar distributions when the power <code>p</code> is <code>0</code> or greater, they will differ in distributions when the power is negative. For example, when re-expressing <code>mtcars$mpg</code> using an inverse power (p = -1), Tukey’s re-expression will change the data order but the Box-Cox transformation will not as shown in the following plots:.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">plot</span>(mpg <span class="op">~</span><span class="st"> </span>disp, mtcars, <span class="dt">main =</span> <span class="st">&quot;Original data&quot;</span>)</span>
-<span id="cb13-2"><a href="#cb13-2"></a><span class="kw">plot</span>(<span class="kw">RE</span>(mtcars<span class="op">$</span>mpg, <span class="dt">p =</span> <span class="dv">-1</span>) <span class="op">~</span><span class="st"> </span>mtcars<span class="op">$</span>disp, <span class="dt">main =</span> <span class="st">&quot;Tukey&quot;</span>)</span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="kw">plot</span>(<span class="kw">BC</span>(mtcars<span class="op">$</span>mpg, <span class="dt">p =</span> <span class="dv">-1</span>) <span class="op">~</span><span class="st"> </span>mtcars<span class="op">$</span>disp, <span class="dt">main =</span> <span class="st">&quot;Box-Cox&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(mpg <span class="sc">~</span> disp, mtcars, <span class="at">main =</span> <span class="st">&quot;Original data&quot;</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">RE</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p =</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">~</span> mtcars<span class="sc">$</span>disp, <span class="at">main =</span> <span class="st">&quot;Tukey&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">BC</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p =</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">~</span> mtcars<span class="sc">$</span>disp, <span class="at">main =</span> <span class="st">&quot;Box-Cox&quot;</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
 <p>The original data shows a negative relationship between <code>mpg</code> and <code>disp</code>; the Tukey re-expression takes the inverse of <code>mpg</code> which changes the nature of the relationship between the y and x variables where whe have a positive relationship between the re-expressed <code>mpg</code> variable and <code>disp</code> variable (note that by simply changing the sign of the re-expressed value, <code>-x^(-1)</code> maintains the nature of the original relationship); the Box-Cox transformation, on the other hand, maintains this negative relationship.</p>
 <p>The choice of re-rexpression will depend on the analysis context. For example, if you want an easily interpretable transformation then opt for the Tukey re-expression. If you want to compare the shape of transformed variables, the Box-Cox approach will be better suited.</p>
@@ -875,51 +880,51 @@ y = log_b(x) \Leftrightarrow  x=b^y
 <div id="re-expressing-to-stabilize-spread" class="section level1">
 <h1>Re-expressing to stabilize spread</h1>
 <p>A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland’s book (see the section titled “Spread-location plot” on the course website for an alternative version of the plot).</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb14-2"><a href="#cb14-2"></a>df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Food_web.csv&quot;</span>)</span>
-<span id="cb14-3"><a href="#cb14-3"></a></span>
-<span id="cb14-4"><a href="#cb14-4"></a><span class="co"># Create s-l table </span></span>
-<span id="cb14-5"><a href="#cb14-5"></a>df.sl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></span>
-<span id="cb14-6"><a href="#cb14-6"></a><span class="st">  </span><span class="kw">group_by</span>(dimension) <span class="op">%&gt;%</span></span>
-<span id="cb14-7"><a href="#cb14-7"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">med  =</span> <span class="kw">log</span>(<span class="kw">median</span>(mean.length)),</span>
-<span id="cb14-8"><a href="#cb14-8"></a>            <span class="dt">IQR  =</span> <span class="kw">IQR</span>(mean.length),  </span>
-<span id="cb14-9"><a href="#cb14-9"></a>            <span class="dt">sprd =</span> <span class="kw">log</span>(IQR))</span>
-<span id="cb14-10"><a href="#cb14-10"></a></span>
-<span id="cb14-11"><a href="#cb14-11"></a><span class="co"># Plot spread vs median</span></span>
-<span id="cb14-12"><a href="#cb14-12"></a><span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch =</span> <span class="dv">16</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Food_web.csv&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create s-l table </span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>df.sl <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(dimension) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">med  =</span> <span class="fu">log</span>(<span class="fu">median</span>(mean.length)),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">IQR  =</span> <span class="fu">IQR</span>(mean.length),  </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">sprd =</span> <span class="fu">log</span>(IQR))</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot spread vs median</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(sprd <span class="sc">~</span> med, df.sl, <span class="at">pch =</span> <span class="dv">16</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-17-1.png" width="211.2" /></p>
 <p>The plot suggests a monotonic relationship between spread and median. Next, we’ll fit a line to this scatter plot and compute its slope. We’ll use the <code>lm()</code> function, but note that any other line fitting strategies could be used as well.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">plot</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl, <span class="dt">pch =</span> <span class="dv">16</span>)</span>
-<span id="cb15-2"><a href="#cb15-2"></a></span>
-<span id="cb15-3"><a href="#cb15-3"></a><span class="co"># Run regression model</span></span>
-<span id="cb15-4"><a href="#cb15-4"></a>M &lt;-<span class="st"> </span><span class="kw">lm</span>(sprd <span class="op">~</span><span class="st"> </span>med, df.sl)</span>
-<span id="cb15-5"><a href="#cb15-5"></a><span class="kw">abline</span>(M, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(sprd <span class="sc">~</span> med, df.sl, <span class="at">pch =</span> <span class="dv">16</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run regression model</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">lm</span>(sprd <span class="sc">~</span> med, df.sl)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(M, <span class="at">col =</span> <span class="st">&quot;red&quot;</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-18-1.png" width="211.2" /></p>
 <p>The slope can be used to come up with the best power transformation to minimize the systematic increase in spread: <span class="math inline">\(p = 1 - slope\)</span>.</p>
 <p>The slope can be extracted from the model <code>M</code> using the <code>coef</code> function:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a> <span class="kw">coef</span>(M)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a> <span class="fu">coef</span>(M)</span></code></pre></div>
 <pre><code>(Intercept)         med 
   -3.003785    2.969673 </code></pre>
 <p>The second value in the output is the slope. So the power to use is <code>1 - 2.97</code> or <code>-1.97</code>. We will use the power transformation function <code>BC</code> to re-express the <code>mean.length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>df<span class="op">$</span>re.mean.length &lt;-<span class="st"> </span><span class="kw">BC</span>(df<span class="op">$</span>mean.length, <span class="fl">-1.97</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>re.mean.length <span class="ot">&lt;-</span> <span class="fu">BC</span>(df<span class="sc">$</span>mean.length, <span class="sc">-</span><span class="fl">1.97</span>)</span></code></pre></div>
 <p>Let’s compare boxplots between the original values with the re-expressed values.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">boxplot</span>(mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Original data&quot;</span>)</span>
-<span id="cb19-2"><a href="#cb19-2"></a><span class="kw">boxplot</span>(re.mean.length <span class="op">~</span><span class="st"> </span>dimension, df, <span class="dt">main =</span> <span class="st">&quot;Re-expressed data&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(mean.length <span class="sc">~</span> dimension, df, <span class="at">main =</span> <span class="st">&quot;Original data&quot;</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(re.mean.length <span class="sc">~</span> dimension, df, <span class="at">main =</span> <span class="st">&quot;Re-expressed data&quot;</span>)</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-21-1.png" width="576" /></p>
 <p>Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have equalized the spreads across the three groups.</p>
 <p>We’ll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week’s <a href="./Week07b.html#constructing-the-s-l-plot">lecture</a>.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">library</span>(ggplot2)</span>
-<span id="cb20-2"><a href="#cb20-2"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3"></a><span class="st">  </span><span class="kw">group_by</span>(dimension)  <span class="op">%&gt;%</span></span>
-<span id="cb20-4"><a href="#cb20-4"></a><span class="st">  </span><span class="kw">mutate</span>( <span class="dt">Median =</span> <span class="kw">median</span>(re.mean.length),</span>
-<span id="cb20-5"><a href="#cb20-5"></a>          <span class="dt">Residuals =</span> <span class="kw">sqrt</span>( <span class="kw">abs</span>( re.mean.length <span class="op">-</span><span class="st"> </span>Median)))   </span>
-<span id="cb20-6"><a href="#cb20-6"></a></span>
-<span id="cb20-7"><a href="#cb20-7"></a><span class="co"># Generate the s-l plot</span></span>
-<span id="cb20-8"><a href="#cb20-8"></a><span class="kw">ggplot</span>(df1, <span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> Residuals)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb20-9"><a href="#cb20-9"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>,<span class="dt">width =</span> <span class="fl">0.003</span>,<span class="dt">height =</span> <span class="dv">0</span>) <span class="op">+</span></span>
-<span id="cb20-10"><a href="#cb20-10"></a><span class="st">  </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> median, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
-<span id="cb20-11"><a href="#cb20-11"></a><span class="st">  </span><span class="kw">ylab</span>(<span class="kw">expression</span>(<span class="kw">sqrt</span>( <span class="kw">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="op">+</span></span>
-<span id="cb20-12"><a href="#cb20-12"></a><span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Median, <span class="dt">y =</span> <span class="fl">0.6</span>, <span class="dt">label =</span> dimension) )</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(dimension)  <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">Median =</span> <span class="fu">median</span>(re.mean.length),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">Residuals =</span> <span class="fu">sqrt</span>( <span class="fu">abs</span>( re.mean.length <span class="sc">-</span> Median)))   </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the s-l plot</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df1, <span class="fu">aes</span>(<span class="at">x =</span> Median, <span class="at">y =</span> Residuals)) <span class="sc">+</span> </span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>,<span class="at">width =</span> <span class="fl">0.003</span>,<span class="at">height =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun.y =</span> median, <span class="at">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="at">col =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">expression</span>(<span class="fu">sqrt</span>( <span class="fu">abs</span>( <span class="st">&quot; Residuals &quot;</span>)))) <span class="sc">+</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> Median, <span class="at">y =</span> <span class="fl">0.6</span>, <span class="at">label =</span> dimension) )</span></code></pre></div>
 <p><img src="Week08a_files/figure-html/unnamed-chunk-22-1.png" width="307.2" /></p>
 <p>The plot suggests that the re-expression does a good job in stabilizing the spread.</p>
 </div>

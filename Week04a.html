@@ -13,6 +13,7 @@
 
 <title>Base plotting environment</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -48,19 +48,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -80,7 +79,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -490,7 +489,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -656,21 +661,21 @@ div.tocify {
 <div id="loading-the-data" class="section level1">
 <h1>Loading the data</h1>
 <p>The data files used in this tutorial were created in an <a href="Week03ab_examples.html">earlier exercise</a>. Type the following command to download the objects:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">load</span>(<span class="kw">url</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/dat1_2.RData&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="fu">url</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/dat1_2.RData&quot;</span>))</span></code></pre></div>
 <p>This should load several data frame objects into your R session (note that not all are used in this exercise). The <code>dat1l</code> dataframe is a long table version of the crop yield dataset.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">head</span>(dat1l, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1l, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Year   Crop    Yield
 1 1961 Barley 16488.52
 2 1962 Barley 18839.00
 3 1963 Barley 18808.27</code></pre>
 <p>The <code>dat1w</code> dataframe is a wide table version of the same dataset.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">head</span>(dat1w, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1w, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Year   Barley Buckwheat    Maize     Oats      Rye
 1 1961 16488.52  10886.67 39183.63 15171.26 11121.79
 2 1962 18839.00  11737.50 40620.80 16224.60 12892.77
 3 1963 18808.27  11995.00 42595.55 16253.04 11524.11</code></pre>
 <p>The <code>dat2</code> dataframe is a wide table representation of income by county and by various income and educational attainment levels. The first few lines and columns are shown:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>dat2[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">7</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat2[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>]</span></code></pre></div>
 <pre><code>   County State B20004001 B20004002 B20004003 B20004004 B20004005
 1 Autauga    al     35881     17407     30169     35327     54917
 2 Baldwin    al     31439     16970     25414     31312     44940
@@ -683,58 +688,58 @@ div.tocify {
 <div id="point-and-line-plots" class="section level2">
 <h2>Point and line plots</h2>
 <p>The most commonly used plot function in R is <code>plot()</code> which generates both point and line plots. For example, to plot male population median income (<code>dat2$B20004007</code>) vs female population median income (<code>dat2$B20004013</code>) for each county, type:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">plot</span>(B20004007 <span class="op">~</span><span class="st"> </span>B20004013, <span class="dt">dat =</span> dat2)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(B20004007 <span class="sc">~</span> B20004013, <span class="at">dat =</span> dat2)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-5-1.png" width="384" /></p>
 <p>The above <code>plot</code> command takes two arguments: <code>B20004007 ~ B20004013</code> which is to be read as <em>plot variable B20004007 as a function of B20004013</em>, and <code>dat = dat2</code> which tells the plot function which data frame to extract the variables from. Another way to call this command is to type:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">plot</span>(dat2<span class="op">$</span>B20004007 <span class="op">~</span><span class="st"> </span>dat2<span class="op">$</span>B20004013)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(dat2<span class="sc">$</span>B20004007 <span class="sc">~</span> dat2<span class="sc">$</span>B20004013)</span></code></pre></div>
 <p>The <code>plot</code> function can take on many other arguments to help tweak the default plot options. For example, we may want to change the axis labels to something more descriptive than the table variable name:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">plot</span>(B20004007 <span class="op">~</span><span class="st"> </span>B20004013, <span class="dt">dat =</span> dat2, </span>
-<span id="cb10-2"><a href="#cb10-2"></a>      <span class="dt">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, </span>
-<span id="cb10-3"><a href="#cb10-3"></a>      <span class="dt">ylab =</span> <span class="st">&quot;Male median income ($)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(B20004007 <span class="sc">~</span> B20004013, <span class="at">dat =</span> dat2, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">ylab =</span> <span class="st">&quot;Male median income ($)&quot;</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-7-1.png" width="384" /></p>
 <p>There are over 3000 observations in this dataset which makes it difficult the see what may be going on in the cloud of points. We can change the symbol type to solid fill,<code>pch = 20</code>, and set its color to 90% transparent (or 10% opaque) using the expression <code>col = rgb(0, 0, 0, 0.10)</code>. The <code>rgb()</code> function defines the intensities for each of the display’s primary colors (on a scale of 0 to 1). The primary colors are red, green and blue. The forth value is optional and provides the fraction opaqueness with a value of <code>1</code> being completely opaque.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">plot</span>(B20004007 <span class="op">~</span><span class="st"> </span>B20004013, <span class="dt">dat =</span> dat2, </span>
-<span id="cb11-2"><a href="#cb11-2"></a>     <span class="dt">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, </span>
-<span id="cb11-3"><a href="#cb11-3"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Male median income ($)&quot;</span>, </span>
-<span id="cb11-4"><a href="#cb11-4"></a>     <span class="dt">pch =</span> <span class="dv">20</span>, <span class="dt">col =</span> <span class="kw">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.10</span>) )</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(B20004007 <span class="sc">~</span> B20004013, <span class="at">dat =</span> dat2, </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Male median income ($)&quot;</span>, </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.10</span>) )</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-8-1.png" width="384" /></p>
 <p>The plot could use additional tweaking, but it may be best to build the plot from scratch as will be demonstrated a few sections down.</p>
 <p>By default, the <code>plot</code> command will plot points and not lines. To plot lines, add the <code>type="l"</code> parameter to the <code>plot</code> function. For example, to plot oats crop yield as a function of year from our <code>dat1w</code> dataset, type:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">plot</span>(Oats <span class="op">~</span><span class="st"> </span>Year, <span class="dt">dat =</span> dat1w, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, </span>
-<span id="cb12-2"><a href="#cb12-2"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Oats <span class="sc">~</span> Year, <span class="at">dat =</span> dat1w, <span class="at">type=</span><span class="st">&quot;l&quot;</span>, </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-9-1.png" width="384" /></p>
 <p>To plot both points and line, set the <code>type</code> parameter to <code>"b"</code> (for <em>both</em>). We’ll also set the point symbol to <code>20</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">plot</span>(Oats <span class="op">~</span><span class="st"> </span>Year, <span class="dt">dat =</span> dat1w, <span class="dt">type =</span> <span class="st">&quot;b&quot;</span>, <span class="dt">pch =</span> <span class="dv">20</span>, </span>
-<span id="cb13-2"><a href="#cb13-2"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Oats <span class="sc">~</span> Year, <span class="at">dat =</span> dat1w, <span class="at">type =</span> <span class="st">&quot;b&quot;</span>, <span class="at">pch =</span> <span class="dv">20</span>, </span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-10-1.png" width="384" /></p>
 <p>The <code>plot</code> command can only graph on variable. If you want to add another variable, you will need to call the <code>lines</code> function. We will assign a different line type to this second variable (<code>lty = 2</code>):</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">plot</span>(Oats <span class="op">~</span><span class="st"> </span>Year, <span class="dt">dat =</span> dat1w, <span class="dt">type =</span> <span class="st">&quot;l&quot;</span>, </span>
-<span id="cb14-2"><a href="#cb14-2"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</span>
-<span id="cb14-3"><a href="#cb14-3"></a><span class="kw">lines</span>(Barley <span class="op">~</span><span class="st"> </span>Year, <span class="dt">dat =</span> dat1w, <span class="dt">lty =</span> <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Oats <span class="sc">~</span> Year, <span class="at">dat =</span> dat1w, <span class="at">type =</span> <span class="st">&quot;l&quot;</span>, </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span> )</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(Barley <span class="sc">~</span> Year, <span class="at">dat =</span> dat1w, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-11-1.png" width="384" /></p>
 <p>Note how the plot does not automatically re-scale to accommodate the new line. The plot is a static object meaning that we need to define the axes limits before calling the original plot function. Both axes limits can be set using the <code>xlim</code> and <code>ylim</code> parameters. We don’t need to set the x-axis range since both variables cover the same year range. We will therefore only focus on the y-axis limits. We can grab both the minimum and maximum values for the variables <code>Oats</code> and <code>Barley</code> using the <code>range</code> function, then pass the range to the <code>ylim</code> parameter in the call to <code>plot</code>.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>y.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(dat1w<span class="op">$</span>Oats, dat1w<span class="op">$</span>Barley) )</span>
-<span id="cb15-2"><a href="#cb15-2"></a><span class="kw">plot</span>(Oats <span class="op">~</span><span class="st"> </span>Year, <span class="dt">dat =</span> dat1w, <span class="dt">type =</span> <span class="st">&quot;l&quot;</span>, <span class="dt">ylim =</span> y.rng,</span>
-<span id="cb15-3"><a href="#cb15-3"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span>)</span>
-<span id="cb15-4"><a href="#cb15-4"></a><span class="kw">lines</span>(Barley <span class="op">~</span><span class="st"> </span>Year, <span class="dt">dat =</span> dat1w, <span class="dt">lty =</span> <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>y.rng <span class="ot">&lt;-</span> <span class="fu">range</span>( <span class="fu">c</span>(dat1w<span class="sc">$</span>Oats, dat1w<span class="sc">$</span>Barley) )</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Oats <span class="sc">~</span> Year, <span class="at">dat =</span> dat1w, <span class="at">type =</span> <span class="st">&quot;l&quot;</span>, <span class="at">ylim =</span> y.rng,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Oats yield (Hg/Ha)&quot;</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(Barley <span class="sc">~</span> Year, <span class="at">dat =</span> dat1w, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-12-1.png" width="384" /></p>
 <p>Point plots from different variables can also be combined into a single plot using the <code>points</code> function in lieu of the <code>lines</code> function. In the following example, male vs. female income for population having a high school degree (blue dots) and a Bachelor’s degree (red dots) will be overlaid on the same plot. We’ll also add a legend in the top-right corner.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>y.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(dat2<span class="op">$</span>B20004009, dat2<span class="op">$</span>B20004011) , <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) </span>
-<span id="cb16-2"><a href="#cb16-2"></a>x.rng &lt;-<span class="st"> </span><span class="kw">range</span>( <span class="kw">c</span>(dat2<span class="op">$</span>B20004015, dat2<span class="op">$</span>B20004017) , <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) </span>
-<span id="cb16-3"><a href="#cb16-3"></a></span>
-<span id="cb16-4"><a href="#cb16-4"></a><span class="co"># Plot income for HS degree</span></span>
-<span id="cb16-5"><a href="#cb16-5"></a><span class="kw">plot</span>(B20004009 <span class="op">~</span><span class="st"> </span>B20004015, <span class="dt">dat =</span> dat2, <span class="dt">pch =</span> <span class="dv">20</span>, <span class="dt">col =</span> <span class="kw">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.10</span>),</span>
-<span id="cb16-6"><a href="#cb16-6"></a>     <span class="dt">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, </span>
-<span id="cb16-7"><a href="#cb16-7"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Male median income ($)&quot;</span>, </span>
-<span id="cb16-8"><a href="#cb16-8"></a>     <span class="dt">xlim =</span> x.rng, <span class="dt">ylim =</span> y.rng)</span>
-<span id="cb16-9"><a href="#cb16-9"></a></span>
-<span id="cb16-10"><a href="#cb16-10"></a><span class="co"># Add points for Bachelor&#39;s degree</span></span>
-<span id="cb16-11"><a href="#cb16-11"></a><span class="kw">points</span>(dat2<span class="op">$</span>B20004011 <span class="op">~</span><span class="st"> </span>dat2<span class="op">$</span>B20004017, <span class="dt">dat =</span> dat2, <span class="dt">pch =</span> <span class="dv">20</span>, </span>
-<span id="cb16-12"><a href="#cb16-12"></a>       <span class="dt">col =</span> <span class="kw">rgb</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.10</span>))</span>
-<span id="cb16-13"><a href="#cb16-13"></a></span>
-<span id="cb16-14"><a href="#cb16-14"></a><span class="co"># Add legend</span></span>
-<span id="cb16-15"><a href="#cb16-15"></a><span class="kw">legend</span>(<span class="st">&quot;topright&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;HS Degree&quot;</span>, <span class="st">&quot;Bachelor&#39;s&quot;</span>), <span class="dt">pch =</span> <span class="dv">20</span>, </span>
-<span id="cb16-16"><a href="#cb16-16"></a>       <span class="dt">col =</span> <span class="kw">c</span>(<span class="kw">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="kw">rgb</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>) ))</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>y.rng <span class="ot">&lt;-</span> <span class="fu">range</span>( <span class="fu">c</span>(dat2<span class="sc">$</span>B20004009, dat2<span class="sc">$</span>B20004011) , <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>x.rng <span class="ot">&lt;-</span> <span class="fu">range</span>( <span class="fu">c</span>(dat2<span class="sc">$</span>B20004015, dat2<span class="sc">$</span>B20004017) , <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot income for HS degree</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(B20004009 <span class="sc">~</span> B20004015, <span class="at">dat =</span> dat2, <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.10</span>),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Female median income ($)&quot;</span>, </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Male median income ($)&quot;</span>, </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlim =</span> x.rng, <span class="at">ylim =</span> y.rng)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add points for Bachelor&#39;s degree</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(dat2<span class="sc">$</span>B20004011 <span class="sc">~</span> dat2<span class="sc">$</span>B20004017, <span class="at">dat =</span> dat2, <span class="at">pch =</span> <span class="dv">20</span>, </span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.10</span>))</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Add legend</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">&quot;topright&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;HS Degree&quot;</span>, <span class="st">&quot;Bachelor&#39;s&quot;</span>), <span class="at">pch =</span> <span class="dv">20</span>, </span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="fu">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="fu">rgb</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>) ))</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-13-1.png" width="384" /></p>
 <p>The <code>na.rm = TRUE</code> option is added as a parameter in the <code>range</code> function to prevent an <code>NA</code> value in the data from returning an <code>NA</code> value in the range.</p>
 <p>Point symbols are defined by a numeric code. The following figure shows the list of point symbols available in R along with their numeric designation as used with the <code>pch =</code> argument. The symbol’s color can be defined using the <code>col</code> parameter. For symbols 21 through 25, which have a two-color scheme, <code>col</code> applies to the outline color (blue in the following figure) and <code>bg</code> parameter applies to the fill color (red in the following figure).</p>
@@ -747,72 +752,72 @@ div.tocify {
 <h2>Boxplots</h2>
 <p>A boxplot is one of many graphical tools used to summarize the distribution of a data batch. The graphic consists of a “box” that depicts the range covered by 50% of the data (aka the interquartile range, IQR), a horizontal line that displays the median, and “whiskers” that depict 1.5 times the IQR or the largest (for the top half) or smallest (for the bottom half) values.</p>
 <p>For example, we can summarize the income range for all individuals as follows:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">boxplot</span>(dat2<span class="op">$</span>B20004001, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(dat2<span class="sc">$</span>B20004001, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-16-1.png" width="192" /></p>
 <p>Note that the <code>boxplot</code> function has no option to specify the data frame as is the case with the <code>plot</code> function; we must therefore pass it both the data frame name and the variable as a single argument (i.e. <code>dat2$B20004001</code>).</p>
 <p>Several variables can be summarized on the same plot.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">boxplot</span>(dat2<span class="op">$</span>B20004001, dat2<span class="op">$</span>B20004007, dat2<span class="op">$</span>B20004013, </span>
-<span id="cb18-2"><a href="#cb18-2"></a>        <span class="dt">names =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), <span class="dt">main =</span> <span class="st">&quot;Median income ($)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(dat2<span class="sc">$</span>B20004001, dat2<span class="sc">$</span>B20004007, dat2<span class="sc">$</span>B20004013, </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">names =</span> <span class="fu">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), <span class="at">main =</span> <span class="st">&quot;Median income ($)&quot;</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-17-1.png" width="288" /></p>
 <p>The <code>names</code> argument labels the x-axis and the <code>main</code> argument labels the plot title.</p>
 <p>The outliers can be removed from the plot, if desired, by setting the <code>outline</code> parameter to <code>FALSE</code>:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">boxplot</span>(dat2<span class="op">$</span>B20004001, dat2<span class="op">$</span>B20004007, dat2<span class="op">$</span>B20004013, </span>
-<span id="cb19-2"><a href="#cb19-2"></a>        <span class="dt">names =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), <span class="dt">main =</span> <span class="st">&quot;Median income ($)&quot;</span>, </span>
-<span id="cb19-3"><a href="#cb19-3"></a>        <span class="dt">outline =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(dat2<span class="sc">$</span>B20004001, dat2<span class="sc">$</span>B20004007, dat2<span class="sc">$</span>B20004013, </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">names =</span> <span class="fu">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), <span class="at">main =</span> <span class="st">&quot;Median income ($)&quot;</span>, </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">outline =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-18-1.png" width="288" /></p>
 <p>The boxplot graph can also be plotted horizontally by setting the <code>horizontal</code> parameter to <code>TRUE</code>:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">boxplot</span>(dat2<span class="op">$</span>B20004001, dat2<span class="op">$</span>B20004007, dat2<span class="op">$</span>B20004013, </span>
-<span id="cb20-2"><a href="#cb20-2"></a>        <span class="dt">names =</span> <span class="kw">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), <span class="dt">main =</span> <span class="st">&quot;Median income ($)&quot;</span>, </span>
-<span id="cb20-3"><a href="#cb20-3"></a>        <span class="dt">outline =</span> <span class="ot">FALSE</span>, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(dat2<span class="sc">$</span>B20004001, dat2<span class="sc">$</span>B20004007, dat2<span class="sc">$</span>B20004013, </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">names =</span> <span class="fu">c</span>(<span class="st">&quot;All&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>), <span class="at">main =</span> <span class="st">&quot;Median income ($)&quot;</span>, </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">outline =</span> <span class="cn">FALSE</span>, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-19-1.png" width="288" /></p>
 <p>The last two plots highlight one downside in using a table in a wide format: the long series of column names passed to the boxplot function. It’s more practical to store such data in long form. To demonstrate this, let’s switch back to the crop data. To plot all columns in <code>dat1w</code>, we would need to type:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">boxplot</span>(dat1w<span class="op">$</span>Barley, dat1w<span class="op">$</span>Buckwheat, dat1w<span class="op">$</span>Maize, dat1w<span class="op">$</span>Oats,dat1w<span class="op">$</span>Rye,</span>
-<span id="cb21-2"><a href="#cb21-2"></a>        <span class="dt">names=</span><span class="kw">c</span>(<span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Rye&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(dat1w<span class="sc">$</span>Barley, dat1w<span class="sc">$</span>Buckwheat, dat1w<span class="sc">$</span>Maize, dat1w<span class="sc">$</span>Oats,dat1w<span class="sc">$</span>Rye,</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">names=</span><span class="fu">c</span>(<span class="st">&quot;Barley&quot;</span>, <span class="st">&quot;Buckwheat&quot;</span>, <span class="st">&quot;Maize&quot;</span>, <span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Rye&quot;</span>))</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-20-1.png" width="480" /></p>
 <p>If you use the long version of that table, the command looks like this:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">boxplot</span>(Yield <span class="op">~</span><span class="st"> </span>Crop, dat1l)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(Yield <span class="sc">~</span> Crop, dat1l)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-21-1.png" width="480" /></p>
 <p>where <code>~ Crop</code> tells the function to split the boxplots across unique <code>Crop</code> levels.</p>
 <p>One can order the boxplots based on the median values. By default, <code>boxplot</code> will order the boxplots following the factor’s level order. In our example, the crop levels are ordered alphabetically. To reorder the levels following the median values of yields across each level, we can use the <code>reorder()</code> function:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>dat1l<span class="op">$</span>Crop.ord &lt;-<span class="st"> </span><span class="kw">reorder</span>(dat1l<span class="op">$</span>Crop, dat1l<span class="op">$</span>Yield, median)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>dat1l<span class="sc">$</span>Crop.ord <span class="ot">&lt;-</span> <span class="fu">reorder</span>(dat1l<span class="sc">$</span>Crop, dat1l<span class="sc">$</span>Yield, median)</span></code></pre></div>
 <p>This creates a new variable called <code>Crop.ord</code> whose values mirror those in variable <code>Crop</code> but differ in the underlying level order:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">levels</span>(dat1l<span class="op">$</span>Crop.ord)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(dat1l<span class="sc">$</span>Crop.ord)</span></code></pre></div>
 <pre><code>[1] &quot;Buckwheat&quot; &quot;Rye&quot;       &quot;Oats&quot;      &quot;Barley&quot;    &quot;Maize&quot;    </code></pre>
 <p>If we wanted the order to be in descending order, we would prefix the value parameter with the negative operator as in <code>reorder(dat1l$Crop, -dat1l$Yield, median)</code>.</p>
 <p>The function <code>reorder</code> takes three arguments: the factor whose levels are to be reordered (<code>Crop</code>), the value whose quantity will determine the new order (<code>Yield</code>) and the statistic that will be used to summarize the values across each factor’s level (<code>median</code>).</p>
 <p>The modified boxplot expression now looks like:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">boxplot</span>(Yield <span class="op">~</span><span class="st"> </span>Crop.ord, dat1l)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(Yield <span class="sc">~</span> Crop.ord, dat1l)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-24-1.png" width="480" /></p>
 </div>
 <div id="histograms" class="section level2">
 <h2>Histograms</h2>
 <p>The histogram is another form of data distribution visualization. It consists of partitioning a batch of values into intervals of equal length then tallying their count in each interval. The height of each bar represents these counts. For example, we can plot the histogram of maize yields using the <code>hist</code> function as follows:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">hist</span>(dat1w<span class="op">$</span>Maize, <span class="dt">xlab =</span> <span class="st">&quot;Maize&quot;</span>, <span class="dt">main =</span> <span class="ot">NA</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dat1w<span class="sc">$</span>Maize, <span class="at">xlab =</span> <span class="st">&quot;Maize&quot;</span>, <span class="at">main =</span> <span class="cn">NA</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-25-1.png" width="384" /></p>
 <p>The <code>main = NA</code> argument suppresses the plot title.</p>
 <p>To control the number of bins add the <code>breaks</code> argument. The <code>breaks</code> argument can be passed different types of values. The simplest value is the desired number of bins. Note, however, that you might not necessarily get the number of bins defined with the <code>breaks</code> argument. For example assigning the value of <code>10</code> to <code>breaks</code> generates a 14 bin histogram.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">hist</span>(dat1w<span class="op">$</span>Maize, <span class="dt">xlab =</span> <span class="st">&quot;Maize&quot;</span>, <span class="dt">main =</span> <span class="ot">NA</span>, <span class="dt">breaks =</span> <span class="dv">10</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dat1w<span class="sc">$</span>Maize, <span class="at">xlab =</span> <span class="st">&quot;Maize&quot;</span>, <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">breaks =</span> <span class="dv">10</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-26-1.png" width="384" /></p>
 <p>The documentation states that the breaks value <em>“is a suggestion only as the breakpoints will be set to <code>pretty</code> values”</em>. <code>pretty</code> refers to a function that rounds values to powers of 1, 2 or 5 times a power of 10.</p>
 <p>If you want total control of the bin numbers, manually create the breaks as follows:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>n &lt;-<span class="st"> </span><span class="dv">10</span>  <span class="co"># Define the number of bin</span></span>
-<span id="cb29-2"><a href="#cb29-2"></a>minx &lt;-<span class="st"> </span><span class="kw">min</span>(dat1w<span class="op">$</span>Maize, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb29-3"><a href="#cb29-3"></a>maxx &lt;-<span class="st"> </span><span class="kw">max</span>(dat1w<span class="op">$</span>Maize, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb29-4"><a href="#cb29-4"></a>bins &lt;-<span class="st"> </span><span class="kw">seq</span>(minx, maxx, <span class="dt">length.out =</span> n <span class="op">+</span><span class="dv">1</span>)</span>
-<span id="cb29-5"><a href="#cb29-5"></a></span>
-<span id="cb29-6"><a href="#cb29-6"></a><span class="kw">hist</span>(dat1w<span class="op">$</span>Maize, <span class="dt">xlab =</span> <span class="st">&quot;Maize&quot;</span>, <span class="dt">main =</span> <span class="ot">NA</span>, <span class="dt">breaks =</span> bins)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">10</span>  <span class="co"># Define the number of bin</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>minx <span class="ot">&lt;-</span> <span class="fu">min</span>(dat1w<span class="sc">$</span>Maize, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>maxx <span class="ot">&lt;-</span> <span class="fu">max</span>(dat1w<span class="sc">$</span>Maize, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>bins <span class="ot">&lt;-</span> <span class="fu">seq</span>(minx, maxx, <span class="at">length.out =</span> n <span class="sc">+</span><span class="dv">1</span>)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dat1w<span class="sc">$</span>Maize, <span class="at">xlab =</span> <span class="st">&quot;Maize&quot;</span>, <span class="at">main =</span> <span class="cn">NA</span>, <span class="at">breaks =</span> bins)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-27-1.png" width="384" /></p>
 </div>
 <div id="density-plot" class="section level2">
 <h2>Density plot</h2>
 <p>Histograms have their pitfalls. For example, the number of bins can drastically affect the appearance of a distribution. One alternative is the density plot which, for a series of x-values, computes the density of observations at each x-value. This generates a “smoothed” distribution of values.</p>
 <p>Unlike the other plotting functions, <code>density</code> does not generate a plot but a list object instead. But the output of <code>density</code> can be wrapped with a <code>plot</code> function to generate the plot.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>dens &lt;-<span class="st"> </span><span class="kw">density</span>(dat1w<span class="op">$</span>Maize)</span>
-<span id="cb30-2"><a href="#cb30-2"></a><span class="kw">plot</span>(dens, <span class="dt">main =</span> <span class="st">&quot;Density distribution of Maize yields&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>dens <span class="ot">&lt;-</span> <span class="fu">density</span>(dat1w<span class="sc">$</span>Maize)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(dens, <span class="at">main =</span> <span class="st">&quot;Density distribution of Maize yields&quot;</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-28-1.png" width="384" /></p>
 <p>You can control the bandwidth using the <code>bw</code> argument. For example:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a>dens &lt;-<span class="st"> </span><span class="kw">density</span>(dat1w<span class="op">$</span>Maize, <span class="dt">bw =</span> <span class="dv">4000</span>)</span>
-<span id="cb31-2"><a href="#cb31-2"></a><span class="kw">plot</span>(dens, <span class="dt">main =</span> <span class="st">&quot;Density distribution of Maize yields&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>dens <span class="ot">&lt;-</span> <span class="fu">density</span>(dat1w<span class="sc">$</span>Maize, <span class="at">bw =</span> <span class="dv">4000</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(dens, <span class="at">main =</span> <span class="st">&quot;Density distribution of Maize yields&quot;</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-29-1.png" width="384" /></p>
 <p>The bandwidth parameter adopts the variable’s units.</p>
 </div>
@@ -822,29 +827,29 @@ div.tocify {
 <p>So far, you have learned how to customize point and line symbols, but this may not be enough. You might want to modify other graphic elements such as the axes layout and label formats for publication. Let’s see how we can further customize a plot of median income for male and female population having attained a HS degree.</p>
 <p>First, we plot the points but omit the axes and its labels with the parameters <code>axes = FALSE, xlab = NA, ylab = NA</code>. We will want both axes to cover the same range of values, so we will use the <code>range</code> function to find min and max values for both male and female income.</p>
 <p>Next, we draw the x axis using the <code>axis</code> function. The first parameter to this function is a number that indicates which axis is to be drawn (i.e. 1=bottom x, 2=left y, 3=top x and 4=right y). We will then use the <code>mtext</code> function to place the axis label under the axis line.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># Plot the points without the axes</span></span>
-<span id="cb32-2"><a href="#cb32-2"></a>rng &lt;-<span class="st"> </span><span class="kw">range</span>(dat2<span class="op">$</span>B20004009, dat2<span class="op">$</span>B20004015, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb32-3"><a href="#cb32-3"></a><span class="kw">plot</span>(B20004009 <span class="op">~</span><span class="st"> </span>B20004015, <span class="dt">dat =</span> dat2, <span class="dt">pch =</span> <span class="dv">20</span>, <span class="dt">col =</span> <span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.15</span>), </span>
-<span id="cb32-4"><a href="#cb32-4"></a>     <span class="dt">xlim =</span> rng, <span class="dt">ylim =</span> rng, <span class="dt">axes =</span> <span class="ot">FALSE</span>, <span class="dt">xlab =</span> <span class="ot">NA</span>, <span class="dt">ylab =</span> <span class="ot">NA</span> )</span>
-<span id="cb32-5"><a href="#cb32-5"></a></span>
-<span id="cb32-6"><a href="#cb32-6"></a><span class="co"># Plot the x-axis</span></span>
-<span id="cb32-7"><a href="#cb32-7"></a>lab &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;5,000&quot;</span>, <span class="st">&quot;25,000&quot;</span>, <span class="st">&quot;45,000&quot;</span>, <span class="st">&quot;$65,000&quot;</span>)</span>
-<span id="cb32-8"><a href="#cb32-8"></a><span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at =</span> <span class="kw">seq</span>(<span class="dv">5000</span>, <span class="dv">65000</span>, <span class="dt">length.out =</span> <span class="dv">4</span>),  <span class="dt">label =</span> lab)</span>
-<span id="cb32-9"><a href="#cb32-9"></a></span>
-<span id="cb32-10"><a href="#cb32-10"></a><span class="co"># Plot x label</span></span>
-<span id="cb32-11"><a href="#cb32-11"></a><span class="kw">mtext</span>(<span class="st">&quot;Female median income (HS degree)&quot;</span>, <span class="dt">side =</span> <span class="dv">1</span>, <span class="dt">line =</span> <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the points without the axes</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>rng <span class="ot">&lt;-</span> <span class="fu">range</span>(dat2<span class="sc">$</span>B20004009, dat2<span class="sc">$</span>B20004015, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(B20004009 <span class="sc">~</span> B20004015, <span class="at">dat =</span> dat2, <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.15</span>), </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlim =</span> rng, <span class="at">ylim =</span> rng, <span class="at">axes =</span> <span class="cn">FALSE</span>, <span class="at">xlab =</span> <span class="cn">NA</span>, <span class="at">ylab =</span> <span class="cn">NA</span> )</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the x-axis</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>lab <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;5,000&quot;</span>, <span class="st">&quot;25,000&quot;</span>, <span class="st">&quot;45,000&quot;</span>, <span class="st">&quot;$65,000&quot;</span>)</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="fu">axis</span>(<span class="dv">1</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">5000</span>, <span class="dv">65000</span>, <span class="at">length.out =</span> <span class="dv">4</span>),  <span class="at">label =</span> lab)</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot x label</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="fu">mtext</span>(<span class="st">&quot;Female median income (HS degree)&quot;</span>, <span class="at">side =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">2</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/customplot-1.png" width="384" /></p>
 <p>Next, we will tackle the y-axis. We will rotate both the tic labels and axis label horizontally and place the axis label at the top of the axis. This will involve a different approach to that used for the x-axis. First, we need to identify each plot region’s corner coordinate values using the <code>par</code> function. Second, we will use the <code>text</code> function instead of the <code>mtext</code> function to place the axis label.</p>
 <p>First, let’s plot the y-axis with the custom tic labels.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># Plot the y-axis</span></span>
-<span id="cb33-2"><a href="#cb33-2"></a><span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">las =</span> <span class="dv">1</span>, <span class="dt">at =</span> <span class="kw">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="dt">length.out =</span> <span class="dv">4</span>), <span class="dt">label =</span> lab)</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the y-axis</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">axis</span>(<span class="dv">2</span>, <span class="at">las =</span> <span class="dv">1</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="at">length.out =</span> <span class="dv">4</span>), <span class="at">label =</span> lab)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-30-1.png" width="384" /></p>
 <p>Now let’s extract the plot’s corner coordinate values.</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>loc &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="st">&quot;usr&quot;</span>)</span>
-<span id="cb34-2"><a href="#cb34-2"></a>loc</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>loc <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="st">&quot;usr&quot;</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>loc</span></code></pre></div>
 <pre><code>[1]  3850 68650  3850 68650</code></pre>
 <p>The corner location coordinate values are in the plot’s x and y units. We want to place the label in the upper left hand corner whose coordinate values are <code>loc[1]=</code> 3850 and <code>loc[2]=</code> 68650.</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="kw">text</span>(loc[<span class="dv">1</span>], loc[<span class="dv">4</span>], <span class="st">&quot;Male median</span><span class="ch">\n</span><span class="st">income&quot;</span>, <span class="dt">pos =</span> <span class="dv">3</span>, <span class="dt">adj =</span> <span class="dv">1</span>, <span class="dt">xpd =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(loc[<span class="dv">1</span>], loc[<span class="dv">4</span>], <span class="st">&quot;Male median</span><span class="sc">\n</span><span class="st">income&quot;</span>, <span class="at">pos =</span> <span class="dv">3</span>, <span class="at">adj =</span> <span class="dv">1</span>, <span class="at">xpd =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week04a_files/figure-html/unnamed-chunk-32-1.png" width="384" /></p>
 <p>The string <code>\n</code> in the text <code>"Median\nIncome"</code> is interpreted in R as being a carriage return–i.e it forces the text that follows this string to be printed on the next line. The other parameters of interest are <code>pos</code> and <code>adj</code> that position and adjust the label location (type <code>?axis</code> for more information on axis parameters) and the parameter <code>xpd=TRUE</code> allows for the <code>text</code> function to display text outside of the plot region.</p>
 </div>
@@ -852,40 +857,40 @@ div.tocify {
 <h1>Exporting plots to image file formats</h1>
 <p>You might need to export your plots as standalone image files for publications. R will export to many different raster image file formats such as jpg, png, gif and tiff, and several vector file formats such as PostScript, svg and PDF. You can specify the image resolution (in dpi), the image height and width, and the size of the margins.</p>
 <p>The following example saves the last plot as an uncompressed tiff file with a 5“x6” dimension and a resolution of 300 dpi. This is accomplished by simply book-ending the plotting routines between the <code>tiff()</code> and <code>dev.off()</code> functions:</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a><span class="kw">tiff</span>(<span class="dt">filename =</span> <span class="st">&quot;fig1.tif&quot;</span>, <span class="dt">width =</span> <span class="dv">5</span>, <span class="dt">height =</span> <span class="dv">6</span>, <span class="dt">units =</span> <span class="st">&quot;in&quot;</span>,</span>
-<span id="cb37-2"><a href="#cb37-2"></a>     <span class="dt">compression =</span> <span class="st">&quot;none&quot;</span>, <span class="dt">res =</span> <span class="dv">300</span>)</span>
-<span id="cb37-3"><a href="#cb37-3"></a></span>
-<span id="cb37-4"><a href="#cb37-4"></a>  <span class="co"># Plot the points without the axes</span></span>
-<span id="cb37-5"><a href="#cb37-5"></a>  rng &lt;-<span class="st"> </span><span class="kw">range</span>(dat2<span class="op">$</span>B20004009, dat2<span class="op">$</span>B20004015, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb37-6"><a href="#cb37-6"></a>  <span class="kw">plot</span>(B20004009 <span class="op">~</span><span class="st"> </span>B20004015, <span class="dt">dat =</span> dat2, <span class="dt">pch =</span> <span class="dv">20</span>, <span class="dt">col =</span> <span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.10</span>), </span>
-<span id="cb37-7"><a href="#cb37-7"></a>       <span class="dt">xlim =</span> rng, <span class="dt">ylim =</span> rng, <span class="dt">axes =</span> <span class="ot">FALSE</span>, <span class="dt">xlab =</span> <span class="ot">NA</span>, <span class="dt">ylab =</span> <span class="ot">NA</span> )</span>
-<span id="cb37-8"><a href="#cb37-8"></a>  <span class="co"># Plot the x-axis</span></span>
-<span id="cb37-9"><a href="#cb37-9"></a>  lab &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;5,000&quot;</span>, <span class="st">&quot;25,000&quot;</span>, <span class="st">&quot;45,000&quot;</span>, <span class="st">&quot;$65,000&quot;</span>)</span>
-<span id="cb37-10"><a href="#cb37-10"></a>  <span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at =</span> <span class="kw">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="dt">length.out =</span> <span class="dv">4</span>),  <span class="dt">label =</span> lab)</span>
-<span id="cb37-11"><a href="#cb37-11"></a>  <span class="co"># Plot x label</span></span>
-<span id="cb37-12"><a href="#cb37-12"></a>  <span class="kw">mtext</span>(<span class="st">&quot;Female median income (HS degree)&quot;</span>, <span class="dt">side =</span> <span class="dv">1</span>, <span class="dt">line =</span> <span class="dv">2</span>)</span>
-<span id="cb37-13"><a href="#cb37-13"></a>  <span class="co"># Plot the y-axis</span></span>
-<span id="cb37-14"><a href="#cb37-14"></a>  <span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">las =</span> <span class="dv">1</span>, <span class="dt">at =</span> <span class="kw">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="dt">length.out =</span> <span class="dv">4</span>), <span class="dt">label =</span> lab)</span>
-<span id="cb37-15"><a href="#cb37-15"></a>  <span class="kw">text</span>(loc[<span class="dv">1</span>], loc[<span class="dv">4</span>], <span class="st">&quot;Male median</span><span class="ch">\n</span><span class="st">income&quot;</span>, <span class="dt">pos =</span> <span class="dv">3</span>, <span class="dt">adj =</span> <span class="dv">1</span>, <span class="dt">xpd =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb37-16"><a href="#cb37-16"></a></span>
-<span id="cb37-17"><a href="#cb37-17"></a><span class="kw">dev.off</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tiff</span>(<span class="at">filename =</span> <span class="st">&quot;fig1.tif&quot;</span>, <span class="at">width =</span> <span class="dv">5</span>, <span class="at">height =</span> <span class="dv">6</span>, <span class="at">units =</span> <span class="st">&quot;in&quot;</span>,</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">compression =</span> <span class="st">&quot;none&quot;</span>, <span class="at">res =</span> <span class="dv">300</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot the points without the axes</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  rng <span class="ot">&lt;-</span> <span class="fu">range</span>(dat2<span class="sc">$</span>B20004009, dat2<span class="sc">$</span>B20004015, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(B20004009 <span class="sc">~</span> B20004015, <span class="at">dat =</span> dat2, <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.10</span>), </span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">xlim =</span> rng, <span class="at">ylim =</span> rng, <span class="at">axes =</span> <span class="cn">FALSE</span>, <span class="at">xlab =</span> <span class="cn">NA</span>, <span class="at">ylab =</span> <span class="cn">NA</span> )</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot the x-axis</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  lab <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;5,000&quot;</span>, <span class="st">&quot;25,000&quot;</span>, <span class="st">&quot;45,000&quot;</span>, <span class="st">&quot;$65,000&quot;</span>)</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axis</span>(<span class="dv">1</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="at">length.out =</span> <span class="dv">4</span>),  <span class="at">label =</span> lab)</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot x label</span></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mtext</span>(<span class="st">&quot;Female median income (HS degree)&quot;</span>, <span class="at">side =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">2</span>)</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot the y-axis</span></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axis</span>(<span class="dv">2</span>, <span class="at">las =</span> <span class="dv">1</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="at">length.out =</span> <span class="dv">4</span>), <span class="at">label =</span> lab)</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text</span>(loc[<span class="dv">1</span>], loc[<span class="dv">4</span>], <span class="st">&quot;Male median</span><span class="sc">\n</span><span class="st">income&quot;</span>, <span class="at">pos =</span> <span class="dv">3</span>, <span class="at">adj =</span> <span class="dv">1</span>, <span class="at">xpd =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code></pre></div>
 <p>To save the same plot to a pdf file format, simply substitute <code>tiff()</code> with <code>pdf()</code> and adjust the parameters as needed:</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">pdf</span>(<span class="dt">file =</span> <span class="st">&quot;fig1.pdf&quot;</span>, <span class="dt">width =</span> <span class="dv">5</span>, <span class="dt">height =</span> <span class="dv">6</span>)</span>
-<span id="cb38-2"><a href="#cb38-2"></a></span>
-<span id="cb38-3"><a href="#cb38-3"></a>  <span class="co"># Plot the points without the axes</span></span>
-<span id="cb38-4"><a href="#cb38-4"></a>  rng &lt;-<span class="st"> </span><span class="kw">range</span>(dat2<span class="op">$</span>B20004009, dat2<span class="op">$</span>B20004015, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb38-5"><a href="#cb38-5"></a>  <span class="kw">plot</span>(B20004009 <span class="op">~</span><span class="st"> </span>B20004015, <span class="dt">dat =</span> dat2, <span class="dt">pch =</span> <span class="dv">20</span>, <span class="dt">col =</span> <span class="kw">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.15</span>), </span>
-<span id="cb38-6"><a href="#cb38-6"></a>       <span class="dt">xlim =</span> rng, <span class="dt">ylim =</span> rng, <span class="dt">axes =</span> <span class="ot">FALSE</span>, <span class="dt">xlab =</span> <span class="ot">NA</span>, <span class="dt">ylab =</span> <span class="ot">NA</span> )</span>
-<span id="cb38-7"><a href="#cb38-7"></a>  <span class="co"># Plot the x-axis</span></span>
-<span id="cb38-8"><a href="#cb38-8"></a>  lab &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;5,000&quot;</span>, <span class="st">&quot;25,000&quot;</span>, <span class="st">&quot;45,000&quot;</span>, <span class="st">&quot;$65,000&quot;</span>)</span>
-<span id="cb38-9"><a href="#cb38-9"></a>  <span class="kw">axis</span>(<span class="dv">1</span>, <span class="dt">at =</span> <span class="kw">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="dt">length.out=</span><span class="dv">4</span>),  <span class="dt">label =</span> lab)</span>
-<span id="cb38-10"><a href="#cb38-10"></a>  <span class="co"># Plot x label</span></span>
-<span id="cb38-11"><a href="#cb38-11"></a>  <span class="kw">mtext</span>(<span class="st">&quot;Female median income (HS degree)&quot;</span>, <span class="dt">side =</span> <span class="dv">1</span>, <span class="dt">line =</span> <span class="dv">2</span>)</span>
-<span id="cb38-12"><a href="#cb38-12"></a>  <span class="co"># Plot the y-axis</span></span>
-<span id="cb38-13"><a href="#cb38-13"></a>  <span class="kw">axis</span>(<span class="dv">2</span>, <span class="dt">las =</span> <span class="dv">1</span>, <span class="dt">at =</span> <span class="kw">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="dt">length.out =</span> <span class="dv">4</span>), <span class="dt">label =</span> lab)</span>
-<span id="cb38-14"><a href="#cb38-14"></a>  <span class="kw">text</span>(loc[<span class="dv">1</span>], loc[<span class="dv">4</span>], <span class="st">&quot;Male median</span><span class="ch">\n</span><span class="st">income&quot;</span>, <span class="dt">pos =</span> <span class="dv">3</span>, <span class="dt">adj =</span> <span class="dv">1</span>, <span class="dt">xpd =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb38-15"><a href="#cb38-15"></a></span>
-<span id="cb38-16"><a href="#cb38-16"></a><span class="kw">dev.off</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pdf</span>(<span class="at">file =</span> <span class="st">&quot;fig1.pdf&quot;</span>, <span class="at">width =</span> <span class="dv">5</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot the points without the axes</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  rng <span class="ot">&lt;-</span> <span class="fu">range</span>(dat2<span class="sc">$</span>B20004009, dat2<span class="sc">$</span>B20004015, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(B20004009 <span class="sc">~</span> B20004015, <span class="at">dat =</span> dat2, <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.15</span>), </span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">xlim =</span> rng, <span class="at">ylim =</span> rng, <span class="at">axes =</span> <span class="cn">FALSE</span>, <span class="at">xlab =</span> <span class="cn">NA</span>, <span class="at">ylab =</span> <span class="cn">NA</span> )</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot the x-axis</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  lab <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;5,000&quot;</span>, <span class="st">&quot;25,000&quot;</span>, <span class="st">&quot;45,000&quot;</span>, <span class="st">&quot;$65,000&quot;</span>)</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axis</span>(<span class="dv">1</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="at">length.out=</span><span class="dv">4</span>),  <span class="at">label =</span> lab)</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot x label</span></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mtext</span>(<span class="st">&quot;Female median income (HS degree)&quot;</span>, <span class="at">side =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">2</span>)</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot the y-axis</span></span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axis</span>(<span class="dv">2</span>, <span class="at">las =</span> <span class="dv">1</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">5000</span>,<span class="dv">65000</span>, <span class="at">length.out =</span> <span class="dv">4</span>), <span class="at">label =</span> lab)</span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text</span>(loc[<span class="dv">1</span>], loc[<span class="dv">4</span>], <span class="st">&quot;Male median</span><span class="sc">\n</span><span class="st">income&quot;</span>, <span class="at">pos =</span> <span class="dv">3</span>, <span class="at">adj =</span> <span class="dv">1</span>, <span class="at">xpd =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code></pre></div>
 </div>
 
 

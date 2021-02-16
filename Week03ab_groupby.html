@@ -13,6 +13,7 @@
 
 <title>Week 4: Grouping and summarizing</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -679,7 +684,7 @@ dplyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 </tr>
 </tbody>
@@ -687,18 +692,18 @@ dplyr
 <hr />
 <p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
 <p>Run the following line to load the FAO data file into your current R session.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dat &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <p>Make sure to load the <code>dplyr</code> package before proceeding with the following examples.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">library</span>(dplyr)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
 <div id="splitting-data-operations-by-group-group_by" class="section level2">
 <h2>Splitting data operations by group: <code>group_by</code></h2>
 <p>The <code>group_by</code> function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the <code>Year</code> column for which crop data are available <em>by crop type</em>, we would type the following:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>dat <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="st">  </span><span class="kw">group_by</span>(Crop) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">yr_min =</span> <span class="kw">min</span>(Year), <span class="dt">yr_max=</span><span class="kw">max</span>(Year))</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yr_min =</span> <span class="fu">min</span>(Year), <span class="at">yr_max=</span><span class="fu">max</span>(Year))</span></code></pre></div>
 <pre><code># A tibble: 11 x 3
    Crop         yr_min yr_max
-   &lt;chr&gt;         &lt;int&gt;  &lt;int&gt;
+ * &lt;chr&gt;         &lt;int&gt;  &lt;int&gt;
  1 Barley         1961   2012
  2 Buckwheat      1961   2012
  3 Canary seed    1980   2012
@@ -714,22 +719,22 @@ dplyr
 <div id="count-the-number-of-records-in-each-group" class="section level2">
 <h2>Count the number of records in each group</h2>
 <p>In this example, we are identifying the number of records by <code>Crop</code> type. There are two ways this can be accomplished:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>dat <span class="op">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb5-3"><a href="#cb5-3"></a>         Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span> <span class="op">&amp;</span><span class="st"> </span>Year <span class="op">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb5-4"><a href="#cb5-4"></a>         Country<span class="op">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="st">  </span><span class="kw">group_by</span>(Crop) <span class="op">%&gt;%</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a><span class="st">  </span><span class="kw">count</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code></pre></div>
 <p>Or,</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>dat <span class="op">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb6-3"><a href="#cb6-3"></a>         Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span> <span class="op">&amp;</span><span class="st"> </span>Year <span class="op">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb6-4"><a href="#cb6-4"></a>         Country<span class="op">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a><span class="st">  </span><span class="kw">group_by</span>(Crop) <span class="op">%&gt;%</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">Count =</span> <span class="kw">n</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>())</span></code></pre></div>
 <pre><code># A tibble: 7 x 2
   Crop      Count
-  &lt;chr&gt;     &lt;int&gt;
+* &lt;chr&gt;     &lt;int&gt;
 1 Barley        6
 2 Buckwheat     6
 3 Maize         6
@@ -742,17 +747,17 @@ dplyr
 <div id="summarize-by-mean-yield-and-year-range" class="section level2">
 <h2>Summarize by mean yield and year range</h2>
 <p>Here’s another example where <em>two</em> variables are summarized in a single pipe.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>dat.grp &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb8-3"><a href="#cb8-3"></a>         Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span> <span class="op">&amp;</span><span class="st"> </span>Year <span class="op">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb8-4"><a href="#cb8-4"></a>         Country<span class="op">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a><span class="st">  </span><span class="kw">group_by</span>(Crop) <span class="op">%&gt;%</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a><span class="st">  </span><span class="kw">summarise</span>( <span class="dt">Yield =</span> <span class="kw">mean</span>(Value), <span class="st">`</span><span class="dt">Number of Years</span><span class="st">`</span> =<span class="st"> </span><span class="kw">max</span>(Year) <span class="op">-</span><span class="st"> </span><span class="kw">min</span>(Year)) </span>
-<span id="cb8-7"><a href="#cb8-7"></a></span>
-<span id="cb8-8"><a href="#cb8-8"></a>dat.grp</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dat.grp <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>( <span class="at">Yield =</span> <span class="fu">mean</span>(Value), <span class="st">`</span><span class="at">Number of Years</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">max</span>(Year) <span class="sc">-</span> <span class="fu">min</span>(Year)) </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>dat.grp</span></code></pre></div>
 <pre><code># A tibble: 7 x 3
   Crop       Yield `Number of Years`
-  &lt;chr&gt;      &lt;dbl&gt;             &lt;int&gt;
+* &lt;chr&gt;      &lt;dbl&gt;             &lt;int&gt;
 1 Barley    35471.                 5
 2 Buckwheat 10418.                 5
 3 Maize     96151.                 5
@@ -764,27 +769,27 @@ dplyr
 <div id="normalizing-each-value-in-a-group-by-the-group-median" class="section level2">
 <h2>Normalizing each value in a group by the group median</h2>
 <p>In this example, we are subtracting each value in a group by that group’s median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We’ll save the output dataframe as <code>dat2</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>dat2 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb10-2"><a href="#cb10-2"></a><span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>,</span>
-<span id="cb10-3"><a href="#cb10-3"></a>         Country <span class="op">==</span><span class="st"> &quot;United States of America&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb10-4"><a href="#cb10-4"></a><span class="st">  </span><span class="kw">select</span>(Crop, Year, Value)                     <span class="op">%&gt;%</span></span>
-<span id="cb10-5"><a href="#cb10-5"></a><span class="st">  </span><span class="kw">group_by</span>(Crop)                                <span class="op">%&gt;%</span></span>
-<span id="cb10-6"><a href="#cb10-6"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">NormYield =</span> Value <span class="op">-</span><span class="st"> </span><span class="kw">median</span>(Value))     <span class="op">%&gt;%</span></span>
-<span id="cb10-7"><a href="#cb10-7"></a><span class="st">  </span><span class="kw">arrange</span>(Crop)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Crop, Year, Value)                     <span class="sc">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop)                                <span class="sc">%&gt;%</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">NormYield =</span> Value <span class="sc">-</span> <span class="fu">median</span>(Value))     <span class="sc">%&gt;%</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Crop)</span></code></pre></div>
 <p>Let’s plot the normalized yields by year for <code>Barley</code> and add a <code>0</code> line representing the (normalized) central value.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">plot</span>( NormYield <span class="op">~</span><span class="st"> </span>Year, dat2[dat2<span class="op">$</span>Crop <span class="op">==</span><span class="st"> &quot;Barley&quot;</span>,] )</span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">abline</span>(<span class="dt">h =</span> <span class="dv">0</span>, <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>( NormYield <span class="sc">~</span> Year, dat2[dat2<span class="sc">$</span>Crop <span class="sc">==</span> <span class="st">&quot;Barley&quot;</span>,] )</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col=</span><span class="st">&quot;red&quot;</span>)</span></code></pre></div>
 <p><img src="Week03ab_groupby_files/figure-html/unnamed-chunk-10-1.png" width="480" /></p>
 <p>The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.</p>
 </div>
 <div id="dplyrs-output-data-structure" class="section level2">
 <h2><code>dplyr</code>’s output data structure</h2>
 <p>Some of <code>dplyr</code>’s functions such as <code>group_by</code>/<code>summarise</code> generate a <strong>tibble</strong> data table. For example, the <code>dat.grp</code> object created in the last chunk of code is associated with a <code>tb_df</code> (a tibble).</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">class</span>(dat.grp)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.grp)</span></code></pre></div>
 <pre><code>[1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
 <p>A <em>tibble</em> table will behave a little differently than a <em>data frame</em> table when printing to a screen or subsetting its elements. In most cases, a tibble rendering of the table will not pose a problem in a workflow, however, this format may prove problematic with some older functions. To remedy this, you can force the <code>dat.grp</code> object to a standalone <code>dataframe</code> as follows:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>dat.df &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(dat.grp)</span>
-<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">class</span>(dat.df)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat.df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dat.grp)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.df)</span></code></pre></div>
 <pre><code>[1] &quot;data.frame&quot;</code></pre>
 </div>
 

@@ -13,6 +13,7 @@
 
 <title>Manipulating data tables with dplyr</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -697,7 +702,7 @@ forcats
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -723,7 +728,7 @@ forcats
 <hr />
 <p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
 <p>Run the following line to load the FAO data file into your current R session.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dat &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <div id="the-dplyr-basics" class="section level1">
 <h1>The <code>dplyr</code> basics</h1>
 <p>The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The package <code>dplyr</code> offers some nifty and simple querying functions as shown in the next subsections. Some of <code>dplyr</code>’s key data manipulation functions are summarized in the following table:</p>
@@ -758,18 +763,18 @@ forcats
 </tbody>
 </table>
 <p>Note that all of these functions take as first argument the data table name except when used in a piping operation (pipes will be discussed later in this section). For example:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># When used alone, dataframe dat is inside the select function</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>dat2 &lt;-<span class="st"> </span><span class="kw">select</span>(dat, column1)</span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># When used in a pipe, dataframe dat is outside of the select function</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>dat2 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(column1)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># When used alone, dataframe dat is inside the select function</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">select</span>(dat, column1)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># When used in a pipe, dataframe dat is outside of the select function</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> <span class="fu">select</span>(column1)</span></code></pre></div>
 <p>Make sure to load the <code>dplyr</code> package before proceeding with the following examples.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">library</span>(dplyr)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
 <div id="filter-subset-by-rows" class="section level2">
 <h2><code>filter</code>: Subset by rows</h2>
 <p>Tables can be subsetted by rows based on column values. For example, we may wish to grab all rows associated with <code>Oats</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>dat.query1 &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">summary</span>(dat.query1)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat.query1 <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat.query1)</span></code></pre></div>
 <pre><code>   Country              Crop           Information             Year     
  Length:208         Length:208         Length:208         Min.   :1961  
  Class :character   Class :character   Class :character   1st Qu.:1974  
@@ -786,9 +791,9 @@ forcats
  Max.   :9666550                     </code></pre>
 <p>Note that R is case sensitive, so make sure that you respect each letter’s case (i.e. upper or lower).</p>
 <p>We can expand our query by including both <code>Oats</code>, <code>Buckwheat</code> and limiting the country to <code>Canada</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>dat.query2 &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span> <span class="op">|</span><span class="st"> </span>Crop <span class="op">==</span><span class="st"> &quot;Buckwheat&quot;</span>, </span>
-<span id="cb6-2"><a href="#cb6-2"></a>                          Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>)</span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">summary</span>(dat.query2)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat.query2 <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span> <span class="sc">|</span> Crop <span class="sc">==</span> <span class="st">&quot;Buckwheat&quot;</span>, </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                          Country <span class="sc">==</span> <span class="st">&quot;Canada&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat.query2)</span></code></pre></div>
 <pre><code>   Country              Crop           Information             Year     
  Length:200         Length:200         Length:200         Min.   :1961  
  Class :character   Class :character   Class :character   1st Qu.:1973  
@@ -805,11 +810,11 @@ forcats
  Max.   :4277000                     </code></pre>
 <p>The character <code>|</code> is the Boolean operator OR. So in our example, the query can be read as “… crop equals oats OR crop equals buckwheat”. Had we used the AND operator, <code>&amp;</code>, instead as in <code>Crop == "Oats" &amp; Crop == "Buckwheat"</code> the output would have returned zero rows since a <code>Crop</code> value cannot be both <code>Oats</code> AND <code>Buckwheat</code>.</p>
 <p>We can expand this query by limiting our output to the years 2005 to 2010</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb8-2"><a href="#cb8-2"></a>dat.query3 &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span> <span class="op">|</span><span class="st"> </span>Crop <span class="op">==</span><span class="st"> &quot;Buckwheat&quot;</span>, </span>
-<span id="cb8-3"><a href="#cb8-3"></a>                          Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, </span>
-<span id="cb8-4"><a href="#cb8-4"></a>                          Year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span> <span class="op">&amp;</span><span class="st"> </span>Year <span class="op">&lt;=</span><span class="st"> </span><span class="dv">2010</span>)</span>
-<span id="cb8-5"><a href="#cb8-5"></a><span class="kw">summary</span>(dat.query3)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>dat.query3 <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span> <span class="sc">|</span> Crop <span class="sc">==</span> <span class="st">&quot;Buckwheat&quot;</span>, </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                          Country <span class="sc">==</span> <span class="st">&quot;Canada&quot;</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                          Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span> <span class="dv">2010</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat.query3)</span></code></pre></div>
 <pre><code>   Country              Crop           Information             Year     
  Length:18          Length:18          Length:18          Min.   :2005  
  Class :character   Class :character   Class :character   1st Qu.:2006  
@@ -829,8 +834,8 @@ forcats
 <div id="arrange-sort-rows-by-column-value" class="section level2">
 <h2><code>arrange</code>: Sort rows by column value</h2>
 <p>You can sort a table based on a column’s values. For example, to sort <code>dat</code> by crop name type:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>dat.sort1 &lt;-<span class="st"> </span><span class="kw">arrange</span>(dat, Crop)</span>
-<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">head</span>(dat.sort1)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dat.sort1 <span class="ot">&lt;-</span> <span class="fu">arrange</span>(dat, Crop)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.sort1)</span></code></pre></div>
 <pre><code>                   Country   Crop         Information Year      Value
 1                   Canada Barley Area harvested (Ha) 2012 2060000.00
 2                   Canada Barley       Yield (Hg/Ha) 2012   38894.66
@@ -845,7 +850,7 @@ forcats
 4 Calculated data
 5   Official data
 6 Calculated data</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">tail</span>(dat.sort1)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(dat.sort1)</span></code></pre></div>
 <pre><code>     Country      Crop         Information Year    Value
 1496  Canada Triticale Area harvested (Ha) 1991  1093.00
 1497  Canada Triticale       Yield (Hg/Ha) 1991 21957.91
@@ -861,8 +866,8 @@ forcats
 1500                             FAO estimate
 1501                          Calculated data</code></pre>
 <p>By default, <code>arrange</code> sorts by ascending order. To sort by descending order, wrap the column name with the function <code>desc()</code>. For example, to sort the table by <code>Crop</code> in ascending order then by <code>Year</code> in descending order, type:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>dat.sort2 &lt;-<span class="st"> </span><span class="kw">arrange</span>(dat, Crop, <span class="kw">desc</span>(Year))</span>
-<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">head</span>(dat.sort2)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat.sort2 <span class="ot">&lt;-</span> <span class="fu">arrange</span>(dat, Crop, <span class="fu">desc</span>(Year))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.sort2)</span></code></pre></div>
 <pre><code>                   Country   Crop         Information Year      Value
 1                   Canada Barley Area harvested (Ha) 2012 2060000.00
 2                   Canada Barley       Yield (Hg/Ha) 2012   38894.66
@@ -877,7 +882,7 @@ forcats
 4 Calculated data
 5   Official data
 6 Calculated data</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">tail</span>(dat.sort2)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(dat.sort2)</span></code></pre></div>
 <pre><code>     Country      Crop         Information Year    Value
 1496  Canada Triticale Area harvested (Ha) 1991  1093.00
 1497  Canada Triticale       Yield (Hg/Ha) 1991 21957.91
@@ -896,14 +901,14 @@ forcats
 <div id="select-subset-by-column" class="section level2">
 <h2><code>select</code>: Subset by column</h2>
 <p>You can grab a subset of the table by column(s). To extract the columns <code>Crop</code>, <code>Year</code> and <code>Value</code>, type:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>dat.subcol &lt;-<span class="st"> </span><span class="kw">select</span>(dat, Crop, Year, Value)</span>
-<span id="cb18-2"><a href="#cb18-2"></a><span class="kw">head</span>(dat.subcol, <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dat.subcol <span class="ot">&lt;-</span> <span class="fu">select</span>(dat, Crop, Year, Value)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.subcol, <span class="dv">2</span>)</span></code></pre></div>
 <pre><code>    Crop Year      Value
 1 Barley 2012 2060000.00
 2 Barley 2012   38894.66</code></pre>
 <p>If you want all columns <em>other</em> than <code>Crop</code>, <code>Year</code> and <code>Value</code>, add the negative <code>-</code> symbol before the column name:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>dat.subcol &lt;-<span class="st"> </span><span class="kw">select</span>(dat, <span class="op">-</span>Crop, <span class="op">-</span>Year, <span class="op">-</span>Value)</span>
-<span id="cb20-2"><a href="#cb20-2"></a><span class="kw">head</span>(dat.subcol, <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dat.subcol <span class="ot">&lt;-</span> <span class="fu">select</span>(dat, <span class="sc">-</span>Crop, <span class="sc">-</span>Year, <span class="sc">-</span>Value)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.subcol, <span class="dv">2</span>)</span></code></pre></div>
 <pre><code>  Country         Information          Source
 1  Canada Area harvested (Ha)   Official data
 2  Canada       Yield (Hg/Ha) Calculated data</code></pre>
@@ -911,8 +916,8 @@ forcats
 <div id="mutate-creating-andor-calculating-column-values" class="section level2">
 <h2><code>mutate</code>: Creating and/or calculating column values</h2>
 <p>You can add columns (and compute their values) using the <code>mutate</code> function. For example, to add a column <code>Ctr_abbr</code> and assign it the abbreviated values <code>CAN</code> for Canada and <code>USA</code> for the United States of America based on the values in column <code>Country</code> type:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>dat.extended &lt;-<span class="st"> </span><span class="kw">mutate</span>(dat, <span class="dt">Ctr_abbr =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))</span>
-<span id="cb22-2"><a href="#cb22-2"></a><span class="kw">head</span>(dat.extended,<span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>dat.extended <span class="ot">&lt;-</span> <span class="fu">mutate</span>(dat, <span class="at">Ctr_abbr =</span> <span class="fu">ifelse</span>(Country <span class="sc">==</span> <span class="st">&quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.extended,<span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Country      Crop         Information Year      Value          Source
 1  Canada    Barley Area harvested (Ha) 2012 2060000.00   Official data
 2  Canada    Barley       Yield (Hg/Ha) 2012   38894.66 Calculated data
@@ -921,7 +926,7 @@ forcats
 1      CAN
 2      CAN
 3      CAN</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">tail</span>(dat.extended,<span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(dat.extended,<span class="dv">3</span>)</span></code></pre></div>
 <pre><code>                      Country    Crop         Information Year      Value
 1499 United States of America     Rye       Yield (Hg/Ha) 1961   11121.79
 1500 United States of America Sorghum Area harvested (Ha) 1961 4445000.00
@@ -933,13 +938,13 @@ forcats
 <p>Here, we make use of an embedded function, <code>ifelse</code>, which performs a conditional operation: if the <code>Country</code> value is <code>Canada</code> return <code>CAN</code> if not, return <code>USA</code>.</p>
 <p>Note that if you wish to <em>rename</em> a column, you can use the <code>rename()</code> function instead of <code>mutate</code>.</p>
 <p>You can also use <code>mutate</code> to recompute column values. For example, to replace the <code>Country</code> column values with <code>CAN</code> or <code>USA</code> type:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>dat.overwrite &lt;-<span class="st"> </span><span class="kw">mutate</span>(dat, <span class="dt">Country =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))</span>
-<span id="cb26-2"><a href="#cb26-2"></a><span class="kw">head</span>(dat.overwrite,<span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>dat.overwrite <span class="ot">&lt;-</span> <span class="fu">mutate</span>(dat, <span class="at">Country =</span> <span class="fu">ifelse</span>(Country <span class="sc">==</span> <span class="st">&quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.overwrite,<span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Country      Crop         Information Year      Value          Source
 1     CAN    Barley Area harvested (Ha) 2012 2060000.00   Official data
 2     CAN    Barley       Yield (Hg/Ha) 2012   38894.66 Calculated data
 3     CAN Buckwheat Area harvested (Ha) 2012       0.00    FAO estimate</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">tail</span>(dat.overwrite,<span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(dat.overwrite,<span class="dv">3</span>)</span></code></pre></div>
 <pre><code>     Country    Crop         Information Year      Value          Source
 1499     USA     Rye       Yield (Hg/Ha) 1961   11121.79 Calculated data
 1500     USA Sorghum Area harvested (Ha) 1961 4445000.00   Official data
@@ -948,10 +953,10 @@ forcats
 <div id="mutate_at-creating-andor-calculating-values-across-muliple-columns" class="section level2">
 <h2><code>mutate_at</code>: Creating and/or calculating values across muliple columns</h2>
 <p>You might find yourself wanting to apply a same set of <em>mutate</em> operations across multiple variables. For example, given the following sample dataset,</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>met &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">Wind =</span> <span class="kw">c</span>(<span class="fl">3.4</span>, <span class="fl">5.0</span>, <span class="dv">99</span>, <span class="fl">4.1</span>, <span class="fl">1.5</span>),</span>
-<span id="cb30-2"><a href="#cb30-2"></a>                  <span class="dt">Dir  =</span> <span class="kw">c</span>(<span class="dv">181</span>, <span class="dv">220</span>, <span class="dv">15</span>,  <span class="dv">15</span>,  <span class="dv">99</span> ),</span>
-<span id="cb30-3"><a href="#cb30-3"></a>                  <span class="dt">Prec =</span> <span class="kw">c</span>(<span class="dv">99</span> , <span class="fl">0.5</span>,  <span class="dv">0</span>,  <span class="dv">99</span>,  <span class="dv">99</span>))</span>
-<span id="cb30-4"><a href="#cb30-4"></a>met</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>met <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Wind =</span> <span class="fu">c</span>(<span class="fl">3.4</span>, <span class="fl">5.0</span>, <span class="dv">99</span>, <span class="fl">4.1</span>, <span class="fl">1.5</span>),</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">Dir  =</span> <span class="fu">c</span>(<span class="dv">181</span>, <span class="dv">220</span>, <span class="dv">15</span>,  <span class="dv">15</span>,  <span class="dv">99</span> ),</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">Prec =</span> <span class="fu">c</span>(<span class="dv">99</span> , <span class="fl">0.5</span>,  <span class="dv">0</span>,  <span class="dv">99</span>,  <span class="dv">99</span>))</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>met</span></code></pre></div>
 <pre><code>  Wind Dir Prec
 1  3.4 181 99.0
 2  5.0 220  0.5
@@ -959,9 +964,9 @@ forcats
 4  4.1  15 99.0
 5  1.5  99 99.0</code></pre>
 <p>where the value <code>99</code> is a placeholder for a missing value for the variables <code>Wind</code> and <code>Prec</code> but a valid value for <code>Dir</code>, we want to replace all missing values with <code>NA</code>. We could either create two mutate operations as in,</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a>met2 &lt;-<span class="st"> </span><span class="kw">mutate</span>( met, <span class="dt">Wind =</span> <span class="kw">ifelse</span>(Wind <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, Wind),</span>
-<span id="cb32-2"><a href="#cb32-2"></a>                     <span class="dt">Prec =</span> <span class="kw">ifelse</span>(Prec <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, Prec))</span>
-<span id="cb32-3"><a href="#cb32-3"></a>met2</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>met2 <span class="ot">&lt;-</span> <span class="fu">mutate</span>( met, <span class="at">Wind =</span> <span class="fu">ifelse</span>(Wind <span class="sc">==</span> <span class="dv">99</span>, <span class="cn">NA</span>, Wind),</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Prec =</span> <span class="fu">ifelse</span>(Prec <span class="sc">==</span> <span class="dv">99</span>, <span class="cn">NA</span>, Prec))</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>met2</span></code></pre></div>
 <pre><code>  Wind Dir Prec
 1  3.4 181   NA
 2  5.0 220  0.5
@@ -969,9 +974,9 @@ forcats
 4  4.1  15   NA
 5  1.5  99   NA</code></pre>
 <p>or, we could reduce the separate <code>mutate</code> operations into a single <code>mutate_at</code> operation,</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>met2 &lt;-<span class="st"> </span><span class="kw">mutate_at</span>( met, <span class="kw">vars</span>(Wind, Prec),</span>
-<span id="cb34-2"><a href="#cb34-2"></a>                        <span class="kw">list</span>(<span class="op">~</span><span class="st"> </span><span class="kw">ifelse</span>( . <span class="op">==</span><span class="st"> </span><span class="dv">99</span>, <span class="ot">NA</span>, .)))</span>
-<span id="cb34-3"><a href="#cb34-3"></a>met2</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>met2 <span class="ot">&lt;-</span> <span class="fu">mutate_at</span>( met, <span class="fu">vars</span>(Wind, Prec),</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">list</span>(<span class="sc">~</span> <span class="fu">ifelse</span>( . <span class="sc">==</span> <span class="dv">99</span>, <span class="cn">NA</span>, .)))</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>met2</span></code></pre></div>
 <pre><code>  Wind Dir Prec
 1  3.4 181   NA
 2  5.0 220  0.5
@@ -983,7 +988,7 @@ forcats
 <div id="summarise-summarize-columns" class="section level2">
 <h2><code>summarise</code>: Summarize columns</h2>
 <p>You can summarize (or “collapse”) one or more columns using the <code>summarise</code> function. For instance, to get the minimum and maximum years from the <code>Year</code> column, type:</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="kw">summarise</span>(dat, <span class="dt">yr_min =</span> <span class="kw">min</span>(Year), <span class="dt">yr_max=</span><span class="kw">max</span>(Year))</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(dat, <span class="at">yr_min =</span> <span class="fu">min</span>(Year), <span class="at">yr_max=</span><span class="fu">max</span>(Year))</span></code></pre></div>
 <pre><code>  yr_min yr_max
 1   1961   2012</code></pre>
 </div>
@@ -991,26 +996,26 @@ forcats
 <div id="combining-table-manipulation-functions-using" class="section level1">
 <h1>Combining table manipulation functions using <code>%&gt;%</code></h1>
 <p>In most cases, you will find yourself wanting to combine several of <code>dplyr</code>’s data manipulation functions. For example,</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a>dat.yield  &lt;-<span class="st"> </span><span class="kw">filter</span>(dat, Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb38-2"><a href="#cb38-2"></a>                          Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,</span>
-<span id="cb38-3"><a href="#cb38-3"></a>                          Year <span class="op">==</span><span class="st"> </span><span class="dv">2012</span>)</span>
-<span id="cb38-4"><a href="#cb38-4"></a>dat.rename &lt;-<span class="st"> </span><span class="kw">mutate</span>(dat.yield, <span class="dt">Country =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))</span>
-<span id="cb38-5"><a href="#cb38-5"></a>dat.final  &lt;-<span class="st"> </span><span class="kw">select</span>(dat.rename, Country, Value)</span>
-<span id="cb38-6"><a href="#cb38-6"></a></span>
-<span id="cb38-7"><a href="#cb38-7"></a><span class="kw">head</span>(dat.final, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>dat.yield  <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>                          Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span>,</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>                          Year <span class="sc">==</span> <span class="dv">2012</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>dat.rename <span class="ot">&lt;-</span> <span class="fu">mutate</span>(dat.yield, <span class="at">Country =</span> <span class="fu">ifelse</span>(Country <span class="sc">==</span> <span class="st">&quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>))</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>dat.final  <span class="ot">&lt;-</span> <span class="fu">select</span>(dat.rename, Country, Value)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.final, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Country    Value
 1     CAN 24954.79
 2     USA 21974.70</code></pre>
 <p>The downside to this approach is the creation of several intermediate objects (e.g. <code>dat.yield</code> and <code>dat.rename</code>). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects.</p>
 <p>Another approach to combining <code>dplyr</code> operations is to use the <strong>piping operator</strong> ,<code>%&gt;%</code>, which daisy chains <code>dplyr</code> operations. So our previous workflow could look like:</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a>dat.final &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span></span>
-<span id="cb40-2"><a href="#cb40-2"></a><span class="st">  </span><span class="kw">filter</span>(Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb40-3"><a href="#cb40-3"></a>         Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,</span>
-<span id="cb40-4"><a href="#cb40-4"></a>         Year <span class="op">==</span><span class="st"> </span><span class="dv">2012</span>)  <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb40-5"><a href="#cb40-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Country =</span> <span class="kw">ifelse</span>(Country <span class="op">==</span><span class="st"> &quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb40-6"><a href="#cb40-6"></a><span class="st">  </span><span class="kw">select</span>(Country, Value)</span>
-<span id="cb40-7"><a href="#cb40-7"></a></span>
-<span id="cb40-8"><a href="#cb40-8"></a><span class="kw">head</span>(dat.final, <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>dat.final <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>         Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span>,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">==</span> <span class="dv">2012</span>)  <span class="sc">%&gt;%</span> </span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Country =</span> <span class="fu">ifelse</span>(Country <span class="sc">==</span> <span class="st">&quot;Canada&quot;</span>, <span class="st">&quot;CAN&quot;</span>, <span class="st">&quot;USA&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Country, Value)</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.final, <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>  Country    Value
 1     CAN 24954.79
 2     USA 21974.70</code></pre>
@@ -1023,17 +1028,17 @@ forcats
 <div id="the-base-ifelse" class="section level2">
 <h2>The base <code>ifelse</code></h2>
 <p>Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want to output a value of <code>1</code> <em>if</em> an input value is less than <code>23</code> and a value of <code>0</code> otherwise, you can make use of the <code>ifelse</code> function as follows:</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a>x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>,<span class="dv">102</span>, <span class="dv">43</span>, <span class="dv">20</span>, <span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">6</span>)</span>
-<span id="cb42-2"><a href="#cb42-2"></a><span class="kw">ifelse</span>(x <span class="op">&lt;</span><span class="st"> </span><span class="dv">23</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">12</span>,<span class="dv">102</span>, <span class="dv">43</span>, <span class="dv">20</span>, <span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">6</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>(x <span class="sc">&lt;</span> <span class="dv">23</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span></code></pre></div>
 <pre><code>[1] 1 0 0 1 0 1 1 1</code></pre>
 <p>The base <code>ifelse</code> function works as expected when the input/output values are numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another, the following example will not return the expected output.</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1"></a>x &lt;-<span class="st"> </span><span class="kw">as.factor</span>( <span class="kw">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>))</span>
-<span id="cb44-2"><a href="#cb44-2"></a><span class="kw">ifelse</span>(x <span class="op">==</span><span class="st"> &quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>, x)</span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.factor</span>( <span class="fu">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>))</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>(x <span class="sc">==</span> <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>, x)</span></code></pre></div>
 <pre><code>[1] &quot;1&quot;     &quot;2&quot;     &quot;2&quot;     &quot;apple&quot; &quot;1&quot;    </code></pre>
 <p>The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e. <code>apple</code> =1, <code>banana</code>=2, etc…). Likewise, if you wish to replace an erroneous date with a missing value you will get:</p>
-<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a><span class="kw">library</span>(lubridate)</span>
-<span id="cb46-2"><a href="#cb46-2"></a>y &lt;-<span class="st"> </span><span class="kw">mdy</span>(<span class="st">&quot;1/23/2016&quot;</span>, <span class="st">&quot;3/2/2016&quot;</span>, <span class="st">&quot;12/1/1901&quot;</span>, <span class="st">&quot;11/23/2016&quot;</span>)</span>
-<span id="cb46-3"><a href="#cb46-3"></a><span class="kw">ifelse</span>( <span class="kw">year</span>(y) <span class="op">!=</span><span class="st"> </span><span class="dv">2016</span>, <span class="ot">NA</span>, y)</span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">mdy</span>(<span class="st">&quot;1/23/2016&quot;</span>, <span class="st">&quot;3/2/2016&quot;</span>, <span class="st">&quot;12/1/1901&quot;</span>, <span class="st">&quot;11/23/2016&quot;</span>)</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>( <span class="fu">year</span>(y) <span class="sc">!=</span> <span class="dv">2016</span>, <span class="cn">NA</span>, y)</span></code></pre></div>
 <pre><code>[1] 16823 16862    NA 17128</code></pre>
 <p>Here, <code>ifelse</code> converts the date object to its internal numeric representation as number of days since 1970.</p>
 <p>If you want to ensure that the data type is preserved, a safer alternative is to use <code>dplyr</code>’s <code>if_else</code> function.</p>
@@ -1041,51 +1046,51 @@ forcats
 <div id="dplyrs-if_else" class="section level2">
 <h2><code>dplyr</code>’s <code>if_else</code></h2>
 <p>The <code>if_else</code> function (note the underscore <code>_</code>), will preserve data type but does so strictly. For example, the following code will return an error:</p>
-<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1"></a><span class="kw">if_else</span>( <span class="kw">year</span>(y) <span class="op">!=</span><span class="st"> </span><span class="dv">2016</span>, <span class="ot">NA</span>, y)</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( <span class="fu">year</span>(y) <span class="sc">!=</span> <span class="dv">2016</span>, <span class="cn">NA</span>, y)</span></code></pre></div>
 <pre><code>Error: `false` must be a logical vector, not a `Date` object.</code></pre>
 <p>The output data types (<code>NA</code> and <code>y</code>) are not treated the same (by seeing <code>NA</code>, the function assumes that the output must be logical which <code>y</code> is not). The solution is to force <code>NA</code> as a <em>date</em> object by wrapping it with a date function like <code>mdy(NA)</code>:</p>
-<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1"></a><span class="kw">if_else</span>( <span class="kw">year</span>(y) <span class="op">!=</span><span class="st"> </span><span class="dv">2016</span>, <span class="kw">mdy</span>(<span class="ot">NA</span>), y)</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( <span class="fu">year</span>(y) <span class="sc">!=</span> <span class="dv">2016</span>, <span class="fu">mdy</span>(<span class="cn">NA</span>), y)</span></code></pre></div>
 <pre><code>[1] &quot;2016-01-23&quot; &quot;2016-03-02&quot; NA           &quot;2016-11-23&quot;</code></pre>
 <p>Likewise, if the input vector is of type character, you need to ensure that all output values are characters too.</p>
-<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1"></a>y &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>)</span>
-<span id="cb52-2"><a href="#cb52-2"></a><span class="kw">if_else</span>( y <span class="op">==</span><span class="st"> &quot;banana&quot;</span>, <span class="kw">as.character</span>(<span class="ot">NA</span>), y)</span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( y <span class="sc">==</span> <span class="st">&quot;banana&quot;</span>, <span class="fu">as.character</span>(<span class="cn">NA</span>), y)</span></code></pre></div>
 <pre><code>[1] &quot;apple&quot; NA      NA      &quot;pear&quot;  &quot;apple&quot;</code></pre>
 <p>Recall from the Week 02 lecture notes that R has several <code>NA</code> reserved words for different data types (e.g. <code>NA_character_</code> and <code>NA_integer_</code> to name a few). So the last chunk of code could have been written as,</p>
-<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1"></a><span class="kw">if_else</span>( y <span class="op">==</span><span class="st"> &quot;banana&quot;</span>, <span class="ot">NA_character_</span>, y)</span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( y <span class="sc">==</span> <span class="st">&quot;banana&quot;</span>, <span class="cn">NA_character_</span>, y)</span></code></pre></div>
 <pre><code>[1] &quot;apple&quot; NA      NA      &quot;pear&quot;  &quot;apple&quot;</code></pre>
 <p>Note that there is no reserved word for <code>NA</code> <em>date</em> types in which case you would coerce <code>NA</code> to date using built-in functions like <code>as.Date(NA)</code> or lubridate functions like <code>mdy(NA)</code> as demonstrated in an earlier example.</p>
 </div>
 <div id="recoding-factors-using-recode" class="section level2">
 <h2>Recoding factors using <code>recode</code></h2>
 <p>When working with factors, however, <code>if_else</code> (as of <code>dplyr</code> version <code>0.7</code>) will produce the following error:</p>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1"></a><span class="kw">if_else</span>(x <span class="op">==</span><span class="st"> &quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>, x)</span></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>(x <span class="sc">==</span> <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;apple&quot;</span>, x)</span></code></pre></div>
 <pre><code>Error: `false` must be a character vector, not a `factor` object.</code></pre>
 <p>R sees <code>apple</code> as a character and <code>x</code> as a number (i.e. the numeric representation of the factor level). A better option for recoding factors is to use <code>dplyr</code>’s <code>recode</code> function:</p>
-<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1"></a><span class="kw">recode</span>(x , <span class="st">&quot;pear&quot;</span> =<span class="st"> &quot;apple&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">recode</span>(x , <span class="st">&quot;pear&quot;</span> <span class="ot">=</span> <span class="st">&quot;apple&quot;</span>)</span></code></pre></div>
 <pre><code>[1] apple  banana banana apple  apple 
 Levels: apple banana</code></pre>
 <p>You can recode more than one factor level. In fact, you can even introduce new levels in the recoding scheme:</p>
-<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1"></a><span class="kw">recode</span>(x , <span class="st">&quot;pear&quot;</span> =<span class="st"> &quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span> =<span class="st"> &quot;pineapple&quot;</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">recode</span>(x , <span class="st">&quot;pear&quot;</span> <span class="ot">=</span> <span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span> <span class="ot">=</span> <span class="st">&quot;pineapple&quot;</span> )</span></code></pre></div>
 <pre><code>[1] apple     pineapple pineapple apple     apple    
 Levels: apple pineapple</code></pre>
 <p>As with <code>if_else</code> and <code>case_when</code>, <code>recode</code> is strict about preserving data types. So if you want to recode a level to <code>NA</code> make sure to use <code>NA_character_</code> or <code>as.character(NA)</code>.</p>
 <p>Note that <code>recode</code> can also be used with numeric and character data types. For example,</p>
-<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1"></a><span class="co"># Example of recoding a character vector</span></span>
-<span id="cb62-2"><a href="#cb62-2"></a><span class="kw">recode</span>(y , <span class="st">&quot;pear&quot;</span> =<span class="st"> &quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span> =<span class="st"> &quot;pineapple&quot;</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example of recoding a character vector</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">recode</span>(y , <span class="st">&quot;pear&quot;</span> <span class="ot">=</span> <span class="st">&quot;apple&quot;</span>, <span class="st">&quot;banana&quot;</span> <span class="ot">=</span> <span class="st">&quot;pineapple&quot;</span> )</span></code></pre></div>
 <pre><code>[1] &quot;apple&quot;     &quot;pineapple&quot; &quot;pineapple&quot; &quot;apple&quot;     &quot;apple&quot;    </code></pre>
 <div id="note-on-replacing-na-factor-levels" class="section level3">
 <h3>Note on replacing NA factor levels</h3>
 <p>One operation you cannot perform with <code>recode</code> is converting an <code>NA</code> level to another factor level. For example, the following will generate an error message:</p>
-<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1"></a>x[<span class="dv">2</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb64-2"><a href="#cb64-2"></a>x</span></code></pre></div>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>x[<span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>x</span></code></pre></div>
 <pre><code>[1] apple  &lt;NA&gt;   banana pear   apple 
 Levels: apple banana pear</code></pre>
-<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1"></a><span class="kw">recode</span>(x, <span class="dt">NA =</span> <span class="st">&quot;other&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">recode</span>(x, <span class="at">NA =</span> <span class="st">&quot;other&quot;</span>)</span></code></pre></div>
 <pre><code>Error: unexpected &#39;=&#39; in &quot;recode(x, NA =&quot;</code></pre>
 <p>The simplest solution is to make use of a specialized factor package called <code>forcats</code> and its function, <code>fct_explicit_na</code>.</p>
-<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1"></a><span class="kw">library</span>(forcats)</span>
-<span id="cb68-2"><a href="#cb68-2"></a>x &lt;-<span class="st"> </span><span class="kw">fct_explicit_na</span>(x, <span class="dt">na_level =</span> <span class="st">&quot;Other&quot;</span>)</span>
-<span id="cb68-3"><a href="#cb68-3"></a>x</span></code></pre></div>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forcats)</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">fct_explicit_na</span>(x, <span class="at">na_level =</span> <span class="st">&quot;Other&quot;</span>)</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>x</span></code></pre></div>
 <pre><code>[1] apple  Other  banana pear   apple 
 Levels: apple banana pear Other</code></pre>
 </div>
@@ -1093,37 +1098,37 @@ Levels: apple banana pear Other</code></pre>
 <div id="changing-values-based-on-multiple-conditions-case_when" class="section level2">
 <h2>Changing values based on multiple conditions: <code>case_when</code></h2>
 <p><code>ifelse</code> and <code>if_else</code> work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.</p>
-<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1"></a>unit &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;F&quot;</span>,<span class="st">&quot;F&quot;</span>,<span class="st">&quot;C&quot;</span>, <span class="st">&quot;K&quot;</span>)</span>
-<span id="cb70-2"><a href="#cb70-2"></a><span class="kw">if_else</span>( unit <span class="op">==</span><span class="st"> &quot;C&quot;</span>, <span class="st">&quot;Celsius&quot;</span>, <span class="kw">if_else</span>(unit <span class="op">==</span><span class="st"> &quot;F&quot;</span>, <span class="st">&quot;Fahrenheit&quot;</span>, <span class="st">&quot;Kelvin&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>unit <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;F&quot;</span>,<span class="st">&quot;F&quot;</span>,<span class="st">&quot;C&quot;</span>, <span class="st">&quot;K&quot;</span>)</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( unit <span class="sc">==</span> <span class="st">&quot;C&quot;</span>, <span class="st">&quot;Celsius&quot;</span>, <span class="fu">if_else</span>(unit <span class="sc">==</span> <span class="st">&quot;F&quot;</span>, <span class="st">&quot;Fahrenheit&quot;</span>, <span class="st">&quot;Kelvin&quot;</span>))</span></code></pre></div>
 <pre><code>[1] &quot;Fahrenheit&quot; &quot;Fahrenheit&quot; &quot;Celsius&quot;    &quot;Kelvin&quot;    </code></pre>
 <p>A simpler solution is to use the <code>recode</code> function discussed in the previous section.</p>
-<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1"></a><span class="kw">recode</span>(unit, <span class="st">&quot;C&quot;</span> =<span class="st"> &quot;Celsius&quot;</span>,</span>
-<span id="cb72-2"><a href="#cb72-2"></a>             <span class="st">&quot;F&quot;</span> =<span class="st"> &quot;Fahrenheit&quot;</span>,</span>
-<span id="cb72-3"><a href="#cb72-3"></a>             <span class="st">&quot;K&quot;</span> =<span class="st"> &quot;Kelvin&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">recode</span>(unit, <span class="st">&quot;C&quot;</span> <span class="ot">=</span> <span class="st">&quot;Celsius&quot;</span>,</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>             <span class="st">&quot;F&quot;</span> <span class="ot">=</span> <span class="st">&quot;Fahrenheit&quot;</span>,</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>             <span class="st">&quot;K&quot;</span> <span class="ot">=</span> <span class="st">&quot;Kelvin&quot;</span>)</span></code></pre></div>
 <pre><code>[1] &quot;Fahrenheit&quot; &quot;Fahrenheit&quot; &quot;Celsius&quot;    &quot;Kelvin&quot;    </code></pre>
 <p><code>recode</code> is well suited for replacing values but it will not allow for more complex operations. For example, given two vectors, <code>unit</code> and <code>temp</code>, we would like to convert all <code>temp</code> values to Fahrenheit by applying a temperature conversion dependent on the <code>unit</code> value.</p>
-<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1"></a>temp &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">45.2</span>, <span class="fl">56.3</span>, <span class="fl">11.0</span>, <span class="dv">285</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">45.2</span>, <span class="fl">56.3</span>, <span class="fl">11.0</span>, <span class="dv">285</span>)</span></code></pre></div>
 <p>This operation is best performed using the <code>case_when</code> function.</p>
-<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1"></a><span class="kw">case_when</span>(unit <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> </span>temp,</span>
-<span id="cb75-2"><a href="#cb75-2"></a>          unit <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span>) <span class="op">+</span><span class="st"> </span><span class="dv">32</span>,</span>
-<span id="cb75-3"><a href="#cb75-3"></a>          <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">-</span><span class="st"> </span><span class="fl">273.15</span>) <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span><span class="dv">32</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">&quot;F&quot;</span> <span class="sc">~</span> temp,</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">&quot;C&quot;</span> <span class="sc">~</span> (temp <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>) <span class="sc">+</span> <span class="dv">32</span>,</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>)</span></code></pre></div>
 <pre><code>[1] 45.20 56.30 51.80 53.33</code></pre>
 <p>The last parameter, <code>TRUE ~</code>, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return <code>NA</code> values).</p>
 <p>Note that the order in which these conditions are listed matters since evaluation stops at the first <code>TRUE</code> outcome encountered. So, had the last condition been moved to the top of the stack, all <code>temp</code> values would be assigned the first conversion option.</p>
-<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1"></a><span class="co"># What not to do ...</span></span>
-<span id="cb77-2"><a href="#cb77-2"></a><span class="kw">case_when</span>(<span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">-</span><span class="st"> </span><span class="fl">273.15</span>) <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span> <span class="op">+</span><span class="st"> </span><span class="dv">32</span>,</span>
-<span id="cb77-3"><a href="#cb77-3"></a>          unit <span class="op">==</span><span class="st"> &quot;F&quot;</span> <span class="op">~</span><span class="st"> </span>temp,</span>
-<span id="cb77-4"><a href="#cb77-4"></a>          unit <span class="op">==</span><span class="st"> &quot;C&quot;</span> <span class="op">~</span><span class="st"> </span>(temp <span class="op">*</span><span class="st"> </span><span class="dv">9</span><span class="op">/</span><span class="dv">5</span>) <span class="op">+</span><span class="st"> </span><span class="dv">32</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What not to do ...</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(<span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>,</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">&quot;F&quot;</span> <span class="sc">~</span> temp,</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">&quot;C&quot;</span> <span class="sc">~</span> (temp <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>) <span class="sc">+</span> <span class="dv">32</span>)</span></code></pre></div>
 <pre><code>[1] -378.31 -358.33 -439.87   53.33</code></pre>
 <p>As with the <code>if_else</code> function, <code>case_when</code> is strict about data type in that all output must be of the same data type.</p>
 <p>Note that <code>ifelse</code>, <code>if_else</code>, <code>recode</code> and <code>case_when</code> can all be used inside of a <code>mutate</code> function. For example, to replace <code>Canada</code> and <code>United States of America</code> in variable <code>Country</code> with <code>CAN</code> and <code>USA</code> respectively and to create a new variable called <code>Type</code> which will take on the values of <code>1</code>, <code>2</code> or <code>3</code> depending on the values in variable <code>Source</code>, type the following:</p>
-<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1"></a>dat1 &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb79-2"><a href="#cb79-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Country =</span> <span class="kw">recode</span>(Country, <span class="st">&quot;Canada&quot;</span> =<span class="st"> &quot;CAN&quot;</span>,</span>
-<span id="cb79-3"><a href="#cb79-3"></a>                                   <span class="st">&quot;United States of America&quot;</span> =<span class="st"> &quot;USA&quot;</span>),</span>
-<span id="cb79-4"><a href="#cb79-4"></a>         <span class="dt">Type =</span> <span class="kw">case_when</span>(Source <span class="op">==</span><span class="st"> &quot;Calculated data&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,</span>
-<span id="cb79-5"><a href="#cb79-5"></a>                          Source <span class="op">==</span><span class="st"> &quot;Official data&quot;</span> <span class="op">~</span><span class="st"> </span><span class="dv">2</span>,</span>
-<span id="cb79-6"><a href="#cb79-6"></a>                          <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> </span><span class="dv">3</span>)) </span>
-<span id="cb79-7"><a href="#cb79-7"></a><span class="kw">head</span>(dat1)   </span></code></pre></div>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Country =</span> <span class="fu">recode</span>(Country, <span class="st">&quot;Canada&quot;</span> <span class="ot">=</span> <span class="st">&quot;CAN&quot;</span>,</span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">&quot;United States of America&quot;</span> <span class="ot">=</span> <span class="st">&quot;USA&quot;</span>),</span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">Type =</span> <span class="fu">case_when</span>(Source <span class="sc">==</span> <span class="st">&quot;Calculated data&quot;</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a>                          Source <span class="sc">==</span> <span class="st">&quot;Official data&quot;</span> <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">3</span>)) </span>
+<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1)   </span></code></pre></div>
 <pre><code>  Country         Crop         Information Year      Value          Source Type
 1     CAN       Barley Area harvested (Ha) 2012 2060000.00   Official data    2
 2     CAN       Barley       Yield (Hg/Ha) 2012   38894.66 Calculated data    1
@@ -1140,33 +1145,33 @@ Levels: apple banana pear Other</code></pre>
 <div id="outputting-a-vector-instead-of-a-table-using-pull" class="section level2">
 <h2>Outputting a vector instead of a table using <code>pull</code></h2>
 <p>Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:</p>
-<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1"></a>oats &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb81-2"><a href="#cb81-2"></a><span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,</span>
-<span id="cb81-3"><a href="#cb81-3"></a>         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb81-4"><a href="#cb81-4"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">Oats_sum =</span> <span class="kw">sum</span>(Value))</span>
-<span id="cb81-5"><a href="#cb81-5"></a>oats</span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span>,</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Oats_sum =</span> <span class="fu">sum</span>(Value))</span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>oats</span></code></pre></div>
 <pre><code>  Oats_sum
 1  2169334</code></pre>
-<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1"></a><span class="kw">class</span>(oats)</span></code></pre></div>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(oats)</span></code></pre></div>
 <pre><code>[1] &quot;data.frame&quot;</code></pre>
 <p>There may be times when you want to output as a vector element and not a data table. To output a vector, use the <code>pull()</code> function.</p>
-<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1"></a>oats &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb85-2"><a href="#cb85-2"></a><span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,</span>
-<span id="cb85-3"><a href="#cb85-3"></a>         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb85-4"><a href="#cb85-4"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">Oats_sum =</span> <span class="kw">sum</span>(Value)) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb85-5"><a href="#cb85-5"></a><span class="st">  </span><span class="kw">pull</span>()</span>
-<span id="cb85-6"><a href="#cb85-6"></a>oats</span></code></pre></div>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span>,</span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Oats_sum =</span> <span class="fu">sum</span>(Value)) <span class="sc">%&gt;%</span> </span>
+<span id="cb85-5"><a href="#cb85-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>()</span>
+<span id="cb85-6"><a href="#cb85-6" aria-hidden="true" tabindex="-1"></a>oats</span></code></pre></div>
 <pre><code>[1] 2169334</code></pre>
-<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1"></a><span class="kw">class</span>(oats)</span></code></pre></div>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(oats)</span></code></pre></div>
 <pre><code>[1] &quot;numeric&quot;</code></pre>
 <p>The <code>pull</code> function can also be used to convert a data table column to a multi-element vector, e.g.:</p>
-<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1"></a><span class="co"># This outputs a one column table</span></span>
-<span id="cb89-2"><a href="#cb89-2"></a>yield &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb89-3"><a href="#cb89-3"></a><span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,</span>
-<span id="cb89-4"><a href="#cb89-4"></a>         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb89-5"><a href="#cb89-5"></a><span class="st">  </span><span class="kw">select</span>(Value)</span>
-<span id="cb89-6"><a href="#cb89-6"></a></span>
-<span id="cb89-7"><a href="#cb89-7"></a><span class="kw">head</span>(yield)</span></code></pre></div>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This outputs a one column table</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>yield <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span>,</span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Value)</span>
+<span id="cb89-6"><a href="#cb89-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-7"><a href="#cb89-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(yield)</span></code></pre></div>
 <pre><code>     Value
 1 24954.79
 2 21974.70
@@ -1174,17 +1179,17 @@ Levels: apple banana pear Other</code></pre>
 4 20492.37
 5 27364.53
 6 23056.62</code></pre>
-<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1"></a><span class="kw">class</span>(yield)</span></code></pre></div>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(yield)</span></code></pre></div>
 <pre><code>[1] &quot;data.frame&quot;</code></pre>
-<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1"></a><span class="co"># This outputs a multi-element vector</span></span>
-<span id="cb93-2"><a href="#cb93-2"></a>yield &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb93-3"><a href="#cb93-3"></a><span class="st">  </span><span class="kw">filter</span>(Crop <span class="op">==</span><span class="st"> &quot;Oats&quot;</span>,</span>
-<span id="cb93-4"><a href="#cb93-4"></a>         Information <span class="op">==</span><span class="st"> &quot;Yield (Hg/Ha)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb93-5"><a href="#cb93-5"></a><span class="st">  </span><span class="kw">pull</span>(Value)</span>
-<span id="cb93-6"><a href="#cb93-6"></a></span>
-<span id="cb93-7"><a href="#cb93-7"></a><span class="kw">head</span>(yield)</span></code></pre></div>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This outputs a multi-element vector</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>yield <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">&quot;Oats&quot;</span>,</span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(Value)</span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(yield)</span></code></pre></div>
 <pre><code>[1] 24954.79 21974.70 29109.36 20492.37 27364.53 23056.62</code></pre>
-<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1"></a><span class="kw">class</span>(yield)</span></code></pre></div>
+<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(yield)</span></code></pre></div>
 <pre><code>[1] &quot;numeric&quot;</code></pre>
 </div>
 </div>

@@ -13,6 +13,7 @@
 
 <title>The theoretical q-q</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -706,7 +711,7 @@ tidyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -760,40 +765,40 @@ tidyr
 <div id="drawing-a-normal-q-q-plot-from-scratch" class="section level2">
 <h2>Drawing a normal q-q plot from scratch</h2>
 <p>In the following example, we’ll compare the <code>Alto 1</code> group to a normal distribution. First, we’ll extract the <code>Alto 1</code> height values and save them as an atomic vector object using <code>dplyr</code>’s piping operations. However, <code>dplyr</code>’s operations will return a dataframe–even if a single column is selected. To force the output to an atomic vector, we’ll pipe the subset to <code>pull(height)</code> which will extract the <code>height</code> column into a plain vector element.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb1-2"><a href="#cb1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3"></a>df   &lt;-<span class="st"> </span>lattice<span class="op">::</span>singer</span>
-<span id="cb1-4"><a href="#cb1-4"></a>alto &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st">  </span><span class="kw">filter</span>(voice.part <span class="op">==</span><span class="st"> &quot;Alto 1&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(height)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df   <span class="ot">&lt;-</span> lattice<span class="sc">::</span>singer</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>alto <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span>  <span class="fu">filter</span>(voice.part <span class="sc">==</span> <span class="st">&quot;Alto 1&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(height)</span></code></pre></div>
 <p>Next, we need to sort <code>alto</code> in ascending order.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>alto &lt;-<span class="st"> </span><span class="kw">sort</span>(alto)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>alto <span class="ot">&lt;-</span> <span class="fu">sort</span>(alto)</span></code></pre></div>
 <p>Next, we need to find the matching normal distribution quantiles. We first find the <span class="math inline">\(f\)</span>-values for <code>alto</code>, then use <code>qnorm</code> to find the matching normal distribution values from those same <span class="math inline">\(f\)</span>-values</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>i      &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(alto)</span>
-<span id="cb3-2"><a href="#cb3-2"></a>fi     &lt;-<span class="st"> </span>(i <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span>) <span class="op">/</span><span class="st"> </span><span class="kw">length</span>(alto)</span>
-<span id="cb3-3"><a href="#cb3-3"></a>x.norm &lt;-<span class="st"> </span><span class="kw">qnorm</span>(fi)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>i      <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(alto)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>fi     <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(alto)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>x.norm <span class="ot">&lt;-</span> <span class="fu">qnorm</span>(fi)</span></code></pre></div>
 <p>Now we can plot the sorted <code>alto</code> values against the normal values.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">plot</span>( alto <span class="op">~</span><span class="st"> </span>x.norm, <span class="dt">type =</span> <span class="st">&quot;p&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Normal quantiles&quot;</span>, <span class="dt">pch =</span> <span class="dv">20</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>( alto <span class="sc">~</span> x.norm, <span class="at">type =</span> <span class="st">&quot;p&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Normal quantiles&quot;</span>, <span class="at">pch =</span> <span class="dv">20</span>)</span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-7-1.png" width="288" /></p>
 <p>When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are <strong>not</strong> creating a 45° (or x=y) slope; the range of values between both sets of numbers do not match. Here, we are only seeking the <strong>straightness</strong> of the point pattern.</p>
 <p>There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile of the q-q plot. The following chunk of code identifies the quantiles for both the <code>alto</code> dataset and the theoretical normal distribution. It then computes the slope and intercept from these coordinates.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># Find 1st and 3rd quartile for the Alto 1 data</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a>y &lt;-<span class="st"> </span><span class="kw">quantile</span>(alto, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="dt">type =</span> <span class="dv">5</span>)</span>
-<span id="cb5-3"><a href="#cb5-3"></a></span>
-<span id="cb5-4"><a href="#cb5-4"></a><span class="co"># Find the 1st and 3rd quartile of the normal distribution</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>x &lt;-<span class="st"> </span><span class="kw">qnorm</span>( <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))</span>
-<span id="cb5-6"><a href="#cb5-6"></a></span>
-<span id="cb5-7"><a href="#cb5-7"></a><span class="co"># Now we can compute the intercept and slope of the line that passes</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a><span class="co"># through these points</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a>slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) <span class="op">/</span><span class="st"> </span><span class="kw">diff</span>(x)</span>
-<span id="cb5-10"><a href="#cb5-10"></a>int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>x[<span class="dv">1</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find 1st and 3rd quartile for the Alto 1 data</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">quantile</span>(alto, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the 1st and 3rd quartile of the normal distribution</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">qnorm</span>( <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Now we can compute the intercept and slope of the line that passes</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># through these points</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>slope <span class="ot">&lt;-</span> <span class="fu">diff</span>(y) <span class="sc">/</span> <span class="fu">diff</span>(x)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>int   <span class="ot">&lt;-</span> y[<span class="dv">1</span>] <span class="sc">-</span> slope <span class="sc">*</span> x[<span class="dv">1</span>]</span></code></pre></div>
 <p>Next, we add the line to the plot.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">abline</span>(<span class="dt">a =</span> int, <span class="dt">b =</span> slope )</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> int, <span class="at">b =</span> slope )</span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-9-1.png" width="288" /></p>
 </div>
 <div id="using-rs-built-in-functions" class="section level2">
 <h2>Using R’s built-in functions</h2>
 <p>R has two built-in functions that facilitate the plot building task when comparing a batch to a normal distribution: <code>qqnorm</code> and <code>qqline</code>. Note that the function <code>qqline</code> allows the user to define the quantile method via the <code>qtype=</code> parameter. Here, we set it to 5 to match our choice of <span class="math inline">\(f\)</span>-value calculation.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">qqnorm</span>(alto)</span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">qqline</span>(alto, <span class="dt">qtype =</span> <span class="dv">5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(alto)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(alto, <span class="at">qtype =</span> <span class="dv">5</span>)</span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-10-1.png" width="288" /></p>
 <p>That’s it. Just two lines of code!</p>
 </div>
@@ -802,46 +807,46 @@ tidyr
 <div id="ggplot2-version-3.0-or-greater" class="section level3">
 <h3><code>ggplot2</code> version 3.0 or greater</h3>
 <p>As of version 3.0, <code>ggplot</code> has the <code>geom_qq_line</code> function (or <code>stat_qq_line</code>) that will generate the interquartile fit. So to generate the theoretical QQ plot, use the <code>geom_qq</code> function (or <code>stat_qq</code>) to generate the point plot, then call <code>geom_qq_line</code> to generate the IQR fit.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">library</span>(ggplot2)</span>
-<span id="cb8-2"><a href="#cb8-2"></a></span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">sample =</span> alto) <span class="op">+</span><span class="st"> </span><span class="kw">geom_qq</span>(<span class="dt">distribution =</span> qnorm) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="st">           </span><span class="kw">geom_qq_line</span>(<span class="dt">line.p =</span> <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">sample =</span> alto) <span class="sc">+</span> <span class="fu">geom_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">geom_qq_line</span>(<span class="at">line.p =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Height&quot;</span>)</span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-11-1.png" width="288" /></p>
 <p>We can, of course, make use of <code>ggplot</code>’s faceting function to generate trellised plots. For example, the following plot replicates Cleveland’s figure 2.11 (except for the layout which we’ll setup as a single row of plots instead).</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample =</span> height)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_qq</span>(<span class="dt">distribution =</span> qnorm) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb9-2"><a href="#cb9-2"></a><span class="st">           </span><span class="kw">geom_qq_line</span>(<span class="dt">line.p =</span> <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>) <span class="op">+</span></span>
-<span id="cb9-3"><a href="#cb9-3"></a><span class="st">           </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>voice.part, <span class="dt">nrow =</span> <span class="dv">1</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> height)) <span class="sc">+</span> <span class="fu">geom_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>           <span class="fu">geom_qq_line</span>(<span class="at">line.p =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Height&quot;</span>) <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">facet_wrap</span>(<span class="sc">~</span> voice.part, <span class="at">nrow =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Height&quot;</span>)</span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-12-1.png" width="864" /></p>
 <p>The <code>geom_qq_line</code> function uses the built-in <code>quantile</code> function and as such will adopt the default quantile type <code>7</code> (i.e. it computes the f-value as <span class="math inline">\((i - 1)/(n - 1))\)</span>. This differs from Cleveland’s approach to computing the f-value. This setting cannot be changed in <code>geom_qq_line</code>.</p>
 </div>
 <div id="ggplot2-version-older-than-3.0" class="section level3">
 <h3><code>ggplot2</code> version older than 3.0</h3>
 <p>With an older version of <code>ggplot2</code>, you will need to construct the interquartile fit from scratch. We can still take advantage of the <code>geom_qq()</code> function to plot the points, but the equation for the line must be computed manually (as was done earlier). Those steps will be repeated here. Note that with this example, we are adopting Cleveland’s f-value algorithm of <span class="math inline">\((i - 0.5)/n\)</span>.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">library</span>(ggplot2)</span>
-<span id="cb10-2"><a href="#cb10-2"></a></span>
-<span id="cb10-3"><a href="#cb10-3"></a><span class="co"># Find the slope and intercept of the line that passes through the 1st and 3rd</span></span>
-<span id="cb10-4"><a href="#cb10-4"></a><span class="co"># quartile of the normal q-q plot</span></span>
-<span id="cb10-5"><a href="#cb10-5"></a></span>
-<span id="cb10-6"><a href="#cb10-6"></a>y     &lt;-<span class="st"> </span><span class="kw">quantile</span>(alto, <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="dt">type =</span> <span class="dv">5</span>) <span class="co"># Find the 1st and 3rd quartiles</span></span>
-<span id="cb10-7"><a href="#cb10-7"></a>x     &lt;-<span class="st"> </span><span class="kw">qnorm</span>( <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))                 <span class="co"># Find the matching normal values on the x-axis</span></span>
-<span id="cb10-8"><a href="#cb10-8"></a>slope &lt;-<span class="st"> </span><span class="kw">diff</span>(y) <span class="op">/</span><span class="st"> </span><span class="kw">diff</span>(x)                     <span class="co"># Compute the line slope</span></span>
-<span id="cb10-9"><a href="#cb10-9"></a>int   &lt;-<span class="st"> </span>y[<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>x[<span class="dv">1</span>]                   <span class="co"># Compute the line intercept</span></span>
-<span id="cb10-10"><a href="#cb10-10"></a></span>
-<span id="cb10-11"><a href="#cb10-11"></a><span class="co"># Generate normal q-q plot</span></span>
-<span id="cb10-12"><a href="#cb10-12"></a></span>
-<span id="cb10-13"><a href="#cb10-13"></a><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">sample =</span> alto) <span class="op">+</span><span class="st"> </span><span class="kw">stat_qq</span>(<span class="dt">distribution =</span> qnorm) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb10-14"><a href="#cb10-14"></a><span class="st">           </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> int, <span class="dt">slope =</span> slope, <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>)           </span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the slope and intercept of the line that passes through the 1st and 3rd</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># quartile of the normal q-q plot</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>y     <span class="ot">&lt;-</span> <span class="fu">quantile</span>(alto, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>) <span class="co"># Find the 1st and 3rd quartiles</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>x     <span class="ot">&lt;-</span> <span class="fu">qnorm</span>( <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))                 <span class="co"># Find the matching normal values on the x-axis</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>slope <span class="ot">&lt;-</span> <span class="fu">diff</span>(y) <span class="sc">/</span> <span class="fu">diff</span>(x)                     <span class="co"># Compute the line slope</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>int   <span class="ot">&lt;-</span> y[<span class="dv">1</span>] <span class="sc">-</span> slope <span class="sc">*</span> x[<span class="dv">1</span>]                   <span class="co"># Compute the line intercept</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate normal q-q plot</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">sample =</span> alto) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span> </span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>           <span class="fu">geom_abline</span>(<span class="at">intercept =</span> int, <span class="at">slope =</span> slope, <span class="at">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Height&quot;</span>)           </span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-13-1.png" width="288" /></p>
 <p>To generated a faceted normal qq plot you first need to compute the slopes for each singer group. We’ll use <code>dplyr</code>’s piping operations to create a new dataframe with singer group name, slope and intercept.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb11-2"><a href="#cb11-2"></a>intsl &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(voice.part) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb11-3"><a href="#cb11-3"></a><span class="st">       </span><span class="kw">summarize</span>(<span class="dt">q25    =</span> <span class="kw">quantile</span>(height, <span class="fl">0.25</span>, <span class="dt">type =</span> <span class="dv">5</span>),</span>
-<span id="cb11-4"><a href="#cb11-4"></a>                 <span class="dt">q75    =</span> <span class="kw">quantile</span>(height, <span class="fl">0.75</span>, <span class="dt">type =</span> <span class="dv">5</span>),</span>
-<span id="cb11-5"><a href="#cb11-5"></a>                 <span class="dt">norm25 =</span> <span class="kw">qnorm</span>( <span class="fl">0.25</span>),</span>
-<span id="cb11-6"><a href="#cb11-6"></a>                 <span class="dt">norm75 =</span> <span class="kw">qnorm</span>( <span class="fl">0.75</span>),</span>
-<span id="cb11-7"><a href="#cb11-7"></a>                 <span class="dt">slope  =</span> (q25 <span class="op">-</span><span class="st"> </span>q75) <span class="op">/</span><span class="st"> </span>(norm25 <span class="op">-</span><span class="st"> </span>norm75),</span>
-<span id="cb11-8"><a href="#cb11-8"></a>                 <span class="dt">int    =</span> q25 <span class="op">-</span><span class="st"> </span>slope <span class="op">*</span><span class="st"> </span>norm25) <span class="op">%&gt;%</span></span>
-<span id="cb11-9"><a href="#cb11-9"></a><span class="st">       </span><span class="kw">select</span>(voice.part, slope, int) </span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>intsl <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(voice.part) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">summarize</span>(<span class="at">q25    =</span> <span class="fu">quantile</span>(height, <span class="fl">0.25</span>, <span class="at">type =</span> <span class="dv">5</span>),</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">q75    =</span> <span class="fu">quantile</span>(height, <span class="fl">0.75</span>, <span class="at">type =</span> <span class="dv">5</span>),</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">norm25 =</span> <span class="fu">qnorm</span>( <span class="fl">0.25</span>),</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">norm75 =</span> <span class="fu">qnorm</span>( <span class="fl">0.75</span>),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">slope  =</span> (q25 <span class="sc">-</span> q75) <span class="sc">/</span> (norm25 <span class="sc">-</span> norm75),</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">int    =</span> q25 <span class="sc">-</span> slope <span class="sc">*</span> norm25) <span class="sc">%&gt;%</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>       <span class="fu">select</span>(voice.part, slope, int) </span></code></pre></div>
 <p>The above chunk creates the following table.</p>
 <table style="width:40%;">
 <colgroup>
@@ -900,9 +905,9 @@ tidyr
 </tbody>
 </table>
 <p>It’s important that the <code>voice.part</code> names match those in <code>df</code> letter-for-letter so that when <code>ggplot</code> is called, it will know which facet to assign the slope and intercept values to via <code>geom_abline</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">sample =</span> height)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_qq</span>(<span class="dt">distribution =</span> qnorm) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb12-2"><a href="#cb12-2"></a><span class="st">           </span><span class="kw">geom_abline</span>(<span class="dt">data =</span> intsl, <span class="kw">aes</span>(<span class="dt">intercept =</span> int, <span class="dt">slope =</span> slope), <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span></span>
-<span id="cb12-3"><a href="#cb12-3"></a><span class="st">           </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>voice.part, <span class="dt">nrow =</span> <span class="dv">1</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Height&quot;</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> height)) <span class="sc">+</span> <span class="fu">geom_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>           <span class="fu">geom_abline</span>(<span class="at">data =</span> intsl, <span class="fu">aes</span>(<span class="at">intercept =</span> int, <span class="at">slope =</span> slope), <span class="at">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">facet_wrap</span>(<span class="sc">~</span> voice.part, <span class="at">nrow =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Height&quot;</span>) </span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-16-1.png" width="864" /></p>
 </div>
 </div>
@@ -910,21 +915,21 @@ tidyr
 <div id="how-normal-is-my-dataset" class="section level1">
 <h1>How normal is my dataset?</h1>
 <p>Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal Q-Q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The <code>rnorm</code> function is used in this example to randomly pick a number from a normal distribution whose mean is 0 and whose standard deviation is 1. You can, of course, change the mean and standard deviation values to reflect the data being simulated.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">library</span>(tidyr)</span>
-<span id="cb13-2"><a href="#cb13-2"></a></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="co"># Create matrix with each row storing randomly generated</span></span>
-<span id="cb13-4"><a href="#cb13-4"></a><span class="co"># numbers from a Normal distribution</span></span>
-<span id="cb13-5"><a href="#cb13-5"></a><span class="kw">set.seed</span>(<span class="dv">218</span>)  <span class="co"># Sets random generator seed for consistant output</span></span>
-<span id="cb13-6"><a href="#cb13-6"></a>sim &lt;-<span class="st"> </span><span class="kw">replicate</span>(<span class="dv">5</span> , <span class="kw">rnorm</span>(<span class="dv">20</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>), <span class="dt">simplify =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb13-7"><a href="#cb13-7"></a></span>
-<span id="cb13-8"><a href="#cb13-8"></a><span class="co"># Create long form version of the sim matrix</span></span>
-<span id="cb13-9"><a href="#cb13-9"></a>siml &lt;-<span class="st"> </span><span class="kw">pivot_longer</span>(<span class="kw">as.data.frame</span>(sim), <span class="dt">names_to =</span> <span class="st">&quot;sim&quot;</span>, </span>
-<span id="cb13-10"><a href="#cb13-10"></a>                     <span class="dt">values_to =</span> <span class="st">&quot;val&quot;</span>, <span class="dt">cols =</span> <span class="kw">everything</span>())</span>
-<span id="cb13-11"><a href="#cb13-11"></a></span>
-<span id="cb13-12"><a href="#cb13-12"></a><span class="co"># Generate Q-Q plots of the simulated values</span></span>
-<span id="cb13-13"><a href="#cb13-13"></a><span class="kw">ggplot</span>(siml, <span class="kw">aes</span>(<span class="dt">sample =</span> val)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_qq</span>(<span class="dt">distribution =</span> qnorm) <span class="op">+</span></span>
-<span id="cb13-14"><a href="#cb13-14"></a><span class="st">  </span><span class="kw">geom_qq_line</span>(<span class="dt">line.p =</span> <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span></span>
-<span id="cb13-15"><a href="#cb13-15"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>sim, <span class="dt">nrow =</span> <span class="dv">1</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Simulated normals&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create matrix with each row storing randomly generated</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># numbers from a Normal distribution</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">218</span>)  <span class="co"># Sets random generator seed for consistant output</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">5</span> , <span class="fu">rnorm</span>(<span class="dv">20</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>), <span class="at">simplify =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create long form version of the sim matrix</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>siml <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(<span class="fu">as.data.frame</span>(sim), <span class="at">names_to =</span> <span class="st">&quot;sim&quot;</span>, </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">values_to =</span> <span class="st">&quot;val&quot;</span>, <span class="at">cols =</span> <span class="fu">everything</span>())</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Q-Q plots of the simulated values</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(siml, <span class="fu">aes</span>(<span class="at">sample =</span> val)) <span class="sc">+</span> <span class="fu">geom_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_qq_line</span>(<span class="at">line.p =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">col =</span> <span class="st">&quot;blue&quot;</span>) <span class="sc">+</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> sim, <span class="at">nrow =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">&quot;Simulated normals&quot;</span>)</span></code></pre></div>
 <p><img src="Week06a_files/figure-html/unnamed-chunk-17-1.png" width="864" /></p>
 <p>Of the 5 simulated batches, only <code>V3</code> and <code>V4</code> generate qq plots that reflect a pattern we would expect from a normally distributed batch of values. The other three simulated batches generate plots that <em>could</em> lead one to question whether the data were pulled from a normal distribution, even though we know that they were!</p>
 <p>This is why you should always interpret such plots with a healthy dose of skepticism, especially with smaller datasets.</p>

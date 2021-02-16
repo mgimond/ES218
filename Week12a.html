@@ -13,6 +13,7 @@
 
 <title>Mapping variables</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -751,7 +756,7 @@ maps
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -779,19 +784,19 @@ maps
 <div id="loading-a-sample-dataset" class="section level1">
 <h1>Loading a sample dataset</h1>
 <p>The following chunk loads a spatial dataset that is in an <code>sf</code> spatial format. The data represent the 2018 census tracts for the state of Maine (USA).</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(sf)</span>
-<span id="cb1-2"><a href="#cb1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3"></a>shp &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="kw">gzcon</span>(<span class="kw">url</span>(<span class="st">&quot;https://github.com/mgimond/ES218/blob/gh-pages/Data/maine_tracts.Rds?raw=true&quot;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>shp <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">gzcon</span>(<span class="fu">url</span>(<span class="st">&quot;https://github.com/mgimond/ES218/blob/gh-pages/Data/maine_tracts.Rds?raw=true&quot;</span>)))</span></code></pre></div>
 <p>This next chunk is a data table of the average commute time (in minutes) for each Maine census tract.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>dat &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/maine_commute.csv&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/maine_commute.csv&quot;</span>)</span></code></pre></div>
 </div>
 <div id="joining-a-table-to-a-spatial-object" class="section level1">
 <h1>Joining a table to a spatial object</h1>
 <p>Many mapping operations require that the data table be joined to an already created spatial dataset. If your data are aggregated at some administrative boundary level, you can find boundary files for most countries (and at different aggregate levels) in an <code>sf</code> format at <a href="https://gadm.org/">https://gadm.org/</a>.</p>
 <p>Here, we’ll join the <code>dat</code> table to the <code>shp</code> spatial object using <code>Geo_FIPS</code> as the common key.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb3-2"><a href="#cb3-2"></a></span>
-<span id="cb3-3"><a href="#cb3-3"></a>shp2 &lt;-<span class="st"> </span><span class="kw">left_join</span>(shp, dat, <span class="dt">by =</span> <span class="st">&quot;Geo_FIPS&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>shp2 <span class="ot">&lt;-</span> <span class="fu">left_join</span>(shp, dat, <span class="at">by =</span> <span class="st">&quot;Geo_FIPS&quot;</span>)</span></code></pre></div>
 </div>
 <div id="mapping-the-data" class="section level1">
 <h1>Mapping the data</h1>
@@ -799,68 +804,68 @@ maps
 <div id="mapping-with-ggplot2" class="section level2">
 <h2>Mapping with <code>ggplot2</code></h2>
 <p>The ggplot grammar is no different here from what you’ve learned earlier in the course. We simply make use of the <code>geom_sf()</code> function to generate the map.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">library</span>(ggplot2) </span>
-<span id="cb4-2"><a href="#cb4-2"></a></span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">ggplot</span>(shp2) <span class="op">+</span><span class="st"> </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> Commute)) </span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2) </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(shp2) <span class="sc">+</span> <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> Commute)) </span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>The commute time variable, <code>commute</code>, is mapped to the map’s <code>fill</code> aesthetic. You can overcome many of the plot features’ default behavior. For example, you can bin the color schemes by assigning ranges of commute time values to a unique set of color swatches using one of the <code>scale_fill_steps*</code> family of functions. You can also remove the border colors by setting <code>col = NA</code>. This is demontrated next.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">ggplot</span>(shp2) <span class="op">+</span><span class="st"> </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> Commute), <span class="dt">col =</span> <span class="ot">NA</span>) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="st">  </span><span class="kw">scale_fill_stepsn</span>(<span class="dt">colors =</span> <span class="kw">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
-<span id="cb5-3"><a href="#cb5-3"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
-<span id="cb5-4"><a href="#cb5-4"></a>                    <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(shp2) <span class="sc">+</span> <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> Commute), <span class="at">col =</span> <span class="cn">NA</span>) <span class="sc">+</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_stepsn</span>(<span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>))</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>Here, we make use of hex defined colors. Note that you can use the built-in color names or the <code>rgb()</code> function to define the palette colors.</p>
 <p>It might help to darken the background panel using the <code>theme</code> function. We’ll assign the <code>grey70</code> color to the background and <code>grey80</code> to the grid lines.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">ggplot</span>(shp2) <span class="op">+</span><span class="st"> </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> Commute), <span class="dt">col =</span> <span class="ot">NA</span>) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="st">  </span><span class="kw">scale_fill_stepsn</span>(<span class="dt">colors =</span> <span class="kw">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
-<span id="cb6-3"><a href="#cb6-3"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
-<span id="cb6-4"><a href="#cb6-4"></a>                    <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>)) <span class="op">+</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.grid =</span> <span class="kw">element_line</span>(<span class="dt">color =</span> <span class="st">&quot;grey80&quot;</span>),</span>
-<span id="cb6-6"><a href="#cb6-6"></a>        <span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;grey70&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(shp2) <span class="sc">+</span> <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> Commute), <span class="at">col =</span> <span class="cn">NA</span>) <span class="sc">+</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_stepsn</span>(<span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>)) <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.grid =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">&quot;grey80&quot;</span>),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;grey70&quot;</span>))</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>Coordinate systems can play an important role in both analyzing and visualizing spatial data. If you want to control the coordinate system used in your map, add the <code>coord_sf</code> function. Here we’ll adopt a <em>UTM NAD83 Zone 19N</em> coordinate system using its <code>EPSG</code> code of <code>26919</code>. Note that the grid axes will still adopt the lat/long designation.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">ggplot</span>(shp2) <span class="op">+</span><span class="st"> </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> Commute), <span class="dt">col =</span> <span class="ot">NA</span>) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="dv">26919</span>) <span class="op">+</span></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="st">  </span><span class="kw">scale_fill_stepsn</span>(<span class="dt">colors =</span> <span class="kw">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
-<span id="cb7-4"><a href="#cb7-4"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
-<span id="cb7-5"><a href="#cb7-5"></a>                    <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>)) <span class="op">+</span></span>
-<span id="cb7-6"><a href="#cb7-6"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.grid =</span> <span class="kw">element_line</span>(<span class="dt">color =</span> <span class="st">&quot;grey80&quot;</span>),</span>
-<span id="cb7-7"><a href="#cb7-7"></a>        <span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;grey70&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(shp2) <span class="sc">+</span> <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> Commute), <span class="at">col =</span> <span class="cn">NA</span>) <span class="sc">+</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">crs =</span> <span class="dv">26919</span>) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_stepsn</span>(<span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>)) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.grid =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">&quot;grey80&quot;</span>),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;grey70&quot;</span>))</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Finally, we’ll modify the bin intervals by generating a non-uniform classification scheme. As such we’ll scale the legend bar so as to reflect the non-uniform intervals using the <code>guide_coloursteps()</code> function and its <code>even.steps = FALSE</code> argument (note that this feature is only available in <code>ggplot2 ver 3.3</code> or greater). We’ll also modify the legend bar dimensions and title.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">ggplot</span>(shp2) <span class="op">+</span><span class="st"> </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> Commute), <span class="dt">col =</span> <span class="ot">NA</span>) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="dv">26919</span>) <span class="op">+</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="st">  </span><span class="kw">scale_fill_stepsn</span>(<span class="dt">colors =</span> <span class="kw">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
-<span id="cb8-4"><a href="#cb8-4"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
-<span id="cb8-5"><a href="#cb8-5"></a>                    <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>),</span>
-<span id="cb8-6"><a href="#cb8-6"></a>                    <span class="dt">values =</span> scales<span class="op">::</span><span class="kw">rescale</span>(<span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>), <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)),</span>
-<span id="cb8-7"><a href="#cb8-7"></a>                    <span class="dt">guide =</span> <span class="kw">guide_coloursteps</span>(<span class="dt">even.steps =</span> <span class="ot">FALSE</span>,</span>
-<span id="cb8-8"><a href="#cb8-8"></a>                                              <span class="dt">show.limits =</span> <span class="ot">TRUE</span>,</span>
-<span id="cb8-9"><a href="#cb8-9"></a>                                              <span class="dt">title =</span> <span class="st">&quot;Commute time </span><span class="ch">\n</span><span class="st">(min)&quot;</span>,</span>
-<span id="cb8-10"><a href="#cb8-10"></a>                                              <span class="dt">barheight =</span> <span class="kw">unit</span>(<span class="fl">2.3</span>, <span class="st">&quot;in&quot;</span>),</span>
-<span id="cb8-11"><a href="#cb8-11"></a>                                              <span class="dt">barwidth =</span> <span class="kw">unit</span>(<span class="fl">0.15</span>, <span class="st">&quot;in&quot;</span>))) <span class="op">+</span></span>
-<span id="cb8-12"><a href="#cb8-12"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.grid =</span> <span class="kw">element_line</span>(<span class="dt">color =</span> <span class="st">&quot;grey80&quot;</span>),</span>
-<span id="cb8-13"><a href="#cb8-13"></a>        <span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;grey70&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(shp2) <span class="sc">+</span> <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> Commute), <span class="at">col =</span> <span class="cn">NA</span>) <span class="sc">+</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">crs =</span> <span class="dv">26919</span>) <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_stepsn</span>(<span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>) ,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">values =</span> scales<span class="sc">::</span><span class="fu">rescale</span>(<span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">35</span>), <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">guide =</span> <span class="fu">guide_coloursteps</span>(<span class="at">even.steps =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">show.limits =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">title =</span> <span class="st">&quot;Commute time </span><span class="sc">\n</span><span class="st">(min)&quot;</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">barheight =</span> <span class="fu">unit</span>(<span class="fl">2.3</span>, <span class="st">&quot;in&quot;</span>),</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">barwidth =</span> <span class="fu">unit</span>(<span class="fl">0.15</span>, <span class="st">&quot;in&quot;</span>))) <span class="sc">+</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.grid =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">&quot;grey80&quot;</span>),</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;grey70&quot;</span>))</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
 <div id="mapping-with-tmap" class="section level2">
 <h2>Mapping with <code>tmap</code></h2>
 <p>While <code>ggplot2</code> can handle basic mapping operations, it does not offer the ease and flexibility of the <code>tmap</code> package. Much like <code>ggplot2</code>, <code>tmap</code> adopts the same layering strategy. For example, to construct the above plot we first specify the layer to plot via the call to <code>tm_shape</code>, then the geometry to symbolize the spatial feature, <code>tm_fill()</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">library</span>(tmap)</span>
-<span id="cb9-2"><a href="#cb9-2"></a></span>
-<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">tm_shape</span>(shp2) <span class="op">+</span><span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;Commute&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tmap)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(shp2) <span class="sc">+</span>  <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;Commute&quot;</span>)</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-11-1.png" width="528" /></p>
 <p>To change the projection, pass the PROJ4 string to the <code>projection</code> parameter. To move the legend box outside of the map, set <code>tm_legend(outside = TRUE)</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">tm_shape</span>(shp2, <span class="dt">projection =</span> <span class="dv">26919</span>) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb10-2"><a href="#cb10-2"></a><span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;Commute&quot;</span>) <span class="op">+</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(shp2, <span class="at">projection =</span> <span class="dv">26919</span>) <span class="sc">+</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;Commute&quot;</span>) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-12-1.png" width="528" /></p>
 <p>You can also modify the classification breaks and colors. For example, to break the values following quantiles, and assigning the same color scheme used with the ggplot output in an earlier code chunk, you would write:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">tm_shape</span>(shp2, <span class="dt">projection =</span> <span class="dv">26919</span>) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;Commute&quot;</span>, <span class="dt">n =</span> <span class="dv">6</span>, <span class="dt">style =</span> <span class="st">&quot;quantile&quot;</span>,  </span>
-<span id="cb11-3"><a href="#cb11-3"></a>          <span class="dt">palette =</span> <span class="kw">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
-<span id="cb11-4"><a href="#cb11-4"></a>                      <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>)) <span class="op">+</span></span>
-<span id="cb11-5"><a href="#cb11-5"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(shp2, <span class="at">projection =</span> <span class="dv">26919</span>) <span class="sc">+</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;Commute&quot;</span>, <span class="at">n =</span> <span class="dv">6</span>, <span class="at">style =</span> <span class="st">&quot;quantile&quot;</span>,  </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">palette =</span> <span class="fu">c</span>(<span class="st">&quot;#D73027&quot;</span>, <span class="st">&quot;#FC8D59&quot;</span>, <span class="st">&quot;#FEE08B&quot;</span>, </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;#D9EF8B&quot;</span>, <span class="st">&quot;#91CF60&quot;</span>, <span class="st">&quot;#1A9850&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-13-1.png" width="528" /></p>
 <p>To explore additional mapping options with <code>tmap</code> <a href="https://mgimond.github.io/Spatial/mapping-data-in-r.html">Click here</a>.</p>
 </div>
@@ -869,19 +874,19 @@ maps
 <h1>Another example</h1>
 <p>In this section we explore a more complicated workflow that requires additional data manipulation steps to allow a proper join between US counties and Census data.</p>
 <p>First, we’ll load the <code>cnty</code> spatial object to your current session environment.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">library</span>(sf)</span>
-<span id="cb12-2"><a href="#cb12-2"></a></span>
-<span id="cb12-3"><a href="#cb12-3"></a><span class="kw">load</span>(<span class="kw">url</span>(<span class="st">&quot;https://github.com/mgimond/ES218/blob/gh-pages/Data/counties48.RData?raw=true&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="fu">url</span>(<span class="st">&quot;https://github.com/mgimond/ES218/blob/gh-pages/Data/counties48.RData?raw=true&quot;</span>))</span></code></pre></div>
 <p>Next, we’ll plot the data. Since the data spans the continental US, we’ll change the projection to an equal area projection. This projection will be defined using a string (<code>ea</code> object)–note that a string is another way to define a projection. To learn more about defining projections in R, <a href="https://mgimond.github.io/Spatial/coordinate-systems-in-r.html">click here</a>.</p>
 <p>Since we have no polygons to fill just yet, we’ll simply draw the outline using <code>tm_polygons()</code></p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># Define the projection using PROJ4 syntax</span></span>
-<span id="cb13-2"><a href="#cb13-2"></a>ea &lt;-<span class="st"> &quot;+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 </span></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="st">       +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs&quot;</span></span>
-<span id="cb13-4"><a href="#cb13-4"></a></span>
-<span id="cb13-5"><a href="#cb13-5"></a><span class="co"># Draw the map</span></span>
-<span id="cb13-6"><a href="#cb13-6"></a><span class="kw">tm_shape</span>(cnty, <span class="dt">projection =</span> ea) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb13-7"><a href="#cb13-7"></a><span class="st">  </span><span class="kw">tm_polygons</span>() <span class="op">+</span></span>
-<span id="cb13-8"><a href="#cb13-8"></a><span class="st">  </span><span class="kw">tm_layout</span>(<span class="dt">outer.margins =</span> <span class="kw">c</span>(.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">1</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the projection using PROJ4 syntax</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>ea <span class="ot">&lt;-</span> <span class="st">&quot;+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 </span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">       +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs&quot;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw the map</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cnty, <span class="at">projection =</span> ea) <span class="sc">+</span> </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">outer.margins =</span> <span class="fu">c</span>(.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">1</span>))</span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-15-1.png" width="528" /></p>
 </div>
 <div id="joining-tables-to-spatial-objects" class="section level1">
@@ -890,11 +895,11 @@ maps
 <div id="joining-income-table-to-the-map-by-county-and-state-names" class="section level2">
 <h2>Joining income table to the map by county and state names</h2>
 <p>We will use the income-by-gender-education dataset used earlier in the course and limit the data to <em>median income per person</em> (<code>B20004001</code> column).</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb14-2"><a href="#cb14-2"></a>df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>)</span>
-<span id="cb14-3"><a href="#cb14-3"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(<span class="dt">subregion =</span> County, <span class="dt">region =</span> State, B20004001 )</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education.csv&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="at">subregion =</span> County, <span class="at">region =</span> State, B20004001 )</span></code></pre></div>
 <p>Next, we need to join the census data to the county map using <em>two</em> columns: state name and county name (or <code>region</code> and <code>subregion</code> columns). Let’s compare the two dataframes by viewing the first few rows of each.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">head</span>(cnty)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cnty)</span></code></pre></div>
 <pre><code>Simple feature collection with 6 features and 1 field
 geometry type:  MULTIPOLYGON
 dimension:      XY
@@ -907,7 +912,7 @@ geographic CRS: WGS 84
 4    alabama,bibb MULTIPOLYGON (((-87.02083 3...
 5  alabama,blount MULTIPOLYGON (((-86.9578 33...
 6 alabama,bullock MULTIPOLYGON (((-85.66866 3...</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">head</span>(df1)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df1)</span></code></pre></div>
 <pre><code>  subregion region B20004001
 1   Autauga     al     35881
 2   Baldwin     al     31439
@@ -917,27 +922,27 @@ geographic CRS: WGS 84
 6   Bullock     al     26408</code></pre>
 <p>We note two problems. First, the <code>cnty</code> object encodes states using their full name and not their two letter abbreviation. Second, the county names in <code>cnty</code> are in <em>all</em> lower case. Before attempting to join the dataframes, we must first fix these discrepancies. We will choose to modify <code>df</code> so that its state and county names match those in the <code>cnty</code> (map) dataframe.</p>
 <p>We will first create a state name/abbreviation look-up table using the built-in <code>state.name</code> and <code>state.abb</code> objects. Note that using these pre-existing objects will require that we add the District of Columbia to the table since it’s not present in either data objects.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>st &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">region=</span><span class="kw">tolower</span>(state.name), <span class="dt">State =</span> <span class="kw">tolower</span>(state.abb)) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb19-2"><a href="#cb19-2"></a><span class="st">      </span><span class="kw">bind_rows</span>( <span class="kw">data.frame</span>(<span class="dt">region=</span><span class="st">&quot;district of columbia&quot;</span>, <span class="dt">State=</span><span class="st">&quot;dc&quot;</span>) ) </span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>st <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">region=</span><span class="fu">tolower</span>(state.name), <span class="at">State =</span> <span class="fu">tolower</span>(state.abb)) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">bind_rows</span>( <span class="fu">data.frame</span>(<span class="at">region=</span><span class="st">&quot;district of columbia&quot;</span>, <span class="at">State=</span><span class="st">&quot;dc&quot;</span>) ) </span></code></pre></div>
 <p>Next, we join the <code>st</code> look-up table to <code>df</code> then make the additional changes needed to join the census data to the counties map. Note that we are overwriting the earlier instance of <code>df1</code>.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb20-2"><a href="#cb20-2"></a><span class="st">  </span><span class="kw">inner_join</span>(st, <span class="dt">by=</span><span class="st">&quot;State&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ID =</span> <span class="kw">paste</span>(region,<span class="kw">tolower</span>(County), <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>))  <span class="op">%&gt;%</span></span>
-<span id="cb20-4"><a href="#cb20-4"></a><span class="st">  </span><span class="kw">select</span>(ID, B20004001 )</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(st, <span class="at">by=</span><span class="st">&quot;State&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="fu">paste</span>(region,<span class="fu">tolower</span>(County), <span class="at">sep =</span> <span class="st">&quot;,&quot;</span>))  <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ID, B20004001 )</span></code></pre></div>
 <p>We can now join <code>df1</code> to <code>cnty</code>.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>cnty.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty, df1, <span class="dt">by=</span><span class="st">&quot;ID&quot;</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>cnty.df1 <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(cnty, df1, <span class="at">by=</span><span class="st">&quot;ID&quot;</span> )</span></code></pre></div>
 <p>Now let’s map the income distribution.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">tm_shape</span>(cnty.df1) <span class="op">+</span><span class="st"> </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="op">+</span></span>
-<span id="cb22-2"><a href="#cb22-2"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cnty.df1) <span class="sc">+</span> <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="at">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="sc">+</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>) </span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-21-1.png" width="816" /></p>
 <p>You may notice that the counties map does not seem complete; most notable is the absence of <em>all</em> Louisiana counties. Let’s look at the rows in <code>cnty.df1</code> associated with the state of Louisiana.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">library</span>(stringr)</span>
-<span id="cb23-2"><a href="#cb23-2"></a><span class="kw">table</span>(<span class="kw">str_detect</span>(cnty.df1<span class="op">$</span>ID,  <span class="st">&quot;louisiana&quot;</span>) )</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">str_detect</span>(cnty.df1<span class="sc">$</span>ID,  <span class="st">&quot;louisiana&quot;</span>) )</span></code></pre></div>
 <pre><code>
 FALSE 
  2971 </code></pre>
 <p>There are no rows returned (i.e. all cases returned <code>FALSE</code>). This suggests that the Louisiana counties did not properly join. Let’s compare the Louisiana county names between <code>df1</code> and <code>cnty</code>.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>df1 <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(ID,  <span class="st">&quot;louisiana&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df1 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">str_detect</span>(ID,  <span class="st">&quot;louisiana&quot;</span>)) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
 <pre><code>                           ID B20004001
 1     louisiana,acadia parish     28678
 2      louisiana,allen parish     29870
@@ -945,7 +950,7 @@ FALSE
 4 louisiana,assumption parish     34269
 5  louisiana,avoyelles parish     26483
 6 louisiana,beauregard parish     33983</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>cnty <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(ID,  <span class="st">&quot;louisiana&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>cnty <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">str_detect</span>(ID,  <span class="st">&quot;louisiana&quot;</span>)) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
 <pre><code>Simple feature collection with 6 features and 1 field
 geometry type:  MULTIPOLYGON
 dimension:      XY
@@ -959,18 +964,18 @@ geographic CRS: WGS 84
 5  louisiana,avoyelles MULTIPOLYGON (((-92.32642 3...
 6 louisiana,beauregard MULTIPOLYGON (((-93.12856 3...</code></pre>
 <p>It turns out that Louisiana does not divide its administrative areas into <em>counties</em> but <em>parishes</em> instead. The income data (originally downloaded from the Census Bureau) follows through with that designation convention by adding the word “parish” to each of its administrative area names. We therefore need to remove all instances of <code>parish</code> in the <code>subregion</code> names associated with Louisiana. We will therefore need to recreate the <code>df1</code> object as follows:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">library</span>(stringr)</span>
-<span id="cb29-2"><a href="#cb29-2"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb29-3"><a href="#cb29-3"></a><span class="st">  </span><span class="kw">inner_join</span>(st, <span class="dt">by=</span><span class="st">&quot;State&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb29-4"><a href="#cb29-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ID =</span> <span class="kw">paste</span>(region,<span class="kw">tolower</span>(County), <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="cb29-5"><a href="#cb29-5"></a>         <span class="dt">ID =</span> <span class="kw">ifelse</span>(region<span class="op">==</span><span class="st">&quot;louisiana&quot;</span>, </span>
-<span id="cb29-6"><a href="#cb29-6"></a>                     <span class="kw">str_replace</span>(ID, <span class="st">&quot; parish&quot;</span>, <span class="st">&quot;&quot;</span>), ID))  <span class="op">%&gt;%</span></span>
-<span id="cb29-7"><a href="#cb29-7"></a><span class="st">  </span><span class="kw">select</span>(ID, B20004001 )</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(st, <span class="at">by=</span><span class="st">&quot;State&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="fu">paste</span>(region,<span class="fu">tolower</span>(County), <span class="at">sep =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">ID =</span> <span class="fu">ifelse</span>(region<span class="sc">==</span><span class="st">&quot;louisiana&quot;</span>, </span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">str_replace</span>(ID, <span class="st">&quot; parish&quot;</span>, <span class="st">&quot;&quot;</span>), ID))  <span class="sc">%&gt;%</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ID, B20004001 )</span></code></pre></div>
 <p>Let’s re-join the dataframes and re-plot the map.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>cnty.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty, df1, <span class="dt">by=</span><span class="st">&quot;ID&quot;</span> )</span>
-<span id="cb30-2"><a href="#cb30-2"></a></span>
-<span id="cb30-3"><a href="#cb30-3"></a><span class="kw">tm_shape</span>(cnty.df1) <span class="op">+</span><span class="st"> </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="op">+</span></span>
-<span id="cb30-4"><a href="#cb30-4"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>cnty.df1 <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(cnty, df1, <span class="at">by=</span><span class="st">&quot;ID&quot;</span> )</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cnty.df1) <span class="sc">+</span> <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="at">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="sc">+</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>) </span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-25-1.png" width="816" /></p>
 <p>Most of Louisiana’s parishes are now mapped, but we are still missing a few parishes as well as a few counties. This is a result of differences in spelling for two-word county and parish names. For example, <code>df1</code> encodes St. Lucie county (Florida) as <code>st. lucie</code> whereas <code>cnty</code> omits the dot and encodes it as <code>st lucie</code>. Fixing these discrepancies will require additional labor. At this point, it may prove more fruitful to do away with state/county names as <em>joining</em> keys and use <strong>FIPS</strong> county codes instead.</p>
 <p>FIPS (Federal Information Processing Standards) codes assign each county/state a unique five number designation thus making it easier to join data to spatial features. However, neither our census data table nor the built-in counties map have FIPS codes. We will download another version of the income data (one that has FIPS codes). Note that FIPS codes are normally part of datasets provided by the Census Bureau. The <code>maps</code> package has a dataset called <code>county.fips</code> that can be used to match state/county names in the <code>county</code> map to FIPS codes.</p>
@@ -978,12 +983,12 @@ geographic CRS: WGS 84
 <div id="joining-income-table-by-fips-code" class="section level2">
 <h2>Joining income table by FIPS code</h2>
 <p>Let’s download the FIPS version of the dataset. Note that we will not need to modify/add columns to the data since we will be joining this table to the county map using the FIPS code.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a>df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education_with_FIPS.csv&quot;</span>)</span>
-<span id="cb31-2"><a href="#cb31-2"></a>df1 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(FIPS, B20004001 )</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Income_education_with_FIPS.csv&quot;</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">select</span>(FIPS, B20004001 )</span></code></pre></div>
 <p>Next, we’ll load the <code>county.fips</code> dataset from the <code>maps</code> package.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># Load the county.fips dataset</span></span>
-<span id="cb32-2"><a href="#cb32-2"></a>county.fips &lt;-<span class="st"> </span>maps<span class="op">::</span>county.fips</span>
-<span id="cb32-3"><a href="#cb32-3"></a><span class="kw">head</span>(county.fips)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the county.fips dataset</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>county.fips <span class="ot">&lt;-</span> maps<span class="sc">::</span>county.fips</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(county.fips)</span></code></pre></div>
 <pre><code>  fips        polyname
 1 1001 alabama,autauga
 2 1003 alabama,baldwin
@@ -991,16 +996,16 @@ geographic CRS: WGS 84
 4 1007    alabama,bibb
 5 1009  alabama,blount
 6 1011 alabama,bullock</code></pre>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>cnty2 &lt;-<span class="st"> </span>cnty <span class="op">%&gt;%</span></span>
-<span id="cb34-2"><a href="#cb34-2"></a><span class="st">         </span><span class="kw">left_join</span>(county.fips, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;ID&quot;</span> =<span class="st"> &quot;polyname&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>cnty2 <span class="ot">&lt;-</span> cnty <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>         <span class="fu">left_join</span>(county.fips, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;ID&quot;</span> <span class="ot">=</span> <span class="st">&quot;polyname&quot;</span>))</span></code></pre></div>
 <p>Now that the FIPS codes are part of the county map dataframe, let’s join the income data table to the county map, then map the income values.</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a>cnty2.df1 &lt;-<span class="st"> </span><span class="kw">inner_join</span>(cnty2, df1, <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;fips&quot;</span> =<span class="st"> &quot;FIPS&quot;</span>) )</span>
-<span id="cb35-2"><a href="#cb35-2"></a></span>
-<span id="cb35-3"><a href="#cb35-3"></a><span class="kw">tm_shape</span>(cnty2.df1) <span class="op">+</span><span class="st"> </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="op">+</span></span>
-<span id="cb35-4"><a href="#cb35-4"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>cnty2.df1 <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(cnty2, df1, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;fips&quot;</span> <span class="ot">=</span> <span class="st">&quot;FIPS&quot;</span>) )</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cnty2.df1) <span class="sc">+</span> <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="at">palette =</span> <span class="st">&quot;Greens&quot;</span>) <span class="sc">+</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>) </span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-29-1.png" width="816" /></p>
 <p>This is an improvement over the last map. But there are still a few counties missing. After a closer scrutiny of the data, it seems that the <code>county.fips</code> table splits some counties into two or more sub-regions. For example, Accomack county (Virginia) is split into two regions (and thus into two different names):</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a>county.fips <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(polyname,  <span class="st">&quot;virginia,accomack&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>county.fips <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">str_detect</span>(polyname,  <span class="st">&quot;virginia,accomack&quot;</span>))</span></code></pre></div>
 <pre><code>   fips                       polyname
 1 51001         virginia,accomack:main
 2 51001 virginia,accomack:chincoteague</code></pre>
@@ -1013,15 +1018,15 @@ geographic CRS: WGS 84
 <div id="reading-a-shapefile-into-r" class="section level2">
 <h2>Reading a shapefile into R</h2>
 <p>The Census Bureau maintains its own library of administrative boundary shapefiles (shapefiles are popular map data formats). This may prove to be the best map source to use since its areal units are designed to match the records in the income data table. Loading a shapefile can easily be accomplished using the <code>st_read()</code> function from the <code>sf</code> package. One option is to download the shapefile from the Census Bureau’s website (usually in a zipped format) then unpack it in a local project folder before reading it into the current session with <code>st_read()</code>. But we can maximize the replicability of the workflow by writing a chunk of code that will download the zipped shapefile into a temporary directory before unzipping it and loading the shapefile into an active R session as shown below.</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="kw">library</span>(sf)</span>
-<span id="cb38-2"><a href="#cb38-2"></a></span>
-<span id="cb38-3"><a href="#cb38-3"></a>tmp &lt;-<span class="st"> </span><span class="kw">tempdir</span>()</span>
-<span id="cb38-4"><a href="#cb38-4"></a>link &lt;-<span class="st"> &quot;http://www2.census.gov/geo/tiger/GENZ2010/gz_2010_us_050_00_20m.zip&quot;</span></span>
-<span id="cb38-5"><a href="#cb38-5"></a>filename &lt;-<span class="st"> </span><span class="kw">basename</span>(link)</span>
-<span id="cb38-6"><a href="#cb38-6"></a><span class="kw">download.file</span>(link, filename)</span>
-<span id="cb38-7"><a href="#cb38-7"></a><span class="kw">unzip</span>(filename, <span class="dt">exdir =</span> tmp )</span>
-<span id="cb38-8"><a href="#cb38-8"></a>shapefile &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="dt">dsn =</span> tmp, <span class="dt">layer =</span> tools<span class="op">::</span><span class="kw">file_path_sans_ext</span>(filename))</span></code></pre></div>
-<pre><code>Reading layer `gz_2010_us_050_00_20m&#39; from data source `C:\Users\mgimo\AppData\Local\Temp\RtmpCEWE6U&#39; using driver `ESRI Shapefile&#39;
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">tempdir</span>()</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>link <span class="ot">&lt;-</span> <span class="st">&quot;http://www2.census.gov/geo/tiger/GENZ2010/gz_2010_us_050_00_20m.zip&quot;</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>filename <span class="ot">&lt;-</span> <span class="fu">basename</span>(link)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(link, filename)</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="fu">unzip</span>(filename, <span class="at">exdir =</span> tmp )</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>shapefile <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> tmp, <span class="at">layer =</span> tools<span class="sc">::</span><span class="fu">file_path_sans_ext</span>(filename))</span></code></pre></div>
+<pre><code>Reading layer `gz_2010_us_050_00_20m&#39; from data source `C:\Users\mgimond\AppData\Local\Temp\RtmpEtVvbZ&#39; using driver `ESRI Shapefile&#39;
 Simple feature collection with 3221 features and 6 fields
 geometry type:  MULTIPOLYGON
 dimension:      XY
@@ -1029,37 +1034,37 @@ bbox:           xmin: -179.1473 ymin: 17.88481 xmax: 179.7785 ymax: 71.35256
 geographic CRS: NAD83</code></pre>
 <p>The shapefile is unzipped into a temporary folder, <code>tmp</code>, then read from that same directory and stored in an <code>sf</code> object called <code>shapefile</code>. The code <code>tools::file_path_sans_ext(filename)</code> extracts the name of the zip file (minus the extension) which turns out to also be the name of the shapefile. Note that if the zip file was manually unpacked in a project folder then the only command that would have needed to be executed is the <code>st_read</code> function as in <code>st_read("gz_2010_us_050_00_20m.shp" )</code>.</p>
 <p>The Census shapefile has a field called <code>GEO_ID</code> that includes the county FIPS codes along with other superfluous county ID values. We only need the last five digit county FIPS code so we’ll extract these codes into a new column called <code>FIPS</code>.</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a>shapefile<span class="op">$</span>FIPS &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">str_sub</span>(shapefile<span class="op">$</span>GEO_ID, <span class="dv">10</span>, <span class="dv">14</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>shapefile<span class="sc">$</span>FIPS <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">str_sub</span>(shapefile<span class="sc">$</span>GEO_ID, <span class="dv">10</span>, <span class="dv">14</span>))</span></code></pre></div>
 <p>Next we can append the income table to the <code>shapefile</code> object.</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a>cnty2.cs &lt;-<span class="st"> </span>shapefile <span class="op">%&gt;%</span></span>
-<span id="cb41-2"><a href="#cb41-2"></a><span class="st">            </span><span class="kw">inner_join</span>(df1, <span class="dt">by=</span><span class="st">&quot;FIPS&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>cnty2.cs <span class="ot">&lt;-</span> shapefile <span class="sc">%&gt;%</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>            <span class="fu">inner_join</span>(df1, <span class="at">by=</span><span class="st">&quot;FIPS&quot;</span>)</span></code></pre></div>
 <p>Now, we can plot the income distribution map. Note that the Census Bureau shapefile includes the 48 states, Alaska and Hawaii. If you want to limit the extent to the 48 states, define the boundary limits using the <code>bbox</code> parameter in the <code>tm_shape</code> function.</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a><span class="kw">tm_shape</span>(cnty2.cs, </span>
-<span id="cb42-2"><a href="#cb42-2"></a>         <span class="dt">bbox =</span> <span class="kw">st_bbox</span>(<span class="kw">c</span>(<span class="dt">xmin =</span> <span class="dv">-125</span>, <span class="dt">xmax =</span> <span class="dv">-67</span> , <span class="dt">ymin =</span> <span class="dv">25</span>, <span class="dt">ymax =</span> <span class="dv">50</span>))) <span class="op">+</span></span>
-<span id="cb42-3"><a href="#cb42-3"></a><span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>, <span class="dt">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="op">+</span></span>
-<span id="cb42-4"><a href="#cb42-4"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cnty2.cs, </span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">bbox =</span> <span class="fu">st_bbox</span>(<span class="fu">c</span>(<span class="at">xmin =</span> <span class="sc">-</span><span class="dv">125</span>, <span class="at">xmax =</span> <span class="sc">-</span><span class="dv">67</span> , <span class="at">ymin =</span> <span class="dv">25</span>, <span class="at">ymax =</span> <span class="dv">50</span>))) <span class="sc">+</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="at">palette =</span> <span class="st">&quot;Greens&quot;</span>, <span class="at">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="sc">+</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>) </span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-34-1.png" width="816" /></p>
 </div>
 <div id="modifying-the-color-scheme" class="section level2">
 <h2>Modifying the color scheme</h2>
 <p>The classification scheme can be customized. For example, to split the income values across six intervals (e.g. $0 to $20000, $20000 to $30000, $30000 to $50000, and $50000 to $100000) and to label the values as dollars, type the following:</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a><span class="kw">tm_shape</span>(cnty2.cs, </span>
-<span id="cb43-2"><a href="#cb43-2"></a>         <span class="dt">bbox =</span> <span class="kw">st_bbox</span>(<span class="kw">c</span>(<span class="dt">xmin =</span> <span class="dv">-125</span>, <span class="dt">xmax =</span> <span class="dv">-67</span> , <span class="dt">ymin =</span> <span class="dv">25</span>, <span class="dt">ymax =</span> <span class="dv">50</span>))) <span class="op">+</span></span>
-<span id="cb43-3"><a href="#cb43-3"></a><span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Greens&quot;</span>,</span>
-<span id="cb43-4"><a href="#cb43-4"></a>          <span class="dt">style=</span><span class="st">&quot;fixed&quot;</span>, <span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">20000</span> , <span class="dv">30000</span>, <span class="dv">50000</span>, <span class="dv">100000</span> ),</span>
-<span id="cb43-5"><a href="#cb43-5"></a>          <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;under $20k&quot;</span>, <span class="st">&quot;$20k - $30k&quot;</span>, <span class="st">&quot;$30k - $50k&quot;</span>, <span class="st">&quot;above $50k&quot;</span>),</span>
-<span id="cb43-6"><a href="#cb43-6"></a>          <span class="dt">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="op">+</span></span>
-<span id="cb43-7"><a href="#cb43-7"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cnty2.cs, </span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">bbox =</span> <span class="fu">st_bbox</span>(<span class="fu">c</span>(<span class="at">xmin =</span> <span class="sc">-</span><span class="dv">125</span>, <span class="at">xmax =</span> <span class="sc">-</span><span class="dv">67</span> , <span class="at">ymin =</span> <span class="dv">25</span>, <span class="at">ymax =</span> <span class="dv">50</span>))) <span class="sc">+</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="at">palette =</span> <span class="st">&quot;Greens&quot;</span>,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">style=</span><span class="st">&quot;fixed&quot;</span>, <span class="at">breaks=</span><span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">20000</span> , <span class="dv">30000</span>, <span class="dv">50000</span>, <span class="dv">100000</span> ),</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;under $20k&quot;</span>, <span class="st">&quot;$20k - $30k&quot;</span>, <span class="st">&quot;$30k - $50k&quot;</span>, <span class="st">&quot;above $50k&quot;</span>),</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="sc">+</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>) </span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-35-1.png" width="816" /></p>
 <p>We might choose to map the income distribution using a <strong>divergent</strong> color scheme where we compare the counties to some overall value such as the counties’ median income value. We can use the <code>quantile()</code> function to break the income data into its percentiles. This will be helpful in generating symmetrical intervals about the median.</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1"></a>inc.qt &lt;-<span class="st"> </span><span class="kw">quantile</span>(df1<span class="op">$</span>B20004001, <span class="dt">probs =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.125</span>, <span class="fl">.25</span>, <span class="fl">0.5</span>, <span class="fl">.75</span>, <span class="fl">.875</span> , <span class="dv">1</span> ))</span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>inc.qt <span class="ot">&lt;-</span> <span class="fu">quantile</span>(df1<span class="sc">$</span>B20004001, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.125</span>, .<span class="dv">25</span>, <span class="fl">0.5</span>, .<span class="dv">75</span>, .<span class="dv">875</span> , <span class="dv">1</span> ))</span></code></pre></div>
 <p>A divergent color scheme consists of two different hues whose lightness values converge towards some central value (the median income in our case). We’ll use a red-to-green color palette, <code>RdYlGn</code>, for this next map where red hues highlight counties below the county median income and green hues highlight counties above the county median value.</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1"></a><span class="kw">tm_shape</span>(cnty2.cs,</span>
-<span id="cb45-2"><a href="#cb45-2"></a>         <span class="dt">bbox =</span> <span class="kw">st_bbox</span>(<span class="kw">c</span>(<span class="dt">xmin =</span> <span class="dv">-125</span>, <span class="dt">xmax =</span> <span class="dv">-67</span> , <span class="dt">ymin =</span> <span class="dv">25</span>, <span class="dt">ymax =</span> <span class="dv">50</span>))) <span class="op">+</span></span>
-<span id="cb45-3"><a href="#cb45-3"></a><span class="st">  </span><span class="kw">tm_fill</span>(<span class="dt">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;RdYlGn&quot;</span>,</span>
-<span id="cb45-4"><a href="#cb45-4"></a>          <span class="dt">style=</span><span class="st">&quot;fixed&quot;</span>, <span class="dt">breaks =</span> inc.qt,</span>
-<span id="cb45-5"><a href="#cb45-5"></a>          <span class="dt">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="op">+</span></span>
-<span id="cb45-6"><a href="#cb45-6"></a><span class="st">  </span><span class="kw">tm_legend</span>(<span class="dt">outside =</span> <span class="ot">TRUE</span>) </span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cnty2.cs,</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">bbox =</span> <span class="fu">st_bbox</span>(<span class="fu">c</span>(<span class="at">xmin =</span> <span class="sc">-</span><span class="dv">125</span>, <span class="at">xmax =</span> <span class="sc">-</span><span class="dv">67</span> , <span class="at">ymin =</span> <span class="dv">25</span>, <span class="at">ymax =</span> <span class="dv">50</span>))) <span class="sc">+</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="at">col =</span> <span class="st">&quot;B20004001&quot;</span>, <span class="at">palette =</span> <span class="st">&quot;RdYlGn&quot;</span>,</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">style=</span><span class="st">&quot;fixed&quot;</span>, <span class="at">breaks =</span> inc.qt,</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">title =</span> <span class="st">&quot;Income&quot;</span>) <span class="sc">+</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>) </span></code></pre></div>
 <p><img src="Week12a_files/figure-html/unnamed-chunk-37-1.png" width="816" /></p>
 <p>The divergent map gives us a different handle on the data. Here, we can identify the poorer than average counties such as the southeast and parts of the Mississippi river region as well as the wealthier counties such as the mid-Atlantic region and the west coast.</p>
 </div>

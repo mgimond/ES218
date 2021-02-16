@@ -13,6 +13,7 @@
 
 <title>Slicing data</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -697,7 +702,7 @@ tidyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -724,39 +729,39 @@ tidyr
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>Let’s start off by downloading a dataset.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(ggplot2)</span>
-<span id="cb1-2"><a href="#cb1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3"></a>df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Sample1.csv&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/Sample1.csv&quot;</span>)</span></code></pre></div>
 <p>Next, we’ll plot the data and fit a straight line.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> x,<span class="dt">y =</span> y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>) <span class="op">+</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> x,<span class="at">y =</span> y)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-4-1.png" width="336" /></p>
 <p>The line seems to do a decent job in depicting the <em>overall</em> trend but the relationship does not appear perfectly linear. Let’s check the residuals via a residual-dependence plot.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>M1    &lt;-<span class="st"> </span><span class="kw">lm</span>( y <span class="op">~</span><span class="st"> </span>x, df)</span>
-<span id="cb3-2"><a href="#cb3-2"></a>df<span class="op">$</span>residuals &lt;-<span class="st"> </span><span class="kw">residuals</span>(M1)</span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> residuals)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>) <span class="op">+</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.2</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>M1    <span class="ot">&lt;-</span> <span class="fu">lm</span>( y <span class="sc">~</span> x, df)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>residuals <span class="ot">&lt;-</span> <span class="fu">residuals</span>(M1)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> residuals)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="fl">0.2</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>))</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-5-1.png" width="336" /></p>
 <p>There appears to be a dip in residual values between ~95 and ~107 followed by an increase beyond ~107. The <em>kinks</em> in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slopes and intercepts). Note the use of a small loess span in the above code to reveal the kinks in the pattern.</p>
 <p>Sometimes, the data may represent outcomes from different processes given different ranges in independent (x) values. Since the residual plot seems to suggest that the kinks occur are <code>x=95</code> and <code>x=106</code>, we’ll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled <code>1</code>, <code>2</code>, and <code>3</code> and will be assigned to a new column called <code>grp</code>. This new column will then be used to facet the scatter plots and associated loess curve. We’ll use the <code>cut()</code> function to perform this task (note that we could have also used embedded <code>ifelse()</code> functions however, <code>cut()</code> is syntactically cleaner).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="co">#df$grp &lt;- cut(df$x, c(-Inf,95,106,Inf), labels = c(1,2,3))</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>df2 &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">grp =</span> <span class="kw">case_when</span>(x <span class="op">&lt;</span><span class="st"> </span><span class="dv">95</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,</span>
-<span id="cb4-4"><a href="#cb4-4"></a>                                     x <span class="op">&gt;=</span><span class="st"> </span><span class="dv">95</span> <span class="op">&amp;</span><span class="st"> </span>x <span class="op">&lt;</span><span class="st"> </span><span class="dv">106</span> <span class="op">~</span><span class="st"> </span><span class="dv">2</span>,</span>
-<span id="cb4-5"><a href="#cb4-5"></a>                                     x <span class="op">&gt;=</span><span class="st"> </span><span class="dv">106</span> <span class="op">~</span><span class="st"> </span><span class="dv">3</span>))</span>
-<span id="cb4-6"><a href="#cb4-6"></a></span>
-<span id="cb4-7"><a href="#cb4-7"></a><span class="kw">ggplot</span>(df2, <span class="kw">aes</span>(<span class="dt">x =</span> x,<span class="dt">y =</span> y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.5</span>, <span class="dt">alpha =</span> <span class="fl">0.3</span>) <span class="op">+</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(. <span class="op">~</span><span class="st"> </span>grp)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#df$grp &lt;- cut(df$x, c(-Inf,95,106,Inf), labels = c(1,2,3))</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">grp =</span> <span class="fu">case_when</span>(x <span class="sc">&lt;</span> <span class="dv">95</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                                     x <span class="sc">&gt;=</span> <span class="dv">95</span> <span class="sc">&amp;</span> x <span class="sc">&lt;</span> <span class="dv">106</span> <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                                     x <span class="sc">&gt;=</span> <span class="dv">106</span> <span class="sc">~</span> <span class="dv">3</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2, <span class="fu">aes</span>(<span class="at">x =</span> x,<span class="at">y =</span> y)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">0.5</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(. <span class="sc">~</span> grp)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-6-1.png" width="576" /></p>
 <p>The segmented plots seem to confirm our earlier suspicion that the data followed three separate linear processes. We can extract the slope and intercept for each segment using the following chunk of code:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">library</span>(tidyr)</span>
-<span id="cb5-2"><a href="#cb5-2"></a>df2  <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="st">  </span><span class="kw">group_by</span>(grp) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb5-4"><a href="#cb5-4"></a><span class="st">  </span><span class="kw">do</span>( <span class="dt">M1 =</span> (<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x, . ) ) )  <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">intercept =</span> <span class="kw">coef</span>(M1)[<span class="dv">1</span>],</span>
-<span id="cb5-6"><a href="#cb5-6"></a>         <span class="dt">slope =</span> <span class="kw">coef</span>(M1)[<span class="dv">2</span>]) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb5-7"><a href="#cb5-7"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>M1)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>df2  <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(grp) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>( <span class="at">M1 =</span> (<span class="fu">lm</span>(y <span class="sc">~</span> x, . ) ) )  <span class="sc">%&gt;%</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">intercept =</span> <span class="fu">coef</span>(M1)[<span class="dv">1</span>],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">slope =</span> <span class="fu">coef</span>(M1)[<span class="dv">2</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>M1)</span></code></pre></div>
 <pre><code># A tibble: 3 x 3
 # Rowwise: 
     grp intercept slope
@@ -773,30 +778,30 @@ tidyr
 <div id="original-analysis" class="section level2">
 <h2>Original analysis</h2>
 <p>The following data are pulled from the paper titled “<em>Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000</em>” (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90<sup>th</sup> and 10<sup>th</sup> percentiles respectively within each year. The percentiles are calculated for the 1961 to 2000 period.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">library</span>(tidyr)</span>
-<span id="cb7-2"><a href="#cb7-2"></a></span>
-<span id="cb7-3"><a href="#cb7-3"></a>Year &lt;-<span class="st"> </span><span class="dv">1960</span><span class="op">:</span><span class="dv">2000</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a>PerC &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">11.69</span>,<span class="fl">9.33</span>,<span class="fl">14.35</span>,<span class="fl">10.73</span>,<span class="fl">14.15</span>,<span class="fl">11.16</span>,<span class="dv">13</span>,<span class="fl">12.13</span>,<span class="fl">14.25</span>,<span class="fl">10.01</span>,<span class="fl">11.94</span>,<span class="fl">14.35</span>,</span>
-<span id="cb7-5"><a href="#cb7-5"></a>          <span class="fl">10.83</span>,<span class="fl">9.38</span>,<span class="fl">11.5</span>,<span class="fl">10.44</span>,<span class="fl">12.66</span>,<span class="fl">7.55</span>,<span class="fl">9.77</span>,<span class="fl">9.81</span>,<span class="fl">8.9</span>,<span class="fl">8.51</span>,<span class="fl">7.02</span>,<span class="fl">6.83</span>,<span class="fl">9.67</span>,</span>
-<span id="cb7-6"><a href="#cb7-6"></a>          <span class="fl">7.84</span>,<span class="fl">7.11</span>,<span class="fl">8.56</span>,<span class="fl">10.59</span>,<span class="fl">7.93</span>,<span class="fl">8.85</span>,<span class="fl">8.8</span>,<span class="fl">8.75</span>,<span class="fl">8.18</span>,<span class="fl">7.16</span>,<span class="fl">9.91</span>,<span class="fl">10.15</span>,<span class="fl">6.58</span>,</span>
-<span id="cb7-7"><a href="#cb7-7"></a>          <span class="fl">6.44</span>,<span class="fl">9.43</span>,<span class="fl">8.03</span>)</span>
-<span id="cb7-8"><a href="#cb7-8"></a>PerH &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">8.62</span>,<span class="fl">10.1</span>,<span class="fl">6.67</span>,<span class="fl">11.13</span>,<span class="fl">5.71</span>,<span class="fl">9.48</span>,<span class="fl">7.63</span>,<span class="fl">8.12</span>,<span class="fl">7.2</span>,<span class="fl">9.64</span>,<span class="fl">8.42</span>,<span class="fl">5.71</span>,<span class="fl">11.72</span>,</span>
-<span id="cb7-9"><a href="#cb7-9"></a>          <span class="fl">11.32</span>,<span class="fl">7.2</span>,<span class="fl">7.17</span>,<span class="fl">7.46</span>,<span class="fl">13.17</span>,<span class="fl">9.28</span>,<span class="fl">8.75</span>,<span class="fl">12.38</span>,<span class="dv">10</span>,<span class="fl">13.83</span>,<span class="fl">17.59</span>,<span class="fl">10.14</span>,</span>
-<span id="cb7-10"><a href="#cb7-10"></a>          <span class="fl">9.84</span>,<span class="fl">11.23</span>,<span class="fl">14.39</span>,<span class="fl">9.44</span>,<span class="fl">8.26</span>,<span class="fl">12.15</span>,<span class="fl">12.45</span>,<span class="fl">13.14</span>,<span class="fl">13.67</span>,<span class="fl">15.22</span>,<span class="fl">11.79</span>,<span class="fl">11.16</span>,</span>
-<span id="cb7-11"><a href="#cb7-11"></a>          <span class="fl">20.37</span>,<span class="fl">17.56</span>,<span class="fl">11.13</span>,<span class="fl">11.49</span>)</span>
-<span id="cb7-12"><a href="#cb7-12"></a>df2 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(Year, PerC, PerH)</span>
-<span id="cb7-13"><a href="#cb7-13"></a></span>
-<span id="cb7-14"><a href="#cb7-14"></a>df2.l &lt;-<span class="st"> </span><span class="kw">gather</span>(df2, <span class="dt">key =</span> Temp, <span class="dt">value =</span> Percent, <span class="op">-</span>Year)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="dv">1960</span><span class="sc">:</span><span class="dv">2000</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>PerC <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">11.69</span>,<span class="fl">9.33</span>,<span class="fl">14.35</span>,<span class="fl">10.73</span>,<span class="fl">14.15</span>,<span class="fl">11.16</span>,<span class="dv">13</span>,<span class="fl">12.13</span>,<span class="fl">14.25</span>,<span class="fl">10.01</span>,<span class="fl">11.94</span>,<span class="fl">14.35</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>          <span class="fl">10.83</span>,<span class="fl">9.38</span>,<span class="fl">11.5</span>,<span class="fl">10.44</span>,<span class="fl">12.66</span>,<span class="fl">7.55</span>,<span class="fl">9.77</span>,<span class="fl">9.81</span>,<span class="fl">8.9</span>,<span class="fl">8.51</span>,<span class="fl">7.02</span>,<span class="fl">6.83</span>,<span class="fl">9.67</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>          <span class="fl">7.84</span>,<span class="fl">7.11</span>,<span class="fl">8.56</span>,<span class="fl">10.59</span>,<span class="fl">7.93</span>,<span class="fl">8.85</span>,<span class="fl">8.8</span>,<span class="fl">8.75</span>,<span class="fl">8.18</span>,<span class="fl">7.16</span>,<span class="fl">9.91</span>,<span class="fl">10.15</span>,<span class="fl">6.58</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>          <span class="fl">6.44</span>,<span class="fl">9.43</span>,<span class="fl">8.03</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>PerH <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">8.62</span>,<span class="fl">10.1</span>,<span class="fl">6.67</span>,<span class="fl">11.13</span>,<span class="fl">5.71</span>,<span class="fl">9.48</span>,<span class="fl">7.63</span>,<span class="fl">8.12</span>,<span class="fl">7.2</span>,<span class="fl">9.64</span>,<span class="fl">8.42</span>,<span class="fl">5.71</span>,<span class="fl">11.72</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>          <span class="fl">11.32</span>,<span class="fl">7.2</span>,<span class="fl">7.17</span>,<span class="fl">7.46</span>,<span class="fl">13.17</span>,<span class="fl">9.28</span>,<span class="fl">8.75</span>,<span class="fl">12.38</span>,<span class="dv">10</span>,<span class="fl">13.83</span>,<span class="fl">17.59</span>,<span class="fl">10.14</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>          <span class="fl">9.84</span>,<span class="fl">11.23</span>,<span class="fl">14.39</span>,<span class="fl">9.44</span>,<span class="fl">8.26</span>,<span class="fl">12.15</span>,<span class="fl">12.45</span>,<span class="fl">13.14</span>,<span class="fl">13.67</span>,<span class="fl">15.22</span>,<span class="fl">11.79</span>,<span class="fl">11.16</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>          <span class="fl">20.37</span>,<span class="fl">17.56</span>,<span class="fl">11.13</span>,<span class="fl">11.49</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(Year, PerC, PerH)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>df2.l <span class="ot">&lt;-</span> <span class="fu">gather</span>(df2, <span class="at">key =</span> Temp, <span class="at">value =</span> Percent, <span class="sc">-</span>Year)</span></code></pre></div>
 <p>Let’s plot the data and fit a straight line to the points.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">ggplot</span>(df2.l, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Percent)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Temp, <span class="dt">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2.l, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Percent)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> Temp, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-9-1.png" width="432" /></p>
 <p>The plot on the left is shows percent cold nights and the one on the right shows percent hot nights. At first glance, the trends seem real and monotonic.</p>
 <p>Next we’ll fit a loess to see if the trends are indeed monotonic. To minimize the undue influence of end values in the plot, we’ll implement loess’ bisquare estimation method via the <code>family=symmetric</code> option. We’ll also use a small span to help identify any “kinks” in the patterns.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">ggplot</span>(df2.l, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Percent)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.5</span>, </span>
-<span id="cb9-3"><a href="#cb9-3"></a>              <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">1</span>, <span class="dt">family =</span> <span class="st">&quot;symmetric&quot;</span>))  <span class="op">+</span><span class="st"> </span></span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>Temp, <span class="dt">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2.l, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Percent)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="fl">0.5</span>, </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">&quot;symmetric&quot;</span>))  <span class="sc">+</span> </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Temp, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-10-1.png" width="432" /></p>
 <p>The patterns seem to be segmented around the 1975-1980 period for both plots suggesting that the observed trends may not be monotonic. In fact, there appears to be a prominent kink in the percent cold data around the mid to late 1970`s. A similar, but not as prominent kink can also be observed in the percent hot data at around the same time period.</p>
 </div>
@@ -804,32 +809,32 @@ tidyr
 <h2>Changepoint</h2>
 <p>In a comment to <em>Vincent et al.</em>’s paper, R.J. Stone argues that the trend observed in the percent hot and cold dataset is not monotonic but segmented instead. In other words, there is an abrupt change in patterns for both datasets that make it <em>seem</em> as though a monotonic trend exists when in fact the data may follow relatively flat patterns for two different segments of time. He notes that the abrupt change (which he refers to as a <strong>changepoint</strong>) occurs around the 1976 and 1977 period. He suggests that this time period coincides with a change in the Pacific Decadal Oscillation (PDO) pattern. PDO refers to an ocean/atmospheric weather pattern that spans multiple decades and that is believed to impact global climate.</p>
 <p>The following chunk of code loads the PDO data, then summarizes the data by year before plotting the resulting dataset.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>df3  &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/PDO.dat&quot;</span>, </span>
-<span id="cb10-2"><a href="#cb10-2"></a>                   <span class="dt">header =</span> <span class="ot">TRUE</span>, <span class="dt">na.strings =</span> <span class="st">&quot;-9999&quot;</span>)</span>
-<span id="cb10-3"><a href="#cb10-3"></a>pdo &lt;-<span class="st"> </span>df3 <span class="op">%&gt;%</span></span>
-<span id="cb10-4"><a href="#cb10-4"></a><span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> Month, <span class="dt">value =</span> PDO, <span class="op">-</span>YEAR) <span class="op">%&gt;%</span></span>
-<span id="cb10-5"><a href="#cb10-5"></a><span class="st">  </span><span class="kw">group_by</span>(YEAR) <span class="op">%&gt;%</span></span>
-<span id="cb10-6"><a href="#cb10-6"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">PDO =</span> <span class="kw">median</span>(PDO) )</span>
-<span id="cb10-7"><a href="#cb10-7"></a></span>
-<span id="cb10-8"><a href="#cb10-8"></a><span class="kw">ggplot</span>(pdo, <span class="kw">aes</span>(<span class="dt">x =</span> YEAR, <span class="dt">y =</span> PDO)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>() <span class="op">+</span><span class="st"> </span></span>
-<span id="cb10-9"><a href="#cb10-9"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">span =</span> <span class="fl">0.25</span>) <span class="op">+</span></span>
-<span id="cb10-10"><a href="#cb10-10"></a><span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="kw">c</span>(<span class="dv">1960</span>, <span class="dv">1976</span>, <span class="dv">2000</span>), <span class="dt">lty =</span> <span class="dv">3</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df3  <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/PDO.dat&quot;</span>, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">na.strings =</span> <span class="st">&quot;-9999&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>pdo <span class="ot">&lt;-</span> df3 <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(<span class="at">key =</span> Month, <span class="at">value =</span> PDO, <span class="sc">-</span>YEAR) <span class="sc">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(YEAR) <span class="sc">%&gt;%</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">PDO =</span> <span class="fu">median</span>(PDO) )</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pdo, <span class="fu">aes</span>(<span class="at">x =</span> YEAR, <span class="at">y =</span> PDO)) <span class="sc">+</span> <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">c</span>(<span class="dv">1960</span>, <span class="dv">1976</span>, <span class="dv">2000</span>), <span class="at">lty =</span> <span class="dv">3</span>)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-11-1.png" width="480" /></p>
 <p>The contrast in PDO indexes between the 1960-1976 period and the 1976-2000 period is obvious with the pre-1977 index values appearing to remain relatively flat over a 15 year period and with the post-1977 index appearing to show a gradual increase towards a peak around the early 1990’s.</p>
 <p>To see if distinct patterns emerge from the percent hot and cold data before and after 1976, we’ll split the data into two segments using a cutoff year of 1976-1977. Values associated with a period prior to 1977 will be assigned a <code>seg</code> value of <code>Before</code> and those associated with a post-1977 period will be assigned a <code>seg</code> value of <code>After</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>df2.l<span class="op">$</span>seg &lt;-<span class="st"> </span><span class="kw">ifelse</span>(Year <span class="op">&lt;</span><span class="st"> </span><span class="dv">1977</span>, <span class="st">&quot;Before&quot;</span>, <span class="st">&quot;After&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df2.l<span class="sc">$</span>seg <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(Year <span class="sc">&lt;</span> <span class="dv">1977</span>, <span class="st">&quot;Before&quot;</span>, <span class="st">&quot;After&quot;</span>)</span></code></pre></div>
 <p>Next, we’ll plot the data across four facets:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">ggplot</span>(df2.l, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Percent)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
-<span id="cb12-2"><a href="#cb12-2"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(seg <span class="op">~</span><span class="st"> </span>Temp)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2.l, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Percent)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(seg <span class="sc">~</span> Temp)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-13-1.png" width="480" /></p>
 <p>We can also choose to map <code>seg</code> to the color aesthetics which will split the points by color with the added benefit of fitting two separate models to each batch.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">ggplot</span>(df2.l, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Percent, <span class="dt">col =</span> seg)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
-<span id="cb13-2"><a href="#cb13-2"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se=</span><span class="ot">FALSE</span>) <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>( <span class="op">~</span><span class="st"> </span>Temp, <span class="dt">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2.l, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Percent, <span class="at">col =</span> seg)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se=</span><span class="cn">FALSE</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>( <span class="sc">~</span> Temp, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-14-1.png" width="480" /></p>
 <p>To test for “straightness” in the fits, we’ll fit a loess to the points.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">ggplot</span>(df2.l, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> Percent, <span class="dt">col =</span> seg)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
-<span id="cb14-2"><a href="#cb14-2"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">degree =</span> <span class="dv">1</span>)) <span class="op">+</span><span class="st"> </span></span>
-<span id="cb14-3"><a href="#cb14-3"></a><span class="st">  </span><span class="kw">facet_wrap</span>( <span class="op">~</span><span class="st"> </span>Temp, <span class="dt">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2.l, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Percent, <span class="at">col =</span> seg)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>)) <span class="sc">+</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>( <span class="sc">~</span> Temp, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code></pre></div>
 <p><img src="Week10b_files/figure-html/unnamed-chunk-15-1.png" width="480" /></p>
 <p>There is a clear “stair-step” pattern for the percent cold nights. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period which could imply that in addition to the PDO effect, another process could be at play.</p>
 <p>It should be noted that in a followup to Stone’s comment, Vincent <em>et al.</em> defend their analysis results. However, this little exercise highlights the ease in which an analysis can follow different (and seemingly sound) paths.</p>

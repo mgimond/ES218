@@ -13,6 +13,7 @@
 
 <title>Joining Data Tables</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -50,19 +50,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -82,7 +81,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -492,7 +491,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -679,7 +684,7 @@ dplyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.2
+1.0.3
 </td>
 </tr>
 </tbody>
@@ -687,12 +692,12 @@ dplyr
 <hr />
 <p>We can use <code>dplyr</code>’s join operations to join elements from one table to another table. Four such functions (with differing behaviors) are <code>left_join</code>, <code>right_join</code>, <code>inner_join</code>, and <code>full join</code>.</p>
 <p>To demonstrate these functions, we’ll be joining two dataframes: <code>df</code> and <code>dj</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb1-2"><a href="#cb1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3"></a>df &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>
-<span id="cb1-4"><a href="#cb1-4"></a>                  <span class="dt">y =</span> <span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;a&quot;</span>, <span class="st">&quot;d&quot;</span>),</span>
-<span id="cb1-5"><a href="#cb1-5"></a>                  <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb1-6"><a href="#cb1-6"></a>df</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;a&quot;</span>, <span class="st">&quot;d&quot;</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div>
 <pre><code>   x y
 1  1 a
 2 23 b
@@ -700,10 +705,10 @@ dplyr
 4 43 b
 5  2 a
 6 17 d</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>dj &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">z =</span> <span class="kw">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;orange&quot;</span>),</span>
-<span id="cb3-2"><a href="#cb3-2"></a>                  <span class="dt">y =</span> <span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>),</span>
-<span id="cb3-3"><a href="#cb3-3"></a>                  <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb3-4"><a href="#cb3-4"></a>dj</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dj <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">z =</span> <span class="fu">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;orange&quot;</span>),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>dj</span></code></pre></div>
 <pre><code>       z y
 1  apple a
 2   pear b
@@ -712,7 +717,7 @@ dplyr
 <div id="left-join" class="section level1">
 <h1>Left join</h1>
 <p>In this example, if a join element in <code>df</code> does not exist in <code>dj</code>, <code>NA</code> will be assigned to column <code>z</code>. In other words, all elements in <code>df</code> will exist in the output regardless if a matching element is found in <code>dj</code>. Note that the output is sorted in the same order as <code>df</code> (the <em>left</em> table).</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">left_join</span>(df, dj, <span class="dt">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(df, dj, <span class="at">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
 <pre><code>   x y     z
 1  1 a apple
 2 23 b  pear
@@ -730,7 +735,7 @@ dplyr
 <li>The output table is sorted in the order in which the <code>y</code> elements appear in <code>dj</code>.</li>
 <li>Element <code>y</code> will appear as many times as there matching <code>y</code>s in `df.</li>
 </ul>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">right_join</span>(df, dj, <span class="dt">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">right_join</span>(df, dj, <span class="at">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
 <pre><code>   x y      z
 1  1 a  apple
 2 23 b   pear
@@ -743,7 +748,7 @@ dplyr
 <div id="inner-join" class="section level1">
 <h1>Inner join</h1>
 <p>In this example, <strong>only</strong> matching elements in both <code>df</code> and <code>dj</code> are saved in the output.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">inner_join</span>(df, dj, <span class="dt">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">inner_join</span>(df, dj, <span class="at">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
 <pre><code>   x y     z
 1  1 a apple
 2 23 b  pear
@@ -755,7 +760,7 @@ dplyr
 <div id="full-join" class="section level1">
 <h1>Full join</h1>
 <p>In this example, <strong>all</strong> elements in both <code>df</code> and <code>dj</code> are present in the output. For non-matching pairs, <code>NA</code> values are supplied.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">full_join</span>(df, dj, <span class="dt">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">full_join</span>(df, dj, <span class="at">by=</span><span class="st">&quot;y&quot;</span>)</span></code></pre></div>
 <pre><code>   x y      z
 1  1 a  apple
 2 23 b   pear
@@ -769,17 +774,17 @@ dplyr
 <div id="a-note-about-column-names" class="section level1">
 <h1>A note about column names</h1>
 <p>If the common columns in both tables have different names, you will need to modify the <code>by =</code> argument as <code>by = c("left_col" = "right_col")</code>. For example,</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb13-2"><a href="#cb13-2"></a></span>
-<span id="cb13-3"><a href="#cb13-3"></a>df &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>
-<span id="cb13-4"><a href="#cb13-4"></a>                  <span class="dt">y1 =</span> <span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;a&quot;</span>, <span class="st">&quot;d&quot;</span>),</span>
-<span id="cb13-5"><a href="#cb13-5"></a>                  <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb13-6"><a href="#cb13-6"></a></span>
-<span id="cb13-7"><a href="#cb13-7"></a>dj &lt;-<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">z =</span> <span class="kw">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;orange&quot;</span>),</span>
-<span id="cb13-8"><a href="#cb13-8"></a>                  <span class="dt">y2 =</span> <span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>),</span>
-<span id="cb13-9"><a href="#cb13-9"></a>                  <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb13-10"><a href="#cb13-10"></a></span>
-<span id="cb13-11"><a href="#cb13-11"></a><span class="kw">left_join</span>(df, dj, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;y1&quot;</span> =<span class="st"> &quot;y2&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y1 =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;a&quot;</span>, <span class="st">&quot;d&quot;</span>),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>dj <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">z =</span> <span class="fu">c</span>(<span class="st">&quot;apple&quot;</span>, <span class="st">&quot;pear&quot;</span>, <span class="st">&quot;orange&quot;</span>),</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y2 =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(df, dj, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;y1&quot;</span> <span class="ot">=</span> <span class="st">&quot;y2&quot;</span>))</span></code></pre></div>
 <pre><code>   x y1     z
 1  1  a apple
 2 23  b  pear
