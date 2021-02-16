@@ -11,8 +11,9 @@
 
 
 
-<title>Exploring and cleaning dataframes</title>
+<title>A working example: Cleaning a buoy data table</title>
 
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -23,7 +24,6 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<script src="site_libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -48,19 +48,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -80,7 +79,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -490,7 +489,13 @@ div.tocify {
       <a href="Week02c.html">Working with date objects</a>
     </li>
     <li>
-      <a href="Week02d.html">Exploring and cleaning dataframes using base functions</a>
+      <a href="Week02_pre_d.html">Extracting and replacing values using base functions</a>
+    </li>
+    <li>
+      <a href="Week02_pre_d2.html">Relational and boolean operations</a>
+    </li>
+    <li>
+      <a href="Week02d.html">Example: Cleaning a buoy data table</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">Week 03</li>
@@ -648,23 +653,23 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Exploring and cleaning dataframes</h1>
+<h1 class="title toc-ignore">A working example: Cleaning a buoy data table</h1>
 
 </div>
 
 
 <p>The dataset used in this tutorial was downloaded from <a href="http://www.ndbc.noaa.gov/view_text_file.php?filename=44005h2010.txt.gz&amp;dir=data/historical/stdmet/">NOAA’ NDBC buoy data center</a> in a space delimited file format. It consists of hourly air and ocean physical measurements such as temperature, wind speed and wave height for 2012 measured at NOAA’s buoy #44005 located in the Gulf of Maine (43.204 N, 69.128 W).</p>
 <p>Type the following to load the data file into your current R session (note that we are using the <code>read.table</code> function instead of the <code>read.csv</code> function since the data are not comma delimited):</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dat &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;</span>, <span class="dt">header=</span><span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <p>Since <code>read.table</code> defaults to a space separated format (the same format our data file is stored in), there is no need to specify the <code>sep=</code> parameter.</p>
 <div id="exploring-a-dataframe" class="section level1">
 <h1>Exploring a dataframe</h1>
 <p>First, let’s extract the number of rows and columns in our table:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">dim</span>(dat)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(dat)</span></code></pre></div>
 <pre><code>[1] 8347   18</code></pre>
 <p><code>dat</code> consists of 8347 rows and 18 columns.</p>
 <p>We can extract the names of each column using the <code>names</code> function:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">names</span>(dat)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(dat)</span></code></pre></div>
 <pre><code> [1] &quot;YY&quot;   &quot;MM&quot;   &quot;DD&quot;   &quot;hh&quot;   &quot;mm&quot;   &quot;WDIR&quot; &quot;WSPD&quot; &quot;GST&quot;  &quot;WVHT&quot; &quot;DPD&quot; 
 [11] &quot;APD&quot;  &quot;MWD&quot;  &quot;PRES&quot; &quot;ATMP&quot; &quot;WTMP&quot; &quot;DEWP&quot; &quot;VIS&quot;  &quot;TIDE&quot;</code></pre>
 <p>A brief description of each column follows:</p>
@@ -755,7 +760,7 @@ div.tocify {
 </tbody>
 </table>
 <p>For large datasets, it’s sometimes helpful to display just the first few lines of the table to get a sense of the kind of data we are dealing with. We’ll use the <code>head</code> function to do this and have R return the first five records of the table (<code>n=5</code>).</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">head</span>( dat, <span class="dt">n=</span><span class="dv">5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>( dat, <span class="at">n=</span><span class="dv">5</span>)</span></code></pre></div>
 <pre><code>    YY MM DD hh mm WDIR WSPD  GST WVHT  DPD  APD MWD   PRES ATMP WTMP DEWP VIS
 1 2011 12 31 23 50  316  4.8  6.0 0.92 5.56 4.88 999 1008.1  6.8  8.1  6.8  99
 2 2012  1  1  0 50  296  5.5  6.3 0.89 5.56 4.60 999 1007.8  6.1  8.1  6.1  99
@@ -769,7 +774,7 @@ div.tocify {
 4   99
 5   99</code></pre>
 <p>We can also display the last few lines of the table using the <code>tail</code> function.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">tail</span>( dat, <span class="dt">n =</span><span class="dv">5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>( dat, <span class="at">n =</span><span class="dv">5</span>)</span></code></pre></div>
 <pre><code>       YY MM DD hh mm WDIR WSPD GST WVHT   DPD  APD MWD   PRES ATMP WTMP DEWP
 8343 2012 12 14  1 50  999   99  99 0.31  9.09 5.15 999 1026.3  5.6  9.7 -4.1
 8344 2012 12 14  2 50  999   99  99 0.33  9.09 4.69 999 1025.5  5.6  9.7 -4.2
@@ -783,7 +788,7 @@ div.tocify {
 8346  99   99
 8347  99   99</code></pre>
 <p>To view the data type/class associated with each variable in the table, we’ll use the <code>str</code> function.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">str</span>(dat)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(dat)</span></code></pre></div>
 <pre><code>&#39;data.frame&#39;:   8347 obs. of  18 variables:
  $ YY  : int  2011 2012 2012 2012 2012 2012 2012 2012 2012 2012 ...
  $ MM  : int  12 1 1 1 1 1 1 1 1 1 ...
@@ -805,7 +810,7 @@ div.tocify {
  $ TIDE: num  99 99 99 99 99 99 99 99 99 99 ...</code></pre>
 <p>All values are stored as numbers with about a third of those stored as integers, <code>int</code>, and the others as double precision, <code>num</code>.</p>
 <p>Now let’s generate a descriptive summary of the table.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">summary</span>(dat)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat)</span></code></pre></div>
 <pre><code>       YY             MM               DD             hh              mm    
  Min.   :2011   Min.   : 1.000   Min.   : 1.0   Min.   : 0.00   Min.   :50  
  1st Qu.:2012   1st Qu.: 3.000   1st Qu.: 8.0   1st Qu.: 5.00   1st Qu.:50  
@@ -841,7 +846,7 @@ div.tocify {
 <div id="removing-columns-with-no-data" class="section level1">
 <h1>Removing columns with no data</h1>
 <p>Let’s first remove all columns devoid of valid data. These columns are <code>MWD</code>, <code>VIS</code> and <code>TIDE</code>. There are many ways to do this. We will opt for subsetting the table and assigning this subset to a new data frame we will call <code>dat1</code>.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>dat1 &lt;-<span class="st"> </span>dat[ , <span class="op">!</span>(<span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))]</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat[ , <span class="sc">!</span>(<span class="fu">names</span>(dat) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))]</span></code></pre></div>
 <p>Let’s break down this expression into its many components. <code>names(dat)</code> returns a list of column names in the order in which they appear in the object <code>dat</code>: YY, MM, DD, hh, mm, WDIR, WSPD, GST, WVHT, DPD, APD, MWD, PRES, ATMP, WTMP, DEWP, VIS, TIDE.</p>
 <p>The matching operator <code>%in%</code> compares two sets of vectors and assesses if an element on the left-hand side of <code>%in%</code> is included in the elements on the right. For each element in the left hand set, R returns <code>TRUE</code> if the value is present in the right-hand set of values or <code>FALSE</code> if it is not. In our example, R is evaluating if the column names are included in the set of elements defined in <code>c("MWD", "VIS", "TIDE")</code>. The expression could be read as “… are any of the column names (i.e. YY, MM, DD, hh, mm, WDIR, WSPD, GST, WVHT, DPD, APD, MWD, PRES, ATMP, WTMP, DEWP, VIS, TIDE) included in the set <code>("MWD", "VIS", "TIDE")</code>?” The output of this comparison is a series of <code>TRUE</code>’s and <code>FALSE</code>’s depending on whether or not a match is found.</p>
 <center>
@@ -849,15 +854,15 @@ div.tocify {
 <source src="./Videos/Matching_operator.mp4" type="video/mp4">
 </video>
 </center>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(dat) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>)</span></code></pre></div>
 <pre><code> [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE
 [13] FALSE FALSE FALSE FALSE  TRUE  TRUE</code></pre>
 <p>The order in which the <code>TRUE</code>’s and <code>FALSE</code>’s are listed match the order of the column names. This order is important because this index is what R uses to identify which columns to return. But wait, R will return columns associated with a <code>TRUE</code> value! We want the reverse, so we add the NOT operator, <code>!</code>, in front of the expression thus flipping the <code>TRUE</code>/<code>FALSE</code> values.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="op">!</span>(<span class="kw">names</span>(dat) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="sc">!</span>(<span class="fu">names</span>(dat) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;MWD&quot;</span>, <span class="st">&quot;VIS&quot;</span>, <span class="st">&quot;TIDE&quot;</span>))</span></code></pre></div>
 <pre><code> [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE
 [13]  TRUE  TRUE  TRUE  TRUE FALSE FALSE</code></pre>
 <p>So <code>dat1</code> contains all the columns except <code>MWD</code>, <code>VIS</code> and <code>TIDE</code>.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">head</span>(dat1)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1)</span></code></pre></div>
 <pre><code>    YY MM DD hh mm WDIR WSPD  GST WVHT  DPD  APD   PRES ATMP WTMP DEWP
 1 2011 12 31 23 50  316  4.8  6.0 0.92 5.56 4.88 1008.1  6.8  8.1  6.8
 2 2012  1  1  0 50  296  5.5  6.3 0.89 5.56 4.60 1007.8  6.1  8.1  6.1
@@ -865,106 +870,6 @@ div.tocify {
 4 2012  1  1  2 50  314  8.3 10.0 0.93 3.45 4.05 1008.0  5.4  8.1  5.4
 5 2012  1  1  3 50  313 11.1 13.0 1.12 3.85 3.88 1008.0  5.8  8.1  5.8
 6 2012  1  1  4 50  319 11.1 13.3 1.25 4.76 4.06 1008.8  5.8  8.0  5.7</code></pre>
-</div>
-<div id="boolean-operations" class="section level1">
-<h1>Boolean Operations</h1>
-<p>The NOT operator, <code>!</code>, used in the last section is one of three Boolean operators you’ll be making good use of in this course; the other two being the AND operator, <code>&amp;</code>, and the OR operator, <code>|</code>.</p>
-<p>The following table demonstrates a few examples using the vectors <code>a &lt;- 3</code> and <code>b &lt;- 6</code>.</p>
-<table style="width:83%;">
-<colgroup>
-<col width="26%" />
-<col width="15%" />
-<col width="26%" />
-<col width="15%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Boolean operator</th>
-<th>Syntax</th>
-<th>Example</th>
-<th>Outcome</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>NOT</td>
-<td><code>!</code></td>
-<td><code>!</code>(a == 3)</td>
-<td>FALSE</td>
-</tr>
-<tr class="even">
-<td>AND</td>
-<td><code>&amp;</code></td>
-<td>a == 3 <code>&amp;</code> b == 1</td>
-<td>FALSE</td>
-</tr>
-<tr class="odd">
-<td>OR</td>
-<td><code>|</code></td>
-<td>a == 3 <code>|</code> b == 1</td>
-<td>TRUE</td>
-</tr>
-</tbody>
-</table>
-<p>The following table breaks down all possible Boolean outcomes where <code>T</code> = <code>TRUE</code> and <code>F</code> = <code>FALSE</code>:</p>
-<table style="width:44%;">
-<colgroup>
-<col width="26%" />
-<col width="18%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Boolean operation</th>
-<th>Outcome</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>T <code>&amp;</code> T</td>
-<td>TRUE</td>
-</tr>
-<tr class="even">
-<td>T <code>&amp;</code> F</td>
-<td>FALSE</td>
-</tr>
-<tr class="odd">
-<td>F <code>&amp;</code> F</td>
-<td>FALSE</td>
-</tr>
-<tr class="even">
-<td>T <code>|</code> T</td>
-<td>TRUE</td>
-</tr>
-<tr class="odd">
-<td>T <code>|</code> F</td>
-<td>TRUE</td>
-</tr>
-<tr class="even">
-<td>F <code>|</code> F</td>
-<td>FALSE</td>
-</tr>
-<tr class="odd">
-<td><code>!</code>T</td>
-<td>FALSE</td>
-</tr>
-<tr class="even">
-<td><code>!</code>F</td>
-<td>TRUE</td>
-</tr>
-</tbody>
-</table>
-<div id="a-word-of-caution" class="section level2">
-<h2>A word of caution</h2>
-<p>Note that the operation <code>a == (3 | 4)</code> is <strong>not</strong> the same as <code>(a == 3) | (a == 4)</code>. The former will return <code>FALSE</code> whereas the latter will return <code>TRUE</code>. This is because the Boolean operator evaluates both sides of its expression as separate <strong>logical</strong> outcomes (i.e. <code>T</code> and <code>F</code> values). In the latter case, the Boolean expression is asking <em>“is <code>a</code> equal to <code>3</code> OR is <code>a</code> equal to <code>4</code>”</em>. Since one of the conditions is true, the expression ends up evaluating <code>TRUE | FALSE</code> which returns <code>TRUE</code> (see above table).</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>(a <span class="op">==</span><span class="st"> </span><span class="dv">3</span>) <span class="op">|</span><span class="st"> </span>(a <span class="op">==</span><span class="st"> </span><span class="dv">4</span>)</span></code></pre></div>
-<pre><code>[1] TRUE</code></pre>
-<p>In the former expression, the boolean operator <code>|</code> is evaluating <code>3</code> OR <code>4</code>. Recall that logical values usually take on values of <code>0</code> for FALSE and <code>1</code> for TRUE, but boolean operators will treat any none 0 values as TRUE. So when it’s evaluating <code>3 | 4</code>, it’s really seeing <code>TRUE | TRUE</code> which, according to the aforementioned table will output <code>TRUE</code>.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="dv">3</span> <span class="op">|</span><span class="st"> </span><span class="dv">4</span></span></code></pre></div>
-<pre><code>[1] TRUE</code></pre>
-<p>So in the end, the expression <code>a == (3 | 4)</code> is really evaluating the condition <code>a == TRUE</code> which returns false (since 3 is not equal to the logical value <code>TRUE</code>).</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>a <span class="op">==</span><span class="st"> </span>(<span class="dv">3</span> <span class="op">|</span><span class="st"> </span><span class="dv">4</span>)</span></code></pre></div>
-<pre><code>[1] FALSE</code></pre>
-</div>
 </div>
 <div id="assigning-na-to-missing-data" class="section level1">
 <h1>Assigning <code>NA</code> to missing data</h1>
@@ -975,7 +880,7 @@ div.tocify {
 </center>
 <p>It’s usually best to assign <code>NA</code> values the moment a data file is loaded into R. For example, had all <code>NA</code> values been flagged as <code>-9999</code>, we could have added the parameter <code>na.strings="-9999"</code> to the <code>read.table()</code> function. But our dataset contains missing values flagged as 99, 999 <em>and</em> 9999 requiring that we combine the missing string values such as <code>na.strings = c("99", "999", "9999")</code> however, this would have resulted in undesirable outcomes. For example, a wave height of 99 meters would clearly not make sense, so flagging such value as <code>NA</code> would be sensible, but a wind direction of 99 degrees would make sense and flagging such value as <code>NA</code> would not be appropriate. Had we set <em>all</em> values of 99 to <code>NA</code> the moment we loaded the file into R, we would have inadvertently removed valid values in the dataset. So flagging missing values as <code>NA</code> in our dataset will require column level intervention.</p>
 <p>Let’s review the data summary to identify each column’s no data numeric designation (i.e. 99 or 999 or 9999) if present. Remember that we are now working off of the <code>dat1</code> dataframe and not the original <code>dat</code> dataframe.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">summary</span>(dat1)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat1)</span></code></pre></div>
 <pre><code>       YY             MM               DD             hh              mm    
  Min.   :2011   Min.   : 1.000   Min.   : 1.0   Min.   : 0.00   Min.   :50  
  1st Qu.:2012   1st Qu.: 3.000   1st Qu.: 8.0   1st Qu.: 5.00   1st Qu.:50  
@@ -1005,30 +910,30 @@ div.tocify {
  3rd Qu.:16.30   3rd Qu.: 15.300  
  Max.   :24.30   Max.   :999.000  </code></pre>
 <p>It appears that the fields with missing values flagged as <code>99</code> are <code>WSPD</code>, <code>GST</code>, <code>WVHT</code>, <code>DPD</code> and <code>APD</code>; fields with missing values flagged as <code>999</code> are <code>WDIR</code> and <code>DEWP</code>; and the field with missing values flagged as <code>9999</code> is <code>PRES</code>. We will convert these values to missing values in the following chunk of code.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="co"># Create list of columns with missing values</span></span>
-<span id="cb29-2"><a href="#cb29-2"></a>na99   &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;WSPD&quot;</span>, <span class="st">&quot;GST&quot;</span>, <span class="st">&quot;WVHT&quot;</span>, <span class="st">&quot;DPD&quot;</span>,  <span class="st">&quot;APD&quot;</span>)</span>
-<span id="cb29-3"><a href="#cb29-3"></a>na999  &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;WDIR&quot;</span>,  <span class="st">&quot;DEWP&quot;</span>)</span>
-<span id="cb29-4"><a href="#cb29-4"></a>na9999 &lt;-<span class="st"> </span>(<span class="st">&quot;PRES&quot;</span>)</span>
-<span id="cb29-5"><a href="#cb29-5"></a></span>
-<span id="cb29-6"><a href="#cb29-6"></a><span class="co"># Replace missing values with NA</span></span>
-<span id="cb29-7"><a href="#cb29-7"></a>dat1[ ,na99][dat1[ ,na99] <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb29-8"><a href="#cb29-8"></a>dat1[ ,na999][dat1[ ,na999] <span class="op">==</span><span class="st"> </span><span class="dv">999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb29-9"><a href="#cb29-9"></a>dat1[ ,na9999][dat1[ ,na9999] <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create list of columns with missing values</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>na99   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;WSPD&quot;</span>, <span class="st">&quot;GST&quot;</span>, <span class="st">&quot;WVHT&quot;</span>, <span class="st">&quot;DPD&quot;</span>,  <span class="st">&quot;APD&quot;</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>na999  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;WDIR&quot;</span>,  <span class="st">&quot;DEWP&quot;</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>na9999 <span class="ot">&lt;-</span> (<span class="st">&quot;PRES&quot;</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace missing values with NA</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>dat1[ ,na99][dat1[ ,na99] <span class="sc">==</span> <span class="dv">99</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>dat1[ ,na999][dat1[ ,na999] <span class="sc">==</span> <span class="dv">999</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>dat1[ ,na9999][dat1[ ,na9999] <span class="sc">==</span> <span class="dv">9999</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span></code></pre></div>
 <p>The above expression is quite succinct, but succinctness does not always translate to easy readability. There are two components to the last three lines of code: The first is a subset of columns for which a particular missing value is designated (e.g. <code>dat1[,na99]</code> ), the second is an evaluation statement identifying which values in the column subset is flagged as missing (e.g. <code>[dat1[, na99] == 99]</code>). Together, these elements define the indices (table cells) for which a value is replaced with <code>NA</code> (e.g. <code>&lt;- NA</code>).</p>
 <p>Another way this could have been accomplished (and one you might feel more comfortable with) would have been to work off of one column at a time, for example:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>dat1<span class="op">$</span>WSPD[dat1<span class="op">$</span>WSPD <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb30-2"><a href="#cb30-2"></a>dat1<span class="op">$</span>GST[dat1<span class="op">$</span>GST   <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb30-3"><a href="#cb30-3"></a>dat1<span class="op">$</span>WVHT[dat1<span class="op">$</span>WVHT <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb30-4"><a href="#cb30-4"></a>dat1<span class="op">$</span>DPD[dat1<span class="op">$</span>DPD   <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb30-5"><a href="#cb30-5"></a>dat1<span class="op">$</span>APD[dat1<span class="op">$</span>APD   <span class="op">==</span><span class="st"> </span><span class="dv">99</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb30-6"><a href="#cb30-6"></a></span>
-<span id="cb30-7"><a href="#cb30-7"></a>dat1<span class="op">$</span>WDIR[dat1<span class="op">$</span>WDIR <span class="op">==</span><span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb30-8"><a href="#cb30-8"></a>dat1<span class="op">$</span>DEWP[dat1<span class="op">$</span>DEWP <span class="op">==</span><span class="st"> </span><span class="dv">999</span>]  &lt;-<span class="st"> </span><span class="ot">NA</span></span>
-<span id="cb30-9"><a href="#cb30-9"></a></span>
-<span id="cb30-10"><a href="#cb30-10"></a>dat1<span class="op">$</span>PRES[dat1<span class="op">$</span>PRES <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>WSPD[dat1<span class="sc">$</span>WSPD <span class="sc">==</span> <span class="dv">99</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>GST[dat1<span class="sc">$</span>GST   <span class="sc">==</span> <span class="dv">99</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>WVHT[dat1<span class="sc">$</span>WVHT <span class="sc">==</span> <span class="dv">99</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>DPD[dat1<span class="sc">$</span>DPD   <span class="sc">==</span> <span class="dv">99</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>APD[dat1<span class="sc">$</span>APD   <span class="sc">==</span> <span class="dv">99</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>WDIR[dat1<span class="sc">$</span>WDIR <span class="sc">==</span> <span class="dv">999</span>]  <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>DEWP[dat1<span class="sc">$</span>DEWP <span class="sc">==</span> <span class="dv">999</span>]  <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>dat1<span class="sc">$</span>PRES[dat1<span class="sc">$</span>PRES <span class="sc">==</span> <span class="dv">9999</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span></code></pre></div>
 <p>This chunk of code is easier to read, but lacks the succinctness of its predecessor.</p>
 <p>Let’s look at a summary of our table:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">summary</span>(dat1)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat1)</span></code></pre></div>
 <pre><code>       YY             MM               DD             hh              mm    
  Min.   :2011   Min.   : 1.000   Min.   : 1.0   Min.   : 0.00   Min.   :50  
  1st Qu.:2012   1st Qu.: 3.000   1st Qu.: 8.0   1st Qu.: 5.00   1st Qu.:50  
@@ -1066,10 +971,10 @@ div.tocify {
 <div id="removing-rows-with-na-values" class="section level1">
 <h1>Removing rows with <code>NA</code> values</h1>
 <p>Your analysis might require that all rows in a table have complete cases (i.e. no missing values). You can use the <code>na.omit</code> function to return just the rows that have complete cases. We will create a synthetic example to demonstrate the <code>na.omit()</code> function.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a>d &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="ot">NA</span>), </span>
-<span id="cb33-2"><a href="#cb33-2"></a>                <span class="dt">y =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">1</span>,<span class="dv">1</span>), </span>
-<span id="cb33-3"><a href="#cb33-3"></a>                <span class="dt">z =</span> <span class="kw">c</span>(<span class="ot">NA</span>,<span class="ot">NA</span>,<span class="dv">4</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">3</span>))</span>
-<span id="cb33-4"><a href="#cb33-4"></a>d</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="cn">NA</span>), </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">1</span>,<span class="dv">1</span>), </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">NA</span>,<span class="cn">NA</span>,<span class="dv">4</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">3</span>))</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>d</span></code></pre></div>
 <pre><code>   x y  z
 1  1 3 NA
 2  4 2 NA
@@ -1079,8 +984,8 @@ div.tocify {
 6  3 1  8
 7 NA 1  3</code></pre>
 <p>Note the <code>NA</code> values in the dataframe. Now let’s create a new dataframe that we’ll name <code>d.complete</code> that only stores the rows for which we have complete cases (i.e. no <code>NA</code> values).</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a>d.complete &lt;-<span class="st"> </span><span class="kw">na.omit</span>(d)</span>
-<span id="cb35-2"><a href="#cb35-2"></a>d.complete</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>d.complete <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(d)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>d.complete</span></code></pre></div>
 <pre><code>  x y z
 3 2 5 4
 4 5 3 9
@@ -1091,19 +996,19 @@ div.tocify {
 <div id="checking-if-a-value-is-na" class="section level1">
 <h1>Checking if a value is <code>NA</code></h1>
 <p>When assessing if a value is equal to <code>NA</code> the following evaluation may behave unexpectedly.</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>a &lt;-<span class="st"> </span><span class="kw">c</span> (<span class="dv">3</span>, <span class="dv">67</span>, <span class="dv">4</span>, <span class="ot">NA</span>, <span class="dv">10</span>)</span>
-<span id="cb37-2"><a href="#cb37-2"></a>a <span class="op">==</span><span class="st"> </span><span class="ot">NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span> (<span class="dv">3</span>, <span class="dv">67</span>, <span class="dv">4</span>, <span class="cn">NA</span>, <span class="dv">10</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>a <span class="sc">==</span> <span class="cn">NA</span></span></code></pre></div>
 <pre><code>[1] NA NA NA NA NA</code></pre>
-<p>The output is not a logical datatype we would expect from an evaluation. Instead, you must make use of the <code>is.na()</code> function:</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a><span class="kw">is.na</span>(a)</span></code></pre></div>
+<p>The output is not a logical data type we would expect from an evaluation. Instead, you must make use of the <code>is.na()</code> function:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is.na</span>(a)</span></code></pre></div>
 <pre><code>[1] FALSE FALSE FALSE  TRUE FALSE</code></pre>
 <p>As another example, if we want to keep all rows in dataframe <code>d</code> where <code>z</code> = <code>NA</code>, we would type:</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1"></a>d[ <span class="kw">is.na</span>(d<span class="op">$</span>z), ]</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>d[ <span class="fu">is.na</span>(d<span class="sc">$</span>z), ]</span></code></pre></div>
 <pre><code>  x y  z
 1 1 3 NA
 2 4 2 NA</code></pre>
 <p>You can, of course, use the <code>!</code> operator to reverse the evaluation and <em>omit</em> all rows where <code>z</code> = <code>NA</code>,</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1"></a>d[ <span class="op">!</span><span class="kw">is.na</span>(d<span class="op">$</span>z), ]</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>d[ <span class="sc">!</span><span class="fu">is.na</span>(d<span class="sc">$</span>z), ]</span></code></pre></div>
 <pre><code>   x y z
 3  2 5 4
 4  5 3 9
