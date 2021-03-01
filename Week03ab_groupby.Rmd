@@ -14,6 +14,69 @@ pkg_ver(c("dplyr"))
 ```
 -----
 
+# Summarizing data by group
+
+
+Let's first create a dataframe listing the average delay time in minutes, by day of the week and by quarter, for Logan airport's 2014 outbound flights.
+
+```{r}
+df <- data.frame(
+  Weekday = factor(rep(c("Mon", "Tues", "Wed", "Thurs", "Fri"), each = 4), 
+                levels = c("Mon", "Tues", "Wed", "Thurs", "Fri")),
+  Quarter = paste0("Q", rep(1:4, each = 5)), 
+  Delay = c(9.9, 5.4, 8.8, 6.9, 4.9, 9.7, 7.9, 5, 8.8, 11.1, 10.2, 9.3, 12.2,
+            10.2, 9.2, 9.7, 12.2, 8.1, 7.9, 5.6))
+```
+
+The goal will be to summarize the table by `Weekday` as shown in the following graphic. 
+
+<img src="img/Summarize_by_one_variable.png" style="width: 73%; height: auto;">
+
+The data table has three variables: `Weekday`, `Quarter` and `Delay`. `Delay` is the value we will summarize which leaves us with one variable to *collapse*: `Quarter`. In doing so, we will compute the `Delay` statistics for all quarters associated with a unique `Weekday` value.
+
+This workflow requires two operations: a grouping operation using the `group_by` function and a summary operation using the `summarise` function. Here, we'll compute two summary statistics: minimum delay time and maximum delay time.
+
+```{r}
+library(dplyr)
+
+df %>% 
+  group_by(Weekday) %>% 
+  summarize(min_delay = min(Delay), max_delay = max(Delay))
+```
+
+Note that the weekday follows the chronological order as defined in the `Weekday` factor.
+
+You'll also note that the output is a `tibble`. This data class is discussed at the end of this page.
+
+### Grouping by multiple variables
+
+You can group by more than one variable. For example, let's build another dataframe listing the average delay time in minutes, by quarter, by weekend/weekday and by inbound/outbound status for Logan airport's 2014 outbound flights.
+
+```{r}
+df2 <- data.frame(
+  Quarter = paste0("Q", rep(1:4, each = 4)), 
+  Week = rep(c("Weekday", "Weekend"), each=2, times=4),
+  Direction = rep(c("Inbound", "Outbound"), times=8),
+  Delay = c(10.8, 9.7, 15.5, 10.4, 11.8, 8.9, 5.5, 
+            3.3, 10.6, 8.8, 6.6, 5.2, 9.1, 7.3, 5.3, 4.4))
+```
+
+The goal will be to summarize the delay time by `Quarter` and by `Week` type as shown in the following graphic. 
+
+<img src="img/Summarize_by_two_variable.png" style="width: 73%; height: auto;">
+
+This time, the data table has four variables. We are wanting to summarize by `Quater` and `Week` which leaves one variable, `Direction`, that needs to be collapsed. 
+
+```{r}
+df2 %>% 
+  group_by(Quarter, Week) %>% 
+  summarize(min_delay = min(Delay), max_delay = max(Delay))
+```
+
+The following section demonstrates other  grouping/summarizing operations on a larger dataset.
+
+# A working example
+
 The data file  *FAO_grains_NA.csv* will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014. 
 
 Run the following line to load the FAO data file into your current R session.
@@ -28,7 +91,7 @@ Make sure to load the `dplyr` package before proceeding with the following examp
 library(dplyr)
 ```
 
-## Splitting data operations by group: `group_by`
+## Summarizing by crop type
 
 The `group_by` function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the `Year` column for which crop data are available *by crop type*, we would type the following:
 

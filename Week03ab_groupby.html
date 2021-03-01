@@ -690,17 +690,77 @@ dplyr
 </tbody>
 </table>
 <hr />
+<div id="summarizing-data-by-group" class="section level1">
+<h1>Summarizing data by group</h1>
+<p>Let’s first create a dataframe listing the average delay time in minutes, by day of the week and by quarter, for Logan airport’s 2014 outbound flights.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Weekday =</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">&quot;Mon&quot;</span>, <span class="st">&quot;Tues&quot;</span>, <span class="st">&quot;Wed&quot;</span>, <span class="st">&quot;Thurs&quot;</span>, <span class="st">&quot;Fri&quot;</span>), <span class="at">each =</span> <span class="dv">4</span>), </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Mon&quot;</span>, <span class="st">&quot;Tues&quot;</span>, <span class="st">&quot;Wed&quot;</span>, <span class="st">&quot;Thurs&quot;</span>, <span class="st">&quot;Fri&quot;</span>)),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Quarter =</span> <span class="fu">paste0</span>(<span class="st">&quot;Q&quot;</span>, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">each =</span> <span class="dv">5</span>)), </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Delay =</span> <span class="fu">c</span>(<span class="fl">9.9</span>, <span class="fl">5.4</span>, <span class="fl">8.8</span>, <span class="fl">6.9</span>, <span class="fl">4.9</span>, <span class="fl">9.7</span>, <span class="fl">7.9</span>, <span class="dv">5</span>, <span class="fl">8.8</span>, <span class="fl">11.1</span>, <span class="fl">10.2</span>, <span class="fl">9.3</span>, <span class="fl">12.2</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>            <span class="fl">10.2</span>, <span class="fl">9.2</span>, <span class="fl">9.7</span>, <span class="fl">12.2</span>, <span class="fl">8.1</span>, <span class="fl">7.9</span>, <span class="fl">5.6</span>))</span></code></pre></div>
+<p>The goal will be to summarize the table by <code>Weekday</code> as shown in the following graphic.</p>
+<p><img src="img/Summarize_by_one_variable.png" style="width: 73%; height: auto;"></p>
+<p>The data table has three variables: <code>Weekday</code>, <code>Quarter</code> and <code>Delay</code>. <code>Delay</code> is the value we will summarize which leaves us with one variable to <em>collapse</em>: <code>Quarter</code>. In doing so, we will compute the <code>Delay</code> statistics for all quarters associated with a unique <code>Weekday</code> value.</p>
+<p>This workflow requires two operations: a grouping operation using the <code>group_by</code> function and a summary operation using the <code>summarise</code> function. Here, we’ll compute two summary statistics: minimum delay time and maximum delay time.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Weekday) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">min_delay =</span> <span class="fu">min</span>(Delay), <span class="at">max_delay =</span> <span class="fu">max</span>(Delay))</span></code></pre></div>
+<pre><code># A tibble: 5 x 3
+  Weekday min_delay max_delay
+* &lt;fct&gt;       &lt;dbl&gt;     &lt;dbl&gt;
+1 Mon           5.4       9.9
+2 Tues          4.9       9.7
+3 Wed           8.8      11.1
+4 Thurs         9.2      12.2
+5 Fri           5.6      12.2</code></pre>
+<p>Note that the weekday follows the chronological order as defined in the <code>Weekday</code> factor.</p>
+<p>You’ll also note that the output is a <code>tibble</code>. This data class is discussed at the end of this page.</p>
+<div id="grouping-by-multiple-variables" class="section level3">
+<h3>Grouping by multiple variables</h3>
+<p>You can group by more than one variable. For example, let’s build another dataframe listing the average delay time in minutes, by quarter, by weekend/weekday and by inbound/outbound status for Logan airport’s 2014 outbound flights.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Quarter =</span> <span class="fu">paste0</span>(<span class="st">&quot;Q&quot;</span>, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">each =</span> <span class="dv">4</span>)), </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Week =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">&quot;Weekday&quot;</span>, <span class="st">&quot;Weekend&quot;</span>), <span class="at">each=</span><span class="dv">2</span>, <span class="at">times=</span><span class="dv">4</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Direction =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">&quot;Inbound&quot;</span>, <span class="st">&quot;Outbound&quot;</span>), <span class="at">times=</span><span class="dv">8</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Delay =</span> <span class="fu">c</span>(<span class="fl">10.8</span>, <span class="fl">9.7</span>, <span class="fl">15.5</span>, <span class="fl">10.4</span>, <span class="fl">11.8</span>, <span class="fl">8.9</span>, <span class="fl">5.5</span>, </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>            <span class="fl">3.3</span>, <span class="fl">10.6</span>, <span class="fl">8.8</span>, <span class="fl">6.6</span>, <span class="fl">5.2</span>, <span class="fl">9.1</span>, <span class="fl">7.3</span>, <span class="fl">5.3</span>, <span class="fl">4.4</span>))</span></code></pre></div>
+<p>The goal will be to summarize the delay time by <code>Quarter</code> and by <code>Week</code> type as shown in the following graphic.</p>
+<p><img src="img/Summarize_by_two_variable.png" style="width: 73%; height: auto;"></p>
+<p>This time, the data table has four variables. We are wanting to summarize by <code>Quater</code> and <code>Week</code> which leaves one variable, <code>Direction</code>, that needs to be collapsed.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Quarter, Week) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">min_delay =</span> <span class="fu">min</span>(Delay), <span class="at">max_delay =</span> <span class="fu">max</span>(Delay))</span></code></pre></div>
+<pre><code># A tibble: 8 x 4
+# Groups:   Quarter [4]
+  Quarter Week    min_delay max_delay
+  &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt;     &lt;dbl&gt;
+1 Q1      Weekday       9.7      10.8
+2 Q1      Weekend      10.4      15.5
+3 Q2      Weekday       8.9      11.8
+4 Q2      Weekend       3.3       5.5
+5 Q3      Weekday       8.8      10.6
+6 Q3      Weekend       5.2       6.6
+7 Q4      Weekday       7.3       9.1
+8 Q4      Weekend       4.4       5.3</code></pre>
+<p>The following section demonstrates other grouping/summarizing operations on a larger dataset.</p>
+</div>
+</div>
+<div id="a-working-example" class="section level1">
+<h1>A working example</h1>
 <p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from <a href="http://faostat3.fao.org/" class="uri">http://faostat3.fao.org/</a> in June of 2014.</p>
 <p>Run the following line to load the FAO data file into your current R session.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <p>Make sure to load the <code>dplyr</code> package before proceeding with the following examples.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
-<div id="splitting-data-operations-by-group-group_by" class="section level2">
-<h2>Splitting data operations by group: <code>group_by</code></h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<div id="summarizing-by-crop-type" class="section level2">
+<h2>Summarizing by crop type</h2>
 <p>The <code>group_by</code> function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the <code>Year</code> column for which crop data are available <em>by crop type</em>, we would type the following:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yr_min =</span> <span class="fu">min</span>(Year), <span class="at">yr_max=</span><span class="fu">max</span>(Year))</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yr_min =</span> <span class="fu">min</span>(Year), <span class="at">yr_max=</span><span class="fu">max</span>(Year))</span></code></pre></div>
 <pre><code># A tibble: 11 x 3
    Crop         yr_min yr_max
  * &lt;chr&gt;         &lt;int&gt;  &lt;int&gt;
@@ -719,19 +779,19 @@ dplyr
 <div id="count-the-number-of-records-in-each-group" class="section level2">
 <h2>Count the number of records in each group</h2>
 <p>In this example, we are identifying the number of records by <code>Crop</code> type. There are two ways this can be accomplished:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code></pre></div>
 <p>Or,</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>())</span></code></pre></div>
 <pre><code># A tibble: 7 x 2
   Crop      Count
 * &lt;chr&gt;     &lt;int&gt;
@@ -747,14 +807,14 @@ dplyr
 <div id="summarize-by-mean-yield-and-year-range" class="section level2">
 <h2>Summarize by mean yield and year range</h2>
 <p>Here’s another example where <em>two</em> variables are summarized in a single pipe.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dat.grp <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>( <span class="at">Yield =</span> <span class="fu">mean</span>(Value), <span class="st">`</span><span class="at">Number of Years</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">max</span>(Year) <span class="sc">-</span> <span class="fu">min</span>(Year)) </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>dat.grp</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat.grp <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>, </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>( <span class="at">Yield =</span> <span class="fu">mean</span>(Value), <span class="st">`</span><span class="at">Number of Years</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">max</span>(Year) <span class="sc">-</span> <span class="fu">min</span>(Year)) </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>dat.grp</span></code></pre></div>
 <pre><code># A tibble: 7 x 3
   Crop       Yield `Number of Years`
 * &lt;chr&gt;      &lt;dbl&gt;             &lt;int&gt;
@@ -769,28 +829,29 @@ dplyr
 <div id="normalizing-each-value-in-a-group-by-the-group-median" class="section level2">
 <h2>Normalizing each value in a group by the group median</h2>
 <p>In this example, we are subtracting each value in a group by that group’s median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We’ll save the output dataframe as <code>dat2</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>,</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Crop, Year, Value)                     <span class="sc">%&gt;%</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop)                                <span class="sc">%&gt;%</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">NormYield =</span> Value <span class="sc">-</span> <span class="fu">median</span>(Value))     <span class="sc">%&gt;%</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Crop)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">&quot;Yield (Hg/Ha)&quot;</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">&quot;United States of America&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Crop, Year, Value)                     <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop)                                <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">NormYield =</span> Value <span class="sc">-</span> <span class="fu">median</span>(Value))     <span class="sc">%&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Crop)</span></code></pre></div>
 <p>Let’s plot the normalized yields by year for <code>Barley</code> and add a <code>0</code> line representing the (normalized) central value.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>( NormYield <span class="sc">~</span> Year, dat2[dat2<span class="sc">$</span>Crop <span class="sc">==</span> <span class="st">&quot;Barley&quot;</span>,] )</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col=</span><span class="st">&quot;red&quot;</span>)</span></code></pre></div>
-<p><img src="Week03ab_groupby_files/figure-html/unnamed-chunk-10-1.png" width="480" /></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>( NormYield <span class="sc">~</span> Year, dat2[dat2<span class="sc">$</span>Crop <span class="sc">==</span> <span class="st">&quot;Barley&quot;</span>,] )</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col=</span><span class="st">&quot;red&quot;</span>)</span></code></pre></div>
+<p><img src="Week03ab_groupby_files/figure-html/unnamed-chunk-14-1.png" width="480" /></p>
 <p>The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later on in the course when EDA topics are explored.</p>
 </div>
 <div id="dplyrs-output-data-structure" class="section level2">
 <h2><code>dplyr</code>’s output data structure</h2>
 <p>Some of <code>dplyr</code>’s functions such as <code>group_by</code>/<code>summarise</code> generate a <strong>tibble</strong> data table. For example, the <code>dat.grp</code> object created in the last chunk of code is associated with a <code>tb_df</code> (a tibble).</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.grp)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.grp)</span></code></pre></div>
 <pre><code>[1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
 <p>A <em>tibble</em> table will behave a little differently than a <em>data frame</em> table when printing to a screen or subsetting its elements. In most cases, a tibble rendering of the table will not pose a problem in a workflow, however, this format may prove problematic with some older functions. To remedy this, you can force the <code>dat.grp</code> object to a standalone <code>dataframe</code> as follows:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat.df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dat.grp)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.df)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dat.df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dat.grp)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.df)</span></code></pre></div>
 <pre><code>[1] &quot;data.frame&quot;</code></pre>
+</div>
 </div>
 
 
