@@ -1,5 +1,7 @@
 ---
 title: "Tidying/reshaping tables using tidyr"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r echo=FALSE}
@@ -84,22 +86,13 @@ The first 10 lines of the output table are shown here. Note how each `Delay` val
 
 ```{r, echo = FALSE}
 library(tidyr)
-df.long <- pivot_longer(df, cols=-1, names_to = "Quarter", values_to = "Delay")
+df.long <- gather(df, key = "Quarter", value = "Delay" , Q1, Q2, Q3, Q4 )
 head(df.long, 10)
 ```
 
 The following figure summarizes the wide to long conversion.
 
 ![](img/Tidyr_wide2long.png)
-
-The `pivot_longer` function can also be used in a piping operation as follows:
-
-```{r eval = FALSE}
-df %>% 
-  pivot_longer(cols=c(Q1,Q2,Q3,Q4), names_to = "Quarter", values_to = "Delay")
-```
-
-
 
 ## Creating a wide table from a long table
 
@@ -123,14 +116,6 @@ head(df.wide, 10)
 The following figure summarizes the long to wide conversion.
 
 ![](img/Tidyr_long2wide.png)
-<p></p>
-
-The `pivot_wider` function can also be used in a piping operation as follows:
-
-```{r eval = FALSE}
-df.long %>% 
-  pivot_wider(names_from = Quarter, values_from = Delay) 
-```
 <p></p>
 
 # Advanced `pivot_longer` options
@@ -208,9 +193,13 @@ pivot_wider(df3, names_from = var2, values_from = val,
             values_fill = list(val = 0))
 ```
 
-# Separating elements in one column into separate columns
+# Additional manipulation options
 
-The `tidyr` package offers other functions not directly tied to pivoting. For example, to split a column into two or more columns based on a column's delimited value, use the `separate()` function.
+The `tidyr` package offers other functions not directly tied to pivoting. Some of these functions are highlihghted next.
+
+## Separating elements in one column into separate columns
+
+To split a column into two or more columns based on a existing column's delimited value, use the `separate()` function.
 
 ```{r}
 # Let's first create a delimited table
@@ -227,9 +216,9 @@ df2.sep <- separate(df2.long,
 df2.sep
 ```
 
-# Splitting rows into multiple rows based on delimited values
+## Splitting rows into multiple rows based on delimited values
 
-You can also split delimited values across rows. 
+To split delimited values across rows, use the `separate_rows` function.
 
 ```{r}
 separate_rows(df2.long, var1, sep = "_")
@@ -257,7 +246,7 @@ uncount(df2b, count, .id = "id")
 ```
 
 
-# Combining elements from many columns into a single column
+## Combining elements from many columns into a single column
 
 Another practical function in the `tidyr` package is `unite()`. It combines columns into a single column by chaining the contents of the combined columns. For example, the following table has hours, minutes and seconds in separate columns.
 
@@ -274,11 +263,11 @@ df
 To combine the three time elements into a single column, type:
 
 ```{r}
-df2 <- unite(df,  col = Time, 2:4, sep=":", remove =TRUE)
+df2 <- unite(df,  col = Time, c(Hour, Min, Sec) , sep=":", remove =TRUE)
 df2
 ```
 
-The `col` parameter defines the new column name; the paremeter `2:4` tells `unite` that columns two through four are to be combined into column `Time`; `sep=":"` tells the function what characters are to be used to separate the elements (here, we are separating the time elements using `:`); `remove=TRUE` tells the function to remove columns two through four.
+The `col` parameter defines the new column name; the parameter `c(Hour, Min, Sec)` defines the columns to be combined into column `Time`; `sep=":"` tells the function what characters are to be used to separate the elements (here, we are separating the time elements using `:`); `remove=TRUE` tells the function to remove columns two through four.
 
 ## Creating unique combinations of variable values
 
@@ -325,9 +314,83 @@ If you want to show just the missing rows, use `dplyr::anti_join()`.
 dplyr::anti_join(df.all, df4.long)
 ```
 
+## Filling date/time gaps in a table
+
+
+### Example using a `Date` object class
+
+This is another example that makes use of the `complete` function. Here, we seek to add missing date/time values in a time series table.
+
+```{r}
+df.dt <- data.frame( Date = as.Date(c("2000-01-01", "2000-01-03", "2000-01-05")),
+                     Value = c(1,3,5))
+```
+
+To fill the missing dates between the minimum and maximum dates in `df.dt`, we first need to create the sequence of dates between these minimum and maximum values.  We could do this in the `complete` function, but it will be clearer to the reader if these operations are performed separately.
+
+```{r}
+dates.all <- seq(min(df.dt$Date), max(df.dt$Date), by = "1 day")
+```
+
+Next, we pass the complete set of dates, `dates.all` to the `complete` function. We'll assign `NA` to the missing `Value` values.
+
+```{r}
+df.dt.all <- complete(df.dt, Date = dates.all, fill = list(Value = NA))
+df.dt.all
+``` 
+The `seq` function used in this example has a special method for `Date` objects. As such, it accepts a unique set of incremental parameters (via the `by =` parameter). In the above example, we are asking the function to increment the date object by `1 day`. Other increments can be applied to a sequenced Date object as shown in the following table.
+
++-----------------+------------------------------------------+
+| Increment units | Description                              |
++=================+==========================================+
+| `day`           | *X* number of **days** between dates     |
++-----------------+------------------------------------------+
+| `week`          | *X* number of **weeks** between dates    |
++-----------------+------------------------------------------+
+| `months`        | *X* number of **months** between dates   |
++-----------------+------------------------------------------+
+| `quarter`       | *X* number of **quarters** between dates |
++-----------------+------------------------------------------+
+| `year`          | *X* number of **years** between dates    |
++-----------------+------------------------------------------+
+
+
+### Example using a `Posix` object class
+
+Recall that if a time element is to be stored in a date, the date object becomes a `Posix` object class. This adds additional increment units to the `seq` function. In the following example, we create a new data frame (with a time value), then fill the table with date/times at 6 hour increments.
+
+```{r}
+df.tm <- data.frame( Date = as.POSIXct(c("2000-01-01 18:00 EST", 
+                                         "2000-01-02 6:00 EST", 
+                                         "2000-01-03 12:00 EST")),
+                     Value = c(1,3,5))
+```
+
+```{r}
+pos.all <- seq(min(df.tm$Date), max(df.tm$Date), by = "6 hour")
+```
+
+```{r}
+df.tm.all <- complete(df.tm, Date = pos.all, fill = list(Value = NA))
+df.tm.all
+``` 
+In this example the `seq` method for the `Posix` object adds a few more increment units to those available with the `seq.Date` method shown in the previous table. These include: 
+
++-----------------+------------------------------------------------------------------------------------------------------------+
+| Increment units | Description                                                                                                |
++=================+============================================================================================================+
+| `sec`           | *X* number of **seconds** between timestamps.                                                              |
++-----------------+------------------------------------------------------------------------------------------------------------+
+| `min`           | *X* number of **minutes** between timestamps.                                                              |
++-----------------+------------------------------------------------------------------------------------------------------------+
+| `hour`          | *X* number of **hours** between timestamps.                                                                |
++-----------------+------------------------------------------------------------------------------------------------------------+
+| `DSTday`        | *X* number of **days** between timestamps while taking into account changes to/from daylight savings time. |
++-----------------+------------------------------------------------------------------------------------------------------------+
+
 ## Identifying missing combination in dataframes
 
-In the previous example, we had the function automatically add the missing combinations using **explicitly** defined ranges of values. If you just want to output the missing combinations from the **existing** set of values in both columns, use the `expand()` function.
+In an earlier example, we had the function automatically add the missing combinations using **explicitly** defined ranges of values. If you just want to output the missing combinations from the **existing** set of values in both columns, use the `expand()` function.
 
 
 ```{r}

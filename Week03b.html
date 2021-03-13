@@ -740,24 +740,19 @@ tidyr
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>df.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df, <span class="at">cols=</span><span class="fu">c</span>(Q1,Q2,Q3,Q4), <span class="at">names_to =</span> <span class="st">&quot;Quarter&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;Delay&quot;</span>)</span></code></pre></div>
 <p>All four lines produce the same output, they differ only by how we are referencing the columns that are to be collapsed. Note that we assigned the names <code>Quarter</code> and <code>Delay</code> to the two new columns.</p>
 <p>The first 10 lines of the output table are shown here. Note how each <code>Delay</code> value has its own row.</p>
-<pre><code># A tibble: 10 x 3
-   Weekday Quarter Delay
-   &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt;
- 1 Mon     Q1        9.9
- 2 Mon     Q2        5.4
- 3 Mon     Q3        8.8
- 4 Mon     Q4        6.9
- 5 Tues    Q1        4.9
- 6 Tues    Q2        9.7
- 7 Tues    Q3        7.9
- 8 Tues    Q4        5  
- 9 Wed     Q1        8.8
-10 Wed     Q2       11.1</code></pre>
+<pre><code>   Weekday Quarter Delay
+1      Mon      Q1   9.9
+2     Tues      Q1   4.9
+3      Wed      Q1   8.8
+4    Thurs      Q1  12.2
+5      Fri      Q1  12.2
+6      Mon      Q2   5.4
+7     Tues      Q2   9.7
+8      Wed      Q2  11.1
+9    Thurs      Q2  10.2
+10     Fri      Q2   8.1</code></pre>
 <p>The following figure summarizes the wide to long conversion.</p>
 <p><img src="img/Tidyr_wide2long.png" /></p>
-<p>The <code>pivot_longer</code> function can also be used in a piping operation as follows:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols=</span><span class="fu">c</span>(Q1,Q2,Q3,Q4), <span class="at">names_to =</span> <span class="st">&quot;Quarter&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;Delay&quot;</span>)</span></code></pre></div>
 </div>
 <div id="creating-a-wide-table-from-a-long-table" class="section level2">
 <h2>Creating a wide table from a long table</h2>
@@ -767,7 +762,7 @@ tidyr
 <li><code>names_from</code>: Variable whose values will be converted to column names.</li>
 <li><code>values_from</code>: Variable whose values will populate the table’s block of cell values.</li>
 </ul>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.wide <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(df.long, <span class="at">names_from =</span> Quarter, <span class="at">values_from =</span> Delay) </span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.wide <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(df.long, <span class="at">names_from =</span> Quarter, <span class="at">values_from =</span> Delay) </span></code></pre></div>
 <p>We’ve now recreated the wide version of our table.</p>
 <pre><code># A tibble: 5 x 5
   Weekday    Q1    Q2    Q3    Q4
@@ -781,23 +776,18 @@ tidyr
 <img src="img/Tidyr_long2wide.png" />
 <p>
 </p>
-<p>The <code>pivot_wider</code> function can also be used in a piping operation as follows:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df.long <span class="sc">%&gt;%</span> </span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Quarter, <span class="at">values_from =</span> Delay) </span></code></pre></div>
-<p>
-</p>
 </div>
 </div>
 <div id="advanced-pivot_longer-options" class="section level1">
 <h1>Advanced <code>pivot_longer</code> options</h1>
 <p>Here’s a subset of median income by sex and by work experience for 2017.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">state =</span> <span class="fu">c</span>(<span class="st">&quot;Maine&quot;</span>, <span class="st">&quot;Massachusetts&quot;</span>, </span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;New Hampshire&quot;</span>, <span class="st">&quot;Vermont&quot;</span>),</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_fulltime =</span> <span class="fu">c</span>(<span class="dv">50329</span>,<span class="dv">66066</span>, <span class="dv">59962</span>, <span class="dv">50530</span>), </span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_other =</span> <span class="fu">c</span>(<span class="dv">18099</span>, <span class="dv">18574</span>, <span class="dv">20274</span>, <span class="dv">17709</span>), </span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">female_fulltime =</span> <span class="fu">c</span>(<span class="dv">40054</span>, <span class="dv">53841</span>, <span class="dv">46178</span>, <span class="dv">42198</span>),</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">female_other =</span> <span class="fu">c</span>(<span class="dv">13781</span>, <span class="dv">14981</span>, <span class="dv">15121</span>, <span class="dv">14422</span>))</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>df2</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">state =</span> <span class="fu">c</span>(<span class="st">&quot;Maine&quot;</span>, <span class="st">&quot;Massachusetts&quot;</span>, </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;New Hampshire&quot;</span>, <span class="st">&quot;Vermont&quot;</span>),</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_fulltime =</span> <span class="fu">c</span>(<span class="dv">50329</span>,<span class="dv">66066</span>, <span class="dv">59962</span>, <span class="dv">50530</span>), </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_other =</span> <span class="fu">c</span>(<span class="dv">18099</span>, <span class="dv">18574</span>, <span class="dv">20274</span>, <span class="dv">17709</span>), </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">female_fulltime =</span> <span class="fu">c</span>(<span class="dv">40054</span>, <span class="dv">53841</span>, <span class="dv">46178</span>, <span class="dv">42198</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">female_other =</span> <span class="fu">c</span>(<span class="dv">13781</span>, <span class="dv">14981</span>, <span class="dv">15121</span>, <span class="dv">14422</span>))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>df2</span></code></pre></div>
 <pre><code>          state male_fulltime male_other female_fulltime female_other
 1         Maine         50329      18099           40054        13781
 2 Massachusetts         66066      18574           53841        14981
@@ -807,11 +797,11 @@ tidyr
 <p><img src="img/double_header.PNG" style="width: 73%; height: auto;"></p>
 <p><code>pivot_longer</code> has an argument, <code>names_sep</code>, that is passed the character that is used to delimit the two variable values. In our example, this character is <code>_</code>. Since the column values will be split across two variables we will also need to pass <strong>two</strong> column names to the <code>names_to</code> argument.</p>
 <p><img src="img/long_to_separate_wide.PNG" style="width: 73%; height: auto;"></p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df2.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df2, <span class="at">cols =</span> <span class="sc">-</span>state, </span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;sex&quot;</span>,<span class="st">&quot;work&quot;</span>), </span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_sep =</span> <span class="st">&quot;_&quot;</span>, </span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">values_to =</span> <span class="st">&quot;income&quot;</span>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>df2.long</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df2.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df2, <span class="at">cols =</span> <span class="sc">-</span>state, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;sex&quot;</span>,<span class="st">&quot;work&quot;</span>), </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_sep =</span> <span class="st">&quot;_&quot;</span>, </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">values_to =</span> <span class="st">&quot;income&quot;</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>df2.long</span></code></pre></div>
 <pre><code># A tibble: 16 x 4
    state         sex    work     income
    &lt;chr&gt;         &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;
@@ -837,10 +827,10 @@ tidyr
 <div id="combining-variable-names-when-spreading" class="section level2">
 <h2>Combining variable names when spreading</h2>
 <p>Continuing with the <code>df2.long</code> dataframe, we can spread the long table back to a wide table while combining the <code>sex</code> and <code>work</code> variables. We’ll add the <code>names_sep</code> argument which defines the character to use to separate the two variable names. We’ll use a dot <code>.</code> separator in this example.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df2.long, </span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_from =</span> <span class="fu">c</span>(sex,work), </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_from =</span> income,</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_sep =</span> <span class="st">&quot;.&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df2.long, </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_from =</span> <span class="fu">c</span>(sex,work), </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_from =</span> income,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_sep =</span> <span class="st">&quot;.&quot;</span>)</span></code></pre></div>
 <pre><code># A tibble: 4 x 5
   state         male.fulltime male.other female.fulltime female.other
   &lt;chr&gt;                 &lt;dbl&gt;      &lt;dbl&gt;           &lt;dbl&gt;        &lt;dbl&gt;
@@ -852,35 +842,35 @@ tidyr
 <div id="spreading-duplicate-variable-combinations" class="section level2">
 <h2>Spreading duplicate variable combinations</h2>
 <p>If your long table has more than one unique combination of variables, <code>pivot_wider()</code> will return a list. Note that if you have used the older version of <code>tidyr</code> (version <code>&lt;1.0</code>) its <code>spread()</code> function would have returned an error.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df3 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var1 =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>),</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">var2 =</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>, <span class="st">&quot;y&quot;</span>),</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">val  =</span> <span class="fu">c</span>(<span class="dv">5</span>,<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">4</span>))</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>df3</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df3 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var1 =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;b&quot;</span>),</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">var2 =</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>, <span class="st">&quot;y&quot;</span>),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">val  =</span> <span class="fu">c</span>(<span class="dv">5</span>,<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">4</span>))</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>df3</span></code></pre></div>
 <pre><code>  var1 var2 val
 1    a    x   5
 2    a    x   3
 3    b    y   1
 4    b    y   4</code></pre>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val)</span></code></pre></div>
 <pre><code># A tibble: 2 x 3
   var1  x         y        
   &lt;chr&gt; &lt;list&gt;    &lt;list&gt;   
 1 a     &lt;dbl [2]&gt; &lt;NULL&gt;   
 2 b     &lt;NULL&gt;    &lt;dbl [2]&gt;</code></pre>
 <p>Since the intersections of <code>a</code>:<code>x</code> and <code>b</code>:<code>y</code> each have two possible values, the function returns a <em>list</em> of values. Assuming that the duplicate records are not an erroneous entry, you will need to instruct the function on how to summarize the multiple values using the <code>values_fn</code> argument. For example, to return the maximum value, type:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_from =</span> var2, </span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_from =</span> val, </span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn =</span> <span class="fu">list</span>(<span class="at">val =</span> min))</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_from =</span> var2, </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_from =</span> val, </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn =</span> <span class="fu">list</span>(<span class="at">val =</span> min))</span></code></pre></div>
 <pre><code># A tibble: 2 x 3
   var1      x     y
   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
 1 a         3    NA
 2 b        NA     1</code></pre>
 <p>You’ll note the empty cells resulting from there not being a valid combination for <code>a</code>:<code>y</code> and <code>b</code>:<code>x</code>. You can specify the missing values using the <code>values_fill</code> argument. For example, to replace <code>NA</code> with <code>0</code> type:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val, </span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn   =</span> <span class="fu">list</span>(<span class="at">val =</span> min),</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fill =</span> <span class="fu">list</span>(<span class="at">val =</span> <span class="dv">0</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val, </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn   =</span> <span class="fu">list</span>(<span class="at">val =</span> min),</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fill =</span> <span class="fu">list</span>(<span class="at">val =</span> <span class="dv">0</span>))</span></code></pre></div>
 <pre><code># A tibble: 2 x 3
   var1      x     y
   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
@@ -888,14 +878,17 @@ tidyr
 2 b         0     1</code></pre>
 </div>
 </div>
-<div id="separating-elements-in-one-column-into-separate-columns" class="section level1">
-<h1>Separating elements in one column into separate columns</h1>
-<p>The <code>tidyr</code> package offers other functions not directly tied to pivoting. For example, to split a column into two or more columns based on a column’s delimited value, use the <code>separate()</code> function.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Let&#39;s first create a delimited table</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>df2.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df2, <span class="at">cols =</span> <span class="sc">-</span><span class="dv">1</span>, </span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_to =</span> <span class="st">&quot;var1&quot;</span>, </span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">values_to =</span> <span class="st">&quot;income&quot;</span>)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>df2.long</span></code></pre></div>
+<div id="additional-manipulation-options" class="section level1">
+<h1>Additional manipulation options</h1>
+<p>The <code>tidyr</code> package offers other functions not directly tied to pivoting. Some of these functions are highlihghted next.</p>
+<div id="separating-elements-in-one-column-into-separate-columns" class="section level2">
+<h2>Separating elements in one column into separate columns</h2>
+<p>To split a column into two or more columns based on a existing column’s delimited value, use the <code>separate()</code> function.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Let&#39;s first create a delimited table</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>df2.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df2, <span class="at">cols =</span> <span class="sc">-</span><span class="dv">1</span>, </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_to =</span> <span class="st">&quot;var1&quot;</span>, </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">values_to =</span> <span class="st">&quot;income&quot;</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>df2.long</span></code></pre></div>
 <pre><code># A tibble: 16 x 3
    state         var1            income
    &lt;chr&gt;         &lt;chr&gt;            &lt;dbl&gt;
@@ -915,12 +908,12 @@ tidyr
 14 Vermont       male_other       17709
 15 Vermont       female_fulltime  42198
 16 Vermont       female_other     14422</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split var1 column into two columns</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>df2.sep <span class="ot">&lt;-</span> <span class="fu">separate</span>(df2.long, </span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">col =</span> var1, </span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>, </span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">into =</span> <span class="fu">c</span>(<span class="st">&quot;sex&quot;</span>, <span class="st">&quot;work&quot;</span>))</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>df2.sep</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split var1 column into two columns</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>df2.sep <span class="ot">&lt;-</span> <span class="fu">separate</span>(df2.long, </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">col =</span> var1, </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>, </span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">into =</span> <span class="fu">c</span>(<span class="st">&quot;sex&quot;</span>, <span class="st">&quot;work&quot;</span>))</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>df2.sep</span></code></pre></div>
 <pre><code># A tibble: 16 x 4
    state         sex    work     income
    &lt;chr&gt;         &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;
@@ -941,10 +934,10 @@ tidyr
 15 Vermont       female fulltime  42198
 16 Vermont       female other     14422</code></pre>
 </div>
-<div id="splitting-rows-into-multiple-rows-based-on-delimited-values" class="section level1">
-<h1>Splitting rows into multiple rows based on delimited values</h1>
-<p>You can also split delimited values across rows.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">separate_rows</span>(df2.long, var1, <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>)</span></code></pre></div>
+<div id="splitting-rows-into-multiple-rows-based-on-delimited-values" class="section level2">
+<h2>Splitting rows into multiple rows based on delimited values</h2>
+<p>To split delimited values across rows, use the <code>separate_rows</code> function.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">separate_rows</span>(df2.long, var1, <span class="at">sep =</span> <span class="st">&quot;_&quot;</span>)</span></code></pre></div>
 <pre><code># A tibble: 32 x 3
    state         var1     income
    &lt;chr&gt;         &lt;chr&gt;     &lt;dbl&gt;
@@ -960,62 +953,63 @@ tidyr
 10 Massachusetts fulltime  66066
 # ... with 22 more rows</code></pre>
 <p>Note that the output is a <code>tibble</code> even if the input is a dataframe.</p>
+</div>
 <div id="replicate-rows-by-count" class="section level2">
 <h2>Replicate rows by count</h2>
 <p>You can expand rows based on a count column using the <code>uncount()</code> function. This is the opposite of a <code>group_by(...) %&gt;% count()</code> operation that tallies up the observations based on a grouping variable. Here, we’ll replicate rows based on the column <code>count</code> value.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df2b <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var1 =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>), </span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">var2 =</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>), </span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">count =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>))</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>df2b</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df2b <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var1 =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>), </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">var2 =</span> <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>), </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">count =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>))</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>df2b</span></code></pre></div>
 <pre><code>  var1 var2 count
 1    a    x     1
 2    b    y     3</code></pre>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count)</span></code></pre></div>
 <pre><code>    var1 var2
 1      a    x
 2      b    y
 2.1    b    y
 2.2    b    y</code></pre>
 <p>If you want to add an index column that identifies the replicated rows, add an <code>.id</code> argument.</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count, <span class="at">.id =</span> <span class="st">&quot;id&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count, <span class="at">.id =</span> <span class="st">&quot;id&quot;</span>)</span></code></pre></div>
 <pre><code>    var1 var2 id
 1      a    x  1
 2      b    y  1
 2.1    b    y  2
 2.2    b    y  3</code></pre>
 </div>
-</div>
-<div id="combining-elements-from-many-columns-into-a-single-column" class="section level1">
-<h1>Combining elements from many columns into a single column</h1>
+<div id="combining-elements-from-many-columns-into-a-single-column" class="section level2">
+<h2>Combining elements from many columns into a single column</h2>
 <p>Another practical function in the <code>tidyr</code> package is <code>unite()</code>. It combines columns into a single column by chaining the contents of the combined columns. For example, the following table has hours, minutes and seconds in separate columns.</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">Index =</span> <span class="fu">c</span>(<span class="dv">1</span>,   <span class="dv">2</span>,  <span class="dv">3</span>),</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">Hour  =</span> <span class="fu">c</span>(<span class="dv">2</span>,  <span class="dv">14</span>, <span class="dv">20</span>),</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">Min   =</span> <span class="fu">c</span>(<span class="dv">34</span>,  <span class="dv">2</span>, <span class="dv">55</span>),</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">Sec   =</span> <span class="fu">c</span>(<span class="dv">55</span>, <span class="dv">17</span>, <span class="dv">23</span>))</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">Index =</span> <span class="fu">c</span>(<span class="dv">1</span>,   <span class="dv">2</span>,  <span class="dv">3</span>),</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">Hour  =</span> <span class="fu">c</span>(<span class="dv">2</span>,  <span class="dv">14</span>, <span class="dv">20</span>),</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">Min   =</span> <span class="fu">c</span>(<span class="dv">34</span>,  <span class="dv">2</span>, <span class="dv">55</span>),</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">Sec   =</span> <span class="fu">c</span>(<span class="dv">55</span>, <span class="dv">17</span>, <span class="dv">23</span>))</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div>
 <pre><code>  Index Hour Min Sec
 1     1    2  34  55
 2     2   14   2  17
 3     3   20  55  23</code></pre>
 <p>To combine the three time elements into a single column, type:</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">unite</span>(df,  <span class="at">col =</span> Time, <span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">sep=</span><span class="st">&quot;:&quot;</span>, <span class="at">remove =</span><span class="cn">TRUE</span>)</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>df2</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">unite</span>(df,  <span class="at">col =</span> Time, <span class="fu">c</span>(Hour, Min, Sec) , <span class="at">sep=</span><span class="st">&quot;:&quot;</span>, <span class="at">remove =</span><span class="cn">TRUE</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>df2</span></code></pre></div>
 <pre><code>  Index     Time
 1     1  2:34:55
 2     2  14:2:17
 3     3 20:55:23</code></pre>
-<p>The <code>col</code> parameter defines the new column name; the paremeter <code>2:4</code> tells <code>unite</code> that columns two through four are to be combined into column <code>Time</code>; <code>sep=":"</code> tells the function what characters are to be used to separate the elements (here, we are separating the time elements using <code>:</code>); <code>remove=TRUE</code> tells the function to remove columns two through four.</p>
+<p>The <code>col</code> parameter defines the new column name; the parameter <code>c(Hour, Min, Sec)</code> defines the columns to be combined into column <code>Time</code>; <code>sep=":"</code> tells the function what characters are to be used to separate the elements (here, we are separating the time elements using <code>:</code>); <code>remove=TRUE</code> tells the function to remove columns two through four.</p>
+</div>
 <div id="creating-unique-combinations-of-variable-values" class="section level2">
 <h2>Creating unique combinations of variable values</h2>
 <p>You can use <code>expand_grid</code> to automatically generate a table with unique combinations of a set of variable values. For example, to fill a table with a combination of student names and homework assignments, type:</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>df3.long <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">student    =</span> <span class="fu">c</span>(<span class="st">&quot;Joe&quot;</span>, <span class="st">&quot;Jane&quot;</span>, <span class="st">&quot;Kim&quot;</span>),  <span class="co"># Define all unique student names</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">assignment =</span> <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">&quot;HW&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)),     <span class="co"># Define all unique HW assignments</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">value      =</span> <span class="cn">NA</span>)</span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>df3.long</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>df3.long <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">student    =</span> <span class="fu">c</span>(<span class="st">&quot;Joe&quot;</span>, <span class="st">&quot;Jane&quot;</span>, <span class="st">&quot;Kim&quot;</span>),  <span class="co"># Define all unique student names</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">assignment =</span> <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">&quot;HW&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)),     <span class="co"># Define all unique HW assignments</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">value      =</span> <span class="cn">NA</span>)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>df3.long</span></code></pre></div>
 <pre><code># A tibble: 12 x 3
    student assignment value
    &lt;chr&gt;   &lt;chr&gt;      &lt;lgl&gt;
@@ -1032,7 +1026,7 @@ tidyr
 11 Kim     HW3        NA   
 12 Kim     HW4        NA   </code></pre>
 <p>We can then create a wide version of the table using <code>pivot_wider</code>.</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3.long, <span class="at">names_from =</span> assignment, <span class="at">values_from =</span> value)</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3.long, <span class="at">names_from =</span> assignment, <span class="at">values_from =</span> value)</span></code></pre></div>
 <pre><code># A tibble: 3 x 5
   student HW1   HW2   HW3   HW4  
   &lt;chr&gt;   &lt;lgl&gt; &lt;lgl&gt; &lt;lgl&gt; &lt;lgl&gt;
@@ -1043,12 +1037,12 @@ tidyr
 <div id="filling-gaps-in-a-table-with-na" class="section level2">
 <h2>Filling gaps in a table with <code>NA</code></h2>
 <p>It’s not uncommon to be handed a table with incomplete combinations of observations. For example, the following table gives us yield and data source values for each combination of year and grain type. However, several combinations of year/grain are missing.</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df4.long <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Year  =</span> <span class="fu">c</span>(<span class="dv">1999</span>,<span class="dv">1999</span>,<span class="dv">2000</span>,<span class="dv">2000</span>,<span class="dv">2001</span>,<span class="dv">2003</span>,<span class="dv">2003</span>,<span class="dv">2005</span>),</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Grain =</span> <span class="fu">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>,<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>,<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>,<span class="st">&quot;Oats&quot;</span>),</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Yield =</span> <span class="fu">c</span>(<span class="dv">23</span>,<span class="dv">45</span>,<span class="dv">24</span>,<span class="dv">40</span>,<span class="dv">20</span>,<span class="dv">19</span>,<span class="dv">41</span>,<span class="dv">22</span>),</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Src   =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>,<span class="st">&quot;a&quot;</span>,<span class="st">&quot;b&quot;</span>,<span class="st">&quot;c&quot;</span>,<span class="st">&quot;a&quot;</span>,<span class="st">&quot;a&quot;</span>,<span class="st">&quot;c&quot;</span>,<span class="st">&quot;a&quot;</span>),</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>df4.long</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df4.long <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Year  =</span> <span class="fu">c</span>(<span class="dv">1999</span>,<span class="dv">1999</span>,<span class="dv">2000</span>,<span class="dv">2000</span>,<span class="dv">2001</span>,<span class="dv">2003</span>,<span class="dv">2003</span>,<span class="dv">2005</span>),</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Grain =</span> <span class="fu">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>,<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>,<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>,<span class="st">&quot;Oats&quot;</span>),</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Yield =</span> <span class="fu">c</span>(<span class="dv">23</span>,<span class="dv">45</span>,<span class="dv">24</span>,<span class="dv">40</span>,<span class="dv">20</span>,<span class="dv">19</span>,<span class="dv">41</span>,<span class="dv">22</span>),</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Src   =</span> <span class="fu">c</span>(<span class="st">&quot;a&quot;</span>,<span class="st">&quot;a&quot;</span>,<span class="st">&quot;b&quot;</span>,<span class="st">&quot;c&quot;</span>,<span class="st">&quot;a&quot;</span>,<span class="st">&quot;a&quot;</span>,<span class="st">&quot;c&quot;</span>,<span class="st">&quot;a&quot;</span>),</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>df4.long</span></code></pre></div>
 <pre><code>  Year Grain Yield Src
 1 1999  Oats    23   a
 2 1999  Corn    45   a
@@ -1059,9 +1053,9 @@ tidyr
 7 2003  Corn    41   c
 8 2005  Oats    22   a</code></pre>
 <p>We are missing records for 2001 and Corn, 2003 and Corn, and data for both grains are missing for 2002 and 2004. To add rows for all missing pairs of year/grain values, use the <code>complete</code> function. Here, we’ll assign <code>0</code> to missing <code>Yield</code> values and <code>NA</code> to the <code>Src</code> values.</p>
-<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>df.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df4.long, <span class="at">Year=</span><span class="dv">1999</span><span class="sc">:</span><span class="dv">2005</span>, <span class="at">Grain=</span>  <span class="fu">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>),</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Yield =</span> <span class="dv">0</span>, <span class="at">Src =</span> <span class="cn">NA</span>))</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>df.all</span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df4.long, <span class="at">Year=</span><span class="dv">1999</span><span class="sc">:</span><span class="dv">2005</span>, <span class="at">Grain=</span>  <span class="fu">c</span>(<span class="st">&quot;Oats&quot;</span>, <span class="st">&quot;Corn&quot;</span>),</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Yield =</span> <span class="dv">0</span>, <span class="at">Src =</span> <span class="cn">NA</span>))</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>df.all</span></code></pre></div>
 <pre><code># A tibble: 14 x 4
     Year Grain Yield Src  
    &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
@@ -1080,7 +1074,7 @@ tidyr
 13  2005 Corn      0 &lt;NA&gt; 
 14  2005 Oats     22 a    </code></pre>
 <p>If you want to show just the missing rows, use <code>dplyr::anti_join()</code>.</p>
-<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">anti_join</span>(df.all, df4.long)</span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">anti_join</span>(df.all, df4.long)</span></code></pre></div>
 <pre><code># A tibble: 6 x 4
    Year Grain Yield Src  
   &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
@@ -1091,11 +1085,121 @@ tidyr
 5  2004 Oats      0 &lt;NA&gt; 
 6  2005 Corn      0 &lt;NA&gt; </code></pre>
 </div>
+<div id="filling-datetime-gaps-in-a-table" class="section level2">
+<h2>Filling date/time gaps in a table</h2>
+<div id="example-using-a-date-object-class" class="section level3">
+<h3>Example using a <code>Date</code> object class</h3>
+<p>This is another example that makes use of the <code>complete</code> function. Here, we seek to add missing date/time values in a time series table.</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>df.dt <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Date =</span> <span class="fu">as.Date</span>(<span class="fu">c</span>(<span class="st">&quot;2000-01-01&quot;</span>, <span class="st">&quot;2000-01-03&quot;</span>, <span class="st">&quot;2000-01-05&quot;</span>)),</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Value =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>))</span></code></pre></div>
+<p>To fill the missing dates between the minimum and maximum dates in <code>df.dt</code>, we first need to create the sequence of dates between these minimum and maximum values. We could do this in the <code>complete</code> function, but it will be clearer to the reader if these operations are performed separately.</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>dates.all <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(df.dt<span class="sc">$</span>Date), <span class="fu">max</span>(df.dt<span class="sc">$</span>Date), <span class="at">by =</span> <span class="st">&quot;1 day&quot;</span>)</span></code></pre></div>
+<p>Next, we pass the complete set of dates, <code>dates.all</code> to the <code>complete</code> function. We’ll assign <code>NA</code> to the missing <code>Value</code> values.</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>df.dt.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df.dt, <span class="at">Date =</span> dates.all, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Value =</span> <span class="cn">NA</span>))</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>df.dt.all</span></code></pre></div>
+<pre><code># A tibble: 5 x 2
+  Date       Value
+  &lt;date&gt;     &lt;dbl&gt;
+1 2000-01-01     1
+2 2000-01-02    NA
+3 2000-01-03     3
+4 2000-01-04    NA
+5 2000-01-05     5</code></pre>
+<p>The <code>seq</code> function used in this example has a special method for <code>Date</code> objects. As such, it accepts a unique set of incremental parameters (via the <code>by =</code> parameter). In the above example, we are asking the function to increment the date object by <code>1 day</code>. Other increments can be applied to a sequenced Date object as shown in the following table.</p>
+<table style="width:85%;">
+<colgroup>
+<col width="25%" />
+<col width="59%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Increment units</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>day</code></td>
+<td><em>X</em> number of <strong>days</strong> between dates</td>
+</tr>
+<tr class="even">
+<td><code>week</code></td>
+<td><em>X</em> number of <strong>weeks</strong> between dates</td>
+</tr>
+<tr class="odd">
+<td><code>months</code></td>
+<td><em>X</em> number of <strong>months</strong> between dates</td>
+</tr>
+<tr class="even">
+<td><code>quarter</code></td>
+<td><em>X</em> number of <strong>quarters</strong> between dates</td>
+</tr>
+<tr class="odd">
+<td><code>year</code></td>
+<td><em>X</em> number of <strong>years</strong> between dates</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="example-using-a-posix-object-class" class="section level3">
+<h3>Example using a <code>Posix</code> object class</h3>
+<p>Recall that if a time element is to be stored in a date, the date object becomes a <code>Posix</code> object class. This adds additional increment units to the <code>seq</code> function. In the following example, we create a new data frame (with a time value), then fill the table with date/times at 6 hour increments.</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>df.tm <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Date =</span> <span class="fu">as.POSIXct</span>(<span class="fu">c</span>(<span class="st">&quot;2000-01-01 18:00 EST&quot;</span>, </span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>                                         <span class="st">&quot;2000-01-02 6:00 EST&quot;</span>, </span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>                                         <span class="st">&quot;2000-01-03 12:00 EST&quot;</span>)),</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Value =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>pos.all <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(df.tm<span class="sc">$</span>Date), <span class="fu">max</span>(df.tm<span class="sc">$</span>Date), <span class="at">by =</span> <span class="st">&quot;6 hour&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>df.tm.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df.tm, <span class="at">Date =</span> pos.all, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Value =</span> <span class="cn">NA</span>))</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>df.tm.all</span></code></pre></div>
+<pre><code># A tibble: 8 x 2
+  Date                Value
+  &lt;dttm&gt;              &lt;dbl&gt;
+1 2000-01-01 18:00:00     1
+2 2000-01-02 00:00:00    NA
+3 2000-01-02 06:00:00     3
+4 2000-01-02 12:00:00    NA
+5 2000-01-02 18:00:00    NA
+6 2000-01-03 00:00:00    NA
+7 2000-01-03 06:00:00    NA
+8 2000-01-03 12:00:00     5</code></pre>
+<p>In this example the <code>seq</code> method for the <code>Posix</code> object adds a few more increment units to those available with the <code>seq.Date</code> method shown in the previous table. These include:</p>
+<table>
+<colgroup>
+<col width="14%" />
+<col width="85%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Increment units</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>sec</code></td>
+<td><em>X</em> number of <strong>seconds</strong> between timestamps.</td>
+</tr>
+<tr class="even">
+<td><code>min</code></td>
+<td><em>X</em> number of <strong>minutes</strong> between timestamps.</td>
+</tr>
+<tr class="odd">
+<td><code>hour</code></td>
+<td><em>X</em> number of <strong>hours</strong> between timestamps.</td>
+</tr>
+<tr class="even">
+<td><code>DSTday</code></td>
+<td><em>X</em> number of <strong>days</strong> between timestamps while taking into account changes to/from daylight savings time.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <div id="identifying-missing-combination-in-dataframes" class="section level2">
 <h2>Identifying missing combination in dataframes</h2>
-<p>In the previous example, we had the function automatically add the missing combinations using <strong>explicitly</strong> defined ranges of values. If you just want to output the missing combinations from the <strong>existing</strong> set of values in both columns, use the <code>expand()</code> function.</p>
-<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>p.all <span class="ot">&lt;-</span> <span class="fu">expand</span>(df4.long, Year, Grain) <span class="co"># List all possible combinations</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>p.all</span></code></pre></div>
+<p>In an earlier example, we had the function automatically add the missing combinations using <strong>explicitly</strong> defined ranges of values. If you just want to output the missing combinations from the <strong>existing</strong> set of values in both columns, use the <code>expand()</code> function.</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>p.all <span class="ot">&lt;-</span> <span class="fu">expand</span>(df4.long, Year, Grain) <span class="co"># List all possible combinations</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>p.all</span></code></pre></div>
 <pre><code># A tibble: 10 x 2
     Year Grain
    &lt;dbl&gt; &lt;chr&gt;
@@ -1110,7 +1214,7 @@ tidyr
  9  2005 Corn 
 10  2005 Oats </code></pre>
 <p>Note that this only outputs the columns of interest. If you need to see the other columns in the output, perform a join.</p>
-<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">left_join</span>(p.all, df4.long, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, <span class="st">&quot;Grain&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">left_join</span>(p.all, df4.long, <span class="at">by=</span><span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, <span class="st">&quot;Grain&quot;</span>))</span></code></pre></div>
 <pre><code># A tibble: 10 x 4
     Year Grain Yield Src  
    &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
@@ -1128,9 +1232,9 @@ tidyr
 <div id="auto-fill-down-or-up" class="section level2">
 <h2>Auto-fill down or up</h2>
 <p>The <code>fill()</code> function is used to replace <code>NA</code> values with the closest non-<code>NA</code> value in a column. For example, to fill <em>down</em>, set the <code>.direction</code> argument to <code>"down"</code>.</p>
-<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>df5 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Month =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, </span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">Year =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">4</span>),<span class="dv">2001</span>, <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">6</span>)))</span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>df5</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>df5 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Month =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, </span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">Year =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">4</span>),<span class="dv">2001</span>, <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">6</span>)))</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>df5</span></code></pre></div>
 <pre><code>   Month Year
 1      1 2000
 2      2   NA
@@ -1144,7 +1248,7 @@ tidyr
 10    10   NA
 11    11   NA
 12    12   NA</code></pre>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fill</span>(df5, Year, <span class="at">.direction=</span><span class="st">&quot;down&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fill</span>(df5, Year, <span class="at">.direction=</span><span class="st">&quot;down&quot;</span>)</span></code></pre></div>
 <pre><code>   Month Year
 1      1 2000
 2      2 2000
