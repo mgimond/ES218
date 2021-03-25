@@ -230,14 +230,14 @@ ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=
                        coord_fixed(xlim=c(10,30), ylim = c(10,30))
 ```
 
-then we say that there is a **multiplicative shift** between the batches. The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by the inverse of the suspected relationship. For example, if we believe that `batch2` is 1.5 times greater than `batch1`, we divide the former by 1.5 then plot the result to see if the points line up.
+then we say that there is a **multiplicative shift** between the batches. The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, if we believe that `batch2` is 1.5 times greater than `batch1`, we multiply `batch1` by 1.5 (thus generating the relationship `batch2 = batch1 * 1.5`) then plot the result to see if the points line up.
  
 ```{r echo=FALSE, fig.width=2,fig.height=2}
-ggplot(s1, aes(batch1,batch2 / 1.5)) + geom_point() + geom_abline( intercept=0, slope=1) +
+ggplot(s1, aes(batch1 * 1.5 , batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
                        coord_fixed(xlim=c(10,30), ylim = c(10,30))
 ```
 
-In many cases, you might encounter a relationship that is both additive *and* multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to parallel to the 45&deg; line, then resolve the additive portion. For example, the following plot
+Sometimes, you might encounter a relationship that is both additive *and* multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to parallel to the 45&deg; line, then resolve the additive portion. For example, the following plot
 
 ```{r echo=FALSE, fig.width=2,fig.height=2}
 set.seed(132)
@@ -248,17 +248,17 @@ ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=
                                  coord_fixed(xlim=c(10,34), ylim = c(10,34))
 ```        
 
-can be decomposed into its multiplicative component (divide by ~ 1.5),
+can be decomposed into its multiplicative component (multiply `batch1` by ~ 1.5),
 
 ```{r echo=FALSE, fig.width=2,fig.height=2}
-ggplot(s1, aes(batch1,batch2 / 1.5)) + geom_point() + geom_abline( intercept=0, slope=1) +
+ggplot(s1, aes(batch1 * 1.5, batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
                                  coord_fixed(xlim=c(10,32), ylim = c(10,32))
 ``` 
 
-then by its additive component (subtract by ~ 3.5),
+then by its additive component (add 3.5),
  
 ```{r echo=FALSE, fig.width=2,fig.height=2}
-ggplot(s1, aes(batch1,batch2 / 1.5 - 3.5)) + geom_point() + geom_abline( intercept=0, slope=1) +
+ggplot(s1, aes(batch1 * 1.5 + 3.5,batch2 )) + geom_point() + geom_abline( intercept=0, slope=1) +
                                  coord_fixed(xlim=c(10,32), ylim = c(10,32))
 ``` 
 
@@ -266,13 +266,13 @@ to get the approximate relationship of `batch2 = batch1 * 1.5 + 3.5`.
 
 ## Is the relationship between tenor and bass additive or multiplicative?
 
-Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we'll subtract the `Bass 2` value by about 2.5.
+Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we'll add 2.5 to the `Bass 2` value.
 
 ```{r , fig.width=3, fig.height=3}
-ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`  - 2.5)) + 
+ggplot(s.qq, aes( x= `Tenor 1` + 2.5, y = `Bass 2`)) + 
              geom_point() + 
              geom_abline( intercept=0, slope=1) +
-             coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) + ylab("Bass 2 - 2.5")
+             coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) + xlab("Tenor 1 + 2.5")
 ```
 
 The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here. 
