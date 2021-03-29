@@ -128,30 +128,30 @@ That's it. Just two lines of code!
 
 ### `ggplot2` version 3.0 or greater
 
-As of version 3.0, `ggplot` has  the `geom_qq_line` function (or `stat_qq_line`) that will generate the interquartile fit. So to generate the theoretical QQ plot, use the `geom_qq` function (or `stat_qq`) to generate the point plot, then call `geom_qq_line` to generate the IQR fit.
+As of version 3.0, `ggplot` has  the `stat_qq_line` function (or `geom_qq_line`) that will generate the interquartile fit. So to generate the theoretical QQ plot, use the `stat_qq` function (or `geom_qq`) to generate the point plot, then call `stat_qq_line` to generate the IQR fit.
 
 ```{r, fig.height=3, fig.width=3}
 library(ggplot2)
 
-ggplot() + aes(sample = alto) + geom_qq(distribution = qnorm) + 
-           geom_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height")
+ggplot() + aes(sample = alto) + stat_qq(distribution = qnorm) + 
+           stat_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height")
 
 ```
 
 We can, of course, make use of `ggplot`'s faceting function to generate trellised plots. For example, the following plot replicates Cleveland's figure 2.11 (except for the layout which we'll setup as a single row of plots instead).
 
 ```{r fig.height=3, fig.width=9}
-ggplot(df, aes(sample = height)) + geom_qq(distribution = qnorm) + 
-           geom_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height") +
+ggplot(df, aes(sample = height)) + stat_qq(distribution = qnorm) + 
+           stat_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height") +
            facet_wrap(~ voice.part, nrow = 1) + ylab("Height")
  
 ```
 
-The `geom_qq_line` function uses the built-in `quantile` function and as such will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This differs from Cleveland's approach to computing the f-value. This setting cannot be changed in `geom_qq_line`.
+The `stat_qq_line` function uses the built-in `quantile` function and as such will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This differs from Cleveland's approach to computing the f-value. This setting cannot be changed in `stat_qq_line`.
 
 ### `ggplot2` version older than 3.0
 
-With an older version of `ggplot2`, you will need to construct the interquartile fit from scratch. We can still take advantage of the `geom_qq()` function to plot the points, but the equation for the line must be computed manually (as was done earlier). Those steps will be repeated here. Note that with this example, we are adopting Cleveland's f-value algorithm of $(i - 0.5)/n$.
+With an older version of `ggplot2`, you will need to construct the interquartile fit from scratch. We can still take advantage of the `stat_qq()` function to plot the points, but the equation for the line must be computed manually (as was done earlier). Those steps will be repeated here. Note that with this example, we are adopting Cleveland's f-value algorithm of $(i - 0.5)/n$.
 
 ```{r, fig.height=3, fig.width=3}
 library(ggplot2)
@@ -194,7 +194,7 @@ It's important that the `voice.part` names match those in `df` letter-for-letter
 
 
 ```{r fig.height=3, fig.width=9}
-ggplot(df, aes(sample = height)) + geom_qq(distribution = qnorm) + 
+ggplot(df, aes(sample = height)) + stat_qq(distribution = qnorm) + 
            geom_abline(data = intsl, aes(intercept = int, slope = slope), col = "blue") +
            facet_wrap(~ voice.part, nrow = 1) + ylab("Height") 
 ``` 
@@ -217,8 +217,8 @@ siml <- pivot_longer(as.data.frame(sim), names_to = "sim",
                      values_to = "val", cols = everything())
 
 # Generate Q-Q plots of the simulated values
-ggplot(siml, aes(sample = val)) + geom_qq(distribution = qnorm) +
-  geom_qq_line(line.p = c(0.25, 0.75), col = "blue") +
+ggplot(siml, aes(sample = val)) + stat_qq(distribution = qnorm) +
+  stat_qq_line(line.p = c(0.25, 0.75), col = "blue") +
   facet_wrap(~ sim, nrow = 1) + ylab("Simulated normals")
 
 ```
