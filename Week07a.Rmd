@@ -8,7 +8,7 @@ source("libs/Common.R")
 
 -----
 ```{r echo = FALSE}
-pkg_ver(c("dplyr", "ggplot2","lattice"))
+pkg_ver(c("dplyr", "tidyr", "ggplot2","lattice"))
 ```
 -----
 
@@ -29,6 +29,7 @@ First, we'll load the libraries that will be used in this exercise, then load th
 
 ```{r}
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(lattice)
 
@@ -179,6 +180,41 @@ After normalizing the data to the global mean, the r-f spread plot splits the si
 ![](img/RF_plot_explained.png)
 <p></p>
 The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts *can* explain a good part of the variation in the data.
+
+# Generating a residual-fit plot with ggplot
+
+To generate the R-F plot using `ggplot2`, we must first split the data into its fitted and residual components (something the `rfs` function did for us). We'll make use of piping operations to complete this task.
+
+```{r}
+df1 <- singer %>%
+  mutate(norm.hgt = height - mean(height)) %>% 
+  group_by(voice.part) %>% 
+  mutate( Residuals  = norm.hgt - mean(norm.hgt),
+          `Fitted Values` = mean(norm.hgt))%>% 
+  ungroup() %>% 
+  select(-height, -voice.part, -norm.hgt) %>% 
+  pivot_longer(names_to = "type",  values_to = "value", cols=everything()) %>% 
+  group_by(type) %>% 
+  arrange(value) %>% 
+  mutate(`f-value` = (row_number() - 0.5) / n()) 
+```
+
+Next, we plot the data.
+
+```{r fig.height=3, fig.width=5.5}
+ggplot(df1, aes(x = `f-value`, y = value)) + 
+  geom_point(alpha = 0.3, cex = 1.5) +
+  facet_wrap(~ type) +
+  ylab("Height (inches)")
+```
+
+An alternative to the side-by-side R-F plot is one where both fits and residuals are overlapping.
+
+```{r fig.height=3, fig.width=4.5}
+ggplot(df1, aes(x = `f-value`, y = value, col = type)) + 
+  geom_point(alpha = 0.3, cex = 1.5) +
+  ylab("Height (inches)")
+```
 
 # Comparing pooled residuals to the normal distribution
 

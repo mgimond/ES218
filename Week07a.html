@@ -680,6 +680,15 @@ dplyr
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
+tidyr
+</th>
+<th style="text-align:left;color: #555555 !important;background-color: #dddddd !important;text-align: center;border: 1px solid white !important;
+             font-family: &#39;Source Code Pro&#39;, &#39;Open Sans&#39;;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
 ggplot2
 </th>
 <th style="text-align:left;color: #555555 !important;background-color: #dddddd !important;text-align: center;border: 1px solid white !important;
@@ -702,7 +711,16 @@ lattice
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;">
-1.0.3
+1.0.4
+</td>
+<td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
+             font-family: &#39;Open Sans&#39;, Arial;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;">
+1.1.2
 </td>
 <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
              font-family: &#39;Open Sans&#39;, Arial;
@@ -737,10 +755,11 @@ lattice
 <p>Univariate data can be characterized by their location and by their spread. The different groups of singers differ by their central values, we will therefore <strong>fit</strong> the group means to each group batch and compare the <strong>residuals</strong> between groups.</p>
 <p>First, we’ll load the libraries that will be used in this exercise, then load the <code>singer</code> data into the object <code>df</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lattice)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> singer</span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lattice)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> singer</span></code></pre></div>
 <p>Next, we’ll plot the singer values using jittered points, then add an orange point to each batch which will represent each group’s mean.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">y =</span> height, <span class="at">x =</span> voice.part)) <span class="sc">+</span> </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.1</span>, <span class="at">height =</span> <span class="dv">0</span>, <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
@@ -834,18 +853,44 @@ lattice
 <p>The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts <em>can</em> explain a good part of the variation in the data.</p>
 </div>
 </div>
+<div id="generating-a-residual-fit-plot-with-ggplot" class="section level1">
+<h1>Generating a residual-fit plot with ggplot</h1>
+<p>To generate the R-F plot using <code>ggplot2</code>, we must first split the data into its fitted and residual components (something the <code>rfs</code> function did for us). We’ll make use of piping operations to complete this task.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> singer <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">norm.hgt =</span> height <span class="sc">-</span> <span class="fu">mean</span>(height)) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(voice.part) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">Residuals  =</span> norm.hgt <span class="sc">-</span> <span class="fu">mean</span>(norm.hgt),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>          <span class="st">`</span><span class="at">Fitted Values</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(norm.hgt))<span class="sc">%&gt;%</span> </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>height, <span class="sc">-</span>voice.part, <span class="sc">-</span>norm.hgt) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">names_to =</span> <span class="st">&quot;type&quot;</span>,  <span class="at">values_to =</span> <span class="st">&quot;value&quot;</span>, <span class="at">cols=</span><span class="fu">everything</span>()) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(type) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(value) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">f-value</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">row_number</span>() <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">n</span>()) </span></code></pre></div>
+<p>Next, we plot the data.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df1, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">f-value</span><span class="st">`</span>, <span class="at">y =</span> value)) <span class="sc">+</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">cex =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> type) <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Height (inches)&quot;</span>)</span></code></pre></div>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-14-1.png" width="528" /></p>
+<p>An alternative to the side-by-side R-F plot is one where both fits and residuals are overlapping.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df1, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">f-value</span><span class="st">`</span>, <span class="at">y =</span> value, <span class="at">col =</span> type)) <span class="sc">+</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">cex =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Height (inches)&quot;</span>)</span></code></pre></div>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-15-1.png" width="432" /></p>
+</div>
 <div id="comparing-pooled-residuals-to-the-normal-distribution" class="section level1">
 <h1>Comparing pooled residuals to the normal distribution</h1>
 <p>Our exploration of the singer height batches have been visual thus far. But there may be times when the analysis may need to culminate in a statistical test. Some of these tests reduce the data to mathematically tractable models such as the mean and the standard deviation (which follows a normal distribution).</p>
 <p>We’ll take advantage of the pooled residuals to give us a larger sample size for comparison with the theoretical normal distribution.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the equation for the line</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df3, <span class="fu">aes</span>(<span class="at">sample =</span> Pooled.res)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span> </span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_qq_line</span>(<span class="at">distribution =</span> qnorm)</span></code></pre></div>
-<p><img src="Week07a_files/figure-html/unnamed-chunk-13-1.png" width="288" /></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the equation for the line</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df3, <span class="fu">aes</span>(<span class="at">sample =</span> Pooled.res)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_qq_line</span>(<span class="at">distribution =</span> qnorm)</span></code></pre></div>
+<p><img src="Week07a_files/figure-html/unnamed-chunk-16-1.png" width="288" /></p>
 <p>This dataset has behaved quite well. Its batches differed only by location, yet its spread remained homogeneous (enough) across the batches to pool them and enable us to confirm, with greater confidence, that the spread follows a normal distribution.</p>
 <p>This <em>well behaved</em> dataset allows us to model its spread using the sample <strong>standard deviation</strong>. It’s important to note that had the data not followed a normal distribution, then characterizing its spread using the standard deviation would have been inappropriate. Unfortunately, many ancillary data analysts seldom check the distribution requirements of their data before choosing to characterize its distribution using the standard deviation. In such a situation, you would have to revert to a far less succinct characterization of spread: the quantile.</p>
 <p>You can compute the standard deviation as:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(df2<span class="sc">$</span>Height.res)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(df2<span class="sc">$</span>Height.res)</span></code></pre></div>
 <pre><code>[1] 2.465049</code></pre>
 <p>We can now model singer height by both <code>voice.part</code> means, and the group standard deviation of 2.47.</p>
 </div>
