@@ -11,7 +11,7 @@
 
 
 
-<title>Things you will learn in this course</title>
+<title>What you will learn in this course</title>
 
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -620,7 +620,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Things you will learn in this course</h1>
+<h1 class="title toc-ignore">What you will learn in this course</h1>
 
 </div>
 
@@ -629,7 +629,7 @@ div.tocify {
 <h1>Exploratory Data Analysis (EDA)</h1>
 <div id="what-is-eda" class="section level2">
 <h2>What is EDA?</h2>
-<p>Traditional approaches to data analysis tend to be linear and unidirectional. It often starts with the acquisition or collection of a data set and ends with the computation of some inferential or confirmatory procedure.</p>
+<p>Traditional approaches to data analysis tend to be linear and unidirectional. It often starts with the acquisition or collection of a dataset then ends with the computation of some inferential or confirmatory procedure.</p>
 <p><img src="img/week1_fig1.png" /></p>
 <p>Unfortunately, such practice can lead to faulty conclusions. The following datasets generate identical regression analysis results shown in the previous figure yet, they are all completely different!</p>
 <p><img src="Week01_files/figure-html/anscombe-1.png" width="624" /></p>
@@ -642,36 +642,6 @@ div.tocify {
 </div>
 <p>John Tukey is credited with having coined the term exploratory data analysis and with having written the first comprehensive book (Tukey, 1977<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>) on that subject in 1977. The book is still very much relevant today and several of the techniques highlighted in the book will be covered in this course.</p>
 </div>
-<div id="an-eda-example-co2-analysis" class="section level2">
-<h2>An EDA example: CO2 analysis</h2>
-<p>Let’s start off by plotting the atmospheric CO2 concentrations (in ppm) pulled from <a href="http://www.esrl.noaa.gov/gmd/ccgg/trends/">NOAA’s website</a></p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-2-1.png" width="576" /></p>
-<p>We note two patterns of interest: an overall upward trend, and a cyclical trend. Our first EDA task is to model the overall trend. We can attempt to fit a straight line to the data using a standard regression analysis procedure. The fitted line is displayed in red in the following plot.</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-3-1.png" width="576" /></p>
-<p>Next, we subtract the modeled line from the CO2 data and plot the result–this difference is called the <strong>residual</strong> and can be thought of as representing what the linear model does <em>not</em> explain about the data.</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-4-1.png" width="576" /></p>
-<p>An overall trend is still present, despite having attempted to control for it. This implies that our simple line model does not do a good job in <em>smoothing</em> out the overall trend. It appears that the overall trend is slightly convex and has a small peak around the 1990’s; we should try to fit the trend using a 3rd order polynomial of the form: <span class="math display">\[
-CO2_{trend} = a + b(Year) + c(Year^2) + d(Year^3)
-\]</span></p>
-<p>The fitted line looks like this:</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-5-1.png" width="576" /></p>
-<p>Now, let’s look at the residuals:</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-6-1.png" width="576" /></p>
-<p>This is an improvement over the simple line (which was a 1st order polynomial fit). So what we have learned so far is that the overall trend is not perfectly linear but instead follows a parabolic like trajectory with a small hump halfway across the time span. However, we can still make out a “W” shaped trend in the residual which can hamper our analysis of the oscillatory patterns in the data. We could play with different order polynomials to smooth the trend even further, but at this point, we may opt for a non-parametric fit. When the goal is to peel off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data. An example of a non-parametric smoothing technique is the LOESS curve which is shown in the following figure.</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-7-1.png" width="576" /></p>
-<p>At first glance, this may not look any different from our 3rd order polynomial. But the resulting residual suggests that the LOESS smooth did a good job in removing any overall trend in our batch of CO2 values.</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-8-1.png" width="576" /></p>
-<p>Let’s now focus on the residuals. Note the y axis values: they are three orders of magnitude less than the overall CO2 values. This indicates that the oscillating nature about the overall trend is relatively small (the CO2 values have a range of [313.26, 411.24] whereas the residuals have a range of [-4.58, 4.37].</p>
-<p>Now, we may be tempted to fit a <em>smooth</em> (as Tukey would say) to the residuals but that may not prove to be fruitful. Instead let’s see if the oscillation follows a 12 month cycle. We’ll group all the (residual) values by month of the year. In other words, we will remove the year <em>tag</em> associated with each value and explore those values as a function of month alone. Each month’s batch of values is distilled into boxplots (one for each month of the year).</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-9-1.png" width="384" /></p>
-<p>The box plot is a nifty visualization tool used to distill a batch of numbers into a measure of centrality and spread. The box in the graphic encompasses 50% of the data; the horizontal line in the box represents the median (a measure of centrality); the vertical lines above and below the box, the “whiskers”, encompass most of the remaining data; the black points extending beyond the “whiskers” are deemed outliers (i.e. values that are not typical of the batch).</p>
-<p>It’s clear from the plot that the oscillation we observed in the CO2 plot follows a yearly cycle: a peak in the spring and a dip in the fall. This cycle is explained in part by the increased land mass in the northern hemisphere relative to the southern hemisphere. Because plants (and by extension photosynthesis) goes dormant during the winter months in the northern hemisphere, atmospheric CO2 is no longer being photosynthesized; this despite the southern hemisphere’s photosynthesis peak during the October-March period (a result of the southern hemisphere’s smaller land mass). Other factors such as increased CO2 emissions during the winter months may also contribute to the oscillatory nature of atmospheric CO2 concentrations.</p>
-<p>Thus far, we have uncovered two patterns of interest: an overall trend and a cyclical component. Note that to effectively explore the cyclical pattern we had to <strong>de-trend</strong> (or <strong>smooth</strong>) the data. Next, we should <em>smooth</em> the seasonal component of the data to see if another pattern emerges. We may, for example, smooth the data by subtracting the monthly median from each residual leaving us with the next batch of residual values to explore:</p>
-<p><img src="Week01_files/figure-html/unnamed-chunk-10-1.png" width="384" /></p>
-<p>Note that now, all the boxplots are lined up along their median values. We are now exploring the data after having accounted for both overall trend and seasonality. What can be gleaned from this dataset? We may want to explore the skewed nature of the residuals in February, or the narrower range of CO2 values for the fall months, for example.</p>
-<p>It’s important to realize that this is one of many ways in which we could have proceeded with the analysis. For example, we could have started off the analysis by removing the seasonal component from the data, then analyze the long term trend. This is the approach taken by William Cleveland <a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>.</p>
-<p>Data analysis is an interplay between fitting the data and plotting the residuals. The goal is to extract all meaningful patterns from the data and to be left with residuals that are randomly distributed around a value of 0. Some may caution that this is tantamount to <em>data snooping</em> or <em>forcing the data</em> to reveal what we want it to reveal. While there might be some truth to this, think of the alternative: had we not graphically inspected the CO2 data, how could we have uncovered all of the interesting features of the data? And without knowing how the data behaves, how would we know what statistical procedures would be adequate for the analysis?</p>
-</div>
 <div id="the-role-of-graphics-in-eda" class="section level2">
 <h2>The role of graphics in EDA</h2>
 <p>The preceding example highlights the importance of graphing data. A core component of this course is learning how to construct effective data visualization tools for the purpose of revealing patterns in the data. The graphical tools must allow the data to <em>express themselves</em> without imposing a <em>story</em>.</p>
@@ -679,15 +649,14 @@ CO2_{trend} = a + b(Year) + c(Year^2) + d(Year^3)
 <p><img style="float:left;margin-right:10px;" src="img/Cleveland.jpg"> “Visualization is critical to data analysis. It provides a front line of attack, revealing intricate structure in data that cannot be absorbed in any other way.”</p>
 <p>–William S. Cleveland</p>
 </div>
-<p>William Cleveland has written extensively about data visualization and has focused on principles founded in the field of cognitive neuroscience to improve data graphic designs. His book, <em>Visualizing Data</em>, is a leading authority on statistical graphics and, despite its age, is as relevant today as it was two decades ago. It focuses on graphical techniques (some newer than others) designed to explore the data. This may differ from graphics generated for public dissemination which benefits from another form of data visualization called <em>information visualization</em> (or infovis for short). Infovis will not be covered in this course (though there is some overlap between the two techniques). For a good discussion on the differences between statistical graphics and infovis see the 2011 Statistical Computing and Graphics Newsletter <a href="http://stat-computing.org/newsletter/issues/scgn-22-1.pdf">Statistical Graphics and InfoVis: separated Twins at Birth?</a><a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
-<p>Cleveland has also contributed a very important tool to EDA: the <em>LOESS</em> curve (which was demonstrated in the CO2 data example). The LOESS curve will be used extensively in this course.</p>
-<p>The LOESS is one of many fitting options used in smoothing (or detrending) the data. Others include parametric models such as the family of linear polynomials (we explored two of them in the CO2 example) and Tukey’s suite of smoothers notably the <em>running median</em> and the <em>3RS3R</em>.</p>
+<p>William Cleveland has written extensively about data visualization and has focused on principles founded in the field of cognitive neuroscience to improve data graphic designs. His book, <em>Visualizing Data</em>, is a leading authority on statistical graphics and, despite its age, is as relevant today as it was two decades ago. It focuses on graphical techniques (some newer than others) designed to explore the data. This may differ from graphics generated for public dissemination which benefits from another form of data visualization called <em>information visualization</em> (or infovis for short). Infovis will not be covered in this course (though there is some overlap between the two techniques). For a good discussion on the differences between statistical graphics and infovis see the 2011 Statistical Computing and Graphics Newsletter <a href="http://stat-computing.org/newsletter/issues/scgn-22-1.pdf">Statistical Graphics and InfoVis: separated Twins at Birth?</a><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
+<p>Cleveland has also contributed a very important tool to EDA: the <em>LOESS</em> curve. The LOESS curve will be used extensively in this course. It is one of many fitting options used in smoothing (or detrending) the data. Others include parametric models such as the family of linear polynomials and Tukey’s suite of smoothers notably the <em>running median</em> and the <em>3RS3R</em>.</p>
 </div>
 </div>
 <div id="we-need-a-good-data-analysis-environment" class="section level1">
 <h1>We need a good data analysis environment</h1>
 <p>Effective EDA requires a flexible data analysis environment that does not constrain one to a limited set of data manipulation procedures or visualization tools. After all, would any good writer limit herself to a set of a hundred pre-built sentences? Of course not–we would be reading the same novels over and over again! So why would we limit ourselves to a limited set of pre-packaged data analysis procedures? EDA requires an arsenal of data analysis building blocks much like a good writer needs an arsenal of words. Such an environment must provide us with flexible data manipulation capabilities, a flexible data visualization environment and access to a wide range of statistical procedures. A scripting environment, like R, offers such an environment.</p>
-<p>The data analysis environment should also be freely available, and its code open to the public. Free access to the software allows anyone with the right set of skills to share in the data analysis, regardless of any budgetary constraints. The open source nature of the software ensures that any aspect of the code used for a particular task can be examined when additional insight into the implementation of an analytical/numerical method if needed. Deciphering code may not be a skill available to all researchers, however, if the need to understand how a procedure is implemented is important enough, an individual with the appropriate programming skills can be easy to come by, even if it’s for a small fee. Open source software also ensures that the underlying code used to create the executable application can be ported to different platforms or different operating systems (even though this too may require some effort and modest programming skills).</p>
+<p>The data analysis environment should also be freely available, and its code open to the public. Free access to the software allows anyone with the right set of skills to share in the data analysis, regardless of any budgetary constraints. The open source nature of the software ensures that any aspect of the code used for a particular task can be examined when additional insight into the implementation of an analytical/numerical method if needed. However, deciphering code may not be a skill available to all researchers; if the need to understand how a procedure is implemented is important enough, an individual with the appropriate programming skills can be easy to come by, even if it’s for a small fee. Open source software also ensures that the underlying code used to create the executable application can be ported to different platforms or different operating systems (even though this too may require some effort and modest programming skills).</p>
 <div id="the-workhorse-r" class="section level2">
 <h2>The workhorse: R</h2>
 <p><a href="https://en.wikipedia.org/wiki/R_%28programming_language%29">R</a> is an open source data analysis and visualization programming environment whose roots go back to the <a href="https://en.wikipedia.org/wiki/S_%28programming_language%29">S programming language</a> developed at Bell Laboratories in the 1970’s by <a href="https://en.wikipedia.org/wiki/John_Chambers_%28statistician%29">John Chambers</a>. It will be used almost exclusively in this course.</p>
@@ -699,150 +668,66 @@ CO2_{trend} = a + b(Year) + c(Year^2) + d(Year^3)
 <div id="data-manipulation" class="section level2">
 <h2>Data manipulation</h2>
 <p>The importance of data visualization was already discussed in an earlier section. But before one can begin plotting data, one must have a data table in a form ready to be plotted. In cases where the data table consists of just two variables (columns), little data manipulation may be needed, but in cases where data tables consist of tens or scores of variables, data manipulation, subsetting and/or reshaping may be required. Tackling such a task can be challenging in a point and click spreadsheet environment and can introduce clerical error. R offers an array of data table manipulation tools and packages such as <code>tidyr</code> and <code>dplyr</code>. Furthermore, R’s scripting environment enables one to <em>read</em> through each step of a manipulation procedure in a clear and unambiguous way. Imagine the difficulty in properly documenting all the point-and-click steps followed in a spreadsheet environment.</p>
-For example, a data table of grain production for North America may consist of six variables and 1501 rows. The following table shows just the first 7 lines of the 1501 rows.
+<p>For example, a data table of grain production for North America may consist of six variables and 1501 rows. The following table shows just the first 7 lines of the 1501 rows.</p>
 <table>
 <thead>
-<tr>
-<th style="text-align:left;">
-Country
-</th>
-<th style="text-align:left;">
-Crop
-</th>
-<th style="text-align:left;">
-Information
-</th>
-<th style="text-align:right;">
-Year
-</th>
-<th style="text-align:right;">
-Value
-</th>
-<th style="text-align:left;">
-Source
-</th>
+<tr class="header">
+<th align="left">Country</th>
+<th align="left">Crop</th>
+<th align="left">Information</th>
+<th align="right">Year</th>
+<th align="right">Value</th>
+<th align="left">Source</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:left;">
-Canada
-</td>
-<td style="text-align:left;">
-Barley
-</td>
-<td style="text-align:left;">
-Area harvested (Ha)
-</td>
-<td style="text-align:right;">
-2012
-</td>
-<td style="text-align:right;">
-2060000.00
-</td>
-<td style="text-align:left;">
-Official data
-</td>
+<tr class="odd">
+<td align="left">Canada</td>
+<td align="left">Barley</td>
+<td align="left">Area harvested (Ha)</td>
+<td align="right">2012</td>
+<td align="right">2060000.00</td>
+<td align="left">Official data</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Canada
-</td>
-<td style="text-align:left;">
-Barley
-</td>
-<td style="text-align:left;">
-Yield (Hg/Ha)
-</td>
-<td style="text-align:right;">
-2012
-</td>
-<td style="text-align:right;">
-38894.66
-</td>
-<td style="text-align:left;">
-Calculated data
-</td>
+<tr class="even">
+<td align="left">Canada</td>
+<td align="left">Barley</td>
+<td align="left">Yield (Hg/Ha)</td>
+<td align="right">2012</td>
+<td align="right">38894.66</td>
+<td align="left">Calculated data</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Canada
-</td>
-<td style="text-align:left;">
-Buckwheat
-</td>
-<td style="text-align:left;">
-Area harvested (Ha)
-</td>
-<td style="text-align:right;">
-2012
-</td>
-<td style="text-align:right;">
-0.00
-</td>
-<td style="text-align:left;">
-FAO estimate
-</td>
+<tr class="odd">
+<td align="left">Canada</td>
+<td align="left">Buckwheat</td>
+<td align="left">Area harvested (Ha)</td>
+<td align="right">2012</td>
+<td align="right">0.00</td>
+<td align="left">FAO estimate</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Canada
-</td>
-<td style="text-align:left;">
-Canary seed
-</td>
-<td style="text-align:left;">
-Area harvested (Ha)
-</td>
-<td style="text-align:right;">
-2012
-</td>
-<td style="text-align:right;">
-101900.00
-</td>
-<td style="text-align:left;">
-Official data
-</td>
+<tr class="even">
+<td align="left">Canada</td>
+<td align="left">Canary seed</td>
+<td align="left">Area harvested (Ha)</td>
+<td align="right">2012</td>
+<td align="right">101900.00</td>
+<td align="left">Official data</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Canada
-</td>
-<td style="text-align:left;">
-Canary seed
-</td>
-<td style="text-align:left;">
-Yield (Hg/Ha)
-</td>
-<td style="text-align:right;">
-2012
-</td>
-<td style="text-align:right;">
-12161.92
-</td>
-<td style="text-align:left;">
-Calculated data
-</td>
+<tr class="odd">
+<td align="left">Canada</td>
+<td align="left">Canary seed</td>
+<td align="left">Yield (Hg/Ha)</td>
+<td align="right">2012</td>
+<td align="right">12161.92</td>
+<td align="left">Calculated data</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Canada
-</td>
-<td style="text-align:left;">
-Grain, mixed
-</td>
-<td style="text-align:left;">
-Area harvested (Ha)
-</td>
-<td style="text-align:right;">
-2012
-</td>
-<td style="text-align:right;">
-57900.00
-</td>
-<td style="text-align:left;">
-Official data
-</td>
+<tr class="even">
+<td align="left">Canada</td>
+<td align="left">Grain, mixed</td>
+<td align="left">Area harvested (Ha)</td>
+<td align="right">2012</td>
+<td align="right">57900.00</td>
+<td align="left">Official data</td>
 </tr>
 </tbody>
 </table>
@@ -915,16 +800,16 @@ Barley_yield
 </tr>
 </tbody>
 </table>
-<p>Creating the same output in a spreadsheet environment would take a bit more effort and its workflow would be less transparent.</p>
+<p>On the other hand, creating the same output in a spreadsheet environment would take a bit more effort and its workflow would be less transparent.</p>
 </div>
 <div id="reproducible-analysis" class="section level2">
 <h2>Reproducible analysis</h2>
-<p>Data table manipulation is inevitable in any data analysis workflow and, as discussed in the last section, can be prone to clerical errors if performed in a point-and-click environment. Furthermore, reproducing a workflow in a spreadsheet environment can be difficult unless each click and each copy-and-paste are meticulously documented. And even if the documentation is adequate, there is no way of knowing if the analyst followed those exact procedures (unless his mouse and keyboard moves were recorded). However, with a scripting environment, each step of a workflow is clearly and unambiguously laid out. This leads to another basic tenet of the scientific method: <strong>reproducibility of the workflow</strong>.</p>
-<p>Reproducible research lends credence to scientific work. The need for reproducibility is not limited to data collection or methodology but includes the actual analytical workflow that generated the results including data table manipulation and implementation of statistical procedures.</p>
-<p>Data analysis can be complex. Each data manipulation step that requires human interaction is prone to clerical error. But error can also manifest itself in faulty implementation of an analytical procedure—both technical and theoretical. Unfortunately, the workflows are seldom available in technical reports or peer-reviewed publications where the intended audience is only left with the end product of the analysis.</p>
+<p>Data table manipulation is inevitable in any data analysis workflow and, as discussed in the last section, can be prone to clerical errors if performed in a point-and-click environment. Furthermore, reproducing a workflow in a spreadsheet environment can be difficult unless each click and each copy-and-paste operations are meticulously documented. And even if the documentation is adequate, there is no way of knowing if the analyst followed those exact procedures (unless his mouse and keyboard moves were recorded). However, with a scripting environment, each step of a workflow is clearly and unambiguously laid out as demonstrated with the FAO grain data above. This leads to another basic tenet of the scientific method: <strong>reproducibility of the workflow</strong>.</p>
+<p>Reproducible research lends credence to scientific work. The need for reproducibility is not limited to data collection or methodology but includes the actual analytical workflow that generated the results including data table output and statistical tests.</p>
+<p>Data analysis can be complex. Each data manipulation step that requires human interaction is prone to clerical error. But error can also manifest itself in faulty implementation of an analytical procedure—both technical and theoretical. Unfortunately, workflows are seldom available in technical reports or peer-reviewed publications where the intended audience is only left with the end product of the analysis.</p>
 <div style="width:600px;height:160px;margin-left:70px;margin-bottom:10px;font-family:Garamond, Georgia, serif;font-size:1.5em;font-style:italic">
 <p><img style="float:left;margin-right:10px;" src="img/Baggerly_Coombes.png"> “… a recent survey of 18 quantitative papers published in Nature Genetics in the past two years found reproducibility was not achievable even in principle for 10.”</p>
-<p>–Keith A. Baggerly &amp; Kevin R. Coombes<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></p>
+<p>–Keith A. Baggerly &amp; Kevin R. Coombes<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
 </div>
 <p>Unfortunately, examples of irreproducible research are <a href="http://theconversation.com/science-is-in-a-reproducibility-crisis-how-do-we-resolve-it-16998">all too common</a>. An example of such was reported by the <a href="http://www.nytimes.com/2011/07/08/health/research/08genes.html?_r=0">New York Times</a> in an article titled <em>How Bright Promise in Cancer Testing Fell Apart</em>. In 2006, researchers at Duke had published a paper in <em>Nature Medicine</em> on a breakthrough approach to fighting cancer. The authors’ research suggested that genomic tests of a cancer cell’s DNA could be used to target the most effective chemotherapy treatment. This was heralded as a major breakthrough in the fight against cancer. Unfortunately, the analysis presented by the authors was flawed. Two statisticians, Dr. Baggerly and Dr. Coombes, sought to replicate the work but discovered instead that the published work was riddled with problems including mis-labeling of genes and confounding experimental designs. The original authors of the research did not make the analytical workflow available to the public thus forcing the statisticians to scavenge for the original data and techniques. It wasn’t until 5 years later, in 2011, that <em>Nature</em> decided to retract the paper because they were “unable to reproduce certain crucial experiments”.</p>
 <p>Many journals now require or <em>strongly encourage</em> authors to <em>“make materials, data and associated protocols promptly available to readers without undue qualifications”</em> (<a href="http://www.nature.com/authors/policies/availability.html?message=remove">Nature, 2014</a>). Sharing data file is not too difficult, but sharing the analytical workflow used to generate conclusions can prove to be difficult if the data were run though many different pieces of software and point-and-click procedures. An ideal analytical workflow should be scripted in a human readable way from beginning (the moment the data file(s) is/are read) to the generation of the data tables or data figures used in the report of publication. This has two benefits: elimination of clerical errors (associated with poorly implemented point-and-click procedures) and the exposition of the analytical procedures adopted in the workflow.</p>
@@ -933,15 +818,14 @@ Barley_yield
 <div id="creating-dynamic-documents-using-r-markdown" class="section level1">
 <h1>Creating dynamic documents using R Markdown</h1>
 <p>Another source of error in the write-up of a report or publication is the linking of tables, figures and statistical summaries to the write-up. Typically, one saves statistical plots as image files then loads the image into the document. However, the figures may have gone through many different iterations resulting in many different versions of the image file in a working folder. Add to this many other figures, data table files and statistical results from various pieces of software, one quickly realizes the potential for embedding the wrong image files in the document or embedding the wrong statistical summaries in the text. Furthermore, the researcher is then required to properly archive and document the provenance of each figure, data table or statistical summary resulting in a complex structure of files and directories in the project folder thus increasing the odds of an irreproducible analysis.</p>
-<p>Confining all of the analysis to a scripting environment such as R can help, but this still does not alleviate the possibility of loading the wrong figure into the document, or forgetting to update a statistical summary in the text when the original data file was revised. A solution to this potential pitfall is to embed the actual analysis and graphic generation process into the document–such environments are called dynamic documents. In this course, we will use the <a href="http://rmarkdown.rstudio.com/">R Markdown authoring tool</a> which embeds R code into the document. An example of an R Markdown document is this write-up where both the CO2 data analysis and the data manipulation examples were generated using R and whose code was embedded in this R Markdown document. You can view the contents of the R Markdown file <a href="Week01.Rmd">here</a>.</p>
+<p>Confining all of the analysis to a scripting environment such as R can help, but this still does not alleviate the possibility of loading the wrong figure into the document, or forgetting to update a statistical summary in the text when the original data file was revised. A solution to this potential pitfall is to embed the actual analysis and graphic generation process into the document–such environments are called dynamic documents. In this course, we will use the <a href="http://rmarkdown.rstudio.com/">R Markdown authoring tool</a> which embeds R code into the document. An example of an R Markdown document is this entire course website entirely generated in RMarkdown!. You can view the R Markdown files <a href="https://github.com/mgimond/ES218">on this author’s GitHub repository</a>.</p>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p>Tukey, John W. <em>Exploratory Data Analysis</em>. 1977. Addison-Wesley.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p>Cleveland, William S. <em>Visualizing Data</em>. 1993. Hobart Press.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p>Lewin-Koh, Nicholas and Theus, Martin (Eds). <em>Statistical Graphics and InfoVis: separated Twins at Birth?</em> ASA Statistical Computing and Graphics Newsletter, 2011.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
-<li id="fn4"><p>Baggerly, Keith A. and Coombes, Kevin R. <em>Deriving Chemosensitivity from Cell Lines: Forensic Bioinformatics and Reproducible Research in High-Throughput Biology</em>. The Annals of Applied Statistics, vol.3, no.4, pp. 1309-1334. 2009.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Lewin-Koh, Nicholas and Theus, Martin (Eds). <em>Statistical Graphics and InfoVis: separated Twins at Birth?</em> ASA Statistical Computing and Graphics Newsletter, 2011.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>Baggerly, Keith A. and Coombes, Kevin R. <em>Deriving Chemosensitivity from Cell Lines: Forensic Bioinformatics and Reproducible Research in High-Throughput Biology</em>. The Annals of Applied Statistics, vol.3, no.4, pp. 1309-1334. 2009.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 
