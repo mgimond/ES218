@@ -833,41 +833,45 @@ R
 <p>So in the end, the expression <code>a == (3 | 4)</code> is really evaluating the condition <code>a == TRUE</code> which returns false (since 3 is not equal to the logical value <code>TRUE</code>).</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>a <span class="sc">==</span> (<span class="dv">3</span> <span class="sc">|</span> <span class="dv">4</span>)</span></code></pre></div>
 <pre><code>[1] FALSE</code></pre>
+<p>You may wonder how a relational operator such as <code>==</code> can compare two different data types? (Recall that <code>a</code> is <em>numeric</em> and <code>TRUE</code> is <em>logical</em>). R is not strict about mixing data types in many of its operations. It circumvents differences in data types by coercing all values to the <strong>highest common mode</strong> (see an earlier <a href="Week02a.html#(Atomic)_Vectors">tutorial</a>). Here, <code>numeric</code> overrides <code>logical</code> type thus coercing the <code>TRUE</code> variable to a <code>numeric</code> data type.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.numeric</span>(<span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>[1] 1</code></pre>
+<p>So <code>a == (3 | 4)</code> reduces to <code>a == TRUE</code> which is reduced to <code>a == 1</code>.</p>
 </div>
 </div>
 <div id="comparing-multidimensional-objects" class="section level1">
 <h1>Comparing multidimensional objects</h1>
 <p>The relational operators are used to compare single elements (i.e. one element at a time). If you want to compare two objects as a whole (e.g. multi-element vectors or data frames), use the <code>identical()</code> function. For example:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">10</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, a)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">10</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, a)</span></code></pre></div>
 <pre><code>[1] TRUE</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, b)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, b)</span></code></pre></div>
 <pre><code>[1] FALSE</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(mtcars, mtcars)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(mtcars, mtcars)</span></code></pre></div>
 <pre><code>[1] TRUE</code></pre>
 <p>Notice that <code>identical</code> returns a single logical vector, regardless the input object’s dimensions.</p>
 <p>Note that the data structure must match as well as its element values. For example, if <code>d</code> is a list and <code>a</code> is an atomic vector, the output of <code>identical</code> will be false even if the internal values match.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">list</span>( <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">10</span>) )</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, d)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">list</span>( <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">10</span>) )</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, d)</span></code></pre></div>
 <pre><code>[1] FALSE</code></pre>
 <p>If we convert <code>d</code> from a list to an atomic vector using the <code>unlist</code> function (thus matching data structures), we get:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, <span class="fu">unlist</span>(d))</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(a, <span class="fu">unlist</span>(d))</span></code></pre></div>
 <pre><code>[1] TRUE</code></pre>
 </div>
 <div id="the-match-operator-in" class="section level1">
 <h1>The match operator <code>%in%</code></h1>
 <p>The match operator <code>%in%</code> compares two sets of vectors and assesses if an element on the left-hand side of <code>%in%</code> matches any of the elements on the right-hand side of the operator. For each element in the left-hand vector, R returns <code>TRUE</code> if the value is present in any of the right-hand side elements or <code>FALSE</code> if not.</p>
 <p>For example, given the following vectors:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;cd&quot;</span>, <span class="st">&quot;fe&quot;</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">&quot;b&quot;</span>, <span class="st">&quot;e&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;cd&quot;</span>, <span class="st">&quot;fe&quot;</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">&quot;b&quot;</span>, <span class="st">&quot;e&quot;</span>)</span></code></pre></div>
 <p>find the elements in <code>v1</code> that match any of the values in <code>v2</code>.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">%in%</span> v2</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">%in%</span> v2</span></code></pre></div>
 <pre><code>[1] FALSE  TRUE FALSE FALSE</code></pre>
 <p>The function checks whether each element in <code>v1</code> has a matching value in <code>v2</code>. For example, element <code>"a"</code> in <code>v1</code> is compared to elements <code>"b"</code> and <code>"e"</code> in <code>v2</code>. No matches are found and a <code>FALSE</code> is returned. The next element in <code>v1</code>, <code>"b"</code>, is compared to both elements in <code>v2</code>. This time, there is a match (<code>v2</code> has an element <code>"b"</code>) and <code>TRUE</code> is returned. This process is repeated for all elements in <code>v1</code>.</p>
 <p>The logical vector output has the same length as the input vector <code>v1</code> (four in this example).</p>
 <p>If we swap the vector objects, we get a two element logical vector since we are now comparing each element in <code>v2</code> to any matching elements in <code>v1</code>.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>v2 <span class="sc">%in%</span> v1</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>v2 <span class="sc">%in%</span> v1</span></code></pre></div>
 <pre><code>[1]  TRUE FALSE</code></pre>
 <center>
 <video width="620"  controls  style="float:center;">
@@ -878,23 +882,23 @@ R
 <div id="checking-if-a-value-is-na" class="section level1">
 <h1>Checking if a value is <code>NA</code></h1>
 <p>When assessing if a value is equal to <code>NA</code> the following evaluation may behave unexpectedly.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span> (<span class="dv">3</span>, <span class="dv">67</span>, <span class="dv">4</span>, <span class="cn">NA</span>, <span class="dv">10</span>)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>a <span class="sc">==</span> <span class="cn">NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span> (<span class="dv">3</span>, <span class="dv">67</span>, <span class="dv">4</span>, <span class="cn">NA</span>, <span class="dv">10</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>a <span class="sc">==</span> <span class="cn">NA</span></span></code></pre></div>
 <pre><code>[1] NA NA NA NA NA</code></pre>
 <p>The output is not a logical data type we would expect from an evaluation. Instead, you must make use of the <code>is.na()</code> function:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is.na</span>(a)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is.na</span>(a)</span></code></pre></div>
 <pre><code>[1] FALSE FALSE FALSE  TRUE FALSE</code></pre>
 <p>As another example, if we want to keep all rows in dataframe <code>d</code> where <code>z</code> = <code>NA</code>, we would type:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="cn">NA</span>), </span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">1</span>,<span class="dv">1</span>), </span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">NA</span>,<span class="cn">NA</span>,<span class="dv">4</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">3</span>))</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>d[ <span class="fu">is.na</span>(d<span class="sc">$</span>z), ]</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="cn">NA</span>), </span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">3</span>,<span class="dv">8</span>,<span class="dv">1</span>,<span class="dv">1</span>), </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">NA</span>,<span class="cn">NA</span>,<span class="dv">4</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">3</span>))</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>d[ <span class="fu">is.na</span>(d<span class="sc">$</span>z), ]</span></code></pre></div>
 <pre><code>  x y  z
 1 1 3 NA
 2 4 2 NA</code></pre>
 <p>You can, of course, use the <code>!</code> operator to reverse the evaluation and <em>omit</em> all rows where <code>z</code> = <code>NA</code>,</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>d[ <span class="sc">!</span><span class="fu">is.na</span>(d<span class="sc">$</span>z), ]</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>d[ <span class="sc">!</span><span class="fu">is.na</span>(d<span class="sc">$</span>z), ]</span></code></pre></div>
 <pre><code>   x y z
 3  2 5 4
 4  5 3 9
