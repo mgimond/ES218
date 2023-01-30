@@ -1,0 +1,135 @@
+# EDA
+
+```{r echo=FALSE}
+source("libs/Common.R")
+```
+
+## What is Exploratory Data Analysis (EDA)?
+
+Traditional approaches to data analysis tend to be linear and unidirectional. It often starts with the acquisition or collection of a dataset then ends with the computation of some inferential or confirmatory procedure.
+
+![](img/week1_fig1.png) 
+
+Unfortunately, such practice can lead to faulty conclusions. The following datasets generate identical regression analysis results shown in the previous figure yet, they are all completely different!
+
+```{r anscombe, fig.width=6.5, fig.height=2, echo=FALSE, message=FALSE}
+d1 <- anscombe[,c(4,8)]
+ff <- formula(y ~ x)
+mods <- setNames(as.list(1:4), paste0("lm", 1:4))
+for(i in 1:4) {
+  ff[2:3] <- lapply(paste0(c("y","x"), i), as.name)
+  mods[[i]] <- lmi <- lm(ff, data = anscombe)
+}
+
+op <- par(mfrow = c(1, 4), mar = c(3,3,1,1))
+for(i in 1:4) {
+  ff[2:3] <- lapply(paste0(c("y","x"), i), as.name)
+  plot(ff, data = anscombe, col = "black", pch = 21, bg = "black", cex = 1.2,
+       xlim = c(3, 19), ylim = c(3, 13))
+  abline(mods[[i]], col = "blue")
+}
+par(op)
+```
+
+The four plots represent Francis Anscombe's famous quartet which he used to demonstrate the importance of visualizing the data before proceeding with traditional statistical analysis. Of the four plots, only the first is a sensible candidate for the regression analysis; the second dataset highlights a nonlinear relationship between X and Y; the third and fourth plots demonstrate the disproportionate influence of a single outlier on the regression procedure.
+
+The aforementioned example demonstrates that a sound data analysis workflow must involve data visualization and exploration techniques. Exploratory data analysis seeks to extract salient features about the data (that may have otherwise gone unnoticed) and to help formulate hypotheses. Only then should appropriate statistical tests be applied to the data to confirm a hypothesis. 
+
+However, not all EDA workflows result in a statistical test: We may not be seeking a hypothesis or, if a hypothesis is sought we may not have the statistical tools necessary to test the hypothesis. It’s important to realize that most statistical procedures make restrictive assumptions about the data and the type of hypothesis being tested; data sets seldom meet those stringent requirements.
+
+<div style="width:500px;height:160px;margin-left:70px;margin-bottom:10px;;font-family:Garamond, Georgia, serif;font-size:1.5em;font-style:italic">
+<img style="float:left;margin-right:10px;" src="img/Tukey.png"> "Exploratory data analysis is an attitude, a flexibility, and a reliance on display, NOT a bundle of techniques."  
+
+--John Tukey
+</div>
+
+John Tukey is credited with having coined the term exploratory data analysis and with having written the first comprehensive book (Tukey, 1977[^1]) on that subject in 1977. The book is still very much relevant today and several of the techniques highlighted in the book will be covered in this course.
+
+## The role of graphics in EDA
+
+The preceding example highlights the importance of graphing data. A core component of this course is learning how to construct effective data visualization tools for the purpose of revealing patterns in the data. The graphical tools must allow the data to *express themselves* without imposing a *story*. 
+
+<div style="width:500px;height:160px;margin-left:70px;margin-bottom:10px;font-family:Garamond, Georgia, serif;font-size:1.5em;font-style:italic">
+<img style="float:left;margin-right:10px;" src="img/Cleveland.jpg"> "Visualization is critical to data analysis. It provides a front line of attack, revealing intricate structure in data that cannot be absorbed in any other way."
+
+--William S. Cleveland
+</div>
+
+William Cleveland has written extensively about data visualization and has focused on principles founded in the field of cognitive neuroscience to improve data graphic designs. His book, *Visualizing Data*, is a leading authority on statistical graphics and, despite its age, is as relevant today as it was two decades ago. It focuses on graphical techniques (some newer than others) designed to explore the data. This may differ from graphics generated for public dissemination which benefits from another form of data visualization called *information visualization* (or infovis for short). Infovis will not be covered in this course (though there is some overlap between the two techniques). For a good discussion on the differences between statistical graphics and infovis see the 2011 Statistical Computing and Graphics Newsletter [Statistical Graphics and InfoVis: separated Twins at Birth?](http://stat-computing.org/newsletter/issues/scgn-22-1.pdf)[^3]
+
+Cleveland has also contributed a very important tool to EDA: the *LOESS* curve. The LOESS curve will be used extensively in this course. It is one of many fitting options used in smoothing (or detrending) the data. Others include parametric models such as the family of linear polynomials and Tukey's suite of smoothers notably the *running median* and the *3RS3R*. 
+
+# We need a good data analysis environment
+
+Effective EDA requires a flexible data analysis environment that does not constrain one to a limited set of data manipulation procedures or visualization tools. After all, would any good writer limit herself to a set of a hundred pre-built sentences? Of course not--we would be reading the same novels over and over again! So why would we limit ourselves to a limited set of pre-packaged data analysis procedures? EDA requires an arsenal of data analysis building blocks much like a good writer needs an arsenal of words. Such an environment must provide us with flexible data manipulation capabilities, a flexible data visualization environment and access to a wide range of statistical procedures. A scripting environment, like R, offers such an environment. 
+ 
+The data analysis environment should also be freely available, and its code open to the public. Free access to the software allows anyone with the right set of skills to share in the data analysis, regardless of any budgetary constraints.  The open source nature of the software ensures that any aspect of the code used for a particular task can be examined when additional insight into the implementation of an analytical/numerical method if needed. However, deciphering code may not be a skill available to all researchers; if the need to understand how a procedure is implemented is important enough, an individual with the appropriate programming skills can be easy to come by, even if it’s for a small fee. Open source software also ensures that the underlying code used to create the executable application can be ported to different platforms or different operating systems (even though this too may require some effort and modest programming skills).
+
+## The workhorse: R
+
+[R](https://en.wikipedia.org/wiki/R_%28programming_language%29) is an open source data analysis and visualization programming environment whose roots go back to the [S programming language](https://en.wikipedia.org/wiki/S_%28programming_language%29) developed at Bell Laboratories in the 1970's by [John Chambers](https://en.wikipedia.org/wiki/John_Chambers_%28statistician%29). It will be used almost exclusively in this course.
+
+
+## The friendly interface: RStudio
+
+RStudio is an integrated development environment (IDE) to R. An IDE provides a user with an interface to a programming environment (like R) by including features such as a source code editor (with colored syntax). RStudio is not needed to use R (which has its own IDE environment--albeit not as nice as RStudio's), but makes using R far easier. RStudio is an open source software, but unlike R, it's maintained by a private entity which also distributes a commercial version of RStudio for businesses or individuals needing customer support.
+
+## Data manipulation
+
+The importance of data visualization was already discussed in an earlier section. But before one can begin plotting data, one must have a data table in a form ready to be plotted. In cases where the data table consists of just two variables (columns), little data manipulation may be needed, but in cases where data tables consist of tens or scores of variables, data manipulation, subsetting and/or reshaping may be required. Tackling such a task can be challenging in a point and click spreadsheet environment and can introduce clerical error. R offers an array of data table manipulation tools and packages such as `tidyr` and `dplyr`. Furthermore, R's scripting environment enables one to *read* through each step of a manipulation procedure in a clear and unambiguous way. Imagine the difficulty in properly documenting all the point-and-click steps followed in a spreadsheet environment.
+
+For example, a data table of grain production for North America may consist of six variables and 1501 rows. The following table shows just the first 7 lines of the 1501 rows. 
+ 
+
+```{r echo=FALSE}
+fao <- read.csv("http://mgimond.github.io/Data/Exercises/FAO_grains_NA.csv")
+knitr::kable(head(fao))
+```
+
+There are many ways in which we may want to summarize the data table. We could, for example, want to compute the total Barley yield for Canada by year for the years ranging from 2005 and 2007. In R, this would be done in just a few lines of code:
+
+```{r}
+library(dplyr) 
+dat2 <- fao %>% 
+    filter(Information == "Yield (Hg/Ha)",  Crop=="Barley", Country=="Canada",
+           Year >= 2005, Year <=2010) %>%  
+    group_by(Year) %>% 
+    summarise(Barley_yield = round(median(Value))) 
+```
+
+
+```{r echo=FALSE}
+knitr::kable(dat2, width=200, format="html")
+```
+
+On the other hand, creating the same output in a spreadsheet environment would take a bit more effort and its workflow would be less transparent. 
+
+## Reproducible analysis
+
+Data table manipulation is inevitable in any data analysis workflow and, as discussed in the last section, can be prone to clerical errors if performed in a point-and-click environment. Furthermore, reproducing a workflow in a spreadsheet environment can be difficult unless each click and each copy-and-paste operations are meticulously documented. And even if the documentation is adequate, there is no way of knowing if the analyst followed those exact procedures (unless his mouse and keyboard moves were recorded). However, with a scripting environment, each step of a workflow is clearly and unambiguously laid out as demonstrated with the FAO grain data above. This leads to another basic tenet of the scientific method: **reproducibility of the workflow**.
+
+Reproducible research lends credence to scientific work. The need for reproducibility is not limited to  data collection or methodology but includes the actual analytical workflow that generated the results including data table output and statistical tests.
+
+Data analysis can be complex. Each data manipulation step that requires human interaction is prone to clerical error. But error can also manifest itself in faulty implementation of an analytical procedure—both technical and theoretical. Unfortunately, workflows are seldom available in technical reports or peer-reviewed publications where the intended audience is only left with the end product of the analysis. 
+
+<div style="width:600px;height:160px;margin-left:70px;margin-bottom:10px;font-family:Garamond, Georgia, serif;font-size:1.5em;font-style:italic">
+<img style="float:left;margin-right:10px;" src="img/Baggerly_Coombes.png"> "... a recent survey of 18 quantitative papers published in Nature Genetics in the past two years found reproducibility was not achievable even in principle for 10."
+
+--Keith A. Baggerly & Kevin R. Coombes[^4]
+</div>
+
+Unfortunately, examples of irreproducible research are [all too common](http://theconversation.com/science-is-in-a-reproducibility-crisis-how-do-we-resolve-it-16998). An example of such was reported by the [New York Times](http://www.nytimes.com/2011/07/08/health/research/08genes.html?_r=0) in an article titled *How Bright Promise in Cancer Testing Fell Apart*. In 2006, researchers at Duke had published a paper in *Nature Medicine*  on a breakthrough approach to fighting cancer. The authors' research suggested that genomic tests of a cancer cell's DNA could be used to target the most effective chemotherapy treatment. This was heralded as a major breakthrough in the fight against cancer. Unfortunately, the analysis presented by the authors was flawed. Two statisticians, Dr. Baggerly and Dr. Coombes, sought to replicate the work but discovered instead that the published work was riddled with problems including mis-labeling of genes and  confounding experimental designs. The original authors of the research did not make the analytical  workflow available to the public thus forcing the statisticians to scavenge for the original data and techniques. It wasn't until 5 years later, in 2011, that *Nature* decided to retract the paper because they were "unable to reproduce certain crucial experiments".
+
+Many journals now require or *strongly encourage* authors to *"make materials, data and associated protocols promptly available to readers without undue qualifications"* ([Nature, 2014](http://www.nature.com/authors/policies/availability.html?message=remove)). Sharing data file is not too difficult, but sharing the analytical workflow used to generate conclusions can prove to be difficult if the data were run though many different pieces of software and point-and-click procedures. An ideal analytical workflow should be scripted in a human readable way from beginning (the moment the data file(s) is/are read) to the generation of the data tables or data figures used in the report of publication. This has two benefits:  elimination of clerical errors (associated with poorly implemented point-and-click  procedures) and the exposition of the analytical procedures adopted in the workflow.
+
+# Creating dynamic documents using R Markdown
+
+Another source of error in the write-up of a  report or publication is the linking of tables, figures and statistical summaries to the write-up. Typically, one saves statistical plots as image files then loads the image into the document. However, the figures may have gone through many different iterations resulting in many different versions of the image file in a working folder. Add to this many other figures, data table files and statistical results from various pieces of software, one quickly realizes the potential for embedding the wrong image files in the document or embedding the wrong statistical summaries in the text. Furthermore, the researcher is then required to properly archive and document the provenance of each figure, data table or statistical summary resulting in a complex structure of files and directories in the project folder thus increasing the odds of an irreproducible analysis.
+
+Confining all of the analysis to a scripting environment such as R can help, but this still does not alleviate the possibility of loading the wrong figure into the document, or forgetting to update a statistical summary in the text when the original data file was revised. A solution to this potential pitfall is to embed the actual analysis and graphic generation process into the document--such environments are called dynamic documents. In this course, we will use the [R Markdown authoring tool](http://rmarkdown.rstudio.com/) which embeds R code into the document. An example of an R Markdown document is this entire course website entirely generated in RMarkdown!. You can view the  R Markdown files [on this author's GitHub repository](https://github.com/mgimond/ES218).
+
+
+[^1]: Tukey, John W. *Exploratory Data Analysis*. 1977. Addison-Wesley.
+[^2]: Cleveland, William S. *Visualizing Data*. 1993. Hobart Press.
+[^3]: Lewin-Koh, Nicholas  and Theus, Martin (Eds). *Statistical Graphics and InfoVis: separated Twins at Birth?* ASA Statistical Computing and Graphics Newsletter, 2011.
+[^4]:  Baggerly, Keith A. and Coombes, Kevin R. *Deriving Chemosensitivity from Cell Lines: Forensic Bioinformatics and Reproducible Research in High-Throughput Biology*. The Annals of Applied Statistics, vol.3, no.4, pp. 1309-1334. 2009.

@@ -1,0 +1,320 @@
+# Re-expressing values
+
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(message=FALSE, warning=FALSE, results='hold')
+```
+
+```{r echo=FALSE}
+source("libs/Common.R")
+options(width = 100)
+```
+
+
+```{r echo = FALSE}
+pkg_ver(c("dplyr", "ggplot2"))
+```
+
+
+## Introduction
+
+Datasets do not always follow a nice symmetrical distribution nor do their spreads behave systematically across different levels (e.g. medians). Such distributions do not lend themselves well to visual exploration since they can mask simple patterns. They can also be a problem when testing hypotheses using traditional statistical procedures. A solution to this problem is non-linear **re-expression** (aka transformation) of the values. In univariate analysis, we often seek to **symmetrize** the distribution and/or **equalize** the spread. In multivariate analysis, the objective is to usually **linearize** the relationship between variables and/or to **normalize** the residual in a regression model.
+
+![](img/Reexpression_properties.png)
+</p>
+
+One popular form of re-expression is the **log** (natural or base 10). The other is the family of power transformations (of which the *log* is a special case) implemented using either the **Tukey** transformation or the **Box-Cox** transformation.
+
+## The log transformation
+
+One of the most popular transformations used in data analysis is the logarithm. The log, $y$, of a value $x$ is the power to which the base must be raised to produce $x$. This requires that the log function be defined by a **base**, $b$, such as `10`, `2` or `exp(1)` (the latter defining the natural log).
+
+$$
+y = log_b(x) \Leftrightarrow  x=b^y 
+$$
+
+In R, the base is defined by passing the parameter `base=` to the `log()` function as in `log(x , base=10)`.
+
+Re-expressing with the log is particularly useful when the change in one value as a function of another is multiplicative and not additive. An example of such a dataset is the compounding interest. Let's assume that we start off with $1000 in an investment account that yields 10% interest each year. We can calculate the size of our investment for the next 50 years as follows:
+
+```{r tidy=FALSE}
+rate <- 0.1                 # Rate is stored as a fraction
+y    <- vector(length = 50) # Create an empty vector that can hold 50 values
+y[1] <- 1000                # Start 1st year with $1000
+
+# Next, compute the investment ammount for years 2, 3, ..., 50.
+# Each iteration of the loop computes the new amount for year i based 
+# on the previous year's amount (i-1).
+for(i in 2:length(y)){
+  y[i] <- y[i-1] + (y[i-1] * rate)  # Or y[i-1] * (1 + rate)
+}
+```
+
+The vector `y` gives us the amount of our investment for each year over the course of 50 years.
+
+```{r, echo=FALSE}
+y
+```
+
+We can plot the values as follows:
+
+```{r, fig.width=4,fig.height=4}
+plot(y, pch = 20)
+```
+
+The change in difference between values from year to year is **not additive**, in other words, the difference between years 48 and 49 is different than that for years 3 and 4.
+
+--------------------------------------------
+Years              Difference
+----------------  ---------------------------
+`y[49] - y[48]`    `r round(y[49] - y[48],2)`
+
+`y[4] - y[3]`      `r round(y[4] - y[3],2)`
+--------------------------------------------
+
+
+However, the ratios between the pairs of years are identical:
+
+-------------------------------------
+Years              Ratio
+----------------  -------------------
+`y[49] / y[48]`    `r y[49] / y[48]`
+
+`y[4] / y[3]`      `r y[4] / y[3]`
+-------------------------------------
+
+
+We say that the change in value is *multiplicative* across the years. In other words, the value amount 6 years out is $value(6) = (yearly\_increase)^{6} \times 1000$ or `1.1^6 * 1000` = `r 1.1^6 * 1000` which matches value `y[7]`. 
+
+When we expect a variable to change multiplicatively as a function of another variable, it is usually best to transform the variable using the logarithm. To see why, plot the log of `y`.
+
+```{r, fig.width=4,fig.height=4}
+plot(log(y), pch=20)
+```
+
+Note the change from a curved line to a perfectly straight line. The logarithm will produce a straight line if the rate of change for `y` is constant over the range of `x`. This is a nifty property since it makes it so much easier to see if and where the rate of change differs. For example, let's look at the population growth rate of the US from 1850 to 2013.
+
+```{r fig.width=4,fig.height=4}
+dat <- read.csv("http://personal.colby.edu/personal/m/mgimond/R/Data/Population.csv", header=TRUE)
+plot(US ~ Year, dat, type="l") 
+```
+
+The population count for the US follows a slightly curved (convex) pattern. It's difficult to see from this plot if the rate of growth is consistent across the years (though there is an obvious jump in population count around the 1950's). Let's log the population count.
+
+```{r fig.width=4,fig.height=4}
+plot(log(US) ~ Year, dat, type="l")  
+```
+
+It's clear from the log plot that the rate of growth for the US has not been consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate over the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).
+
+A logarithm is defined by a base. Some of the most common bases are `10`, `2` and `exp(1)` with the latter being the natural log. The bases can be defined in the call to `log()` by adding a second parameter to that function. For example, to apply the log base 2 to the 5^th^ value of the vector `y`, type `log( y[5], 2)`. To apply the natural log to that same value, simply type `log( y[5], exp(1))`. If you don't specify a base, `R` will default to the natural log.
+
+The choice of a log base will not impact the shape of the logged values in the plot, only in its absolute value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with  whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.
+
+```{r fig.width=6, fig.height=4, echo=FALSE}
+ly1 <- log(y, 2)
+ly2 <- log(y, 10)
+brk <- round(seq(min(ly1), max(ly1), by=2))
+                
+OP <- par(mar=c(3,7,2,5))
+plot(log(y,2), type="p", pch=20, axes=FALSE, ylab=NA)
+axis(2, at=brk, label=round(log(2^brk,10),2), line=3.5, las=2, 
+     col="blue",col.ticks = "blue", col.axis = "blue")
+axis(2, at=brk, labels=brk, hadj=1, las=2)
+axis(4, at=brk, labels = 2^brk, las=2)
+axis(1, outer=FALSE)
+mtext("Base 2", 2, las=2, adj=1.2, padj=-12)
+mtext("Base 10", 2, las=2, padj=-12, adj=2.3,col="blue")
+mtext("Amount ($)", 4, las=2, padj=-13)
+box()
+grid()
+par(OP)
+
+```
+
+A rule of thumb is to use log base 10 when the range of values to be logged covers 3 or more powers of ten, $\geq 10^3$ (for example, a range of 5 to 50,000); if the range of values covers 2 or fewer powers of ten, $\leq 10^2$(for example, a range of 5 to 500) then a natural log or a log base 2 log is best.
+
+## The Tukey transformation
+
+The Tukey family of transformations offers a broader range of re-expression options (which includes the log). The values are re-expressed using the algorithm:
+
+$$
+\begin{equation} T_{Tukey} = 
+\begin{cases} x^p , & p \neq  0 \\
+              log(x), & p = 0  
+\end{cases}
+\end{equation}
+$$
+The objective is to find a value for $p$ from a "ladder" of powers (e.g. -2, -1, -1/2, 0, 1/2, 1, 2) that does a good job in re-expressing the batch of values. Technically, $p$ can take on any value. But in practice, we normally pick a value for $p$ that may be "interpretable" in the context of our analysis. For example, a log transformation (`p=0`) may make sense if the process we are studying has a steady growth rate. A cube root transformation (p = 1/3) may make sense if the entity being measured is a volume (e.g. rain fall measurements). But sometimes, the choice of $p$ may not be directly interpretable or may not be of concern to the analyst.
+
+A nifty solution to finding an appropriate $p$ is to create a function whose input is the vector (that we want to re-express) and a $p$ parameter we want to explore.
+
+```{r}
+RE <- function(x, p = 0) {
+  if(p != 0) {
+    z <- x^p
+  } else{
+    z <- log(x)
+  }
+  return(z)
+}
+```
+
+To use the custom function `RE` simply pass two vectors: the batch of numbers being re-expressed and the $p$ parameter.
+
+```{r fig.width=3, fig.height=1, echo=2:7}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+# Create a skewed distribution of 50 random values
+set.seed(9)
+a <- rgamma(50, shape = 1)
+
+# Let's look at the skewed distribution
+boxplot(a, horizontal = TRUE)
+par(OP)
+```
+
+The batch is strongly skewed to the right. Let's first try a square-root transformation (`p=1/2`)
+
+```{r fig.width=3, fig.height=1, echo=2:3}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+a.re <- RE(a, p = 1/2)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That certainly helps minimize the skew, but the distribution still lacks symmetry. Let's try a log transformation (`p=0`):
+
+```{r fig.width=3, fig.height=1, echo=2:3}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+a.re <- RE(a, p = 0)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That's a little too much over-correction; we don't want to substitute a right skew for a left skew. Let's try a power in between (i.e.  `p=1/4`):
+
+```{r fig.width=3, fig.height=1, echo=2:3}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+a.re <- RE(a, p = 1/4)   
+boxplot(a.re, horizontal = TRUE)
+par(OP)
+```
+
+That's much better. The distribution is now nicely balanced about its median.
+
+
+## The Box-Cox transformation
+
+Another family of transformations is the Box-Cox transformation. The values are re-expressed using a modified version of the Tukey transformation:
+
+$$
+\begin{equation} T_{Box-Cox} = 
+\begin{cases} \frac{x^p - 1}{p}, & p \neq  0 \\
+              log(x), & p = 0 
+\end{cases}
+\end{equation}
+$$
+Just as we can create a custom Tukey transformation function, we can create a Box-Cox transformation function too:
+
+```{r}
+BC <- function(x, p = 0) {
+  if(p == 0) {
+    z <- log(x)
+  } else {
+    z <- (x^p - 1)/p
+  }
+  return(z)
+}
+```
+
+
+While both the Box-Cox and Tukey transformations method will generate similar distributions when the power `p` is `0` or greater, they will differ in distributions when the power is negative. For example, when re-expressing  `mtcars$mpg` using an inverse power (p = -1), Tukey’s re-expression will change the data order but the Box-Cox transformation will not as shown in the following plots:. 
+
+```{r fig.width=6, fig.height=2, echo=2:4}
+OP <- par(mar=c(2,2,1.1,1), mfrow=c(1,3), cex.axis=0.8)
+plot(mpg ~ disp, mtcars, main = "Original data")
+plot(RE(mtcars$mpg, p = -1) ~ mtcars$disp, main = "Tukey")
+plot(BC(mtcars$mpg, p = -1) ~ mtcars$disp, main = "Box-Cox")
+par(OP)
+```
+
+The original data shows a negative relationship between `mpg` and `disp`; the Tukey re-expression takes the inverse of `mpg` which changes the nature of the relationship between the y and x variables where whe have a positive relationship between the re-expressed `mpg` variable and `disp` variable (note that by simply changing the sign of the re-expressed value, `-x^(-1)` maintains the nature of the original relationship); the Box-Cox transformation, on the other hand, maintains this negative relationship.
+
+The choice of re-rexpression will depend on the analysis context. For example, if you want an easily interpretable transformation then opt for the Tukey re-expression. If you want to compare the shape of transformed variables, the Box-Cox approach will be better suited.
+
+## Re-expressing to stabilize spread
+
+A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland's book (see the section titled "Spread-location plot" on the course website for an alternative version of the plot). 
+
+```{r fig.height=2, fig.width=2.2, echo=2:9}
+OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
+library(dplyr)
+df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
+
+# Create s-l table 
+df.sl <- df %>%
+  group_by(dimension) %>%
+  summarise(med  = log(median(mean.length)),
+            IQR  = IQR(mean.length),  
+            sprd = log(IQR))
+
+# Plot spread vs median
+plot(sprd ~ med, df.sl, pch = 16)
+par(OP)
+```
+
+The plot suggests a monotonic relationship between spread and median. Next, we'll  fit a line to this scatter plot and compute its slope. We'll use the `lm()` function, but note that any other line fitting strategies could be used as well.
+
+```{r fig.height=2, fig.width=2.2, echo=2:6}
+OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
+plot(sprd ~ med, df.sl, pch = 16)
+
+# Run regression model
+M <- lm(sprd ~ med, df.sl)
+abline(M, col = "red")
+par(OP)
+```
+
+The slope can be used to come up with the best power transformation to minimize the systematic increase in spread:  $p = 1 - slope$. 
+
+The slope can be extracted from the model `M` using the `coef` function:
+
+```{r}
+ coef(M)
+```
+
+The second value in the output is the slope. So the power to use is `1 - 2.97` or `-1.97`. We will use the  power transformation function `BC`  to re-express the `mean.length` values. We'll add the re-expressed values as a new  column to `df`:
+
+```{r}
+df$re.mean.length <- BC(df$mean.length, -1.97)
+```
+
+Let's compare boxplots between the original values with the re-expressed values.
+
+```{r fig.height=3, fig.width=6, fig.show='hold', echo=2:3}
+OP <- par(mfrow = c(1,2), mar=c(3,2,2,0.1))
+boxplot(mean.length ~ dimension, df, main = "Original data")
+boxplot(re.mean.length ~ dimension, df, main = "Re-expressed data")
+par(OP)
+```
+
+Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have equalized the spreads across the three groups. 
+
+We'll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week's [lecture](./Week07b.html#constructing-the-s-l-plot).
+
+```{r fig.height=2.5, fig.width=3.2}
+library(ggplot2)
+df1 <- df %>%
+  group_by(dimension)  %>%
+  mutate( Median = median(re.mean.length),
+          Residuals = sqrt( abs( re.mean.length - Median)))   
+
+# Generate the s-l plot
+ggplot(df1, aes(x = Median, y = Residuals)) + 
+  geom_jitter(alpha = 0.3,width = 0.003,height = 0) +
+  stat_summary(fun.y = median, geom = "line", col = "red") +
+  ylab(expression(sqrt( abs( " Residuals ")))) +
+  geom_text(aes(x = Median, y = 0.6, label = dimension) )
+```
+
+The plot suggests that the re-expression does a good job in stabilizing the spread.

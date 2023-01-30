@@ -1,0 +1,287 @@
+# Univariate analysis: Fits and residuals
+
+```{r echo=FALSE}
+source("libs/Common.R")
+```
+
+
+```{r echo = FALSE}
+pkg_ver(c("dplyr", "tidyr", "ggplot2","lattice"))
+```
+
+
+In previous lectures, we've determined that the `voice.part` singer groups differed only by location (central value) and not so much by spread. In this section, we will expand this analysis by  **fitting** a model (the mean) to the data, then we'll explore the residuals (i.e. the part of the data not explained by the fitted model). This exercise will tackle two objectives:
+
+ + To seek a simple *mathematical* model to characterize both the mean and spread of the data.
+ + To compare the influence of the voice part to that of the spread in characterizing the variation in height values (this to help address the question *"are the mean values of the voice parts significantly different?"*).
+
+## Fitting the data
+
+Univariate data can be characterized by their location and by their spread. The different groups of singers differ by their central values, we will therefore **fit** the group means to each group batch and compare the **residuals** between groups.
+
+First, we'll load the libraries that will be used in this exercise, then we'll load the `singer` data into the `df` object.
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lattice)
+
+df <- singer
+```
+
+
+Next, we'll plot the singer values using jittered points. We'll also add an orange point to each batch which will represent each group's mean.
+
+```{r fig.width = 6, fig.height=3}
+ggplot(df, aes(y = height, x = voice.part)) + 
+  geom_jitter(width = 0.1, height = 0, alpha = 0.1) +
+  stat_summary(fun = "mean", geom = "point", cex = 3, pch = 21, col = "red", bg = "orange") 
+```
+
+We've **fitted** each group with the **mean**--a mathematical description of the batches. Note that we could have used other measures of location such as the median, but since the data seem to follow a symmetrical distribution, the mean remains an adequate choice.
+
+## Computing the residuals
+
+Now, we'll subtract the group means from their respective group values: this will give us the **residuals** for each batch.
+
+```{r}
+# Add residual values to the data
+df2 <- df %>% 
+  group_by(voice.part) %>%
+  mutate(Height.res = height - mean(height))
+```
+
+Next, we will generate a plot of the (jittered) residuals.
+
+```{r fig.width = 6, fig.height=3}
+# Now plot the data after fitting height with group mean
+ggplot(df2) + aes(y=Height.res, x=voice.part)             + 
+  geom_jitter(width = 0.1, height=0, alpha=0.1) +
+  stat_summary(fun = "mean", geom = "point", cex = 3, pch = 21, col = "red", bg="orange") 
+```
+
+We've *normalized* the batches to a common location. Note that the values along the y-axis have changed: all values are now spread around `0`. Next, we'll check that the batches of residuals have similar spread.
+
+## Comparing the residuals
+
+The feature that interests us in the residuals is the **spread**. We've learned that a good way to compare spreads is to plot the quantiles of each batch against one another. 
+
+### Pairwise q-q plots with the `lattice` package
+
+If we want to compare *all* batches of residuals, we can create a pairwise q-q plot using the `lattice` package.
+
+```{r fig.width = 5, fig.height= 5}
+f.rng <- min(tapply(df2$Height.res, df2$voice.part, length))
+fun1  <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
+t1    <- aggregate(df2$Height.res ~ df2$voice.part, FUN = fun1, f.rng = f.rng )
+t2    <- as.data.frame(t(t1[,-1]))
+names(t2) <- t1[,1]
+splom(~t2,  axis.text.cex = 0.4, pch = 20,
+      varname.cex=0.5,
+      pscales=3,
+      prepanel.limits = function(x) (range(t2)), 
+      panel = function(x,y,...){
+        panel.grid()
+        panel.splom(x,y,...)
+        panel.abline(0, 1, col="grey")
+      })
+```
+
+Note that the plots are symmetrical about the diagonal. The q-q plots suggest that the spreads are very similar across singer heights given that the points fall almost perfectly along the one-to-one line.
+
+### Comparing batches to pooled residuals using a q-q plot
+
+Since the spreads are homogeneous across the batches, we may choose to combine (pool) the residuals and compare the residuals of each batch to the **pooled** residuals. The advantage with this approach is that we are increasing the *size* of the reference residual distribution thus reducing uncertainty that results from a relatively small sample size.
+
+```{r fig.width=8, fig.height=2.5 }
+
+df3 <- df2 %>%
+  group_by(voice.part)  %>%
+  arrange(Height.res)  %>% 
+  mutate(f.val    = (row_number() - 0.5) / n())  %>%
+  ungroup()  %>%
+  mutate(Pooled.res = quantile(Height.res, probs = f.val))  %>%
+  select(voice.part, Height.res, Pooled.res)
+
+ggplot(df3, aes(y = Height.res, x = Pooled.res)) + geom_point(alpha = 0.5) + 
+              geom_abline(intercept = 0, slope = 1) +
+              facet_wrap(~ voice.part, nrow = 1) 
+```
+
+All eight batches seem to have similar spreads. This makes it possible to compare batch means using a **residual-fit spread** plot (covered in the next section).
+
+#### What to expect if one or more of the batches have different spreads
+
+The residual vs. pooled residual plots can be effective at identifying batches with different spreads. In the following example, we combine four batches generated from an identical distribution (`V1`, `V2`, `V3` and `V4`) with two batches generated from a different distribution (`V5` and `V6`). Their boxplots are shown next.
+
+```{r, echo = FALSE}
+set.seed(26)
+ex1 <- replicate(4, rnorm(100, 10, 1), simplify = TRUE) %>% 
+  cbind(replicate(2,sqrt(rnorm(100, 100,1)), simplify = TRUE)) %>%  
+  as.data.frame() %>% 
+  pivot_longer(names_to = "batch", values_to = "value", cols = everything()) %>% 
+  group_by(batch)  %>%
+  arrange(value)  %>% 
+  mutate(value.res = value - mean(value),
+          f.val    = (row_number() - 0.5) / n())  %>%
+  ungroup()  %>%
+  mutate(Pooled.res = quantile(value.res, probs = f.val) ) 
+```
+
+```{r fig.width=5, fig.height=2, echo = FALSE}
+ggplot(ex1, aes(batch, value)) + geom_boxplot() +  xlab("")
+```
+
+Now let's take a look at the residual vs. pooled residual plots.
+
+```{r fig.width=8, fig.height=2.2 , echo = FALSE}
+
+ggplot(ex1, aes(y = value.res, x = Pooled.res)) + geom_point(alpha = 0.5) + 
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(~ batch, nrow = 1) 
+```
+
+Batches `V5` and `V6` clearly stand out as having different distributions from the rest of the batches. But it's also important to note that `V5` and `V6` *contaminate* the pooled residuals. This has the effect of nudging the other four batches away from the one-to-one line. Note what happens when batches `V5` and `V6`  are removed from the pooled residuals.
+
+```{r echo = FALSE, fig.width=5.5, fig.height=2.2 }
+set.seed(26)
+ex2 <- replicate(4, rnorm(100, 10, 1), simplify = TRUE) %>% 
+  as.data.frame() %>% 
+  pivot_longer(names_to = "batch", values_to = "value", cols = everything()) %>% 
+  group_by(batch)  %>%
+  arrange(value)  %>% 
+  mutate(value.res = value - mean(value),
+          f.val    = (row_number() - 0.5) / n())  %>%
+  ungroup()  %>%
+  mutate(Pooled.res = quantile(value.res, probs = f.val) ) 
+
+ggplot(ex2, aes(y = value.res, x = Pooled.res)) + geom_point(alpha = 0.5) + 
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(~ batch, nrow = 1) 
+```
+
+The *tightness* of points around the one-to-one line suggests nearly identical distributions between `V1`, `V2`, `V3` and `V4` as would be expected given that they were generated from the same underlying distribution.
+
+## Residual-fit spread plot
+
+So far, we've learned that the spreads of singer height are the same across all batches. This makes it feasible to assess whether the differences in means are comparable in magnitude to the spread of the pooled residuals.
+
+### A simple example 
+
+First, let's compare the following two plots. Both plots show two batches side-by-side. The difference in location is nearly the same in both plots (group `a` and `b` have a mean of 10 and 11 respectively), but the difference in spreads are not.
+
+```{r fig.height=2.5, fig.width=5, echo=FALSE}
+OP <- par( mfrow=c(1,2), mar=c(3,3,1,1))
+set.seed(33)
+ff <- data.frame( y = c(10 + rnorm(20, 0,1.4), 11 + rnorm(20,0,1.4)), cat = rep(c("a","b"),each=20))
+ff2 <- data.frame( y = c(10 + rnorm(20, 0,0.3), 11 + rnorm(20,0,0.3)), cat = rep(c("a","b"),each=20))
+
+lim <- range(ff$y,ff2$y)
+stripchart(y ~ cat, ff2, pch=20, vertical=TRUE, method="jitter",
+           col=c("blue","red"), ylim=lim )
+title("Plot 1")
+stripchart(y ~ cat, ff, pch=20, vertical=TRUE, method="jitter",
+           col=c("blue","red"), ylim=lim )
+title("Plot 2")
+par(OP)
+```
+
+`Plot 2` does not allow us to say, with confidence, that the two batches differ significantly despite both means being different. `Plot 1`  on the other hand, shows a significant difference in batch locations. One cannot make inferences about differences in central values without knowing the batches' distributions. 
+
+For example, in `Plot 1`, the *spread* (or difference) in mean values is relatively large compared to the spread of the residuals for each group (note that the spreads are nearly identical between both batches `a` and `b`). The difference in means spans one unit while the spread of each sets of residuals spans about the same amount. So the difference in location is significant. 
+
+If we split each batch in `Plot 1` into a location component plot (normalized to the overall mean) and a pooled residual component plot, and then compare those values against a quantile, we get a **residual-fit spread** plot, or **r-f spread** plot for short.
+
+```{r fig.height=3, fig.width=7, echo=FALSE}
+rfs(oneway(y~cat, data = ff2, spread = 1), 
+    aspect=1, 
+    ylab = "Height (inches)")
+```
+
+It's clear from this r-f spread plot that the spread of the mean distribution (between batches `a` and `b`) is important compared to that of its residuals. This suggests that the groups `a` and `b` explain much of the variability in the data.
+
+For `Plot 2`, the difference in mean values is also one unit, but the spread of residuals spans almost 5 units. An r-f spread plot makes this difference quite clear.
+
+```{r fig.height=3, fig.width=7, echo=FALSE}
+rfs(oneway(y~cat, data = ff, spread = 1), 
+    aspect=1, 
+    ylab = "Height (inches)")
+```
+
+The spread between each batch's fitted mean is small compared to that of the combined residuals suggesting that much of the variability in the data is not explained by the differences between groups `a` and `b`.
+
+### Are the fitted voice part values significantly different?
+
+We'll use `lattice`'s `rfs` and `oneway` functions to generate the r-f plot for the singer data. Note that the plot displays the spread of the modeled means *after* subtracting these means with the overall mean (remember, the goal is to compare the spreads about a common central value and not to compare their absolute values).
+
+```{r fig.height=3.5, fig.width=8}
+rfs(oneway(height ~ voice.part, data = singer, spread = 1), 
+    aspect = 1, 
+    ylab = "Height (inches)")
+```
+
+After normalizing the data to the global mean, the r-f spread plot splits the singer height data into two parts: modeled mean and residual. For example, the smallest value in the `Bass 2` group is `66`. When normalized to the global mean, that value is `-1.29`. The normalized value is then split between the group (normalized) mean of 4.1 and its residual of -5.39 (i.e. the difference between its value and the `Bass 2` group mean). These two values are then each added to two separate plots: the *fitted values* plot and the *residuals* plot. This process is repeated for each observation in the dataset to generate the final r-f spread plot.
+
+![](img/RF_plot_explained.png)
+<p></p>
+The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts *can* explain a good part of the variation in the data.
+
+## Generating a residual-fit plot with ggplot
+
+To generate the R-F plot using `ggplot2`, we must first split the data into its fitted and residual components (something the `rfs` function did for us). We'll make use of piping operations to complete this task.
+
+```{r}
+df1 <- singer %>%
+  mutate(norm.hgt = height - mean(height)) %>% 
+  group_by(voice.part) %>% 
+  mutate( Residuals  = norm.hgt - mean(norm.hgt),
+          `Fitted Values` = mean(norm.hgt))%>% 
+  ungroup() %>% 
+  select(-height, -voice.part, -norm.hgt) %>% 
+  pivot_longer(names_to = "type",  values_to = "value", cols=everything()) %>% 
+  group_by(type) %>% 
+  arrange(value) %>% 
+  mutate(`f-value` = (row_number() - 0.5) / n()) 
+```
+
+Next, we plot the data.
+
+```{r fig.height=3, fig.width=5.5}
+ggplot(df1, aes(x = `f-value`, y = value)) + 
+  geom_point(alpha = 0.3, cex = 1.5) +
+  facet_wrap(~ type) +
+  ylab("Height (inches)")
+```
+
+An alternative to the side-by-side R-F plot is one where both fits and residuals are overlapping.
+
+```{r fig.height=3, fig.width=4.5}
+ggplot(df1, aes(x = `f-value`, y = value, col = type)) + 
+  geom_point(alpha = 0.3, cex = 1.5) +
+  ylab("Height (inches)")
+```
+
+## Comparing pooled residuals to the normal distribution
+
+Our exploration of the singer height batches have been visual thus far. But there may be times when the analysis may need to culminate in a statistical test. Some of these tests reduce the data to mathematically tractable models such as the mean and the standard deviation (which follows a normal distribution). 
+
+We'll  take advantage of the pooled residuals to give us a larger sample size for comparison with the theoretical normal distribution.
+
+```{r fig.height=3, fig.width=3}
+# Find the equation for the line
+ggplot(df3, aes(sample = Pooled.res)) + stat_qq(distribution = qnorm) + 
+  geom_qq_line(distribution = qnorm)
+```
+
+This dataset has behaved quite well. Its batches differed only by location, yet its spread remained homogeneous (enough) across the batches  to pool them and enable us to confirm, with greater confidence, that the spread follows a normal distribution. 
+
+This *well behaved* dataset allows us to model its spread using the sample **standard deviation**. It's important to note that had the data not followed a normal distribution, then characterizing its spread using the standard deviation would have been inappropriate. Unfortunately, many ancillary data analysts seldom check the distribution requirements of their data before choosing to characterize its distribution using the standard deviation. In such a situation, you would have to revert to a far less succinct characterization of spread: the quantile.
+
+You can compute the standard deviation as:
+
+```{r}
+sd(df2$Height.res)
+```
+
+We can now model singer height by both `voice.part` means, and the group standard deviation of `r round(sd(df2$Height.res),2)`.
