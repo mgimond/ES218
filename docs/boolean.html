@@ -416,6 +416,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#boolean-operations" id="toc-boolean-operations" class="nav-link" data-scroll-target="#boolean-operations"><span class="toc-section-number">7.2</span>  Boolean operations</a>
   <ul class="collapse">
   <li><a href="#a-word-of-caution" id="toc-a-word-of-caution" class="nav-link" data-scroll-target="#a-word-of-caution"><span class="toc-section-number">7.2.1</span>  A word of caution</a></li>
+  <li><a href="#pecking-order-in-operations" id="toc-pecking-order-in-operations" class="nav-link" data-scroll-target="#pecking-order-in-operations"><span class="toc-section-number">7.2.2</span>  Pecking order in operations</a></li>
   </ul></li>
   <li><a href="#comparing-multidimensional-objects" id="toc-comparing-multidimensional-objects" class="nav-link" data-scroll-target="#comparing-multidimensional-objects"><span class="toc-section-number">7.3</span>  Comparing multidimensional objects</a></li>
   <li><a href="#the-match-operator-in" id="toc-the-match-operator-in" class="nav-link" data-scroll-target="#the-match-operator-in"><span class="toc-section-number">7.4</span>  The match operator <code>%in%</code></a></li>
@@ -495,11 +496,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Relational operations play an important role in data manipulation. Anytime you subset a dataset based on one or more criterion, you are making use of a relational operation. The relational operators (also known as <em>logical binary operators</em>) include <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> and <code>&gt;=</code>. The output of a condition is a logical vector <code>TRUE</code> or <code>FALSE</code>.<br>
 <br></p>
 <table class="table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 12%">
-<col style="width: 26%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Relational operator</th>
@@ -551,10 +547,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <br></p>
 <table class="table">
 <colgroup>
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 34%">
-<col style="width: 20%">
+<col style="width: 24%">
+<col style="width: 24%">
+<col style="width: 26%">
+<col style="width: 24%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -587,10 +583,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </table>
 <p>The following table breaks down all possible Boolean outcomes where <code>T</code> = <code>TRUE</code> and <code>F</code> = <code>FALSE</code>:</p>
 <table class="table">
-<colgroup>
-<col style="width: 27%">
-<col style="width: 18%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Boolean operation</th>
@@ -668,7 +660,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <pre><code>[1] FALSE</code></pre>
 </div>
 </div>
-<p>You may wonder how a relational operator such as <code>==</code> can compare two different data types? (Recall that <code>a</code> is <em>numeric</em> and <code>TRUE</code> is <em>logical</em>). R is not strict about mixing data types in many of its operations. It circumvents differences in data types by coercing all values to the <strong>highest common mode</strong> (see an earlier <a href="Week02a.html#(Atomic)_Vectors">tutorial</a>). Here, <code>numeric</code> overrides <code>logical</code> type thus coercing the <code>TRUE</code> variable to a <code>numeric</code> data type.</p>
+<p>You may wonder how a relational operator such as <code>==</code> can compare two different data types? (Recall that <code>a</code> is <em>numeric</em> and <code>TRUE</code> is <em>logical</em>). R is not strict about mixing data types in many of its operations. It circumvents differences in data types by coercing all values to the <strong>highest common mode</strong> (see the chapter on <a href="data_objects.html#data-structures">data types</a>). Here, <code>numeric</code> overrides <code>logical</code> type thus coercing the <code>TRUE</code> variable to a <code>numeric</code> data type.</p>
 <div class="cell" data-hash="boolean_cache/html/unnamed-chunk-7_1a82dbdff73ca821da40277e0aa46aec">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.numeric</span>(<span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -677,10 +669,99 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <p>So <code>a == (3 | 4)</code> reduces to <code>a == TRUE</code> which is reduced to <code>a == 1</code>.</p>
 </section>
+<section id="pecking-order-in-operations" class="level3" data-number="7.2.2">
+<h3 data-number="7.2.2" class="anchored" data-anchor-id="pecking-order-in-operations"><span class="header-section-number">7.2.2</span> Pecking order in operations</h3>
+<p>The previous example made use of R’s built-in operation precedence rules. For example, <em>comparison</em> operations such as <code>&lt;=</code> and <code>&gt;</code> are performed before boolean operations such that <code>a == 3 | 4</code> will first evaluate <code>a == 3</code> before evaluating <code>... | 4</code>.</p>
+<p>Even boolean operations follow a pecking order such that <code>!</code> precedes <code>&amp;</code> which precedes <code>|</code>. For example:</p>
+<p><code>! TRUE &amp; FALSE | TRUE</code></p>
+<p>will first evaluate <code>! TRUE</code>, then <code>... &amp; FALSE</code>, then <code>... | TRUE</code>.</p>
+<p>To overrride R’s built-in precedence, use paretheses. For example:</p>
+<p><code>! TRUE &amp; (FALSE | TRUE)</code></p>
+<p>will first evaluate <code>(FALSE | TRUE)</code> and <code>! TRUE</code>, then pass their output to <code>... | ...</code>, then <code>... | TRUE</code>.</p>
+<p>For a full list of operation precedence, access the help page for <code>Syntax</code>.</p>
+<p><code>?Syntax</code></p>
+<p>The following lists the pecking order from high to low precedence.</p>
+<table class="table">
+<tbody>
+<tr class="odd">
+<td>:: :::</td>
+<td>access variables in a namespace</td>
+</tr>
+<tr class="even">
+<td>$ @</td>
+<td>component / slot extraction</td>
+</tr>
+<tr class="odd">
+<td>[ [[</td>
+<td>indexing</td>
+</tr>
+<tr class="even">
+<td>^</td>
+<td>exponentiation (right to left)</td>
+</tr>
+<tr class="odd">
+<td>- +</td>
+<td>unary minus and plus</td>
+</tr>
+<tr class="even">
+<td>:</td>
+<td>sequence operator</td>
+</tr>
+<tr class="odd">
+<td>%any% |&gt;</td>
+<td>specialoperators (including %% and %/%)</td>
+</tr>
+<tr class="even">
+<td>* /</td>
+<td>multiply, divide</td>
+</tr>
+<tr class="odd">
+<td>+ -</td>
+<td>(binary) add, subtract</td>
+</tr>
+<tr class="even">
+<td>&lt; &gt; &lt;= &gt;= == !=</td>
+<td>ordering and comparison</td>
+</tr>
+<tr class="odd">
+<td>!</td>
+<td>negation</td>
+</tr>
+<tr class="even">
+<td>&amp; &amp;&amp;</td>
+<td>and</td>
+</tr>
+<tr class="odd">
+<td>| ||</td>
+<td>or</td>
+</tr>
+<tr class="even">
+<td>~</td>
+<td>as in formulae</td>
+</tr>
+<tr class="odd">
+<td>-&gt; -&gt;&gt;</td>
+<td>rightwards assignment</td>
+</tr>
+<tr class="even">
+<td>&lt;- &lt;&lt;-</td>
+<td>assignment (right to left)</td>
+</tr>
+<tr class="odd">
+<td>=</td>
+<td>assignment (right to left)</td>
+</tr>
+<tr class="even">
+<td>?</td>
+<td>help</td>
+</tr>
+</tbody>
+</table>
+</section>
 </section>
 <section id="comparing-multidimensional-objects" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="comparing-multidimensional-objects"><span class="header-section-number">7.3</span> Comparing multidimensional objects</h2>
-<p>The relational operators are used to compare single elements (i.e.&nbsp;one element at a time). If you want to compare two objects as a whole (e.g.&nbsp;multi-element vectors or data frames), use the <code>identical()</code> function. For example:</p>
+<p>The relational operators are used to compare single elements (i.e.&nbsp;one element at a time). If you want to compare two objects as a whole (e.g. multi-element vectors or data frames), use the <code>identical()</code> function. For example:</p>
 <div class="cell" data-hash="boolean_cache/html/unnamed-chunk-8_b8910257bfdb44e3990d74c6a5b4b9a4">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">10</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">6</span>)</span>
