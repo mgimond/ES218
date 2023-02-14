@@ -20,6 +20,11 @@ Run the following line to load the FAO data file into your current R session.
 dat <- read.csv("http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv", header=TRUE)
 ```
 
+Before tackling the examples that follow, make sure to load the `dplyr` package. 
+
+```{r, message=FALSE}
+library(dplyr)
+```
 
 ## The dplyr basics
 
@@ -33,25 +38,23 @@ The basic set of R tools can accomplish many data table queries, but the syntax 
 `mutate()`         | Add columns
 `summarise()`      | Summarize columns
 
-Note that all of these functions take as first argument the data table name except when used in a piping operation (pipes will be discussed later in this section). For example:
+Note that all of these functions take as first argument the data table name except when used in a piping operation (pipes are discussed later in this chapter). For example:
+
+When used alone, dataframe `dat` is the first argument **inside** the `dplyr` function.
 
 ```{r eval=FALSE}
-# When used alone, dataframe dat is inside the select function
-dat2 <- select(dat, column1)
-
-# When used in a pipe, dataframe dat is outside of the select function
-dat2 <- dat %>% select(column1)
+dat2 <- select(dat, crop)
 ```
 
-Make sure to load the `dplyr` package before proceeding with the following examples. 
+When used in a pipe, dataframe `dat` is **outside** of the `dplyr` function.
 
-```{r, message=FALSE}
-library(dplyr)
+```{r eval=FALSE}
+dat2 <- dat %>% select(crop)
 ```
 
 ### `filter`: Subset by rows 
 
-Tables can be subsetted by rows based on column values. For example, we may wish to grab all rows associated with `Oats`: 
+Tables can be subsetted by rows based on column values. For example, we may wish to grab all rows associated with the string `Oats` in the `Crop` column: 
 
 ```{r}
 dat.query1 <- filter(dat, Crop == "Oats")
@@ -60,7 +63,7 @@ summary(dat.query1)
 
 Note that R is case sensitive, so make sure that you respect each letter's case (i.e. upper or lower).
 
-We can expand our query by including both `Oats`, `Buckwheat` and limiting the country to `Canada`.
+We can expand our query by including both `Oats`, `Buckwheat` and limiting the `Country` column to `Canada`.
 
 ```{r}
 dat.query2 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat", 
@@ -68,7 +71,7 @@ dat.query2 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat",
 summary(dat.query2)
 ```
 
-The character `|` is the Boolean operator OR. So in our example, the query can be read as "... crop equals oats OR crop equals buckwheat". Had we used the AND operator, `&`, instead as in `Crop == "Oats" & Crop == "Buckwheat"` the output would have returned zero rows since a `Crop` value cannot be both `Oats` AND `Buckwheat`.
+The character `|` is the Boolean operator *OR*. So in our example, the query can be read as "... crop equals oats *OR* crop equals buckwheat". Had we used the AND operator, `&`, instead as in `Crop == "Oats" & Crop == "Buckwheat"` the output would have returned zero rows since a `Crop` value cannot be both `Oats` AND `Buckwheat`.
 
 We can expand this query by limiting our output to the years 2005 to 2010
 
@@ -102,7 +105,7 @@ tail(dat.sort2)
 
 ### `select`: Subset by column 
 
-You can grab a subset of the table by column(s). To extract the columns `Crop`, `Year` and `Value`, type:
+You can subset a table by column(s). To extract the columns `Crop`, `Year` and `Value`, type:
 
 ```{r}
 dat.subcol <- select(dat, Crop, Year, Value)
@@ -134,8 +137,8 @@ You can also use `mutate` to recompute column values. For example, to replace th
 
 ```{r}
 dat.overwrite <- mutate(dat, Country = ifelse(Country == "Canada", "CAN", "USA"))
-head(dat.overwrite,3)
-tail(dat.overwrite,3)
+head(dat.overwrite, 3)
+tail(dat.overwrite, 3)
 ```
 
 ### `mutate_at`: Creating and/or calculating values across muliple columns 
@@ -174,7 +177,7 @@ You can summarize (or "collapse") one or more columns using the `summarise` func
 summarise(dat, yr_min = min(Year), yr_max=max(Year))
 ```
 
-## Combining data manipulation functions using the pipe `%>%`
+## Combining data manipulation functions using the pipe `%>%` {#sec-pipe}
 
 In most cases, you will find yourself wanting to combine several of `dplyr`'s data manipulation functions. For example, 
 
