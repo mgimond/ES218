@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Visualizing univariate distributions
 
 
@@ -13,7 +18,7 @@ pkg_ver(c("dplyr", "ggplot2","tidyr"))
 
 ## Introduction
 
-Let's create two batches of numbers, `a` and `b`:
+Let's create two batches of numbers, `a` and `b`. Even though the number of values are the same between both batches, this need not be the case in a univariate analysis.
 
 ```{r}
 a  <- rep(12, 10)
@@ -24,7 +29,11 @@ df <- data.frame(a, b)
 How do the two batches differ?
 
 ```{r echo = FALSE, results = 'asis'}
-pander::pandoc.table(df, justify = 'left')
+#pander::pandoc.table(df, justify = 'left')
+a.df <- gridExtra::grid.table(data.frame(a), rows=NULL)
+b.df <- gridExtra::grid.table(data.frame(b), rows=NULL)
+gridExtra::grid.arrange(gridExtra:::rectGrob(), gridExtra::rectGrob(), nrow=1)
+gridExtra::grid.arrange(a.df, b.df, nrow = 1, ncol = 2 ,newpage = FALSE)
 ```
 
 If the difference wasn't obvious from the table view we can create a jittered point plot from the data. 
@@ -44,7 +53,7 @@ It's clear that both batches differ by their uniform values, batch `a` is made u
 Now let's compare a more complicated batch of numbers.
 
 ```{r}
-# Randomly pick 10 values from a uniform distribution
+# Generate some random numbers
 set.seed(23)
 a   <- round(runif(10, 5, 15))
 b   <- round(runif(10, 10, 20))
