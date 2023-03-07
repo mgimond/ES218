@@ -28,17 +28,16 @@ df <- data.frame(a, b)
 
 How do the two batches differ?
 
-```{r echo = FALSE, results = 'asis'}
+```{r echo = FALSE, results = 'asis', fig.width = 2, fig.height=3}
 #pander::pandoc.table(df, justify = 'left')
-a.df <- gridExtra::grid.table(data.frame(a), rows=NULL)
-b.df <- gridExtra::grid.table(data.frame(b), rows=NULL)
-gridExtra::grid.arrange(gridExtra:::rectGrob(), gridExtra::rectGrob(), nrow=1)
+a.df <- gridExtra::tableGrob(data.frame(a), rows=NULL)
+b.df <- gridExtra::tableGrob(data.frame(b), rows=NULL)
 gridExtra::grid.arrange(a.df, b.df, nrow = 1, ncol = 2 ,newpage = FALSE)
 ```
 
 If the difference wasn't obvious from the table view we can create a jittered point plot from the data. 
 
-```{r fig.height=3, fig.width=4}
+```{r fig.height=3, fig.width=3}
 # To plot across categories, we need the data in a long (tidy) form
 library(tidyr)
 library(ggplot2)
@@ -50,7 +49,7 @@ ggplot(dfl,  aes(y = Value, x = Category, col = Category)) +
 
 It's clear that both batches differ by their uniform values, batch `a` is made up of the identical numbers, `12`, and batch `b` is made up of a different set of identical values, `15`. Note that because so many values overlapped, we made use of the `geom_jitter()` function which randomly *jitters* the data about their actual location.
 
-Now let's compare a more complicated batch of numbers.
+Now let's compare a heterogeneous batch of numbers.
 
 ```{r}
 # Generate some random numbers
@@ -65,8 +64,10 @@ dfl <- pivot_longer(df, names_to = "Category", values_to = "Value", 1:2)
 ```
 
 
-```{r echo = FALSE, results='asis'}
-pander::pandoc.table(df, justify = 'left')
+```{r echo = FALSE, results='asis',  fig.width = 2, fig.height=3}
+a.df <- gridExtra::tableGrob(data.frame(a), rows=NULL)
+b.df <- gridExtra::tableGrob(data.frame(b), rows=NULL)
+gridExtra::grid.arrange(a.df, b.df, nrow = 1, ncol = 2 ,newpage = FALSE)
 ```
 
 
@@ -76,7 +77,7 @@ ggplot(dfl, aes(y = Value, x = Category, col = Category)) +
             geom_jitter(position = position_jitter(height = 0, width = 0.2))
 ```
 
-So how do these batches differ? They seem to differ by their center value. For example, each batch's mean is:
+So how do these batches differ? This time, the difference is not so obvious. However, they *seem* to differ by their central value. For example, each batch's mean is:
 
 ```{r}
 library(dplyr)
@@ -116,15 +117,57 @@ ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 2), colour = 
 
 You'll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.
 
-You can also opt to have the function determine the bin ranges by simply specifying the number of bins using the `bin =` parameter:
+You can also opt to have the function determine the bin width by simply specifying the *number* of bins using the `bins =` parameter:
 
 ```{r fig.height=2, fig.width=4.5}
 ggplot(df, aes(x = a)) + geom_histogram(bins = 12, colour = "white")
 ```
 
+You'll note that the function will map the total number of observations falling in each bin to the y-axis. This may be easy to interpret, but it may make it difficult to compare batches of values having different number of observations. To demonstrate this, lets first create two batches of values of differing counts in a long form.
+
+```{r}
+set.seed(56) 
+dfl3 <- data.frame(x = rnorm(200), 
+                  grp = sample(c("a","b"), 200, replace = TRUE, prob = c(0.2,0.8)))
+```
+
+Now, lets generate a side-by-side histogram of the the batches:
+
+```{r fig.width = 6, fig.height=3}
+ggplot(dfl3, aes(x = x)) + geom_histogram(bins = 10) + facet_wrap(~ grp)
+```
+
+The differences in batch sizes results in differing bar heights. To resolve this issue, we can convert counts to density whereby the areas covered by each bin sum to `1`. Each bin's density value is computed from:
+
+$$
+density = \frac{count}{bin\ width * total\ observations}
+$$
+To see an example of this, let's revert back to the earlier dataset to facilitate a manual calculation of the density values. Here, we'll map the `..density..` aesthetic to the y-axis to have ggplot compute density values.
+
+```{r fig.height=2, fig.width=4.5}
+ggplot(df, aes(x = a)) + 
+  geom_histogram(breaks = seq(5.8, 15.8, by = 2), colour = "white", aes(y = ..density..)) 
+```
+
+The first bin has one observation hence the density of observations within this bin interval is `1 / (2 * 10)` or `0.05`. Likewise, the second bin's density is computed as `2 / (2 * 10)` or `0.1`.
+
+Mapping density instead of count to the y-axis thus generates this side-by-side plot from the two batch `dfl3` dataframe.
+
+```{r fig.width = 6, fig.height=3}
+ggplot(dfl3, aes(x = x, y=..density..)) + geom_histogram(bins = 10) + facet_wrap(~ grp)
+```
+
+This makes for a more appropriate comparison.
+
+Note that you might come across an alternative to the `..density..` syntax in the R community that makes use of the `after_stat()` function. For example, the following code will generate the same density histogram.
+
+```{r eval=FALSE}
+ggplot(dfl3, aes(x = x, y = after_stat(density))) + geom_histogram(bins = 10) + facet_wrap(~ grp)
+```
+
 ## Density plots
 
-The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the values `a`. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.
+The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the `a` values. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.
 
 ```{r fig.height=2, fig.width=8, echo=FALSE}
 p1 <- ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 2), colour = "white") + geom_rug(col = "darkorange", cex = 2, alpha = 0.5) +
@@ -134,17 +177,7 @@ p2 <- ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(5.8,15.8,by=2), colou
 gridExtra::grid.arrange(p1, p2, nrow = 1)
 ```
 
-The histogram can be represented as densities as opposed to counts. This is computed as the number of observations per bin divided by the product between the bin width and the total number of observations. For example, the first bin has one observation hence the density of observations within this bin interval is `1 / (2 * 10)` or `0.05`. The following histogram shows density values instead of counts on its y-axis.
-
-```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + 
-  geom_histogram(breaks = seq(5.8, 15.8, by = 2), colour = "white", aes(y = ..density..)) + 
-  geom_rug(col="darkorange", cex=2, alpha = 0.5)
-```
-
-The bins map the density of observations along the x-axis. However, as was noted earlier, the discontinuity between bin intervals suggests that the density is constant along the bin width (e.g. the density of observations remains constant between `a = 6` and `a = 8`) which may not necessarily be the case.
-
-One solution is to compute density values on *overlapping* bins. Let's take the first bin and have it count the number of values between 5 and 9 (exclusive) and divide that number by the total number of values and the bin width--this gives us two observations falling in the bin thus a density value of `2 / (10 * 4) = 0.05`. The following plot shows the bin with the orange dot representing the bin's midpoint.
+One workaround to the histogram limitations is to compute density values on *overlapping* bins. For example, let's take the first bin and have it count the number of values between 5 and 9 (exclusive), then divide that number by the total number of values times the bin width--this gives us two observations falling in the bin thus a density value of `2 / (10 * 4) = 0.05`. The following plot shows the bin as well as an orange dot representing the bin's midpoint.
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 bw <- 4
@@ -171,7 +204,7 @@ ggplot() +
 
 ```
 
-Next, we shift the bin over by one `x` unit then calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps with the previous bin.
+Next, we shift the bin over by one `x` unit, then we calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps partially with the first bin.
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 ggplot() +
@@ -201,7 +234,7 @@ ggplot() +
 
 ```
 
-The process is repeated for each bin until the last bin is reached. Note that some of the `a` values are duplicates, hence the greater density values for the upper-end range.
+The process is repeated for each bin until the last bin is reached. (Note that some of the `a` values are duplicates such as `13` and `15`--hence the high density values for the upper range).
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 ggplot() +
@@ -216,7 +249,7 @@ ggplot() +
 
 ```
 
-If we remove the bins and connect the dots, we end up with a *density trace*. 
+If we remove the bins and connect the dots, we end up with a **density trace**. 
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 ggplot() +
@@ -230,7 +263,7 @@ ggplot() +
 
 A property associated with the density trace is that the area under the curve sums to one since each density value represents the *local* density at `x`.
 
-The above density trace applies an equal weight to each point within the bin intervals thus adding some raggedness to the plot. To smooth out the plot, we can apply different weights to each point inside of the bin's intervals such that points closest to the bin's midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weights assigned to any point falling within the first bin whose range covers the interval 4 to 8 centered on 6.
+So far, when we computed the density values, we assigned an equal weight to each point within their assigned bin--regardless how far the values were to the bin's midpoint. This resulted in some *raggedness* to the plot. To smooth out the plot, we can apply different weights to each point such that points closest to the bin's midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weights assigned to any point falling within the first bin whose range covers the interval 4 to 8 centered on 6.
 
 ```{r fig.height=2, fig.width=4.5, echo = FALSE}
 
@@ -249,39 +282,39 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 
 ```
 
-With the rectangular weight, all points within the bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center.
+With the rectangular weight, all points within a bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. Ggplot's density function defaults to the Gaussian weighting strategy. The  weight type is referred to as a **kernel**.
 
-You can generate a density trace of the data using the `geom_density` function.
+You can generate a density plot of the data using the `geom_density` function.
 
 ```{r fig.height=2, fig.width=4.5}
 ggplot(df, aes(x = a)) + geom_density(fill = "grey60")
 ```
 
-The function adopts the `gaussian` weight function and will automatically define the bandwidth (analogous in concept to the bin width). If you want more detail in the density plot, simply reduce the bandwidth argument `bw`. The bandwidth defines the standard deviation of the gaussian function.
+The function adopts the `gaussian` weight function and will automatically define the bandwidth (analogous in concept to the bin width). TO adopt a rectangualr weight, set the `kernel` parameter to `"rectangular"`.
+
+```{r fig.height=2, fig.width=4.5}
+ggplot(df, aes(x = a)) + geom_density(fill = "grey60", kernel = "rectangular")
+```
+
+Note the raggedness in the plot. In this course, we will default to the Gaussian kernel.
+
+You can modify the *smoothness* of the density plot by adjusting its bandwidth argument `bw`. Here, the bandwidth defines the standard deviation of the Gaussian function.
 
 ```{r fig.height=2, fig.width=4.5}
 ggplot(df, aes(x = a)) + geom_density(fill = "grey60", bw = 1)
 ```
-
-You can also add the observations along the x-axis to add to the *density* effect using the `geom_rug` function.
-
-```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + geom_density(fill = "grey60", col = NA, bw = 1) +
-  geom_rug(col = "darkred", size = 2, alpha = 0.4)
-```
-
 
 ## Boxplots
 
 A boxplot is another popular plot used to explore distributions. In `ggplot2` we use the `geom_boxplot()` function as in,
 
 ```{r fig.height=1.2, fig.width=6.5}
-ggplot(df, aes(x = 1, y = a)) + geom_boxplot() + 
-           xlab(NULL) + theme(axis.text.y = element_blank()) +
-           coord_flip()
+ggplot(df, aes(x = a)) + geom_boxplot() + 
+          xlab(NULL) + theme(axis.text.y = element_blank(), 
+                             axis.ticks.y = element_blank()) 
 ```
 
-Note that the `coord_flip()` function flips the boxplot on its side (the boxplot is normally plotted upright). The `geom_boxplot` function requires that both x and y axes be mapped a variable; usually, the x-axis is assigned a category, but since we are looking at a unique batch, we artificially map a value of 1 to the x-axis (we could have used any value). This requires that we mask the x-axis's label and text so as not to confuse the reader using the options `xlab(NULL) + theme(axis.text.y=element_blank())`.
+The `geom_boxplot` function can map the values to the x-axis or to the y-axis. Traditionally, it's mapped to the y-axis. Here, we choose to map it the x-axis. You'll note the extra functions `xlab(NULL) + theme(axis.text.y=element_blank(), ... )`; these are added to suppress labels and values/tics along the y-axis given that their default values do not serve a purpose here.
 
 The following figure describes the anatomy of a boxplot.
 
@@ -296,7 +329,7 @@ Sometimes, you will encounter values that fall outside of the lower and/or upper
 
 ### Not all boxplots are created equal!
 
-Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, some will compute a quantile as $( i - 0.5) / n$ where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. This is the method implemented by Bill Cleveland and we will refer to this method as *Cleveland's quantile method*. This also happens to be the method implemented by the base's `boxplot` function which explains the different boxplot output compared to `ggplot_boxplot` in our working example:
+Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, some will compute a quantile as $( i - 0.5) / n$ where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. This is the method implemented by Bill Cleveland and we will refer to this method as *Cleveland's quantile method*. This also happens to be the method implemented by the base's `boxplot` function; this explains its different boxplot output compared to `geom_boxplot` in our working example:
 
 ```{r, fig.height=1.4, fig.width=6.5, echo=2}
 OP <- par(mar=c(2,1,1,1), bty="n")
@@ -329,7 +362,7 @@ ggplot(df, aes(x = "", y = a)) +
 
 ```
 
-Note the use of `stat_summary` instead of `geom_boxplot`. The `type` argument is the quantile type implemented in the `quantile` function.
+Note the use of `stat_summary` instead of `geom_boxplot`. The `type` argument is the quantile type implemented in the `quantile` function. 
 
 ## Quantile plots
 
@@ -373,13 +406,13 @@ Note that in the last line of code, we are appending the ordered representation 
 pander::pandoc.table(a.fi, justify = 'left')
 ```
 
-It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in `a` associated with a quantile of $0.5$; this is because we have an even number of values in our dataset. The solution is to interpolate (or extrapolate) a value based on a desired quantile. The `quantile()` function does just that. For example, to find the value associated with a quantile of $0.5$:
+It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in `a` associated with a quantile of $0.5$; this is because we have an even number of values in our dataset. The solution is to interpolate a value based on a desired quantile. The `quantile()` function does just that. For example, to find the value associated with a quantile of $0.5$, type:
 
 ```{r}
 quantile(a, 0.5)
 ```
 
-If we want to get quantile values for a range of fractions, simply wrap the values with the `c()` function:
+If we want to get quantile values for multiple fractions, simply wrap the fractions with the `c()` function:
 
 ```{r}
 quantile(a, c(0.25, 0.5, 0.75))
@@ -391,7 +424,7 @@ The `quantile` function is designed to accept different quantile algorithms. To 
 quantile(a, c(0.25, 0.5, 0.75), type = 5)
 ```
 
-Note the difference in the upper quartile value.
+Note the difference in the upper quartile value compared to the default `type = 7`.
 
 ### Creating a quantile plot
 
@@ -412,7 +445,7 @@ ggplot(df, aes(sample = a)) + stat_qq(distribution = qunif) + xlab("f-value")
 
 However, ggplot's `stat_qq` function does not adopt Cleveland's $f$-value calculation. Hence, you'll notice a slight offset in position along the x-axis. For example, the third-to-last point has an $f$-value of `0.744` instead of an $f$-value of `0.75` as calculated using Cleveland's method.
 
-Also note the slight change in mapping values to the `aes()` function:  `sample = a` where `a` is the (unsorted) variable being plotted.
+Also note the change in mapping parameter: `sample = a`. We are no longer specifying the axis to map to. Instead, we are passing the **sample** to the `stat_qq` function which then chooses to map the sorted `a` values to the y-axis.
 
 ## How quantile plots behave in the face of skewed data
 
