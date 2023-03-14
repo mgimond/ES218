@@ -67,7 +67,7 @@ A quantile-quantile plot (or Q-Q plot for short) combines two separate quantile 
 
 ![](img/QQ_plot.png)
 
-First, we need to compute the $f$-values for both batches of singer data (`Bass 2` and `Tenor 1`).
+To generate a q-q plot, we first need to compute the $f$-values for both batches of singer data (`Bass 2` and `Tenor 1`).
 
 ```{r}
 df.qq <- df2 %>% 
@@ -76,14 +76,14 @@ df.qq <- df2 %>%
          mutate( f.val = (row_number() - 0.5 ) / n())
 ```
 
-Now let's generate quantile plots for both batches.
+Let's generate quantile plots for both batches.
 
 ```{r fig.height=3, fig.width=5}
 ggplot(df.qq, aes(x=f.val, y = height)) + geom_line(col="grey") +
               geom_point() + facet_grid( voice.part ~ .) 
 ```
 
-While the geometric structure of a boxplot lends itself well to side-by-side comparison, the same cannot be said for side-by-side quantile plot comparison hence the need for an amalgamation of these two plots into a single plot called a  **quantile-quantile** (**q-q**) plot.  If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs. the other batch (see schematic at the beginning of this section)
+While the geometric structure of a boxplot lends itself well to side-by-side comparison, the same cannot be said for side-by-side quantile plot comparison hence the need for an amalgamation of these two plots into a **quantile-quantile** (**q-q**) plot.  If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs. the other batch.
 
 If the two batches differ in size (as is the case with our example where we have 21 tenors and 26 bassists), we won't be able to match sorted values. For example, in the above graph, you'll note that one of the singer's height in the `Bass 2` batch is associated with an $f$-value of 0.75, however, there are no singer heights associated with an $f$-value of 0.75 in the `Tenor 1` batch. 
 
@@ -101,7 +101,10 @@ round(fi,2)
 
 To find the matching singer height values in `Bass2`, we need to interpolate the original height values. In practice, a linear interpolation is sought unless theory justifies otherwise. 
 
-We will explore two methods: a *manual* approach to constructing a q-q plot and the `qqplot()` function approach. **Note that both methods can produce slightly different q-q plots**--this is to be expected since they may adopt different quantile algorithms. 
+We will explore two methods: 
+
+- a *manual* approach to constructing a q-q plot; 
+- using the built-in  `qqplot()` function. 
 
 In all cases, we will add a 45&deg; line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
 
@@ -130,7 +133,8 @@ Finally, we will combine the interpolated `Bass 2` values (which is already in a
 s.qq <- df.tenor %>% mutate(`Bass 2`  = b.hgt.interp$y) %>% 
                      rename(`Tenor 1` = height) 
 
-ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) + geom_point() + geom_abline( intercept=0, slope=1)
+ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) + geom_point() +
+  geom_abline( intercept=0, slope=1)
 ```
 
 Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes. 
@@ -189,9 +193,6 @@ Note that `qqplot` generates a wide table where the `Tenor` height values and th
 ```{r}
 head(qq.out)
 ```
-
-> Note: 
-The difference in output between our manual approach and `qqplot`'s approach is small. If you want to faithfully recreate `qqplot`'s output using the manual approach, compute the f-values as $(i -1)/(n-1)$. 
 
 ## q-q plots vs. traditional scatter plots
 
@@ -297,6 +298,16 @@ ggplot(df.md,  aes(x = md.x, y = md.y)) + geom_point() + geom_abline( slope=0 ) 
 ```
 
 The units on both axes are in inches. It's clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.
+
+We can leverage this plot to help fine tune the additive offset by computing the median value from the height difference values.
+
+```{r}
+md.offset <- median(md.y)
+md.offset
+```
+
+The value of `r md.offset` is in agreement with what we eyeballed earlier. 
+
 
 ## Pairwise q-q plots
 
