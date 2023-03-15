@@ -1,7 +1,8 @@
 # Comparing data distributions
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 source("libs/Common.R")
+library(gridExtra)
 ```
 
 
@@ -200,63 +201,124 @@ It's important to note the difference between a quantile-quantile plot and a *tr
 
 ## What can we learn from a q-q plot?
 
-A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e. all the points of a q-q plot fall on the 45&deg; line) then we could characterize the relationship as `batch1 = batch2`. If the points follow a pattern mimicking a line parallel to the 45&deg; line as in the following plot,
 
-```{r echo=FALSE, fig.width=2,fig.height=2}
+### Additive offset
+
+A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e. all the points of a q-q plot fall on the 45&deg; line) then we could characterize the relationship as `batch1 = batch2`. 
+
+If the points follow a pattern mimicking a line parallel to the 45&deg; line as in the following plot, then we say that there is an **additive shift** between `batch1` and `batch2`.
+
+```{r echo=FALSE, fig.width=6,fig.height=2}
 set.seed(132)
-batch1  <- sort(runif(10,10,20))
+set.seed(132)
+batch1  <- sort(runif(50,10,20))
 batch2  <- sort(batch1 + 2 + rnorm(length(batch1), 0,1))
 s1 <- data.frame(batch1, batch2)
-ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-                       coord_fixed(xlim=c(10.5,22), ylim = c(10.5,22))
+xylim <- range(s1)
+qq1 <- ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+  coord_fixed(xlim=xylim, ylim = xylim)
+dd1 <- ggplot() + 
+  geom_density(data = s1, aes(x=batch1, fill = "batch1" ),  bw=5) +  
+  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
+  labs(fill="batches") + xlab("values")
+
+grid.arrange(qq1, dd1, ncol =2)
 ```
 
-then we say that there is an **additive shift** between `batch1` and `batch2`. The shift can usually be eyeballed from the plot. In this example, the shift is around 2 or `batch2 =  batch1 + 2`. 
+An additive shift between batches results in an offset in density distributions with matching shape as shown in the the figure on the right.
 
-When the points follow a line at an angle to the 45&deg; line as in
+The shift can usually be eyeballed from the plot. In this example, the shift is around 2 units or `batch2 =  batch1 + 2`. 
 
-```{r echo=FALSE, fig.width=2,fig.height=2}
-set.seed(132)
-batch1  <- sort(runif(10,10,20))
-batch2  <- sort(batch1 * 1.5 + rnorm(length(batch1), 0,1))
+```{r echo=FALSE, fig.width=6,fig.height=2}
+qq1 <- ggplot(s1, aes(batch1 + 2,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+  coord_fixed(xlim=xylim, ylim = xylim)
+dd1 <- ggplot() + 
+  geom_density(data = s1, aes(x=batch1 + 2, fill = "batch1+1" ),  bw=5) +  
+  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
+  labs(fill="batches") + xlab("values")
+
+grid.arrange(qq1, dd1, ncol =2)
+```
+
+Adding 2 to `batch1` lines the points up along the 45&deg; line. This translates to overlapping the density plots as shown on the right.
+
+### Multiplicative offset
+
+When the points follow a line at an angle to the 45&deg; line as in the following plot, then we say that there is a **multiplicative shift** between the batches.
+
+```{r echo=FALSE, fig.width=6,fig.height=2}
+batch2  <- sort(batch1 * 2 + rnorm(length(batch1), 0,1))
 s1 <- data.frame(batch1, batch2)
-ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-                       coord_fixed(xlim=c(10,30), ylim = c(10,30))
+xylim <- range(s1)
+qq1 <- ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+  coord_fixed(xlim=xylim, ylim = xylim)
+dd1 <- ggplot() + 
+  geom_density(data = s1, aes(x=batch1, fill = "batch1" ),  bw=5) +  
+  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
+  labs(fill="batches") + xlab("values")
+grid.arrange(qq1, dd1, ncol =2)
 ```
 
-then we say that there is a **multiplicative shift** between the batches. The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, if we believe that `batch2` is 1.5 times greater than `batch1`, we multiply `batch1` by 1.5 (thus generating the relationship `batch2 = batch1 * 1.5`) then plot the result to see if the points line up.
+A multiplicative shift between the batches results in a change in density shapes with one batch's density being shorter and wider (`batch2` in this example) than that of the other batch  (`batch1` in this example).
+
+The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, after some experimenting, we arrive at a multiplier of 2 which seems to do a good job in aligning the q-q points along the 45&deg; line. We thus define a relationship of `batch2 = batch1 * 2`.
  
-```{r echo=FALSE, fig.width=2,fig.height=2}
-ggplot(s1, aes(batch1 * 1.5 , batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-                       coord_fixed(xlim=c(10,30), ylim = c(10,30))
+```{r echo=FALSE, fig.width=6,fig.height=2}
+qq1 <- ggplot(s1, aes(batch1*2,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+  coord_fixed(xlim=xylim, ylim = xylim)
+dd1 <- ggplot() + 
+  geom_density(data = s1, aes(x=batch1*2, fill = "batch1*2" ),  bw=5) +  
+  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
+  labs(fill="batches") + xlab("values")
+grid.arrange(qq1, dd1, ncol =2)
 ```
 
-Sometimes, you might encounter a relationship that is both additive *and* multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to parallel to the 45&deg; line, then resolve the additive portion. For example, the following plot
+Notice how applying a multiplier not only re-aligns the shape of both densities, but it also corrects the offset observed between both density distributions in the previous figure.
 
-```{r echo=FALSE, fig.width=2,fig.height=2}
+## Additive and multiplicative offsets
+
+Sometimes, you might encounter a relationship that is both additive *and* multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to being parallel with the 45&deg; line. Once the multiplicative component is taken care of, resolve the additive portion. 
+
+```{r echo=FALSE, fig.width=6, fig.height=2}
 set.seed(132)
 batch1  <- sort(runif(10,10,20))
 batch2  <- sort(batch1 * 1.5 + 4 + rnorm(length(batch1), 0,1))
 s1 <- data.frame(batch1, batch2)
-ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-                                 coord_fixed(xlim=c(10,34), ylim = c(10,34))
+xylim <- range(s1)
+qq1 <- ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+  coord_fixed(xlim=xylim, ylim = xylim)
+dd1 <- ggplot() + 
+  geom_density(data = s1, aes(x=batch1, fill = "batch1" ),  bw=5) +  
+  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
+  labs(fill="batches") + xlab("values")
+grid.arrange(qq1, dd1, ncol =2)
 ```        
 
-can be decomposed into its multiplicative component (multiply `batch1` by ~ 1.5),
+The above dataset can be decomposed into its multiplicative component (multiply `batch1` by ~ 1.5),
 
-```{r echo=FALSE, fig.width=2,fig.height=2}
-ggplot(s1, aes(batch1 * 1.5, batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-                                 coord_fixed(xlim=c(10,32), ylim = c(10,32))
+```{r echo=FALSE, fig.width=6,fig.height=2}
+qq1 <- ggplot(s1, aes(batch1*1.5,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+  coord_fixed(xlim=xylim, ylim = xylim)
+dd1 <- ggplot() + 
+  geom_density(data = s1, aes(x=batch1*1.5, fill = "batch1*1.5" ),  bw=5) +  
+  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
+  labs(fill="batches") + xlab("values")
+grid.arrange(qq1, dd1, ncol =2)
 ``` 
 
-then by its additive component (add 3.5),
+then by its additive component (we'll try and additive offset of 4):
  
-```{r echo=FALSE, fig.width=2,fig.height=2}
-ggplot(s1, aes(batch1 * 1.5 + 3.5,batch2 )) + geom_point() + geom_abline( intercept=0, slope=1) +
-                                 coord_fixed(xlim=c(10,32), ylim = c(10,32))
+```{r echo=FALSE, fig.width=6,fig.height=2}
+qq1 <- ggplot(s1, aes(batch1*1.5+4,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
+  coord_fixed(xlim=xylim, ylim = xylim)
+dd1 <- ggplot() + 
+  geom_density(data = s1, aes(x=batch1*1.5+4, fill = "batch1*1.5+4" ),  bw=5) +  
+  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
+  labs(fill="batches") + xlab("values")
+grid.arrange(qq1, dd1, ncol =2)
 ``` 
 
-to get the approximate relationship of `batch2 = batch1 * 1.5 + 3.5`.
+The relationship between both batches can thus be defined by `batch2 = batch1 * 1.5 + 4`.
 
 ### Is the relationship between tenor and bass additive or multiplicative?
 
@@ -266,7 +328,7 @@ Turning back to our voice part dataset, an additive shift is apparent, but a mul
 ggplot(s.qq, aes( x= `Tenor 1` + 2.5, y = `Bass 2`)) + 
              geom_point() + 
              geom_abline( intercept=0, slope=1) +
-             coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) + xlab("Tenor 1 + 2.5")
+             coord_fixed(ratio = 1, xlim=c(65,80), ylim = c(65,80)) + xlab("Tenor 1 + 2.5")
 ```
 
 The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here. 
