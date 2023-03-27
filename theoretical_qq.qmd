@@ -46,34 +46,29 @@ The *normal q-q plot* is just a special case of the *empirical q-q plot* we've e
 
 ### Drawing a normal q-q plot from scratch
 
-In the following example, we'll compare the `Alto 1` group to a normal distribution. First, we'll extract the `Alto 1` height values and save them as an atomic vector object using `dplyr`'s piping operations. However, `dplyr`'s operations will return a dataframe--even if a single column is selected. To force the output to an atomic vector, we'll pipe the subset to `pull(height)` which will extract the `height` column into a plain vector element.
+In the following example, we'll compare the `Alto 1` group to a normal distribution. We'll work off of the `Alto 1` height values.
+
+The data manipulation steps include:
+* Sorting the `height` values in ascending order;
+* Computing the f-values (we'll adopt Cleveland's algorithm);
+* Computing the matching quantile values from a *Normal* distribution (using the `qnorm` function).
+
  
 ```{r}
 library(dplyr)
 
-df   <- lattice::singer
-alto <- df %>%  filter(voice.part == "Alto 1") %>% pull(height)
+alto  <- lattice::singer %>% 
+  filter(voice.part == "Alto 1") %>% 
+  arrange(height) %>% 
+  mutate(fval = (row_number() -0.5) / n(),
+         x.norm = qnorm(fval))
 ```
 
-Next, we need to sort `alto` in ascending order.
-
-```{r}
-alto <- sort(alto)
-```
-
-Next, we need to find the matching normal distribution quantiles. We first find the $f$-values for `alto`, then use `qnorm` to find the matching normal distribution values from those same $f$-values
-
-```{r}
-i      <- 1:length(alto)
-fi     <- (i - 0.5) / length(alto)
-x.norm <- qnorm(fi)
-```
-
-Now we can plot the sorted `alto` values against the normal values.
+Next, we'll plot the sorted `alto` values against the normal values using the base plotting environment.
 
 ```{r fig.height = 3, fig.width = 3, echo=2}
-OP <-par(mar=c(3,3,1,1))
-plot( alto ~ x.norm, type = "p", xlab = "Normal quantiles", pch = 20)
+OP <-par(mar=c(4,4,1,1))
+plot( height ~ x.norm, alto, type = "p", xlab = "Normal quantiles", pch = 20)
 par(OP)
 ```
 
@@ -83,7 +78,7 @@ There are many ways one can fit a line to the data, Cleveland opts to fit a line
 
 ```{r}
 # Find 1st and 3rd quartile for the Alto 1 data
-y <- quantile(alto, c(0.25, 0.75), type = 5)
+y <- quantile(alto$height, c(0.25, 0.75), type = 5)
 
 # Find the 1st and 3rd quartile of the normal distribution
 x <- qnorm( c(0.25, 0.75))
@@ -97,8 +92,8 @@ int   <- y[1] - slope * x[1]
 Next, we add the line to the plot.
 
 ```{r, fig.height = 3, fig.width = 3, echo=3}
-OP <-par(mar=c(3,3,1,1))
-plot( alto ~ x.norm, type="p", xlab="Normal quantiles", pch = 20)
+OP <-par(mar=c(4,4,1,1))
+plot( height ~ x.norm, alto, type = "p", xlab = "Normal quantiles", pch = 20)
 abline(a = int, b = slope )
 par(OP)
 ```
@@ -109,9 +104,9 @@ par(OP)
 R has two built-in functions that facilitate the plot building task when comparing a batch to a normal distribution: `qqnorm` and `qqline`. Note that the function `qqline` allows the user to define the quantile method via the `qtype=` parameter. Here, we set it to 5 to match the $f$-value calculation adopted in this course.
 
 ```{r fig.height=3, fig.width=3, echo=2:3, results='hold'}
-OP <-par(mar=c(3,3,1,1))
-qqnorm(alto)
-qqline(alto, qtype = 5)
+OP <-par(mar=c(4,4,1,1))
+qqnorm(alto$height)
+qqline(alto$height, qtype = 5)
 par(OP)
 ```
 
@@ -126,102 +121,34 @@ As of version 3.0, `ggplot` has  the `stat_qq_line` function (or `geom_qq_line`)
 ```{r, fig.height=3, fig.width=3}
 library(ggplot2)
 
-ggplot() + aes(sample = alto) + stat_qq(distribution = qnorm) + 
-           stat_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height")
+ggplot(alto, aes(sample = height)) + stat_qq(distribution = qnorm) + 
+  stat_qq_line(line.p = c(0.25, 0.75), col = "blue") + 
+  xlab("Unit normal quantile") + ylab("Height")
 
-```
-
-We can, of course, make use of `ggplot`'s faceting function to generate trellised plots. For example, the following plot replicates Cleveland's figure 2.11 (except for the layout which we'll setup as a single row of plots).
-
-```{r fig.height=3, fig.width=9}
-ggplot(df, aes(sample = height)) + stat_qq(distribution = qnorm) + 
-           stat_qq_line(line.p = c(0.25, 0.75), col = "blue") + ylab("Height") +
-           facet_wrap(~ voice.part, nrow = 1) + ylab("Height")
- 
 ```
 
 The `stat_qq_line` function uses the built-in `quantile` function and as such will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This differs from Cleveland's approach to computing the f-value. This setting cannot be changed in `stat_qq_line`.
-
-#### `ggplot2` version older than 3.0
-
-With an older version of `ggplot2`, you will need to construct the interquartile fit from scratch. We can still take advantage of the `stat_qq()` function to plot the points, but the equation for the line must be computed manually (as was done earlier). Those steps will be repeated here. Note that with this example, we are adopting Cleveland's f-value algorithm of $(i - 0.5)/n$.
-
-```{r, fig.height=3, fig.width=3}
-library(ggplot2)
-
-# Find the slope and intercept of the line that passes through the 1st and 3rd
-# quartile of the normal q-q plot
-
-y     <- quantile(alto, c(0.25, 0.75), type = 5) # Find the 1st and 3rd quartiles
-x     <- qnorm( c(0.25, 0.75))                 # Find the matching x-axis values
-slope <- diff(y) / diff(x)                     # Compute the line slope
-int   <- y[1] - slope * x[1]                   # Compute the line intercept
-
-# Generate normal q-q plot
-
-ggplot() + aes(sample = alto) + stat_qq(distribution = qnorm) + 
-           geom_abline(intercept = int, slope = slope, col = "blue") + 
-           ylab("Height")           
-```
-
-To generated a faceted normal qq plot you first need to compute the slopes for each singer group. We'll use `dplyr`'s piping operations to create a new dataframe with singer group name, slope and intercept.
-
-```{r}
-library(dplyr)
-intsl <- df %>% group_by(voice.part) %>% 
-       summarize(q25    = quantile(height, 0.25, type = 5),
-                 q75    = quantile(height, 0.75, type = 5),
-                 norm25 = qnorm( 0.25),
-                 norm75 = qnorm( 0.75),
-                 slope  = (q25 - q75) / (norm25 - norm75),
-                 int    = q25 - slope * norm25) %>%
-       select(voice.part, slope, int) 
-```
-
-The above chunk creates the following table.
-
-```{r echo=FALSE}
-pander::pander(intsl, justify="left")
-```
-
-It's important that the `voice.part` names match those in `df` letter-for-letter so that when `ggplot` is called, it will know which facet to assign the slope and intercept values to via `geom_abline`.
-
-
-```{r fig.height=3, fig.width=9}
-ggplot(df, aes(sample = height)) + stat_qq(distribution = qnorm) + 
-           geom_abline(data = intsl, aes(intercept = int, slope = slope), col = "blue") +
-           facet_wrap(~ voice.part, nrow = 1) + ylab("Height") 
-``` 
 
 ## How normal is my dataset?
 
 Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal Q-Q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The `rnorm` function is used in this example to randomly pick a number from a normal distribution whose mean is `0` and whose standard deviation is `1`. You can, of course, change the mean and standard deviation values to reflect the data being simulated.
 
-To streamline the coding, we will make use of the `replicate` function to generate five sets of randomly generated normal values. The function will assign each randomly generated batch to its own column, thus creating a matrix. We then convert this matrix to a data frame, then pivot it to a long form for use in `ggplot`.
-
 
 ```{r fig.height=3, fig.width=9}
-library(tidyr)
-
-# Create matrix with each row storing randomly generated
-# numbers from a Normal distribution
-set.seed(218)  # Sets random generator seed for consistant output
-sim <- replicate(5 , rnorm(20, mean = 0, sd = 1), simplify = TRUE)
-
-# Create long form version of the sim matrix
-siml <- pivot_longer(as.data.frame(sim), names_to = "sim", 
-                     values_to = "val", cols = everything())
+set.seed(211)  # Sets random generator seed for consistent output
+sim <- data.frame(sample = paste0("Sample",1:5),
+                  value  = rnorm(20*5, mean = 0, sd = 1))
 
 # Generate q-q plots of the simulated values
-ggplot(siml, aes(sample = val)) + stat_qq(distribution = qnorm) +
+ggplot(sim, aes(sample = value)) + stat_qq(distribution = qnorm) +
   stat_qq_line(line.p = c(0.25, 0.75), col = "blue") +
-  facet_wrap(~ sim, nrow = 1) + ylab("Simulated normals")
+  xlab("Unit normal quantile") + ylab("Simulated normals") +
+  facet_wrap(~ sample, nrow = 1) 
 
 ```
 
-Of the 5 simulated batches, only `V3` and `V4` generate q-q plots that reflect a pattern we would expect from a normally distributed batch of values. The other three simulated batches generate plots that *could* lead one to question whether the data were pulled from a normal distribution, even though we know that they were!
+Of the five simulated batches, only `Sample2` generates a *textbook*  q-q plot one would expect from a normally distributed batch of values. The other simulated batches generate plots that *could* lead one to question whether the data were pulled from a normal distribution, even though we know that they were!
 
-This is why you should always interpret such plots with a healthy dose of skepticism, especially with small datasets.
 
 ## How normal q-q plots behave in the face of skewed data
 
