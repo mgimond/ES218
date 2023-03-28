@@ -193,74 +193,102 @@ For example, in `Plot 1`, the *spread* (or difference) in mean values is relativ
 
 If we split each batch in `Plot 1` into a location component plot (normalized to the overall mean) and a pooled residual component plot, and then compare those values against a quantile, we get a **residual-fit spread** plot, or **r-f spread** plot for short.
 
-```{r fig.height=3, fig.width=7, echo=FALSE}
-rfs(oneway(y~cat, data = ff2, spread = 1), 
-    aspect=1, 
-    ylab = "Height (inches)")
+```{r fig.height=2.5, fig.width=4, echo=FALSE}
+# rfs(oneway(y~cat, data = ff2, spread = 1), 
+#     aspect=1, 
+#     ylab = "Height (inches)")
+
+ff2 %>%
+  mutate(norm = y - mean(y)) %>%   # Normalize values to global mean
+  group_by(cat) %>% 
+  mutate( Residuals  = norm - mean(norm),    # Extract group residuals
+          `Fitted values` = mean(norm))%>%   # Extract group means
+  ungroup() %>% 
+  select(Residuals, `Fitted values`) %>% 
+  pivot_longer(names_to = "type",  values_to = "value", cols=everything()) %>% 
+  group_by(type) %>% 
+  arrange(value) %>% 
+  mutate(fval = (row_number() - 0.5) / n()) %>% 
+  ggplot() + aes(x = fval, y = value) + 
+  geom_point(alpha = 0.3, cex = 1.5) +
+  facet_wrap(~ type) +
+  xlab("f-value") +
+  ylab("Height (inches)") 
+
 ```
 
 It's clear from this r-f spread plot that the spread of the mean distribution (between batches `a` and `b`) is important compared to that of its residuals. This suggests that the groups `a` and `b` explain much of the variability in the data.
 
 For `Plot 2`, the difference in mean values is also one unit, but the spread of residuals spans almost 5 units. An r-f spread plot makes this difference quite clear.
 
-```{r fig.height=3, fig.width=7, echo=FALSE}
-rfs(oneway(y~cat, data = ff, spread = 1), 
-    aspect=1, 
-    ylab = "Height (inches)")
-```
+```{r fig.height=2.5, fig.width=4, echo=FALSE}
+# rfs(oneway(y~cat, data = ff, spread = 1), 
+#     aspect=1, 
+#     ylab = "Height (inches)")
 
-The spread between each batch's fitted mean is small compared to that of the combined residuals suggesting that much of the variability in the data is not explained by the differences between groups `a` and `b`.
-
-### Are the fitted voice part values significantly different?
-
-We'll use `lattice`'s `rfs` and `oneway` functions to generate the r-f plot for the singer data. Note that the plot displays the spread of the modeled means *after* subtracting these means with the overall mean (remember, the goal is to compare the spreads about a common central value and not to compare their absolute values).
-
-```{r fig.height=3.5, fig.width=8}
-rfs(oneway(height ~ voice.part, data = singer, spread = 1), 
-    aspect = 1, 
-    ylab = "Height (inches)")
-```
-
-After normalizing the data to the global mean, the r-f spread plot splits the singer height data into two parts: modeled mean and residual. For example, the smallest value in the `Bass 2` group is `66`. When normalized to the global mean, that value is `-1.29`. The normalized value is then split between the group (normalized) mean of 4.1 and its residual of -5.39 (i.e. the difference between its value and the `Bass 2` group mean). These two values are then each added to two separate plots: the *fitted values* plot and the *residuals* plot. This process is repeated for each observation in the dataset to generate the final r-f spread plot.
-
-![](img/RF_plot_explained.png)
-<p></p>
-The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts *can* explain a good part of the variation in the data.
-
-## Generating a residual-fit plot with ggplot
-
-To generate the R-F plot using `ggplot2`, we must first split the data into its fitted and residual components (something the `rfs` function did for us). We'll make use of piping operations to complete this task.
-
-```{r}
-df1 <- singer %>%
-  mutate(norm.hgt = height - mean(height)) %>% 
-  group_by(voice.part) %>% 
-  mutate( Residuals  = norm.hgt - mean(norm.hgt),
-          `Fitted Values` = mean(norm.hgt))%>% 
+ff %>%
+  mutate(norm = y - mean(y)) %>%   # Normalize values to global mean
+  group_by(cat) %>% 
+  mutate( Residuals  = norm - mean(norm),    # Extract group residuals
+          `Fitted values` = mean(norm))%>%   # Extract group means
   ungroup() %>% 
-  select(-height, -voice.part, -norm.hgt) %>% 
+  select(Residuals, `Fitted values`) %>% 
   pivot_longer(names_to = "type",  values_to = "value", cols=everything()) %>% 
   group_by(type) %>% 
   arrange(value) %>% 
-  mutate(`f-value` = (row_number() - 0.5) / n()) 
-```
-
-Next, we plot the data.
-
-```{r fig.height=3, fig.width=5.5}
-ggplot(df1, aes(x = `f-value`, y = value)) + 
+  mutate(fval = (row_number() - 0.5) / n()) %>% 
+  ggplot() + aes(x = fval, y = value) + 
   geom_point(alpha = 0.3, cex = 1.5) +
   facet_wrap(~ type) +
-  ylab("Height (inches)")
+  xlab("f-value") +
+  ylab("Height (inches)") 
+```
+
+The spread between each batch's fitted mean is small compared to that of the combined residuals suggesting that much of the variability in the data is not explained by the differences between groups `a` and `b` for `Plot 2`.
+
+### Are the fitted voice part values significantly different?
+
+We will first need to normalize the data to the global mean, then we will split the *normalized* singer height data into two parts: the modeled means and the residuals. For example, the smallest value in the `Bass 2` group is `66`. When normalized to the global mean, that value is `-1.29`. The normalized value is then split between the group (normalized) mean of `4.1` and its residual of `-5.39` (i.e. the difference between its value and the `Bass 2` group mean). These two values are then each added to two separate plots: the *fitted values* plot and the *residuals* plot. This process is repeated for each observation in the dataset to generate the final r-f spread plot.
+
+![](img/RF_plot_explained.png)
+
+To generate the R-F plot using `ggplot2`, we must first split the data into its fitted and residual components. We'll make use of piping operations to complete this task.
+
+```{r}
+df4 <- singer %>%
+  mutate(norm = height - mean(height)) %>%   # Normalize values to global mean
+  group_by(voice.part) %>% 
+  mutate( Residuals  = norm - mean(norm),    # Extract group residuals
+          `Fitted values` = mean(norm))%>%   # Extract group means
+  ungroup() %>% 
+  select(Residuals, `Fitted values`) %>% 
+  pivot_longer(names_to = "type",  values_to = "value", cols=everything()) %>% 
+  group_by(type) %>% 
+  arrange(value) %>% 
+  mutate(fval = (row_number() - 0.5) / n()) 
+```
+
+Next, we'll plot the data.
+
+```{r fig.height=3, fig.width=5.5}
+ggplot(df4, aes(x = fval, y = value)) + 
+  geom_point(alpha = 0.3, cex = 1.5) +
+  facet_wrap(~ type) +
+  xlab("f-value") +
+  ylab("Height (inches)") 
 ```
 
 An alternative to the side-by-side R-F plot is one where both fits and residuals are overlapping.
 
 ```{r fig.height=3, fig.width=4.5}
-ggplot(df1, aes(x = `f-value`, y = value, col = type)) + 
+ggplot(df4, aes(x = fval, y = value, col = type)) + 
   geom_point(alpha = 0.3, cex = 1.5) +
-  ylab("Height (inches)")
+  xlab("f-value") +
+  ylab("Height (inches)") 
 ```
+
+<p></p>
+The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts *can* explain a good part of the variation in the data.
 
 ## Comparing pooled residuals to the normal distribution
 
