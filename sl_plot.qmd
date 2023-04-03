@@ -13,43 +13,37 @@ pkg_ver(c("dplyr"))
 
 ## Introduction
 
-Some batches of data may show a systematic change in spread vs. location; a good example is stereogram fusion time data in Cleveland's book where an increase in location translates into an increase in spread. Such dependency is often undesirable (e.g. in an ANOVA for instance) and preferably removed in an analysis. A plot well suited for visualizing this dependency is the **spread-level** plot, **s-l** (or **spread-location** plot as Cleveland calls it).
+Some batches of data may show a systematic change in spread vs. location. In other words, the variability in each batch may be dependent on that batches median value. Such dependency is often undesirable (e.g. in an ANOVA for instance) and preferably removed in an analysis. A plot well suited for visualizing this dependency is the **spread-level** plot, **s-l** (or **spread-location** plot as Cleveland calls it).
 
-## Constructing the s-l plot
+## Construcing the s-l plot
 
-The plot compares a measure of the spread's residual to the location (usually the median) for each batch of data. The spread is usually distilled down to its residual (what remains after subtracting each batch value by the batch median) then transformed by taking the square root of its absolute value. The following block of code recreates the s-l plot in figure 2.25 from Cleveland's book.
+The s-l plot compares a measure of the spread's residual to the location (usually the median) for each batch of data. The spread is usually distilled down to its residual (what remains after subtracting each batch value by the batch median) then it's transformed by taking the square root of its absolute value. The following block walks you through the steps needed to create an s-l plot.
 
-```{r, fig.height=3,fig.width=3}
+```{r, fig.height=2.5,fig.width=5}
 library(dplyr)
 library(ggplot2)
 
-df <- read.csv("http://mgimond.github.io/ES218/Data/fusion.csv")
+singer <- lattice::singer
+res.sq <-  singer %>% group_by(voice.part) %>% 
+                      mutate(Median   = median(height),
+                             Residual = sqrt(abs(height - Median)))
 
-# Create two new columns: group median and group residual
-df1 <- df %>%
-  group_by(nv.vv)   %>%
-  mutate( Median = median(time),
-          Residuals = sqrt( abs(time - Median)))
-
-# Generate the s-l plot
-ggplot(df1, aes(x = Median, y = Residuals)) + 
-  geom_jitter(alpha = 0.4, width = 0.2) +
+ggplot(res.sq, aes(x=Median, y=Residual)) + 
+  geom_jitter(alpha=0.4,width=0.2) +
   stat_summary(fun = median, geom = "line", col = "red") +
-  ylab(expression(sqrt(abs(" Residuals "))))
-
+  ylab(expression(sqrt(abs(" Residuals ")))) +
+  geom_text(aes(x = Median, y = 3.3, label = voice.part))
 ```
 
-The red line in the plot helps identify the type of relationship between spread and location (defined by the group median in this plot). If the line slopes upward, there is an increasing spread as a function of increasing location; if it slopes downward, there is a decreasing spread as a function of increasing location; and if the slope is flat, there is no change in spread as a function of location.
+The red line in the plot helps identify the type of relationship between spread and location. If the line increases monotonically upward, there is an increasing spread as a function of increasing location; if the line decreases monotonically downward, there is a decreasing spread as a function of increasing location; and if line is neither increasing nor decreasing monotonically, there is no change in spread as a function of location.
 
-In the data fusion example, there is an obvious increase in spread as a function of location.
-&nbsp;&nbsp;
+> Note that if you are to rescale the y-axis when using the `stat_summary()` function, you should use the `coord_cartesian(ylim = c( .. , .. ))` function instead of the `ylim()` function. The latter will mask the values above its maximum range from the `stat_summary()` function, the former will not.
 
-> Note that if you are to rescale the y-axis, you should use the `coord_cartesian(ylim = c( .. , .. ))` function instead of the `ylim()` function. The latter will mask the values above its maximum range from the `stat_summary()` function, the former will not.
+The singer dataset does not seem to exhibit any dependence between a voice part's spread and its median value.
 
-## Other examples
-&nbsp;&nbsp;
+Next, we'll look at an example of a dataset that does exhibit a dependence between spread and fitted values.
 
-### Cleveland's food web data
+## Cleveland's food web dataset
 
 On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the  number of hierarchical prey-predator links in the web) for the three different ecosystem types. 
 
@@ -60,7 +54,7 @@ df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
 df1 <- df %>%
   group_by(dimension)  %>%
   mutate( Median = median(mean.length),
-          Residuals = sqrt( abs( mean.length - Median)))   
+          Residuals = sqrt(abs( mean.length - Median)))   
 
 # Generate the s-l plot
 ggplot(df1, aes(x = Median, y = Residuals)) + 
@@ -73,28 +67,9 @@ ggplot(df1, aes(x = Median, y = Residuals)) +
 
 A monotonic spread is apparent in this dataset too, i.e. as the median chain length increases, so does the spread.
 
-### Buoy data
+## How can we stabilize spreads in a dataset?
 
-In this next example, we will compare water temperature spreads with median temperatures across 12 months using Gulf of Maine buoy data. Since we have many categories to work with, we will do without the jitter and stack the points within each month group.
-
-```{r, fig.height=3,fig.width=8}
-df <- read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", header=T)
-
-# Create two new columns: group median and group residual
-df1 <- df %>%
-       group_by(MM)  %>%
-       mutate(Median = median(WTMP),
-              Residuals = sqrt(abs(WTMP - Median)))  
-
-# Generate the s-l plot
-ggplot(df1, aes(x = Median, y = Residuals)) + geom_point(alpha = 0.1) +
-  stat_summary(fun = median, geom = "line", col = "red") +
-  ylab(expression(sqrt(abs( " Residuals ")))) +
-  geom_text(aes(x = Median, y = 2.5, label = MM), cex = 3)
-
-```
-
-Note that the discrete appearance of the values reflects the level of precision used to record  water temperature data (a tenth of a degree Celsius). Unlike our previous two examples, a systematic spread as a function of increasing water temperature is not immediately apparent.
+A common technique used to help reduce or eliminate monotonic variations in the spreads as a function of fitted values is to **re-express** the original values. Re-expression is covered in the next chapter.
 
 ## Variations of the S-L plot
 
@@ -102,26 +77,30 @@ Another version of the S-L plot (and one that seems to be the most popular) pits
 
 This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week's lecture) via **power = 1 - slope**.
 
-This variant of the s-l plot can be computed in R as follows (we will use the buoy data as an example).
+This variant of the s-l plot can be computed in R as follows (we will use the food web data as an example).
 
 ```{r fig.height=2.8, fig.width=2.8}
-sl <- df %>%
-  group_by(MM)  %>%
-  summarise (level  = log(median(WTMP)),
-                IQR = IQR(WTMP),  # Computes the interquartile range
+sl <- df1 %>%
+  group_by(dimension)  %>%
+  summarise (level  = log(median(mean.length)),
+                IQR = IQR(mean.length),  # Computes the interquartile range
              spread = log(IQR))
 
 ggplot(sl, aes(x = level, y = spread)) + geom_point() + 
-  stat_smooth(method = "lm", se = FALSE) +
+  stat_smooth(method = MASS::rlm, se = FALSE) +
   xlab("Median (log)") + ylab("Spread (log)") +
-  geom_text(aes(x = level, y = spread, label = MM), vjust = 1.21, cex = 2.8)
+  geom_text(aes(x = level, y = spread, label = dimension), 
+            vjust = 1.21, cex = 2.8)
 ```
 
-Note how this plot differs from Cleveland's plot in that we are only displaying each month's median spread value and we are fitting a straight line to the points.
+Note how this plot differs from our earlier s-l plot in that we are only displaying each batch's median spread value and we are *fitting* a straight line to the medians instead of *connecting* them.
 
-The slope suggests that there may be a monotonic increase in spread vs location, but a close examination of the regression model indicates that the slope may not be significantly different from 0 (the p-value of 0.12 suggests that there is a 12% chance that the computed slope is consistent with a slope we would expect to get if there was no linear relationship between spread and location values).
+The slope suggests a monotonic increase in spread vs location. We can extract the slope value from a regression model. Here, we'll adopt a robust bivariate model (bivariate analysis is covered later in this course).
 
 ```{r}
-summary(lm(spread ~ level, sl))
+summary(MASS::rlm(spread ~ level, sl))
 ```
 
+The computed slope value is `2.97`. This suggests a power transformation of `1 - 2.97` (or about `-1.97`).
+
+A re-expression of this dataset will be explored in the next chapter.

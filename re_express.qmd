@@ -95,7 +95,7 @@ plot(log(y), pch=20)
 Note the change from a curved line to a perfectly straight line. The logarithm will produce a straight line if the rate of change for `y` is constant over the range of `x`. This is a nifty property since it makes it so much easier to see if and where the rate of change differs. For example, let's look at the population growth rate of the US from 1850 to 2013.
 
 ```{r fig.width=4,fig.height=4}
-dat <- read.csv("http://personal.colby.edu/personal/m/mgimond/R/Data/Population.csv", header=TRUE)
+dat <- read.csv("https://mgimond.github.io/ES218/Data/Population.csv", header=TRUE)
 plot(US ~ Year, dat, type="l") 
 ```
 
@@ -244,7 +244,7 @@ The choice of re-rexpression will depend on the analysis context. For example, i
 
 ## Re-expressing to stabilize spread
 
-A spread vs level plot not only tells us if there is a systematic relationship between spread and level, it can also suggest the power transformation to use. Note that the s-l method discussed here is not the one presented in Cleveland's book (see the section titled "Spread-location plot" on the course website for an alternative version of the plot). 
+We learned in the last chapter that one rendering of the spread-level plot can suggest the power transformation to use. We'll recreate the plots (however this time, we'll make use if the base plotting functions).
 
 ```{r fig.height=2, fig.width=2.2, echo=2:9}
 OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
@@ -263,14 +263,14 @@ plot(sprd ~ med, df.sl, pch = 16)
 par(OP)
 ```
 
-The plot suggests a monotonic relationship between spread and median. Next, we'll  fit a line to this scatter plot and compute its slope. We'll use the `lm()` function, but note that any other line fitting strategies could be used as well.
+The plot suggests a monotonic relationship between spread and median. Next, we'll  fit a line to this scatter plot and compute its slope. We'll use the `MASS::rlm()` function, but note that any other line fitting strategies could be used as well.
 
 ```{r fig.height=2, fig.width=2.2, echo=2:6}
 OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
 plot(sprd ~ med, df.sl, pch = 16)
 
 # Run regression model
-M <- lm(sprd ~ med, df.sl)
+M <- MASS::rlm(sprd ~ med, df.sl)
 abline(M, col = "red")
 par(OP)
 ```
@@ -280,7 +280,7 @@ The slope can be used to come up with the best power transformation to minimize 
 The slope can be extracted from the model `M` using the `coef` function:
 
 ```{r}
- coef(M)
+coef(M)
 ```
 
 The second value in the output is the slope. So the power to use is `1 - 2.97` or `-1.97`. We will use the  power transformation function `BC`  to re-express the `mean.length` values. We'll add the re-expressed values as a new  column to `df`:
@@ -293,14 +293,16 @@ Let's compare boxplots between the original values with the re-expressed values.
 
 ```{r fig.height=3, fig.width=6, fig.show='hold', echo=2:3}
 OP <- par(mfrow = c(1,2), mar=c(3,2,2,0.1))
-boxplot(mean.length ~ dimension, df, main = "Original data")
-boxplot(re.mean.length ~ dimension, df, main = "Re-expressed data")
+boxplot(mean.length ~ reorder(dimension, mean.length, median), df, 
+        main = "Original data")
+boxplot(re.mean.length ~ reorder(dimension, mean.length, median), df, 
+        main = "Re-expressed data")
 par(OP)
 ```
 
-Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have equalized the spreads across the three groups. 
+Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have eliminated the monotonic increase in spread, but did the re-expression go too far? Could we be seeing a slight decrease in spread with increasing medians? 
 
-We'll check for a homogeneous spread across fitted medians using the original spread-level plot covered in last week's [lecture](./Week07b.html#constructing-the-s-l-plot).
+We'll check for a homogeneous spread across fitted medians using one of the spread-level plots covered in the last chapter.
 
 ```{r fig.height=2.5, fig.width=3.2}
 library(ggplot2)
@@ -311,10 +313,30 @@ df1 <- df %>%
 
 # Generate the s-l plot
 ggplot(df1, aes(x = Median, y = Residuals)) + 
-  geom_jitter(alpha = 0.3,width = 0.003,height = 0) +
+  geom_jitter(alpha = 0.3, width = 0.003, height = 0) +
   stat_summary(fun.y = median, geom = "line", col = "red") +
   ylab(expression(sqrt( abs( " Residuals ")))) +
   geom_text(aes(x = Median, y = 0.6, label = dimension) )
 ```
 
-The plot suggests that the re-expression does a good job in stabilizing the spread.
+The plot suggests a slightly decreasing spread with increasing fitted values. We may want to scale back on the power to see if we can eliminate one monotonic spread (increasing) without creating another one (decreasing).
+
+An examination of other powers leads us to a power of `-1.5` which seems to remove any increasing spreads without creating a decreasing spread.
+
+```{r}
+df$re.mean.length <- BC(df$mean.length, -1.5)
+```
+
+```{r fig.height=2.5, fig.width=3.2}
+df1 <- df %>%
+  group_by(dimension)  %>%
+  mutate( Median = median(re.mean.length),
+          Residuals = sqrt( abs( re.mean.length - Median)))   
+
+# Generate the s-l plot
+ggplot(df1, aes(x = Median, y = Residuals)) + 
+  geom_jitter(alpha = 0.3, width = 0.003, height = 0) +
+  stat_summary(fun.y = median, geom = "line", col = "red") +
+  ylab(expression(sqrt( abs( " Residuals ")))) +
+  geom_text(aes(x = Median, y = 0.6, label = dimension) )
+```
