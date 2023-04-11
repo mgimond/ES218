@@ -8,7 +8,7 @@ source("libs/Common.R")
 pkg_ver(c("ggplot2"))
 ```
 
-Bivariate data are datasets that store two variables measured from a same observation (e.g. wind speed **and** temperature at a single location). This differs from univariate data where only one variable is measured for each observation (e.g. temperature at a single location). 
+Bivariate data are datasets that store two variables measured from a same observation (e.g. wind speed *and* temperature at a single location). This differs from univariate data where only one variable is measured for each observation (e.g. temperature at a single location). This chapter will explore common fitting strategies applied to bivariate data.
 
 ## Scatter plot
 
@@ -29,13 +29,15 @@ library(ggplot2)
 ggplot(df, aes(x = area, y = cp.ratio)) + geom_point()
 ```
 
-The data represent the ratio between the ganglion cell density of a cat's central retina to that of its peripheral density (variable `cp.ratio`) and the cat's retina surface area (`area`) during its early development (ranging from 35 to 62 days of gestation).
+The data represent the ratio between the ganglion cell density of a cat's central retina to that of its peripheral density (variable `cp.ratio`), and the cat's retina surface area (`area`) during its early development (ranging from 35 to 62 days of gestation).
 
 ## Fitting the data
 
-Scatter plots are a good first start in visualizing the data, but this is sometimes not enough. Our eyes need "guidance" to help perceive patterns. Another visual aid involves **fitting** the data with a line. 
+Scatter plots are a good first start in visualizing the data, but this is sometimes not enough. Our eyes need "guidance" to help perceive patterns. Another visual aid involves **fitting** the data with a line. We will explore two fitting strategies: the *parametric* fit and the *non-parametric* fit.
 
 ### Parametric fit
+
+A parametric fit is one where we impose a structure to the data--an example of which is a *straight* line (also referred to as a 1^st^ order polynomial fit). The parametric fit is by far the most popular fitting strategy used in the realm of data analysis and statistics.
 
 #### Fitting a straight line
 
@@ -57,7 +59,7 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
              stat_smooth(method ="lm", se = FALSE)
 ```
 
-The `se = FALSE` option prevents R from drawing a confidence envelope around the regression line.
+The `se = FALSE` option prevents R from drawing a confidence envelope around the regression line. Confidence envelopes are used in inferential statistics (a topic not covered in this course).
 
 The straight line is a **first order polynomial** with two parameters, $a$ and $b$, that define an equation that best describes the relationship between the two variables:
 
@@ -75,7 +77,7 @@ Thus $a$ = 0.014 and $b$ = 0.11.
 
 #### Fitting a 2^nd^ order polynomial
 
-A second order polynomial is a three parameter function ($a$, $b$ and $c$) whose equation $y = a + bx + cx^2$ defines the curve that best fits the data. We define such a relationship in R using the formula `cp.ratio ~ area + I(area^2)`. The *identity* function `I()` preserves the arithmetic interpretation of `area^2` as part of the model. Our new `lm` expression and resulting coefficients follow:
+A second order polynomial is a three parameter function ($a$, $b$ and $c$) whose equation $y = a + bx + cx^2$ defines a **curve** that best fits the data. We define such a relationship in R using the formula `cp.ratio ~ area + I(area^2)`. The *identity* function `I()` preserves the arithmetic interpretation of `area^2` as part of the model. Our new `lm` expression and resulting coefficients follow:
 
 ```{r}
 M2 <- lm(cp.ratio ~  area + I(area^2) , dat = df)
@@ -88,7 +90,7 @@ $$
 y = 2.87 - 0.012 x + 0.000839 x^2
 $$
 
-We cannot use `abline` to plot the predicted 2^nd^ order polynomial curve since `abline` only draws straight lines. We will need to construct the line manually using the `predict` and `lines` functions.
+In using the base plot environment, we cannot use `abline` to plot the predicted 2^nd^ order polynomial curve since `abline` only draws straight lines. We will need to construct the line manually using the `predict` and `lines` functions.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 plot(cp.ratio ~ area, dat=df)
@@ -97,7 +99,7 @@ y.pred <- predict(M2, x.pred)
 lines(x.pred$area, y.pred, col = "red")
 ```
 
-To do this in `ggplot2` simply pass the formula as an argument to `stat_smooth`:
+To generate the same plot in `ggplot2`, simply pass the formula as an argument to `stat_smooth`:
 
 ```{r fig.width=2.5, fig.height=2.5}
 ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() + 
@@ -107,9 +109,11 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
 
 ### Non-parametric fits
 
+Non-parametric fits apply to the family of fitting strategies that *do not* impose a structure to the data. Instead, they are designed to let the dataset reveal its inherent structure.
+
 #### Loess
 
-A more flexible curve fitting option is the **loess**  curve (short for **lo**cal regr**ess**ion; also known as the *local weighted regression*). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the smooth curve. The range of x-values that contribute to each localized regression lines is defined by the $\alpha$ parameter which usually ranges from 0.2 to 1. The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a loess curve is $\lambda$: it defines the polynomial order of the localized regression line. This is usually set to 1 (though `ggplot2`'s implementation of the loess defaults to a 2^nd^ order polynomial).
+A flexible curve fitting option is the **loess**  curve (short for **lo**cal regr**ess**ion; also known as the *local weighted regression*). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the *smooth* curve. The range of x-values that contribute to each localized regression lines is defined by the $\alpha$ parameter which usually ranges from 0.2 to 1. The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a loess curve is $\lambda$: it defines the polynomial order of the localized regression line. This is usually set to 1 (though `ggplot2`'s implementation of the loess defaults to a 2^nd^ order polynomial).
 
 ```{r echo=FALSE}
 library(dplyr)
@@ -176,7 +180,7 @@ Behind the scenes, each point (x~i~,y~i~) that defines the loess curve is constr
  a) A subset of data points closest to point x~i~ are identified. The number of points in the subset is computed by multiplying the bandwidth $\alpha$ by the total number of observations. In our current example, the number of points defining the subset is 0.5 * 14 = 7. The points are identified in the light blue area of the plot in panel (a) of the figure below.
  b) The points in the subset are assigned weights. Greater weight is assigned to points closest to x~i~ and vice versa. The weights define the points' influence on the fitted line. Different weighting techniques can be implemented in a loess with the `gaussian` weight being the most common. Another weighting strategy we will also explore later in this course is the `symmetric` weight.
  c) A regression line is fit to the subset of points. Points with smaller weights will have less leverage on the fitted line than points with larger weights. The fitted line can be either a first order polynomial fit or a second order polynomial fit.
- d) Compute the value y~i~ from the regression line. This is shown a the red dot in panel (d). This is one of the points that will define the shape of the loess.
+ d) Next, the value y~i~ from the regression line is computed. This is shown a the red dot in panel (d). This is one of the points that will define the shape of the loess.
    
 
 ```{r fig.height = 2.7, fig.width = 10, echo = FALSE}
@@ -189,7 +193,7 @@ f.plot(start = 50,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE,
 par(OP)
 ```
 
-The above steps are repeated for as many x~i~ values practically possible. Note that when x~i~ approaches an x limit, the subset of points becomes skewed to one side of x~i~. For example, when estimating x~10~, the seven closest points to the right of x~10~ are selected.
+The above steps are repeated for as many x~i~ values practically possible. Note that when x~i~ approaches an upper or lower x limit, the subset of points becomes skewed to one side of x~i~. For example, when estimating x~10~, the seven closest points to the right of x~10~ are selected.
 
 ```{r fig.height = 2.5, fig.width = 10, echo = FALSE}
 OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
@@ -232,7 +236,7 @@ par(OP)
 
 #### Plotting a loess in R
 
-The loess fit can be computed using the `loess()` function. It takes as arguments  `span` ($\alpha$), and `degree` ($\lambda$).
+The loess fit can be computed in R using the `loess()` function. It takes as arguments  `span` ($\alpha$), and `degree` ($\lambda$).
 
 ```{r}
 # Fit loess function
@@ -243,7 +247,7 @@ lo.x <- seq(min(df$area), max(df$area), length.out = 50)
 lo.y <- predict(lo, lo.x)
 ```
 
-The predicted loess curve can be added using the `lines` function.
+The modeled loess curve can be added to the scatter plot using the `lines` function.
 
 ```{r fig.width=2.5, fig.height=2.5, small.mar=TRUE}
 plot(cp.ratio ~ area, dat = df)
@@ -257,7 +261,7 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
              stat_smooth(method = "loess", se = FALSE, span = 0.5)
 ```
 
-However, `ggplot` (up to version 3.3) defaults to a second degree loess (i.e. the small regression line elements that define the loess are defined by a 2^nd^ order polynomial and not a 1^st^ order polynomial). If a first order polynomial (`degree=1`) is desired, you need to include an argument list in the form of `method.args=list(degree=1)` to the `stat_smooth` function.
+However, `ggplot` defaults to a second degree loess (i.e. the small regression line elements that define the loess are defined by a 2^nd^ order polynomial and not a 1^st^ order polynomial). If a first order polynomial (`degree=1`) is desired, you need to include an argument list in the form of `method.args=list(degree=1)` to the `stat_smooth` function.
 
 ```{r fig.width=2.5, fig.height=2.5}
 ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() + 
@@ -267,7 +271,7 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
 
 ## Residuals
 
-Fitting the data with a line is just the first step in EDA. Your next step should be to explore the residuals. The residuals are the distances (along the y-axis) between the observed points and the fitted line. The closer the points to the line (i.e. the smaller the residuals) the better the fit. 
+Fitting the data with a line is just the first step in EDA. Your next step should be to explore the residuals. The residuals are the distances (parallel to the y-axis) between the observed points and the fitted line. The closer the points to the line (i.e. the smaller the residuals) the better the fit. 
 
 The residuals can be computed using the `residuals()` function. It takes as argument the model object. For example, to extract the residuals from the linear model `M` computed earlier type, 
 
@@ -277,7 +281,7 @@ residuals(M)
 
 ### Residual-dependence plot
 
-We'll create a **residual dependence plot** to plot the residuals as a function of the x-values. We'll do this using `ggplot` so that we can also fit a loess curve to help discern any pattern in the residuals (the `ggplot` function makes it easier to add a loess fit than the traditional plotting environment).
+We'll create a **residual dependence plot** to plot the residuals as a function of the x-values. We'll do this using `ggplot` so that we can also fit a loess curve to help discern any pattern in the residuals.
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
@@ -311,15 +315,21 @@ ggplot(df, aes(x = area, y = residuals3)) + geom_point() +
 
 ```
 
-The loess model also seems to do a good job in smoothing out any overall pattern in the data.
+The loess model also seems to do a good job in capturing any overall pattern in the data. But note that this is to be expected given that the loess fit is a non-parametric model.
 
-You may ask *“if the loess model does such a good job in fitting the data, why bother with polynomial fits?”* If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in identifying a pattern in the data, then a loess fit is a good choice.
+> You may ask *“if the loess model does such a good job in fitting the data, why bother with polynomial fits?”* If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in identifying a pattern in the data, then a loess fit is a good choice.
 
-Next we will look for homogeneity in the residuals.
+A well defined model is one where the residuals (aka spread) are constant over the full range of $x$. In essence, we expect a formula  of the form:
+
+$$
+Y = a + bx + \epsilon
+$$
+where $\epsilon$ is a constant that does not vary as a function of varying $x$.  This should sound quite familiar to you given that we've spent a good part of the univariate analysis section seeking a homogeneous spread in the data. So what other diagnostic plots can we (and *should we*) generate from the fitted model? We explore such plots next.
+
 
 ### Spread-location plot
 
-The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that the residuals do not show a dependence with *fitted* y-values. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across factors. Here we will compare residuals to the fitted `cp.ratio` values (think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot (this reproduces fig 3.14 in Cleveland's book).
+The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that the residuals do not show a dependence with *fitted* y-values. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across factors. Here we will compare residuals to the fitted `cp.ratio` values (think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 sl2 <- data.frame( std.res = sqrt(abs(residuals(M2))), 
@@ -398,4 +408,4 @@ ggplot(df.log, aes(sample = residuals)) +
   geom_qq_line(distribution = qnorm, col = "blue")
 ```
 
-An added benefit of re-expressing the data seems to be a slight improvement in the normality of the residuals.
+An added benefit of re-expressing the data seems to have improved the *normality* of the residuals. A good thing!
