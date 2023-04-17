@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Resistant lines
 
 ```{r echo=FALSE}
@@ -6,7 +11,7 @@ source("libs/Common.R")
 
 
 ```{r echo = FALSE}
-pkg_ver(c("dplyr", "ggplot2", "lubridate"))
+pkg_ver(c("dplyr", "ggplot2", "MASS"))
 ```
 
 ## Introduction
@@ -133,7 +138,9 @@ The 3-point summary fitting process can be extended by adding the residual slope
 
 ### Bisquare
 
-In his book (pages 112 - 119), Cleveland uses the *bisquare* estimation method to come up with a robust line. The first step is to run a linear regression model on the data then to extract the residuals. Next, a weighting scheme is fit to the residuals such that the points associated with outlier residuals are assigned the smallest weight and the points associated with the central residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals no longer show outliers. The following figure shows three iterations of the bisquare function whereby the weights (shown as grey text next to each point) start off as `1` then are modified following the residuals derived from the most recent regression model.
+A bisquare fitting strategy makes use of a non-parametric model that assigns *weights* to observations based on their proximity to the center of the distribution. The closer an observation is to that center, the greater its weight. 
+
+The first step is to run a linear regression model on the data then to extract its residuals. Next, a weighting scheme is fit to the residuals such that the points associated with extreme residuals are assigned the smallest weight and the points associated with the smaller residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals stabilize. The following figure shows three iterations of the bisquare function whereby the weights (shown as grey text next to each point) start off as `1` then are modified following the residuals derived from the most recent regression model.
 
 ```{r fig.height=2.5, fig.width=8, small.mar=TRUE, echo = FALSE}
 wt.bisquare <- function(u, c = 6) {
@@ -168,6 +175,8 @@ OP <- par(mfrow = c(1,3))
 ```
 
 
+There are different weighing strategies that can be implemented. One such implementation is presented next.
+
 ```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
 # Create the bisquare function
 wt.bisquare <- function(u, c = 6) {
@@ -190,46 +199,6 @@ abline(dat.lm, col = rgb(1,0,0,0.3))
 
 In the above example, the bisquare method does a great job in eliminating the outlier's influence. 
 
-#### Sample data
-
-In this example, we fit both an un-modified regression line (dashed grey line) and a bisquare modified regression line (red line) to yearly mean temperature values for the Gulf of Maine.
-
-```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
-library(lubridate)
-library(dplyr)
-df <- read.csv("http://mgimond.github.io/ES218/Data/GoM_hist.csv")
-
-# Subset the data then compute the yearly mean temperature
-df2 <- df %>%
-       mutate(Date = mdy(Date),
-              Year = year(Date)) %>%
-       filter(Year > 1950) %>%
-       group_by( Year) %>%
-       summarize( AvgTemp = mean(Temp, na.rm=T)) 
-
-# Generate the base regression model
-M1 <- lm( AvgTemp ~ Year, dat=df2)
-
-# Run the bisquare regression model 
-# We'll use the wt.bisquare() function from the last chunk of code
-wt <- rep(1,length(df2$Year))
-
-for(i in 1:10){
-  M2 <- lm(AvgTemp ~ Year,df2 , weights=wt)
-  wt <- wt.bisquare( M2$res/ median(abs(M2$res)), c=6 )
-}
-
-# Plot the points
-plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
-
-# Add the robust line
-abline( M2, col="red")
-
-# Add the default regression line
-abline( M1 , col="grey50", lty=2)
-```
-
-Note the difference in slopes: The robust regression method computes a slope of `r round(coef(M2)[2],4)` while the original regression model computes a slope of `r round(coef(M1)[2],4)`.
 
 #### Built-in implementation of the bisquare
 
@@ -237,22 +206,24 @@ The `MASS` package has a robust linear modeling function called `rlm` that will 
 
 Note that if you make use of `dplyr` in a work flow, loading `MASS` after `dplyr` will mask dplyr's `select` function. This can be problematic. So you either want to load `MASS` before `dplyr`, or you can call the function via `MASS::rlm`. An example of its use follows.
 
-```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
-M2.r <- MASS::rlm( AvgTemp ~ Year, dat=df2, psi="psi.bisquare")
-plot(AvgTemp ~ Year,df2, pch=16, col=rgb(0,0,0,0.2))
+```{r fig.height=2.5, fig.width=3,  small.mar=TRUE, fig.show='hold'}
+dat <- data.frame(x,y)
+M   <- lm( y ~ x, dat=dat)
+Mr  <- MASS::rlm( y ~ x, dat=dat, psi="psi.bisquare")
+plot(y ~ x,dat, pch=16, col=rgb(0,0,0,0.2))
 
 # Add the robust line
-abline( M2.r, col="red")
+abline( Mr, col="red")
 
 # Add the default regression line
-abline( M1 , col="grey50", lty=2)
+abline( M , col="grey50", lty=2)
 ```
 
 The function `rlm` can also be called directly from within `ggplot`.
 
-```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
+```{r fig.height=2.5, fig.width=3,  small.mar=TRUE, fig.show='hold'}
 library(ggplot2)
-ggplot(df2, aes(x=Year, y=AvgTemp)) + geom_point() + 
+ggplot(dat, aes(x=x, y=y)) + geom_point() + 
        stat_smooth(method = "lm", se = FALSE, col = "grey50", lty = 2) +
        stat_smooth(method = MASS::rlm, se = FALSE, col = "red",
                    method.args = list(psi = "psi.bisquare"))
@@ -262,44 +233,37 @@ ggplot(df2, aes(x=Year, y=AvgTemp)) + geom_point() +
 
 ## Robust loess
 
-The bisquare estimation method can also be extended to the loess smoothing function. The following chunk of code fits both an uncorrected robust loess (dashed curve) and a bisquare loess (red curve) to the Gulf of Maine temperature data.
+The bisquare estimation method can also be extended to the loess smoothing function by passing the `"symmetric"` option to the `family` parameter.
 
 
-```{r fig.height=2.5, fig.width=6,  small.mar=TRUE,  fig.show='hold'}
+```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,  fig.show='hold'}
 # Fit a regular loess model
-lo <- loess(AvgTemp ~ Year, df2, span = 1/3)
+lo <- loess(y ~ x, dat)
 
 # Fit a robust loess model
-wt <- rep(1,length(df2$Year))
-
-for(i in 1:10){
-  lo2 <- loess(AvgTemp ~ Year,df2, weights = wt, span = 1/3)
-   wt <- wt.bisquare( lo2$res/ median(abs(lo2$res)), c = 6 )
-}
+lor <- loess(y ~ x, dat, family = "symmetric")
 
 # Plot the data
-plot(AvgTemp ~ Year, df2, pch = 16, col = rgb(0,0,0,0.2))
-
-# Add the robust loess
-lines(df2$Year, predict(lo2), col = "red")
+plot(y ~ x, dat, pch = 16, col = rgb(0,0,0,0.2))
 
 # Add the default loess
-lines(df2$Year, predict(lo), col = "grey50", lty = 2)
+lines(dat$x, predict(lo), col = "grey50", lty = 2)
 
+# Add the robust loess
+lines(dat$x, predict(lor), col = "red")
 ```
 
-The two curves overlap for most of the data range except between the years 2000 and 2010 where the un-corrected loess curve is unduly influenced by one or two rogue points incorrectly suggesting that a  *hump* in water temperature occurred between the years 2000 and 2010.
+The R base `loess` function can be implemented in `ggplot2`'s `stat_smooth` function as follows:
 
-The R base `loess` function and `ggplot2`'s `stat_smooth` function have the ability to compute a robust version of the loess by invoking the `family = "symmetric"` parameter as in,
-
-```{r fig.height=2.5, fig.width=6,  small.mar=TRUE, fig.show='hold'}
+```{r fig.height=2.5, fig.width=3,  small.mar=TRUE, fig.show='hold'}
 library(ggplot2)
-ggplot(df2) + aes(x=Year, y=AvgTemp) + geom_point() + 
-              stat_smooth(method = "loess", span=1/3,
-                          method.args = list(family="symmetric"), # Robust loess
-                          se=FALSE,  col="red") +  
-              stat_smooth(method = "loess", span=1/3, # Regular loess 
-                          se=FALSE, col="grey50", lty=2)            
+ggplot(dat, aes(x=x, y=y)) + geom_point() + 
+          stat_smooth(method = "loess",                       # Regular loess 
+                      se=FALSE, col="grey50", lty=2)  +    
+          stat_smooth(method = "loess", 
+                      method.args = list(family="symmetric"), # Robust loess
+                      se=FALSE,  col="red") 
+      
 ```
 
-The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.
+The loess parameters are passed to the `loess` function via the call to `method.args`. The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.
