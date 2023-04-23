@@ -35,7 +35,8 @@ M1    <- lm( y ~ x, df)
 df$residuals <- residuals(M1)
 
 ggplot(df, aes(x = x, y = residuals)) + geom_point(alpha = 0.3) +
-  stat_smooth(method = "loess", se = FALSE, span = 0.2, method.args = list(degree = 1))
+  stat_smooth(method = "loess", se = FALSE, span = 0.2, 
+              method.args = list(degree = 1))
 ```
 
 There appears to be a dip in residual values between ~95 and ~107 followed by an increase beyond ~107. The *kinks* in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slopes and intercepts). Note the use of a small loess span in the above code to reveal the kinks in the pattern.
@@ -90,7 +91,7 @@ PerH <- c(8.62,10.1,6.67,11.13,5.71,9.48,7.63,8.12,7.2,9.64,8.42,5.71,11.72,
           20.37,17.56,11.13,11.49)
 df2 <- data.frame(Year, PerC, PerH)
 
-df2.l <- gather(df2, key = Temp, value = Percent, -Year)
+df2.l <- pivot_longer(df2, names_to = "Temp", values_to = "Percent", -Year)
 ```
 
 Let's plot the data and fit a straight line to the points.
@@ -123,7 +124,7 @@ The following chunk of code loads the PDO data, then summarizes the data by year
 df3  <- read.table("http://mgimond.github.io/ES218/Data/PDO.dat", 
                    header = TRUE, na.strings = "-9999")
 pdo <- df3 %>%
-  gather(key = Month, value = PDO, -YEAR) %>%
+  pivot_longer(names_to = "Month", values_to = "PDO", -YEAR) %>%
   group_by(YEAR) %>%
   summarise(PDO = median(PDO) )
 
@@ -137,7 +138,7 @@ The contrast in PDO indexes between the 1960-1976 period and the 1976-2000 perio
 To see if distinct patterns emerge from the percent hot and cold data before and after 1976, we'll split the data into two segments using a cutoff year of 1976-1977. Values associated with a period prior to 1977 will be assigned a `seg` value of `Before` and those associated with a post-1977 period will be assigned a `seg` value of `After`.
 
 ```{r}
-df2.l$seg <- ifelse(Year < 1977, "Before", "After")
+df2.l$seg <- ifelse(df2.l$Year < 1977, "Before", "After")
 ```
 
 Next, we'll plot the data across four facets:
