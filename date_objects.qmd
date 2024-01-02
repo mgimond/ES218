@@ -12,9 +12,10 @@ pkg_ver(c("lubridate", "stringr"))
 
 Date values can be represented in tables as numbers or characters. But to be properly interpreted by R as dates, date values should be converted to an R **date** object class or a `POSIXct`/`POSIXt` object class. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier.
 
-&nbsp;&nbsp;
+&nbsp;
 
 ## Creating date/time objects
+
 &nbsp;&nbsp;
 
 ### From complete date strings
@@ -34,14 +35,14 @@ x.date <- mdy(x)
 class(x.date)
 ```
 
+Note that using the `mode` or `typeof` functions will not help us determine if the object is an R *date* object. This is because a date is stored as a `numeric` (double) internally. Use the `class` function instead as shown in the above code chunk. 
+
 If you need to specify the time zone, add the parameter `tz=`. For example, to specify *Eastern Standard Time*, type:
 
 ```{r}
 x.date <- mdy(x, tz="EST")
 x.date
 ```
-
-Note that using the `mode` or `typeof` functions will not help us determine if the object is an R *date* object. This is because a date is stored as a `numeric` (double) internally. Use the `class` function instead as shown in the above code chunk. 
 
 The `mdy` function can read in date formats that use different delimiters so that `mdy("06/23/2013")`, `mdy("06-23-2013")` and `mdy("06.23.2013")` are parsed exactly the same so long as the order remains month/day/year.
 
@@ -137,14 +138,14 @@ The above example uses three arguments: the two objects that are pasted together
 paste(dat1$Year, dat1$Month, "15", sep="-")
 ```
 
-And finally, we'll add a new column called `Date` to the `dat` object, and fill that column with the newly created date string wrapped with the `ymd` function:
+We are now ready to add a new column called `Date` to the `dat` object and fill that column with a *real* date object:
 
 ```{r}
 dat1$Date <- ymd( paste(dat1$Year, dat1$Month, "15", sep="-") )
 head(dat1)
 ```
 
-The `sep="-"` option is not needed with the lubridate function so the last piece of code could have been written as:
+The `sep="-"` option is not needed with the `lubridate` function since `lubridate` will recognize a space as a valid delimiter, so the last piece of code could have been written as:
 
 ```{r}
 dat1$Date <- ymd( paste(dat1$Year, dat1$Month, "15") )
@@ -197,9 +198,9 @@ If you want the day of the week displayed as its three letter designation, add t
 wday(x.date, label=TRUE) 
 ```
 
-You'll note that the function returns a `factor` object with seven levels--one for each day of the week (`r levels(lubridate::wday(x.date, label = TRUE))`)--as well as the level hierarchy which will dictate the order in which values will be displayed if grouped by this factor. The levels are not necessarily reflected in the vector elements (only `r unique(lubridate::wday(x.date, label=TRUE))` are present), but the levels are there if we were ever to add addition day elements to this vector.
+You'll note that the function returns a `factor` object with seven levels--one for each day of the week (`r levels(lubridate::wday(x.date, label = TRUE))`)--as well as the level hierarchy which will dictate the order in which values will be displayed if grouped by this factor. The levels are not necessarily reflected in the vector elements (only `r unique(lubridate::wday(x.date, label=TRUE))` are present), but the levels are there if we were ever to add additional day elements to this vector.
 
-The following table lists functions that extract different elements of a date object.
+The following table lists `lubridate` functions that extract different elements of a date object.
 
 Functions        |  Extracted element
 -----------------|--------------
@@ -241,13 +242,13 @@ x.date[ (mday(x.date) > 11) & (mday(x.date) < 24) ]
 
 ## Formatting date objects
 
-You can create a character vector from a date object. This is useful if you want to annotate  plots with dates or include date values in reports. For example, to convert the date object `x.date` to a "Month_name Year" character format, type the following:
+You can create a character vector from a date object. This is useful if you want to annotate  plots with dates or include date values in reports. For example, to convert the date object `x.date` to a "<Month name> Year" character format, type the following:
 
 ```{r}
-as.character(x.date, format="%B %Y")
+format(x.date, "%B %Y")
 ```
 
-The `format=` parameter accepts many different date/time format codes listed in the following table (note the case!).
+The `format` function accepts many different date/time format codes listed in the following table (note the cases!).
 
 Format codes  |  Description             | Example
 --------------|--------------------------|------------------------------------------

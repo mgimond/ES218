@@ -1,4 +1,4 @@
-# Subsetting and replacing values using base functions
+# Manipulating data tables using base functions
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -25,13 +25,13 @@ You can combine individual criterion using boolean operators when selecting by r
 subset(mtcars, (mpg > 25) & (hp > 65)  )
 ```
 
-You can also subset by column. To select columns, add the `select =` parameter.
+You can also subset by column. To select columns, add the `select =` argument.
 
 ```{r}
 subset(mtcars, (mpg > 25) & (hp > 65) , select = c(mpg, cyl, hp))
 ```
 
-Note that the `subset` function can behave in unexpected ways. This is why its authors recommend against using subset in a script (see `?subset`). Instead, they advocate using indices.
+Note that the `subset` function can behave in unexpected ways. This is why its authors recommend against using subset in a script (see `?subset`). Instead, they advocate using indices shown next.
 
 ## Subset using indices
 
@@ -44,44 +44,52 @@ x <- c("a", "f", "a", "d", "a")
 type,
 
 ```{r}
-x[c(2,4)]
+x[c(2, 4)]
 ```
 
-To subset a dataframe by index, you need to define *both* dimension's index (separated by a comma). For example, to extract all rows where `mpg > 25` as well as the first and fourth columns from the built-in `mtcars` dataset type,
+To subset a dataframe by index, you need to define *both* dimension's index (separated by a comma). For example, to extract the second row an fourth column type:
 
-```{r attr.output='style="max-height: 100px;"'}
-mtcars[ mtcars$mpg > 25, c(1,4)]
+```{r}
+mtcars[2,4 ]
 ```
+This returns the intersection of the row and column--a single cell. 
 
-Note that we have to add `mtcars$` to the expression since the variable `mpg` does not exist as a standalone object.
+You can, of course, extract table blocks by using `c()` operators and/or the colon operator.
 
-You can also reference columns by names as in,
-
-```{r attr.output='style="max-height: 100px;"'}
-mtcars[ mtcars$mpg > 25, c("mpg", "hp")]
+```{r}
+mtcars[5:12, c("hp", "mpg", "am")]
 ```
+Note that here, we chose to reference the columns by their names instead of their index number.
+
 
 ## Extracting using logical expression and indices
 
-We apply conditions to indices to **reveal** elements of a vector or a table that satisfy one or more criterion. For example:
+We can also extract cells based on conditions. For example, to extract all elements in `x` that are equal to `"a"`, type:
 
 ```{r}
 x[ x == "a" ]
 ```
 
+
 Let's breakdown the above expression. The output of the expression `x == "a"` is `TRUE FALSE TRUE FALSE TRUE`, a logical vector with the same number of elements as `x`. The logical elements are then passed to the indexing brackets where they act as a "mask" as shown in the following graphic.
 
 ![](img/logical_mask.png){width="318"}
 
-The elements that make it through the *extraction mask* are then combined into a new vector element.
+The elements that make it through the *extraction mask* are then combined into a new vector element to **reveal** those elements satisfying the query.
 
-The same idea applies to dataframes. For example, to extract all rows where `mpg > 30` type:
+The same idea applies to dataframes. For example, to extract all rows in `mtcars` where `mpg > 30` type:
 
 ```{r}
 mtcars[ mtcars$mpg > 30, ]
 ```
 
-Here, we are "masking" the rows that do not satisfy the criterion using the `TRUE`/`FALSE` logical outcomes from the conditional operation.
+Here, we are "masking" the rows that do not satisfy the criterion using the `TRUE`/`FALSE` logical outcomes from the conditional operation. Note that we have to add `mtcars$` to the expression since the variable `mpg` does not exist as a standalone object.
+
+The expression can be made more complex. For example, to select all rows where `mpg` is greater than `30` and where `carb` is equal to `2`, and limiting the columns to `hp`, `mpg` and `disp`, type:
+
+```{r}
+mtcars[ (mtcars$mpg > 30) & (mtcars$carb == 2), c("hp", "mpg", "disp")]
+```
 
 ## Replacing values using logical expressions
 

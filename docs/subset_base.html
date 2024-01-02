@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 8&nbsp; Subsetting and replacing values using base functions</title>
+<title>Exploratory Data Analysis in R - 8&nbsp; Manipulating data tables using base functions</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -122,7 +122,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./subset_base.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Subsetting and replacing values using base functions</span></a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./subset_base.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Manipulating data tables using base functions</span></a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -225,7 +225,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./subset_base.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Subsetting and replacing values using base functions</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Manipulating data tables using base functions</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -445,7 +445,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Subsetting and replacing values using base functions</span></h1>
+<h1 class="title"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Manipulating data tables using base functions</span></h1>
 </div>
 
 
@@ -497,7 +497,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;width:5px;"> 4.3.2 </td>
+             border-radius: 5px;width:5px;"> 4.3.1 </td>
   </tr>
 </tbody>
 </table>
@@ -530,7 +530,7 @@ Porsche 914-2 26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
 Lotus Europa  30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2</code></pre>
 </div>
 </div>
-<p>You can also subset by column. To select columns, add the <code>select =</code> parameter.</p>
+<p>You can also subset by column. To select columns, add the <code>select =</code> argument.</p>
 <div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-5_cc25b809d82928f9dd14cb4725db990d">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subset</span>(mtcars, (mpg <span class="sc">&gt;</span> <span class="dv">25</span>) <span class="sc">&amp;</span> (hp <span class="sc">&gt;</span> <span class="dv">65</span>) , <span class="at">select =</span> <span class="fu">c</span>(mpg, cyl, hp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -541,7 +541,7 @@ Porsche 914-2 26.0   4  91
 Lotus Europa  30.4   4 113</code></pre>
 </div>
 </div>
-<p>Note that the <code>subset</code> function can behave in unexpected ways. This is why its authors recommend against using subset in a script (see <code>?subset</code>). Instead, they advocate using indices.</p>
+<p>Note that the <code>subset</code> function can behave in unexpected ways. This is why its authors recommend against using subset in a script (see <code>?subset</code>). Instead, they advocate using indices shown next.</p>
 </section>
 <section id="subset-using-indices" class="level2" data-number="8.2">
 <h2 data-number="8.2" class="anchored" data-anchor-id="subset-using-indices"><span class="header-section-number">8.2</span> Subset using indices</h2>
@@ -550,43 +550,40 @@ Lotus Europa  30.4   4 113</code></pre>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"f"</span>, <span class="st">"a"</span>, <span class="st">"d"</span>, <span class="st">"a"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>type,</p>
-<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-7_b1bf6c9290a56cfc2a1f331cd27293d0">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>x[<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">4</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-7_e5f2d60a28e21439d79f6b7fd86c218b">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>x[<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">4</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "f" "d"</code></pre>
 </div>
 </div>
-<p>To subset a dataframe by index, you need to define <em>both</em> dimension’s index (separated by a comma). For example, to extract all rows where <code>mpg &gt; 25</code> as well as the first and fourth columns from the built-in <code>mtcars</code> dataset type,</p>
-<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-8_b8cfa690a2160acbd58c73f350d9cbbc">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mtcars[ mtcars<span class="sc">$</span>mpg <span class="sc">&gt;</span> <span class="dv">25</span>, <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To subset a dataframe by index, you need to define <em>both</em> dimension’s index (separated by a comma). For example, to extract the second row an fourth column type:</p>
+<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-8_a0e234384e8cde4116df991b2ecfab2c">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mtcars[<span class="dv">2</span>,<span class="dv">4</span> ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre style="max-height: 100px;"><code>                mpg  hp
-Fiat 128       32.4  66
-Honda Civic    30.4  52
-Toyota Corolla 33.9  65
-Fiat X1-9      27.3  66
-Porsche 914-2  26.0  91
-Lotus Europa   30.4 113</code></pre>
+<pre><code>[1] 110</code></pre>
 </div>
 </div>
-<p>Note that we have to add <code>mtcars$</code> to the expression since the variable <code>mpg</code> does not exist as a standalone object.</p>
-<p>You can also reference columns by names as in,</p>
-<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-9_aa5f69822c90c5c3cf773c6780d5dba4">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>mtcars[ mtcars<span class="sc">$</span>mpg <span class="sc">&gt;</span> <span class="dv">25</span>, <span class="fu">c</span>(<span class="st">"mpg"</span>, <span class="st">"hp"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This returns the intersection of the row and column–a single cell.</p>
+<p>You can, of course, extract table blocks by using <code>c()</code> operators and/or the colon operator.</p>
+<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-9_e26ffb48fd9ee09dba4fb7ac5f9e7861">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>mtcars[<span class="dv">5</span><span class="sc">:</span><span class="dv">12</span>, <span class="fu">c</span>(<span class="st">"hp"</span>, <span class="st">"mpg"</span>, <span class="st">"am"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre style="max-height: 100px;"><code>                mpg  hp
-Fiat 128       32.4  66
-Honda Civic    30.4  52
-Toyota Corolla 33.9  65
-Fiat X1-9      27.3  66
-Porsche 914-2  26.0  91
-Lotus Europa   30.4 113</code></pre>
+<pre><code>                   hp  mpg am
+Hornet Sportabout 175 18.7  0
+Valiant           105 18.1  0
+Duster 360        245 14.3  0
+Merc 240D          62 24.4  0
+Merc 230           95 22.8  0
+Merc 280          123 19.2  0
+Merc 280C         123 17.8  0
+Merc 450SE        180 16.4  0</code></pre>
 </div>
 </div>
+<p>Note that here, we chose to reference the columns by their names instead of their index number.</p>
 </section>
 <section id="extracting-using-logical-expression-and-indices" class="level2" data-number="8.3">
 <h2 data-number="8.3" class="anchored" data-anchor-id="extracting-using-logical-expression-and-indices"><span class="header-section-number">8.3</span> Extracting using logical expression and indices</h2>
-<p>We apply conditions to indices to <strong>reveal</strong> elements of a vector or a table that satisfy one or more criterion. For example:</p>
+<p>We can also extract cells based on conditions. For example, to extract all elements in <code>x</code> that are equal to <code>"a"</code>, type:</p>
 <div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-10_2bd63bab3fc8d6cef254dbd409386070">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>x[ x <span class="sc">==</span> <span class="st">"a"</span> ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -595,8 +592,8 @@ Lotus Europa   30.4 113</code></pre>
 </div>
 <p>Let’s breakdown the above expression. The output of the expression <code>x == "a"</code> is <code>TRUE FALSE TRUE FALSE TRUE</code>, a logical vector with the same number of elements as <code>x</code>. The logical elements are then passed to the indexing brackets where they act as a “mask” as shown in the following graphic.</p>
 <p><img src="img/logical_mask.png" class="img-fluid" width="318"></p>
-<p>The elements that make it through the <em>extraction mask</em> are then combined into a new vector element.</p>
-<p>The same idea applies to dataframes. For example, to extract all rows where <code>mpg &gt; 30</code> type:</p>
+<p>The elements that make it through the <em>extraction mask</em> are then combined into a new vector element to <strong>reveal</strong> those elements satisfying the query.</p>
+<p>The same idea applies to dataframes. For example, to extract all rows in <code>mtcars</code> where <code>mpg &gt; 30</code> type:</p>
 <div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-11_aff510243e988aa90b68a58a329b2825">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mtcars[ mtcars<span class="sc">$</span>mpg <span class="sc">&gt;</span> <span class="dv">30</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -607,14 +604,23 @@ Toyota Corolla 33.9   4 71.1  65 4.22 1.835 19.90  1  1    4    1
 Lotus Europa   30.4   4 95.1 113 3.77 1.513 16.90  1  1    5    2</code></pre>
 </div>
 </div>
-<p>Here, we are “masking” the rows that do not satisfy the criterion using the <code>TRUE</code>/<code>FALSE</code> logical outcomes from the conditional operation.</p>
+<p>Here, we are “masking” the rows that do not satisfy the criterion using the <code>TRUE</code>/<code>FALSE</code> logical outcomes from the conditional operation. Note that we have to add <code>mtcars$</code> to the expression since the variable <code>mpg</code> does not exist as a standalone object.</p>
+<p>The expression can be made more complex. For example, to select all rows where <code>mpg</code> is greater than <code>30</code> and where <code>carb</code> is equal to <code>2</code>, and limiting the columns to <code>hp</code>, <code>mpg</code> and <code>disp</code>, type:</p>
+<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-12_4c1d36c2ae23ed09f1a44202932f68ce">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mtcars[ (mtcars<span class="sc">$</span>mpg <span class="sc">&gt;</span> <span class="dv">30</span>) <span class="sc">&amp;</span> (mtcars<span class="sc">$</span>carb <span class="sc">==</span> <span class="dv">2</span>), <span class="fu">c</span>(<span class="st">"hp"</span>, <span class="st">"mpg"</span>, <span class="st">"disp"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>              hp  mpg disp
+Honda Civic   52 30.4 75.7
+Lotus Europa 113 30.4 95.1</code></pre>
+</div>
+</div>
 </section>
 <section id="replacing-values-using-logical-expressions" class="level2" data-number="8.4">
 <h2 data-number="8.4" class="anchored" data-anchor-id="replacing-values-using-logical-expressions"><span class="header-section-number">8.4</span> Replacing values using logical expressions</h2>
 <p>We can adopt the same masking properties of logical variables to <strong>replace</strong> values in a vector. For example, to replace all instances of <code>"a"</code> in vector <code>x</code> with the character <code>"z"</code>, we first <em>expose</em> the elements equal to <code>"a"</code>, then assign the new value to the exposed elements.</p>
-<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-12_c5aec231237e6716b002736f3384454d">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>x[ x <span class="sc">==</span> <span class="st">"a"</span> ] <span class="ot">&lt;-</span> <span class="st">"z"</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-13_35666a40e1d561d6dac59c7e26871c16">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>x[ x <span class="sc">==</span> <span class="st">"a"</span> ] <span class="ot">&lt;-</span> <span class="st">"z"</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "z" "f" "z" "d" "z"</code></pre>
 </div>
@@ -622,10 +628,10 @@ Lotus Europa   30.4   4 95.1 113 3.77 1.513 16.90  1  1    5    2</code></pre>
 <p>You can think of the logical <em>mask</em> as a template applied to a road surface before spraying that template with a can of <code>"z"</code> spray. Only the exposed portion of the street surface will be sprayed with the <code>"z"</code> values.</p>
 <p><img src="img/logical_mask_replace.png" class="img-fluid" width="326"></p>
 <p>You can apply this technique to dataframes as well. For example, to replace all elements in <code>mpg</code> with <code>-1</code> if <code>mpg &lt; 25</code>, type:</p>
-<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-13_09ee310ffdb8525f457072e859213a24">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>mtcars2 <span class="ot">&lt;-</span> mtcars </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>mtcars2[ mtcars2<span class="sc">$</span>mpg <span class="sc">&lt;</span> <span class="dv">25</span>, <span class="st">"mpg"</span>]  <span class="ot">&lt;-</span>  <span class="sc">-</span><span class="dv">1</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>mtcars2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="subset_base_cache/html/unnamed-chunk-14_369d0d8903f0fb8e3a0aaa3dfacbae25">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>mtcars2 <span class="ot">&lt;-</span> mtcars </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>mtcars2[ mtcars2<span class="sc">$</span>mpg <span class="sc">&lt;</span> <span class="dv">25</span>, <span class="st">"mpg"</span>]  <span class="ot">&lt;-</span>  <span class="sc">-</span><span class="dv">1</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>mtcars2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre style="max-height: 100px;"><code>                     mpg cyl  disp  hp drat    wt  qsec vs am gear carb
 Mazda RX4           -1.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4

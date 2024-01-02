@@ -11,9 +11,9 @@ pkg_ver(c("stringr"))
 ```
 
 
-Numbers and dates are not the only variable types we might be interested in exploring. We often find ourselves having to manipulate character (text) objects as well. In the programming environment, such queries are often referred to as **string** searches. String queries may involve assessing if a variable matches or contains an exact set of characters; it can also involve extracting a certain set of characters given some pattern. R has a very capable set of string operations built into its environment however, many find it difficult to master. A package that will be used in this tutorial that simplifies this task is called `stringr`. A write-up of its capabilities can be found [here](http://journal.r-project.org/archive/2010-2/RJournal_2010-2_Wickham.pdf).
+Numbers and dates are not the only variable types we might be interested in exploring or manipulating. Character (text) objects can be part of a data query operation as well. In the programming environment, such queries are often referred to as **string** searches. String queries may involve assessing if a variable matches or contains an exact set of characters; it can also involve extracting a certain set of characters given some pattern. R has a very capable set of string operations built into its environment however, many find it difficult to master. A package that will be used in this tutorial that simplifies this task is called `stringr`. 
 
-&nbsp;&nbsp;
+&nbsp;
 
 ## Finding patterns in a string
 &nbsp;&nbsp;
@@ -77,6 +77,17 @@ To check if object `a` *ends* with the pattern `"Abc"` add the dollar character 
 str_detect(a, "Abc$")
 ```
 
+### Matching against a list of characters
+
+If you want to match against a list of characters, you may want to make use of the matching, `%in%`, operator. This is a built-in function and thus not part of the `stringr` package. For example, to check if any of the characters `"Jun"` or `"Sep"` exist in object `b`, type:
+
+```{r}
+b <- c("Jan", "Feb", "Jun", "Oct")
+b %in% c("Jun", "Sep")
+```
+The output will generate a boolean value for each element in `b`.
+
+The `%in%` operator is described in greater detail in the [next](boolean.html#checking-if-a-value-is-na) chapter.
 
 ### Locating the position of a pattern in a string
 
@@ -151,6 +162,7 @@ str_count(d, "Ab")
 &nbsp;&nbsp;
 
 ## Searching for non alphanumeric strings
+&nbsp;&nbsp;
 
 The following characters need specialized syntax when sought in a regular expression: `.` , `+` , `*` , `?` , `^` , `$` , `(` , `)` , `[` , `]` , `{` , `}` , `|` , `\` . For example, when searching for a parenthesis `(` in a string, the following code will generate an error:
 
@@ -176,14 +188,17 @@ str_detect("x * y", ".")
 
 This should have outputted `FALSE` given that no period is present in the string. The dot has a special role in a regular expression in that it seeks out any one character in the string--hence the reason it returned `TRUE` given that we had at least one character in the string `x * y`. 
 
-The generate the desired outcome, add `\\`:
+To generate the desired outcome, add `\\`:
 
 ```{r, error=TRUE}
 str_detect("x * y", "\\.")
 ```
 To learn more about regular expressions, [see this wikipedia entry](https://en.wikipedia.org/wiki/Regular_expression) on the topic.
 
+&nbsp;
+
 ## Modifying strings
+
 &nbsp;&nbsp;
 
 ### Padding numbers with leading zeros
@@ -252,9 +267,9 @@ g <- "Year:2000, Month:Jan, Day:23"
 str_split(g, ",")
 ```
 
-The output is a one element list. If object `g` consists of more than one element, the output will be a list of as many elements as there are `g` elements.
+The output is a one component list. If object `g` consists of more than one element, the output will be a list of as many components as there are `g` elements.
 
-Depending on your workflow, you may need to convert the `str_split` output to an atomic vector. For example, if you want to find an element in the above `str_split` output that matches the string `Year:2000`, the following will return `FALSE` and not `TRUE` as expected:
+Depending on your workflow, you may need to convert the `str_split` output to an atomic vector. For example, if you want to find an element in the above `str_split` output that matches the string `Year:2000`, the following will return `FALSE` and not `TRUE` as one would expect:
 
 ```{r}
 "Year:2000" %in% str_split(g, ",")

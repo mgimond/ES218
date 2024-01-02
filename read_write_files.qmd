@@ -29,34 +29,32 @@ dat <- read.csv("http://mgimond.github.io/ES218/Data/ACS.csv", header=TRUE)
 
 Note that not all data file formats can be readily loaded directly from a website in a "read" function without additional lines of code. Examples are given in the next two sub-sections.
 
-To read other text formats that use different delimiters invoke the command `read.table()` and define the type of delimiter using the `sep=` parameter. For example, to read a tab delimited data file called *ACS.txt*, run the command `read.table("ACS.txt", sep="\t")`.
+To read other text formats that use different delimiters, invoke the command `read.table()` and define the type of delimiter using the `sep=` parameter. For example, to read a tab delimited data file called *ACS.txt*, run the command `read.table("ACS.txt", sep="\t")`.
 
 Note that if a number or a string is identified as being a placeholder for missing values in the data file, you can use the `na.strings =` parameter in the `read.csv` function. For example, assume that the word `"missing"` was used in the csv file to denote a missing value, the function would be modified as follows:
 
 ```{r eval=FALSE, tidy=FALSE, warning=FALSE}
-dat <- read.csv("http://mgimond.github.io/ES218/Data/ACS.csv", 
-                na.strings = "missing")
+dat <- read.csv("ACS.csv", na.strings = "missing")
 ```
 
 If more than one value is used as a placeholder for a missing value, you will need to combine the values using the `c()` operator. For example, if in addition to the word `"missing"` the value of `-9999` was used to designate missing values, you would modify the above chunk of code as follows:
 
 ```{r eval=FALSE, tidy=FALSE, warning=FALSE}
-dat <- read.csv("http://mgimond.github.io/ES218/Data/ACS.csv", 
-                na.strings = c("missing", "-9999") )
+dat <- read.csv("ACS.csv", na.strings = c("missing", "-9999") )
 ```
 
-Note how the number is wrapped in double quotes. Also, note that the `na.strings` parameter is applied to *all* columns in the dataframe. So if the word `"missing"` or the number `-9999` are valid values for some of the columns, you should not use this option. Instead, you would need to selectively replace the missing values after the dataset is loaded. This option will be explored in subsequent tutorials.
+Note how the number is wrapped in double quotes. Also, note that the `na.strings` parameter is applied to *all* columns in the dataframe. So if the word `"missing"` or the number `-9999` are valid values for some of the columns, you should not use this option. Instead, you would need to selectively replace the missing values after the dataset is loaded. You will learn how to replace values in a dataframe in subsequent chapters.
 
 
-### Reading from a R data file
+### Reading from an R data file
 
-R has its own data file format--it's usually saved using the *.rds* extension. To read a R data file, invoke the `readRDS()` function.
+R has its own data file format--it's usually saved using the *.rds* extension. To read an R data file, invoke the `readRDS()` function.
 
 ```{r eval=FALSE, tidy=FALSE, warning=FALSE}
 dat <- readRDS("ACS.rds")
 ```
 
-As with a CSV file, you can load a RDS file straight from a website, however, you must first run the file through a *decompressor* before attempting to load it via `readRDS`. A built-in decompressor function called `gzcon` can be used for this purpose.
+As with a CSV file, you can load an *.rds* file straight from a website, however, you must first run the file through a *decompressor* before attempting to load it via `readRDS`. A built-in decompressor function called `gzcon` can be used for this purpose.
 
 ```{r eval=FALSE, tidy=FALSE, warning=FALSE}
 dat <- readRDS(gzcon(url("http://mgimond.github.io/ES218/Data/ACS.rds")))
@@ -66,7 +64,7 @@ The .rds file format is usually smaller than its text file counterpart and will 
 
 ### Reading from an Excel file
 
-A package that does a good job in importing Excel files is `readxl`. It recognizes most column formats defined by Excel including date formats. However, only one sheet can be loaded at a time. So if multiple Excel sheets are to be worked on, each sheet will need to be loaded into separate dataframe objects.
+A package that does a good job in importing Excel files is `readxl`. It recognizes most column formats defined by Excel including date formats. However, only one sheet can be loaded at a time. So, if multiple Excel sheets are to be worked on, each sheet will need to be loaded into separate dataframe objects.
 
 If you don't have the `readxl` package installed, install the package as you would any other package via RStudio's interface or in R using the following command:
 
@@ -74,14 +72,17 @@ If you don't have the `readxl` package installed, install the package as you wou
 install.packages("readxl")
 ```
 
-In this example, we will load an Excel data sheet called `Discharge` which tabulates daily river water discharge. The sample file, `Discharge_2004_2014.xlsx`, can be downloaded [here](http://mgimond.github.io/ES218/Data/Discharge_2004_2014.xlsx). The following chunk of code assumes that the Excel file is saved in a folder called `Data/` inside the R session's working directory.
+In this example, we will load an Excel data sheet called `Discharge` which tabulates daily river water discharge. The sample file, `Discharge_2004_2014.xlsx`, can be downloaded [here](http://mgimond.github.io/ES218/Data/Discharge_2004_2014.xlsx).
 
-```{r}
+```{r eval=FALSE}
+library(readxl)
+xl <- read_excel("Discharge_2004_2014.xlsx", sheet = "Discharge")
+```
+
+```{r echo=FALSE}
 library(readxl)
 xl <- read_excel("./Data/Discharge_2004_2014.xlsx", sheet = "Discharge")
 ```
-
-Note that the single dot `.` that precedes the `Data/` folder name instructs R to look for the `Data/` folder in the *current* working directory. A later example will show you how to instruct R to look for files and folders *outside* of the current working directory using two dots `..` instead of one.
 
 An advantage to using this package for loading Excel files is its ability to preserve data types--including date formatted columns! In the above example, the Excel file has a column called `Date` which stores the month/day/year data as a date object. We can check that the loaded `xl` object recognizes the `Date` column as a `date` data type:
 
@@ -89,9 +90,9 @@ An advantage to using this package for loading Excel files is its ability to pre
 str(xl)
 ```
 
-The `Date` column is defined as a `POSIXct` data type; this is the computer's way of storing dates as the number of seconds since some internal reference date. We would therefore not need to convert the date column as would be the case if the date column was loaded from a CSV file. If such was the case, then the date column would most likely be loaded as a character or factor data type. A more in-depth discussion on date objects and their manipulation in R is covered in the [next chapter](Week02c.html).
+The `Date` column is defined as a `POSIXct` data type; this is the computer's way of storing dates as the number of seconds since some internal reference date. We would therefore not need to convert the date column as would be the case if the date column was loaded from a CSV file. If such was the case, then the date column would most likely be loaded as a character or factor data type. A more in-depth discussion on date objects and their manipulation in R is covered in the [next chapter](date_objects.html).
 
-Excel files can be loaded directly from the web using the following chunk of code:
+Excel files can be loaded directly from the web using the following code chunk:
 
 ```{r eval=FALSE}
 web.file <- "http://mgimond.github.io/ES218/Data/Discharge_2004_2014.xlsx"
@@ -111,11 +112,11 @@ It's usually recommended that a data file be stored as a CSV or tab delimited fi
 install.packages("Hmisc")
 ```
 
-In this example, a SAS file of blood pressure from the [CDC](http://www.cdc.gov/nchs/nhanes.htm) will be loaded into an object called `dat` (file documentation can be found [here](http://personal.colby.edu/reload/personal/m/mgimond/R/Data/BPX_G_README.txt)).
+In this example, a SAS file of blood pressure from the [CDC](http://www.cdc.gov/nchs/nhanes.htm) will be loaded into an object called `dat` (file documentation can be found [here](https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/BPXO_J.htm)). You can donwload the file [here](http://mgimond.github.io/ES218/Data/BPX_J.XPT).
 
 ```{r eval=FALSE}
 library(Hmisc)
-dat <- sasxport.get("http://personal.colby.edu/personal/m/mgimond/R/Data/BPX_G.xpt")
+dat <- sasxport.get("BPX_J.xpt")
 ```
 
 Likewise, to import an SPSS file, use the `spss.get()` function; and to import a STATA file, use the `stata.get()` function.
@@ -127,20 +128,18 @@ Likewise, to import an SPSS file, use the `spss.get()` function; and to import a
 
 ### Export to a CSV file
 
-To export a data object called `dat.sub` as a comma delimited file in a folder called `Data/` residing at a level *above* the R session's working directory, run the following:
+To export a data object called `dat.sub` as a comma delimited file, run the following:
 
 ```{r eval=FALSE, tidy=TRUE, warning=FALSE}
-write.csv(dat.sub, "../Data/ACS_sub.csv")
+write.csv(dat.sub, "ACS_sub.csv")
 ```
 
-Note that the two dots `..` tells the function to get out of the current folder (i.e. moving up a directory) before proceeding down into the `Data/` folder.
+### Export to a .rds file
 
-### Export to a Rds file
-
-To export a data object called `dat.sub` to a .Rds (R) file format in a folder called `Data/` residing at a level *above* the R session's working directory, run the following:
+To export a data object called `dat.sub` to an R native *.rds* file format, run the following:
 
 ```{r eval=FALSE, tidy=TRUE, warning=FALSE}
-saveRDS(dat.sub, "../Data/ACS_sub.rds")
+saveRDS(dat.sub, "ACS_sub.rds")
 ```
 
 ## Saving an R session
@@ -148,15 +147,15 @@ saveRDS(dat.sub, "../Data/ACS_sub.rds")
 You can save an entire R session (which includes *all* data objects) using the `save` function.
 
 To save *all* objects, set the `list=` parameter to `ls()`:
-```{r eval=FALSE, tidy=TRUE, warning=FALSE}
-save(list=ls(), file = "../Data/ACS_all.Rdata")
-```
 
+```{r eval=FALSE, tidy=TRUE, warning=FALSE}
+save(list=ls(), file = "ACS_all.Rdata")
+```
 
 To save only two R session objects--`dat` and `dat.sub`--to a file, pass the list of objects to the `list=` parameter:
 
 ```{r eval=FALSE, tidy=TRUE, warning=FALSE}
-save(list=c(dat, dat.sub), file = "../Data/ACS_subset.Rdata")
+save(list=c(dat, dat.sub), file = "ACS_subset.Rdata")
 ```
 
 ## Loading an R session
@@ -164,6 +163,6 @@ save(list=c(dat, dat.sub), file = "../Data/ACS_subset.Rdata")
 To load a previously saved R session type:
 
 ```{r eval=FALSE, tidy=TRUE, warning=FALSE}
-load("../Data/ACS_all.Rdata")
+load("ACS_all.Rdata")
 ```
 

@@ -97,7 +97,7 @@ Note that in both cases, `typeof(x)` returns `r typeof(x)`. Also note that the `
 
 ## Naming R objects
 
-You can use any combination of alphanumeric characters, along with dots and underscores, to name an R object. But there are a few exceptions:
+You can use any combination of alphanumeric characters--including dots and underscore--to name an R object. But there are a few exceptions:
 
 * Names cannot start with a number;
 * Names cannot have spaces;
@@ -144,7 +144,7 @@ Yet, when displaying the contents of `a.fact` we see character values.
 a.fact
 ```
 
-How can this be? Well, `a.fact` is a more complicated object than the simple objects created thus far in that the factor is storing additional information not seen in its output. This hidden information is stored in **attributes**. To view these hidden attributes, use the `attributes` function.
+How can this be? Well, `a.fact` is a more complicated object than the simple objects created thus far in that the factor is storing additional information not seen in its output. This hidden information is stored as an object **attribute**. To view these hidden attributes, use the `attributes` function.
 
 ```{r}
 attributes(a.fact)
@@ -154,7 +154,7 @@ There are two attributes: `levels` and `class`. The `levels` attribute lists the
 
 ![](img/levels1.png)
 
-So why doesn't R output the integer values when we output `a.fact`? To understand why, we first need to know that when we call the object name, R is wrapping that object name with the `print` command, so the following lines of code are identical.
+So why doesn't R output the integer values when we output `a.fact`? To understand why, we first need to know that when we call the object name, R is passing that object name to the `print` function, so the following lines of code are identical.
 
 ```{r eval = FALSE}
 a.fact
@@ -179,15 +179,13 @@ levels(a.fact)
 
 Remember, the order in which the levels are displayed match their integer representation.
 
-Note that if a class attribute is not present, the `class` function will return the object's data type (though it will not distinguish between integer and double).
+Note that if a class attribute is not present, the `class` function will return the object's data type (though it will not distinguish between integer and double). 
 
 ```{r}
 class(a)
 ```
 
-In such a case, the object is treated as a generic element.
-
-To appreciate the benefits of a factor we'll first create a dataframe (dataframes are data tables whose structure will be covered later in this tutorial). One column will be assigned  the `a.fact` factor and another will be assigned some random numeric values.
+To appreciate the benefits of a factor, we'll first create a dataframe (dataframes are data tables whose structure will be covered later in this tutorial). One column will be assigned  the `a.fact` factor and another will be assigned some random numeric values.
 
 ```{r}
 x      <- c(166, 47, 61, 148, 62, 123, 232, 98, 93, 110)
@@ -273,7 +271,7 @@ par(OP)
 
 ### Date
 
-Date values are stored as numbers. But to be properly interpreted as a date object in R, their attribute must be explicitly defined as a **date**. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. A separate [chapter](date_objects.html) is dedicated to the creation and manipulation of date objects.
+Date values are stored as numbers. But to be properly interpreted as a date object in R, their class attribute must be explicitly defined as a **date**. R provides many facilities to convert and manipulate dates and times, but a package called `lubridate` makes working with dates/times much easier. A separate [chapter](date_objects.html) is dedicated to the creation and manipulation of date objects.
 
 ### NA and NULL
 
@@ -299,7 +297,7 @@ The difference between `NA` and `NULL` may seem subtle, but their interpretation
 mean(x)
 ```
 
-This serves as a check to remind the user that one of the elements is missing. This can be overcome by setting the `na.rm` parameter to `TRUE` as in `mean(x, na.rm=T)` in which case R ignores the missing value.
+This serves as a check to remind the user that one of the elements is missing. This can be overcome by setting the `na.rm` parameter to `TRUE` as in `mean(x, na.rm=TRUE)` in which case R ignores the missing value.
 
 A `NULL` object, on the other hand, is treated differently. Since `NULL` implies that a value *should not* be present, R no longer feels the need to treat such element as questionable and allows the mean value to be computed:
 
@@ -393,7 +391,16 @@ However, a vector can only be of one type. For example, you cannot mix numeric a
 x <- c( 1.2, 5, "Rt", "2000")
 ```
 
-In such a situation, R will convert the element types to the **highest common mode** following the order **NULL < logical < integer < double < character**. In our working example, the elements are coerced to `character`:
+
+<br>
+<div style="background-color: #FAD4AA; border-width:1px; border-style: solid; border-color: #CCCC11; border-radius: 5px; padding: 20px;">
+<br>
+When data of different types are combined in a vector or in an operation, R will convert the element types to the **highest common mode** following the order: <p>
+<center> **NULL < logical < integer < double < character**. </center><p>
+</div>
+
+<br>
+In our working example, the elements are coerced to `character`:
 
 ```{r}
 typeof(x)
@@ -427,7 +434,7 @@ but the value `2` and `4` are no longer treated as numeric values but as charact
 
 ### Data frames
 
-A **data frame** is what comes closest to our perception of a traditional data *table*. Unlike a matrix, a data frame can *mix* data types across columns (e.g. both numeric and character columns can coexist in a data frame) but data type remains the same across rows. 
+A **data frame** is what comes closest to our perception of a traditional data *table*. Unlike a matrix, a data frame can *mix* data types across columns (e.g. both numeric and character columns can coexist in a data frame) but data type remains the same down each column. 
 
 
 ```{r}
@@ -459,13 +466,13 @@ Like a vector, elements of a data frame can be accessed by their index (aka subs
 dat[2, 3]
 ```
 
-If you wish to list all rows for columns one through two leave the first index blank:
+If you wish to list all rows for columns one through two, leave the first index blank:
 
 ```{r}
 dat[ , 1:2 ]
 ```
 
-or if you wish to list the third row for all columns, leave the second index blank:
+or, if you wish to list the third row for all columns, leave the second index blank:
 
 ```{r}
 dat[ 3 , ]
@@ -489,7 +496,7 @@ It's class is `data.frame`. The `names` attribute lists the column names and can
 names(dat)
 ```
 
-It also has a `row.names` attribute. Since we did not explicitly define row names, R simply  assigned the row number as row names. You can extract the row names using the `rownames` function.
+The dataframe also has a `row.names` attribute. Since we did not explicitly define row names, R simply  assigned the row number as row names. You can extract the row names using the `rownames` function.
 
 ```{r}
 rownames(dat)
@@ -599,13 +606,13 @@ Fortunately, the regression function assigns descriptive names to each of its co
 M$residuals
 ```
 
-The `M` list is more complex than the simple list `lst` we created earlier. In addition to having more components, it stores a *wider range* of data types and structures. For example, element `qr` is itself a list of five elements!
+The `M` list is more complex than the simple list `lst` we created earlier. In addition to having more components, it stores a *wider range* of data types and structures. For example, element `qr` is itself a list!
 
 ```{r}
 str(M$qr)
 ```
 
-So if we want to access the element `rank` in the component `qr` of list `M`, we can type:
+So, if we want to access the element `rank` in the component `qr` of list `M`, we can type:
 
 ```{r}
 M$qr$rank
