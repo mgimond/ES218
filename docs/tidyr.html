@@ -225,7 +225,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./subset_base.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Subsetting and replacing values using base functions</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Manipulating data tables using base functions</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -520,7 +520,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>Another way of describing a dataset is by defining its <strong>variable(s)</strong>, <strong>values</strong> and <strong>observations</strong>. In the above example, we have four variables: gender, education, region and income. Each variable consists of either categorical values (e.g.&nbsp;region, gender and education) or numerical values (income).</p>
 <p>An observation consists of a <strong>unique set</strong> of attribute <strong>values</strong>. For example the values <code>West Region</code>, <code>Female</code>, <code>Graduate</code> and <code>$57,914</code> make up <strong>one</strong> observation: there is just one instance of these combined values in the data. This perspective affords us another option in presenting the dataset: we can assign each column its own variable, and each row its own observation.</p>
 <p><img src="img/Tidy_census.png" class="img-fluid"></p>
-<p>Note that each row of the table is part of a unique set of variable attributes. A dataset in this format may not be human “readable” (unlike its <em>wide</em> counterpart), but is the format of choice for many data analysis and visualization operations.</p>
+<p>Note that each row of the table is part of a unique set of variable values. A dataset in this format may not be human “readable” (unlike its <em>wide</em> counterpart), but it’s the format of choice for many data analysis and visualization operations and one that will be used extensively in this course.</p>
 <p>The next sections will demonstrate how one can convert a wide format to a long format and <em>vice versa</em>.</p>
 </section>
 <section id="wide-and-long-table-formats" class="level2" data-number="11.2">
@@ -568,19 +568,21 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>All four lines produce the same output, they differ only by how we are referencing the columns that are to be collapsed. Note that we assigned the names <code>Quarter</code> and <code>Delay</code> to the two new columns.</p>
 <p>The first 10 lines of the output table are shown here. Note how each <code>Delay</code> value has its own row.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-6_ee6b692e63012bf7b7b0d6377001f125">
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-6_4bc7c179d7f65b478a748c2d5dfc3240">
 <div class="cell-output cell-output-stdout">
-<pre><code>   Weekday Quarter Delay
-1      Mon      Q1   9.9
-2     Tues      Q1   4.9
-3      Wed      Q1   8.8
-4    Thurs      Q1  12.2
-5      Fri      Q1  12.2
-6      Mon      Q2   5.4
-7     Tues      Q2   9.7
-8      Wed      Q2  11.1
-9    Thurs      Q2  10.2
-10     Fri      Q2   8.1</code></pre>
+<pre><code># A tibble: 10 × 3
+   Weekday Quarter Delay
+   &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt;
+ 1 Mon     Q1        9.9
+ 2 Mon     Q2        5.4
+ 3 Mon     Q3        8.8
+ 4 Mon     Q4        6.9
+ 5 Tues    Q1        4.9
+ 6 Tues    Q2        9.7
+ 7 Tues    Q3        7.9
+ 8 Tues    Q4        5  
+ 9 Wed     Q1        8.8
+10 Wed     Q2       11.1</code></pre>
 </div>
 </div>
 <p>The following figure summarizes the wide to long conversion.</p>
@@ -598,7 +600,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df.wide <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(df.long, <span class="at">names_from =</span> Quarter, <span class="at">values_from =</span> Delay) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We’ve now recreated the wide version of our table.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-8_97610ed8c9c9075f439b333725404820">
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-8_8677a80ed5934c721b3fa3532dc2e5d6">
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 5
   Weekday    Q1    Q2    Q3    Q4
@@ -613,18 +615,20 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>The following figure summarizes the long to wide conversion.</p>
 <img src="img/Tidyr_long2wide.png" class="img-fluid">
 <p>
-</p></section>
+</p><p>Additional functionality in <code>pivot_longer</code> and <code>pivot_wider</code> are highlighted next.</p>
+</section>
 </section>
 <section id="advanced-pivot_longer-options" class="level2" data-number="11.3">
 <h2 data-number="11.3" class="anchored" data-anchor-id="advanced-pivot_longer-options"><span class="header-section-number">11.3</span> Advanced <code>pivot_longer</code> options</h2>
-<p>Here’s a subset of median income by sex and by work experience for 2017.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-9_6dca2fab461733776c40bd2115a11ed2">
+<p>
+</p><p>Let’s start off with a subset of median income by sex and by work experience for 2017.</p>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-9_b7207d253bdf125938fd318af93fcb01">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">state =</span> <span class="fu">c</span>(<span class="st">"Maine"</span>, <span class="st">"Massachusetts"</span>, </span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"New Hampshire"</span>, <span class="st">"Vermont"</span>),</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_fulltime =</span> <span class="fu">c</span>(<span class="dv">50329</span>,<span class="dv">66066</span>, <span class="dv">59962</span>, <span class="dv">50530</span>), </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_other =</span> <span class="fu">c</span>(<span class="dv">18099</span>, <span class="dv">18574</span>, <span class="dv">20274</span>, <span class="dv">17709</span>), </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_fulltime   =</span> <span class="fu">c</span>(<span class="dv">50329</span>,<span class="dv">66066</span>, <span class="dv">59962</span>, <span class="dv">50530</span>), </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">male_other      =</span> <span class="fu">c</span>(<span class="dv">18099</span>, <span class="dv">18574</span>, <span class="dv">20274</span>, <span class="dv">17709</span>), </span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">female_fulltime =</span> <span class="fu">c</span>(<span class="dv">40054</span>, <span class="dv">53841</span>, <span class="dv">46178</span>, <span class="dv">42198</span>),</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">female_other =</span> <span class="fu">c</span>(<span class="dv">13781</span>, <span class="dv">14981</span>, <span class="dv">15121</span>, <span class="dv">14422</span>))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">female_other    =</span> <span class="fu">c</span>(<span class="dv">13781</span>, <span class="dv">14981</span>, <span class="dv">15121</span>, <span class="dv">14422</span>))</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>df2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          state male_fulltime male_other female_fulltime female_other
@@ -634,9 +638,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 4       Vermont         50530      17709           42198        14422</code></pre>
 </div>
 </div>
-<p>At first glance, it might seem that we have three variables as in the earlier example, but upon closer examination, we see that we can tease out two variables from the column names: sex (<code>male</code> and <code>female</code>) and work experience (<code>fulltime</code> and <code>other</code>).</p>
+<p>At first glance, it might seem that we have three variables, but upon closer examination, we see that we can tease out two variables from the column names: sex (<code>male</code> and <code>female</code>) and work experience (<code>fulltime</code> and <code>other</code>).</p>
 <p><img src="img/double_header.PNG" style="width: 73%; height: auto;"></p>
-<p><code>pivot_longer</code> has an argument, <code>names_sep</code>, that is passed the character that is used to delimit the two variable values. In our example, this character is <code>_</code>. Since the column values will be split across two variables we will also need to pass <strong>two</strong> column names to the <code>names_to</code> argument.</p>
+<p><code>pivot_longer</code> has an argument, <code>names_sep</code>, that is passed the character that is used to define the delimiter in the variable name. In our example, this character is <code>_</code>. Since the column values will be split across two variables we will also need to pass <strong>two</strong> column names to the <code>names_to</code> argument.</p>
 <p><img src="img/long_to_separate_wide.PNG" style="width: 73%; height: auto;"></p>
 <div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-10_c57fb28d685b44070dead68794d41197">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df2.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df2, <span class="at">cols =</span> <span class="sc">-</span>state, </span>
@@ -705,8 +709,10 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 4    b    y   4</code></pre>
 </div>
 </div>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-13_d849a01c9d7d550f9ef459834726e4b1">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, we have to <code>val</code> values for the combined values <code>a</code> an <code>x</code>–likewize for <code>b</code> and <code>y</code>, This will pose a problem when pivoting to w wide table since the intersection of <code>a</code> and <code>x</code> will result in two values.</p>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-13_f828078bd3eb1d7a6fb81fae4f893d79">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>w1 <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>w1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 3
   var1  x         y        
@@ -715,47 +721,70 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 2 b     &lt;NULL&gt;    &lt;dbl [2]&gt;</code></pre>
 </div>
 </div>
-<p>Since the intersections of <code>a</code>:<code>x</code> and <code>b</code>:<code>y</code> each have two possible values, the function returns a <em>list</em> of values. Assuming that the duplicate records are not an erroneous entry, you will need to instruct the function on how to summarize the multiple values using the <code>values_fn</code> argument. For example, to return the maximum value, type:</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-14_c15774728a7e1f9ffbac63d3216f5325">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, </span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_from =</span> var2, </span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_from =</span> val, </span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn =</span> <span class="fu">list</span>(<span class="at">val =</span> min))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Since the intersections of <code>a</code>:<code>x</code> and <code>b</code>:<code>y</code> each have two possible values, the function returns a <em>list</em> of values. For example, the intersection of column <code>x</code> and row <code>a</code> stores the values <code>5</code> and <code>3</code>.</p>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-14_c1949d59615a8bc5f70747aeac1d85c0">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unlist</span>(w1[<span class="dv">1</span>,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>x1 x2 
+ 5  3 </code></pre>
+</div>
+</div>
+<p>Assuming that the duplicate records are not an erroneous entry, you will need to instruct the function on how to summarize the multiple values using the <code>values_fn</code> argument. For example, to return the maximum of the two values, type:</p>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-15_ee339848f43157f8d277009870b170f0">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_from =</span> var2, </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_from =</span> val, </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn =</span>  max)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 3
   var1      x     y
   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 a         3    NA
-2 b        NA     1</code></pre>
+1 a         5    NA
+2 b        NA     4</code></pre>
 </div>
 </div>
+<p>If instead of summarizing the multiple values you wish to combine them with commas, you can type:</p>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-16_cda8d44dda5dcef446cb2b24c32b6737">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">names_from =</span> var2, </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_from =</span> val, </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn =</span>  \(x) <span class="fu">paste</span>(x, <span class="at">collapse=</span><span class="st">","</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  var1  x     y    
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+1 a     5,3   &lt;NA&gt; 
+2 b     &lt;NA&gt;  1,4  </code></pre>
+</div>
+</div>
+<p><code>\(x)</code> is a shorthand for <code>function(x)</code> in R version <code>4.1</code> and greater.</p>
 <p>You’ll note the empty cells resulting from there not being a valid combination for <code>a</code>:<code>y</code> and <code>b</code>:<code>x</code>. You can specify the missing values using the <code>values_fill</code> argument. For example, to replace <code>NA</code> with <code>0</code> type:</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-15_edd8bd5ffec6035d7fc40266324a4f1b">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val, </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn   =</span> <span class="fu">list</span>(<span class="at">val =</span> min),</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fill =</span> <span class="fu">list</span>(<span class="at">val =</span> <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-17_3c7b829aac734118a2a46d5d958d20cc">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3, <span class="at">names_from =</span> var2, <span class="at">values_from =</span> val, </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fn   =</span>  max,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">values_fill =</span>  <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 3
   var1      x     y
   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 a         3     0
-2 b         0     1</code></pre>
+1 a         5     0
+2 b         0     4</code></pre>
 </div>
 </div>
 </section>
 </section>
 <section id="additional-manipulation-options" class="level2" data-number="11.5">
 <h2 data-number="11.5" class="anchored" data-anchor-id="additional-manipulation-options"><span class="header-section-number">11.5</span> Additional manipulation options</h2>
-<p>The <code>tidyr</code> package offers other functions not directly tied to pivoting. Some of these functions are highlihghted next.</p>
+<p>The <code>tidyr</code> package offers other functions not directly tied to pivoting. Some of these functions are highlighted next.</p>
 <section id="separating-elements-in-one-column-into-separate-columns" class="level3" data-number="11.5.1">
 <h3 data-number="11.5.1" class="anchored" data-anchor-id="separating-elements-in-one-column-into-separate-columns"><span class="header-section-number">11.5.1</span> Separating elements in one column into separate columns</h3>
 <p>To split a column into two or more columns based on a existing column’s delimited value, use the <code>separate()</code> function.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-16_2567ecd3ae567360abae954f99243834">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Let's first create a delimited table</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>df2.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df2, <span class="at">cols =</span> <span class="sc">-</span><span class="dv">1</span>, </span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_to =</span> <span class="st">"var1"</span>, </span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">values_to =</span> <span class="st">"income"</span>)</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>df2.long</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Let’s first create a delimited table.</p>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-18_6ff61f0f5c0a5d670ca85ab9bd6c5682">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df2.long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(df2, <span class="at">cols =</span> <span class="sc">-</span><span class="dv">1</span>, </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">names_to =</span> <span class="st">"var1"</span>, </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">values_to =</span> <span class="st">"income"</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>df2.long</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 16 × 3
    state         var1            income
@@ -777,12 +806,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 15 Vermont       female_fulltime  42198
 16 Vermont       female_other     14422</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split var1 column into two columns</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>df2.sep <span class="ot">&lt;-</span> <span class="fu">separate</span>(df2.long, </span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">col =</span> var1, </span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sep =</span> <span class="st">"_"</span>, </span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"sex"</span>, <span class="st">"work"</span>))</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>df2.sep</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can now split <code>var1</code> into its two components that we’ll name <code>sex</code> and <code>work</code>.</p>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-19_51d5c3fe08e57c9f323df283f22ff2dc">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df2.sep <span class="ot">&lt;-</span> <span class="fu">separate</span>(df2.long, </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">col =</span> var1, </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sep =</span> <span class="st">"_"</span>, </span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"sex"</span>, <span class="st">"work"</span>))</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>df2.sep</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 16 × 4
    state         sex    work     income
@@ -809,8 +840,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="splitting-rows-into-multiple-rows-based-on-delimited-values" class="level3" data-number="11.5.2">
 <h3 data-number="11.5.2" class="anchored" data-anchor-id="splitting-rows-into-multiple-rows-based-on-delimited-values"><span class="header-section-number">11.5.2</span> Splitting rows into multiple rows based on delimited values</h3>
 <p>To split delimited values across rows, use the <code>separate_rows</code> function.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-17_c2b766792b7b0c5fc12eccc368d4ddeb">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">separate_rows</span>(df2.long, var1, <span class="at">sep =</span> <span class="st">"_"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-20_a8b4e7054a2d1e5fe6e26d6f1691b877">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">separate_rows</span>(df2.long, var1, <span class="at">sep =</span> <span class="st">"_"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 32 × 3
    state         var1     income
@@ -828,23 +859,23 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 # ℹ 22 more rows</code></pre>
 </div>
 </div>
-<p>Note that the output is a <code>tibble</code> even if the input is a dataframe.</p>
+<p>Here, instead of splitting <code>var1</code> into two columns, we simply add a new line for each observation. Note that this results in duplicate <code>income</code> values.</p>
 </section>
 <section id="replicate-rows-by-count" class="level3" data-number="11.5.3">
 <h3 data-number="11.5.3" class="anchored" data-anchor-id="replicate-rows-by-count"><span class="header-section-number">11.5.3</span> Replicate rows by count</h3>
 <p>You can expand rows based on a count column using the <code>uncount()</code> function. This is the opposite of a <code>group_by(...) %&gt;% count()</code> operation that tallies up the observations based on a grouping variable. Here, we’ll replicate rows based on the column <code>count</code> value.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-18_393585e62d9a397df1ac857cb3213097">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df2b <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var1 =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>), </span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">var2 =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), </span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">count =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>))</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>df2b</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-21_12db05f4d3ac38e98bc522ac93ddb2c0">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df2b <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var1 =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>), </span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">var2 =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">count =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>))</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>df2b</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  var1 var2 count
 1    a    x     1
 2    b    y     3</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  var1 var2
 1    a    x
@@ -854,8 +885,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>If you want to add an index column that identifies the replicated rows, add an <code>.id</code> argument.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-19_a9cf5da219a519ffe007deb194b6aa3c">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count, <span class="at">.id =</span> <span class="st">"id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-22_e1e3236b78a20fd47ad4213c14bc6915">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">uncount</span>(df2b, count, <span class="at">.id =</span> <span class="st">"id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  var1 var2 id
 1    a    x  1
@@ -868,14 +899,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="combining-elements-from-many-columns-into-a-single-column" class="level3" data-number="11.5.4">
 <h3 data-number="11.5.4" class="anchored" data-anchor-id="combining-elements-from-many-columns-into-a-single-column"><span class="header-section-number">11.5.4</span> Combining elements from many columns into a single column</h3>
 <p>Another practical function in the <code>tidyr</code> package is <code>unite()</code>. It combines columns into a single column by chaining the contents of the combined columns. For example, the following table has hours, minutes and seconds in separate columns.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-20_b1057593205be3af75f17841e16d3147">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">Index =</span> <span class="fu">c</span>(<span class="dv">1</span>,   <span class="dv">2</span>,  <span class="dv">3</span>),</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">Hour  =</span> <span class="fu">c</span>(<span class="dv">2</span>,  <span class="dv">14</span>, <span class="dv">20</span>),</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">Min   =</span> <span class="fu">c</span>(<span class="dv">34</span>,  <span class="dv">2</span>, <span class="dv">55</span>),</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">Sec   =</span> <span class="fu">c</span>(<span class="dv">55</span>, <span class="dv">17</span>, <span class="dv">23</span>))</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-23_a62825e0c7d65a07370ba833418e9f71">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">Index =</span> <span class="fu">c</span>(<span class="dv">1</span>,   <span class="dv">2</span>,  <span class="dv">3</span>),</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">Hour  =</span> <span class="fu">c</span>(<span class="dv">2</span>,  <span class="dv">14</span>, <span class="dv">20</span>),</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">Min   =</span> <span class="fu">c</span>(<span class="dv">34</span>,  <span class="dv">2</span>, <span class="dv">55</span>),</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">Sec   =</span> <span class="fu">c</span>(<span class="dv">55</span>, <span class="dv">17</span>, <span class="dv">23</span>))</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  Index Hour Min Sec
 1     1    2  34  55
@@ -884,9 +915,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>To combine the three time elements into a single column, type:</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-21_a28bacfa6290d39a806a80997424d6b2">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">unite</span>(df,  <span class="at">col =</span> Time, <span class="fu">c</span>(Hour, Min, Sec) , <span class="at">sep=</span><span class="st">":"</span>, <span class="at">remove =</span><span class="cn">TRUE</span>)</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>df2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-24_39f0db8e2952bd055eac589bc84030fc">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">unite</span>(df,  <span class="at">col =</span> Time, <span class="fu">c</span>(Hour, Min, Sec) , <span class="at">sep=</span><span class="st">":"</span>, <span class="at">remove =</span><span class="cn">TRUE</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>df2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  Index     Time
 1     1  2:34:55
@@ -894,17 +925,17 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 3     3 20:55:23</code></pre>
 </div>
 </div>
-<p>The <code>col</code> parameter defines the new column name; the parameter <code>c(Hour, Min, Sec)</code> defines the columns to be combined into column <code>Time</code>; <code>sep=":"</code> tells the function what characters are to be used to separate the elements (here, we are separating the time elements using <code>:</code>); <code>remove=TRUE</code> tells the function to remove columns two through four.</p>
+<p>The <code>col</code> parameter defines the new column name; the parameter <code>c(Hour, Min, Sec)</code> defines the columns to be combined into column <code>Time</code>; <code>sep=":"</code> tells the function what characters are to be used to separate the elements (here, we are separating the time elements using <code>:</code>); <code>remove=TRUE</code> tells the function to remove the original columns used to create the new <code>Time</code> column.</p>
 </section>
 <section id="creating-unique-combinations-of-variable-values" class="level3" data-number="11.5.5">
 <h3 data-number="11.5.5" class="anchored" data-anchor-id="creating-unique-combinations-of-variable-values"><span class="header-section-number">11.5.5</span> Creating unique combinations of variable values</h3>
 <p>You can use <code>expand_grid</code> to automatically generate a table with unique combinations of a set of variable values. For example, to fill a table with a combination of student names and homework assignments, type:</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-22_ec12ec75ab8fdfa0e6011b1e762776f0">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>df3.long <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">student    =</span> <span class="fu">c</span>(<span class="st">"Joe"</span>, <span class="st">"Jane"</span>, <span class="st">"Kim"</span>),  <span class="co"># Define all unique student names</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">assignment =</span> <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"HW"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)),     <span class="co"># Define all unique HW assignments</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">value      =</span> <span class="cn">NA</span>)</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>df3.long</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-25_27d16146c40a7a3ce6eb92c92f512554">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df3.long <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">student    =</span> <span class="fu">c</span>(<span class="st">"Joe"</span>, <span class="st">"Jane"</span>, <span class="st">"Kim"</span>),  <span class="co"># Define all unique student names</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">assignment =</span> <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"HW"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)),     <span class="co"># Define all unique HW assignments</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">value      =</span> <span class="cn">NA</span>)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>df3.long</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 3
    student assignment value
@@ -924,8 +955,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>We can then create a wide version of the table using <code>pivot_wider</code>.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-23_b58541e90b8715c5ca8a3527bde068e9">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3.long, <span class="at">names_from =</span> assignment, <span class="at">values_from =</span> value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-26_dd49d42eb69305fb43423a866f9f42fc">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(df3.long, <span class="at">names_from =</span> assignment, <span class="at">values_from =</span> value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 5
   student HW1   HW2   HW3   HW4  
@@ -939,13 +970,13 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="expanding-table-with-missing-sets-of-values" class="level3" data-number="11.5.6">
 <h3 data-number="11.5.6" class="anchored" data-anchor-id="expanding-table-with-missing-sets-of-values"><span class="header-section-number">11.5.6</span> Expanding table with missing sets of values</h3>
 <p>It’s not uncommon to be handed a table with incomplete combinations of observations. For example, the following table gives us yield and data source values for each combination of year and grain type. However, several combinations of year/grain are missing.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-24_619f680dbe5d4c987041f009a935277d">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df4.long <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Year  =</span> <span class="fu">c</span>(<span class="dv">1999</span>,<span class="dv">1999</span>,<span class="dv">2000</span>,<span class="dv">2000</span>,<span class="dv">2001</span>,<span class="dv">2003</span>,<span class="dv">2003</span>,<span class="dv">2005</span>),</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Grain =</span> <span class="fu">c</span>(<span class="st">"Oats"</span>, <span class="st">"Corn"</span>,<span class="st">"Oats"</span>, <span class="st">"Corn"</span>,<span class="st">"Oats"</span>, <span class="st">"Oats"</span>, <span class="st">"Corn"</span>,<span class="st">"Oats"</span>),</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Yield =</span> <span class="fu">c</span>(<span class="dv">23</span>,<span class="dv">45</span>,<span class="dv">24</span>,<span class="dv">40</span>,<span class="dv">20</span>,<span class="dv">19</span>,<span class="dv">41</span>,<span class="dv">22</span>),</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Src   =</span> <span class="fu">c</span>(<span class="st">"a"</span>,<span class="st">"a"</span>,<span class="st">"b"</span>,<span class="st">"c"</span>,<span class="st">"a"</span>,<span class="st">"a"</span>,<span class="st">"c"</span>,<span class="st">"a"</span>),</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>df4.long</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-27_f067791c6a2a51cb3f3d38211620fac4">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>df4.long <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Year  =</span> <span class="fu">c</span>(<span class="dv">1999</span>,<span class="dv">1999</span>,<span class="dv">2000</span>,<span class="dv">2000</span>,<span class="dv">2001</span>,<span class="dv">2003</span>,<span class="dv">2003</span>,<span class="dv">2005</span>),</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Grain =</span> <span class="fu">c</span>(<span class="st">"Oats"</span>, <span class="st">"Corn"</span>,<span class="st">"Oats"</span>, <span class="st">"Corn"</span>,<span class="st">"Oats"</span>, <span class="st">"Oats"</span>, <span class="st">"Corn"</span>,<span class="st">"Oats"</span>),</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Yield =</span> <span class="fu">c</span>(<span class="dv">23</span>,<span class="dv">45</span>,<span class="dv">24</span>,<span class="dv">40</span>,<span class="dv">20</span>,<span class="dv">19</span>,<span class="dv">41</span>,<span class="dv">22</span>),</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Src   =</span> <span class="fu">c</span>(<span class="st">"a"</span>,<span class="st">"a"</span>,<span class="st">"b"</span>,<span class="st">"c"</span>,<span class="st">"a"</span>,<span class="st">"a"</span>,<span class="st">"c"</span>,<span class="st">"a"</span>),</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>df4.long</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  Year Grain Yield Src
 1 1999  Oats    23   a
@@ -959,10 +990,10 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>We are missing records for 2001 and Corn, 2003 and Corn, and data for both grains are missing for 2002 and 2004. To add rows for all missing pairs of year/grain values, use the <code>complete</code> function. Here, we’ll assign <code>0</code> to missing <code>Yield</code> values and <code>NA</code> to the <code>Src</code> values.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-25_17498f5d995fe67c64fc27799bae24d8">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df4.long, <span class="at">Year=</span><span class="dv">1999</span><span class="sc">:</span><span class="dv">2005</span>, <span class="at">Grain=</span>  <span class="fu">c</span>(<span class="st">"Oats"</span>, <span class="st">"Corn"</span>),</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Yield =</span> <span class="dv">0</span>, <span class="at">Src =</span> <span class="cn">NA</span>))</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>df.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-28_150646326c5f649835d8f18704a694ba">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>df.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df4.long, <span class="at">Year=</span><span class="dv">1999</span><span class="sc">:</span><span class="dv">2005</span>, <span class="at">Grain=</span>  <span class="fu">c</span>(<span class="st">"Oats"</span>, <span class="st">"Corn"</span>),</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Yield =</span> <span class="dv">0</span>, <span class="at">Src =</span> <span class="cn">NA</span>))</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>df.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 14 × 4
     Year Grain Yield Src  
@@ -986,8 +1017,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>NOTE 1: The dataframe should be ungrouped using <code>ungroup()</code> before calling <code>complete()</code> if a <code>group_by()</code> operation was previously applied to the table.</p>
 <p>NOTE 2: If one of the columns used to complete the set of unique values is a factor, then passing that column name as an argument will automatically create unique sets of values from that factor’s <em>levels.</em></p>
 <p>If you want to show just the missing rows, use <code>dplyr::anti_join()</code>.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-26_a1edf52e7550701a8c914ff28b78fcf2">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">anti_join</span>(df.all, df4.long)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-29_ce3dc17dbdbed562bff3321ddf709dd7">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">anti_join</span>(df.all, df4.long)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 4
    Year Grain Yield Src  
@@ -1006,18 +1037,25 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="example-using-a-date-object-class" class="level4" data-number="11.5.7.1">
 <h4 data-number="11.5.7.1" class="anchored" data-anchor-id="example-using-a-date-object-class"><span class="header-section-number">11.5.7.1</span> Example using a <code>Date</code> object class</h4>
 <p>This is another example that makes use of the <code>complete</code> function. Here, we seek to add missing date/time values in a time series table.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-27_739e70c79f57055b7bd1dbb30e20c454">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>df.dt <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Date =</span> <span class="fu">as.Date</span>(<span class="fu">c</span>(<span class="st">"2000-01-01"</span>, <span class="st">"2000-01-03"</span>, <span class="st">"2000-01-05"</span>)),</span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Value =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-30_bbe16878a39a6ddcda5f499a88b939c4">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>df.dt <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Date =</span> <span class="fu">as.Date</span>(<span class="fu">c</span>(<span class="st">"2000-01-01"</span>, <span class="st">"2000-01-03"</span>, <span class="st">"2000-01-05"</span>)),</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Value =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>))</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>df.dt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        Date Value
+1 2000-01-01     1
+2 2000-01-03     3
+3 2000-01-05     5</code></pre>
+</div>
 </div>
 <p>To fill the missing dates between the minimum and maximum dates in <code>df.dt</code>, we first need to create the sequence of dates between these minimum and maximum values. We could do this in the <code>complete</code> function, but it will be clearer to the reader if these operations are performed separately.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-28_c8585f90cdd8be0bc74281e98e28aa73">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>dates.all <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(df.dt<span class="sc">$</span>Date), <span class="fu">max</span>(df.dt<span class="sc">$</span>Date), <span class="at">by =</span> <span class="st">"1 day"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-31_127a1e7deae2d8f404b16bfef307ef00">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>dates.all <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(df.dt<span class="sc">$</span>Date), <span class="fu">max</span>(df.dt<span class="sc">$</span>Date), <span class="at">by =</span> <span class="st">"1 day"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we pass the complete set of dates, <code>dates.all</code> to the <code>complete</code> function. We’ll assign <code>NA</code> to the missing <code>Value</code> values.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-29_5bab11939990590c4ab143aebc9873ec">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>df.dt.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df.dt, <span class="at">Date =</span> dates.all, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Value =</span> <span class="cn">NA</span>))</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>df.dt.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-32_69a4c12bc206e8510d976e9d4f7d89e2">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>df.dt.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df.dt, <span class="at">Date =</span> dates.all, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Value =</span> <span class="cn">NA</span>))</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>df.dt.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 2
   Date       Value
@@ -1068,18 +1106,18 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="example-using-a-posix-object-class" class="level4" data-number="11.5.7.2">
 <h4 data-number="11.5.7.2" class="anchored" data-anchor-id="example-using-a-posix-object-class"><span class="header-section-number">11.5.7.2</span> Example using a <code>Posix</code> object class</h4>
 <p>Recall that if a time element is to be stored in a date, the date object becomes a <code>Posix</code> object class. This adds additional increment units to the <code>seq</code> function. In the following example, we create a new data frame (with a time value), then fill the table with date/times at 6 hour increments.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-30_6bc4da7f96d3ec2ebff57157587ee885">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>df.tm <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Date =</span> <span class="fu">as.POSIXct</span>(<span class="fu">c</span>(<span class="st">"2000-01-01 18:00 EST"</span>, </span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>                                         <span class="st">"2000-01-02 6:00 EST"</span>, </span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>                                         <span class="st">"2000-01-03 12:00 EST"</span>)),</span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Value =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-33_54f94acb760e637cc7a3d3ff88d96ef4">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>df.tm <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Date =</span> <span class="fu">as.POSIXct</span>(<span class="fu">c</span>(<span class="st">"2000-01-01 18:00 EST"</span>, </span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>                                         <span class="st">"2000-01-02 6:00 EST"</span>, </span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>                                         <span class="st">"2000-01-03 12:00 EST"</span>)),</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Value =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-31_397f3ad2e5a7f33dc030b4ea48ca7246">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>pos.all <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(df.tm<span class="sc">$</span>Date), <span class="fu">max</span>(df.tm<span class="sc">$</span>Date), <span class="at">by =</span> <span class="st">"6 hour"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-34_28826b75cf1672a3ffab251ad5125c84">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>pos.all <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(df.tm<span class="sc">$</span>Date), <span class="fu">max</span>(df.tm<span class="sc">$</span>Date), <span class="at">by =</span> <span class="st">"6 hour"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-32_438c3ea088f2f687b4d9c95f805aa1d5">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>df.tm.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df.tm, <span class="at">Date =</span> pos.all, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Value =</span> <span class="cn">NA</span>))</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>df.tm.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-35_8173551a1e2386193b6b1cf9e339b4cf">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>df.tm.all <span class="ot">&lt;-</span> <span class="fu">complete</span>(df.tm, <span class="at">Date =</span> pos.all, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">Value =</span> <span class="cn">NA</span>))</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>df.tm.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 2
   Date                Value
@@ -1130,9 +1168,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="identifying-missing-combination-in-dataframes" class="level3" data-number="11.5.8">
 <h3 data-number="11.5.8" class="anchored" data-anchor-id="identifying-missing-combination-in-dataframes"><span class="header-section-number">11.5.8</span> Identifying missing combination in dataframes</h3>
 <p>In an earlier example, we had the function automatically add the missing combinations using <strong>explicitly</strong> defined ranges of values. If you just want to output the missing combinations from the <strong>existing</strong> set of values in both columns, use the <code>expand()</code> function.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-33_e1241ac3a32a2db89c88079b7b8ab4fb">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>p.all <span class="ot">&lt;-</span> <span class="fu">expand</span>(df4.long, Year, Grain) <span class="co"># List all possible combinations</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>p.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-36_9f958cf5d06b40962bc63f355ebebe42">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>p.all <span class="ot">&lt;-</span> <span class="fu">expand</span>(df4.long, Year, Grain) <span class="co"># List all possible combinations</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>p.all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 2
     Year Grain
@@ -1150,8 +1188,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Note that this only outputs the columns of interest. If you need to see the other columns in the output, perform a join.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-34_b4ae8680368e5b76e71ad37962df5889">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">left_join</span>(p.all, df4.long, <span class="at">by=</span><span class="fu">c</span>(<span class="st">"Year"</span>, <span class="st">"Grain"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-37_27033198a9b4fc8a023d480e8b92318c">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">left_join</span>(p.all, df4.long, <span class="at">by=</span><span class="fu">c</span>(<span class="st">"Year"</span>, <span class="st">"Grain"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 4
     Year Grain Yield Src  
@@ -1172,10 +1210,10 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="auto-fill-down-or-up" class="level3" data-number="11.5.9">
 <h3 data-number="11.5.9" class="anchored" data-anchor-id="auto-fill-down-or-up"><span class="header-section-number">11.5.9</span> Auto-fill down or up</h3>
 <p>The <code>fill()</code> function is used to replace <code>NA</code> values with the closest non-<code>NA</code> value in a column. For example, to fill <em>down</em>, set the <code>.direction</code> argument to <code>"down"</code>.</p>
-<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-35_b6cdae8ca68480d3e7c210bd30922920">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>df5 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Month =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, </span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">Year =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">4</span>),<span class="dv">2001</span>, <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">6</span>)))</span>
-<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>df5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="tidyr_cache/html/unnamed-chunk-38_d83404ba36cdbb4a0ff751a4c606f202">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>df5 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Month =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, </span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">Year =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">4</span>),<span class="dv">2001</span>, <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">6</span>)))</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>df5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Month Year
 1      1 2000
@@ -1191,7 +1229,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 11    11   NA
 12    12   NA</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fill</span>(df5, Year, <span class="at">.direction=</span><span class="st">"down"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fill</span>(df5, Year, <span class="at">.direction=</span><span class="st">"down"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Month Year
 1      1 2000

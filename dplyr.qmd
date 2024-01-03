@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Manipulating data tables with `dplyr`
 
 
@@ -28,7 +33,7 @@ library(dplyr)
 
 ## The dplyr basics
 
-The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The package `dplyr` offers some nifty and simple querying functions as shown in the next subsections. Some of `dplyr`'s key data manipulation functions are summarized in the following table:
+The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The `dplyr` package offers some nifty and simple querying functions. Some of `dplyr`'s key data manipulation functions are summarized in the following table:
 
 `dplyr` function   | Description
 -------------------|-------------
@@ -43,22 +48,33 @@ Note that all of these functions take as first argument the data table name exce
 When used alone, dataframe `dat` is the first argument **inside** the `dplyr` function.
 
 ```{r eval=FALSE}
-dat2 <- select(dat, crop)
+dat2 <- select(dat, Crop)
 ```
 
 When used in a pipe, dataframe `dat` is **outside** of the `dplyr` function.
 
 ```{r eval=FALSE}
-dat2 <- dat %>% select(crop)
+dat2 <- dat %>% select(Crop)
+```
+
+If you are using R 4.1 or greater, you can make use of the native pipe.
+
+```{r eval=FALSE}
+dat2 <- dat |> select(Crop)
 ```
 
 ### `filter`: Subset by rows 
 
-Tables can be subsetted by rows based on column values. For example, we may wish to grab all rows associated with the string `Oats` in the `Crop` column: 
+Tables can be subsetted by rows based on column values. For example, we may wish to grab all rows associated with the value `Oats` in the `Crop` column: 
 
 ```{r}
 dat.query1 <- filter(dat, Crop == "Oats")
-summary(dat.query1)
+```
+
+We can use the `unique()` function to identify all unique values in the `Crop` column.  This should return a single unique value: `Oats`.
+
+```{r}
+unique(dat.query1$Crop)
 ```
 
 Note that R is case sensitive, so make sure that you respect each letter's case (i.e. upper or lower).
@@ -68,26 +84,34 @@ We can expand our query by including both `Oats`, `Buckwheat` and limiting the `
 ```{r}
 dat.query2 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat", 
                           Country == "Canada")
-summary(dat.query2)
 ```
 
-The character `|` is the Boolean operator *OR*. So in our example, the query can be read as "... crop equals oats *OR* crop equals buckwheat". Had we used the AND operator, `&`, instead as in `Crop == "Oats" & Crop == "Buckwheat"` the output would have returned zero rows since a `Crop` value cannot be both `Oats` AND `Buckwheat`.
+```{r}
+unique(dat.query1$Crop)
+unique(dat.query1$Country)
+```
+
+The character `|` is the Boolean operator *OR*. So in our example, the query can be read as "... crop equals oats *OR* crop equals buckwheat". Had we used the AND operator, `&` as in `Crop == "Oats" & Crop == "Buckwheat"`, the output would have returned zero rows since a `Crop` value cannot be both `Oats` AND `Buckwheat`.
 
 We can expand this query by limiting our output to the years 2005 to 2010
 
 ```{r}
-library(dplyr)
 dat.query3 <- filter(dat, Crop == "Oats" | Crop == "Buckwheat", 
                           Country == "Canada", 
                           Year >= 2005 & Year <= 2010)
-summary(dat.query3)
 ```
 
-Note the use of the AND Boolean operator (`&`) instead of the OR operator (`|`) for the `Year` query. We want the `Year` value to satisfy two criteria simultaneously: *greater than or equal to 2005* **AND** *less than or equal to 2010*. Had we used the `|` operator, R would have returned all years since all year values satisfy at least one of the two criterion.
+```{r}
+unique(dat.query3$Crop)
+unique(dat.query3$Country)
+range(dat.query3$Year)
+```
+
+Note the use of the AND Boolean operator (`&`) instead of the OR operator (`|`) for the `Year` query. We want the `Year` value to satisfy two criteria simultaneously: *greater than or equal to 2005* **AND** *less than or equal to 2010*. Had we used the `|` operator, R would have returned all years since all year values satisfy at least one of the two critera.
 
 ### `arrange`: Sort rows by column value
 
-You can sort a table based on a column's values. For example, to sort `dat` by crop name type:
+You can sort a table based on a column's values using the `arrange` function. For example, to sort `dat` by crop name type:
 
 ```{r}
 dat.sort1 <- arrange(dat, Crop)
@@ -95,7 +119,7 @@ head(dat.sort1)
 tail(dat.sort1)
 ```
 
-By default, `arrange` sorts by ascending order. To sort by descending order, wrap the column name with the function `desc()`. For example, to sort the table by `Crop` in ascending order then by `Year` in descending order, type:
+By default, `arrange` sorts by ascending order. To sort by descending order, wrap the column name with the function `desc()`. For example, to sort the table by `Crop` in ascending order, then by `Year` in descending order, type:
 
 ```{r}
 dat.sort2 <- arrange(dat, Crop, desc(Year))
@@ -105,7 +129,7 @@ tail(dat.sort2)
 
 ### `select`: Subset by column 
 
-You can subset a table by column(s). To extract the columns `Crop`, `Year` and `Value`, type:
+You can subset a table by column(s) using the `select` function. To extract the columns `Crop`, `Year` and `Value`, type:
 
 ```{r}
 dat.subcol <- select(dat, Crop, Year, Value)
@@ -129,7 +153,7 @@ head(dat.extended,3)
 tail(dat.extended,3)
 ```
 
-Here, we make use of an embedded function, `ifelse`, which performs a conditional operation: if the `Country` value is `Canada` return `CAN` if not, return `USA`.
+Here, we make use of an embedded function, `ifelse`, which performs a conditional operation: if the `Country` value is `Canada` return `CAN` if not, return `USA`. `ifelse` is covered in section 9.3.
 
 Note that if you wish to *rename* a column, you can use the `rename()` function instead of `mutate`.
 
@@ -167,7 +191,8 @@ met2 <- mutate_at( met, vars(Wind, Prec),
                         list(~ ifelse( . == 99, NA, .)))
 met2
 ```
-The dot `.` is a placeholder for each column listed in the `vars()` function. Also, note the `~` operator in lieu of `. =`.
+
+The dot `.` is a placeholder for each column listed in the `vars()` function. 
 
 ### `summarise`: Summarize columns
 
@@ -240,7 +265,13 @@ x <- c(12,102, 43, 20, 90, 0, 12, 6)
 ifelse(x < 23, 1, 0)
 ```
 
-The  base `ifelse` function works as expected when the input/output values are  numeric or character, but does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another, the following example will not return the expected output.
+`ifelse` takes three arguments: 
+
+ + The condition to evaluate (`x < 23` in the above example);
+ + The value to output if the condition is `TRUE` (`1` in our example);
+ + The value to output if the condition is `FALSE` (`0` in our example).
+
+The  base `ifelse` function works as expected when the input/output values are  numeric or character, but it does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another, the following example will not return the expected output.
 
 ```{r}
 x <- as.factor( c("apple", "banana", "banana", "pear", "apple"))
@@ -257,92 +288,47 @@ ifelse( year(y) != 2016, NA, y)
 
 Here, `ifelse` converts the date object to its internal numeric representation as number of days since 1970. 
 
-`if_else` does not preserve the attributes that might be present in a vector. In other words, it will strip away the vector's `class`. If you want to ensure that the vector's `class` is preserved, a safer alternative is to use `dplyr`'s `if_else` function.
 
 ### `dplyr`'s `if_else`
 
-The `if_else` function (note the underscore `_`), will preserve data type but does so strictly. For example, the following code will return an error: 
+`ifelse` does not preserve the attributes that might be present in a vector. In other words, it will strip away the vector's `class`. If you want to ensure that the vector's `class` is preserved, a safer alternative is to use `dplyr`'s `if_else` function.
 
-```{r error=TRUE}
+Reworking the above examples: 
+
+```{r}
 if_else( year(y) != 2016, NA, y)
 ```
-
-The output data types (`NA` and `y`) are different. `NA` is a logical data type (see `typeof(NA)`) and `y` is not. The solution is to force `NA` as a *date* object by wrapping it with a date function like `mdy(NA)` or the base `as.Date(NA)` function, or by replacing the logical `NA` with `NA_Date_` which is found in the `lubridate` package.
-
-```{r}
-if_else( year(y) != 2016, mdy(NA), y)
-```
-
-Likewise, if the input vector is of type character, you need to ensure that all output values are characters too.
-
-```{r}
-y <- c("apple", "banana", "banana", "pear", "apple")
-if_else( y == "banana", as.character(NA), y)
-```
-
-Recall from the Week 02 lecture notes that R has several `NA` reserved words for different data types (e.g. `NA_character_` and `NA_integer_` to name a few). So the last chunk of code could have been written as,
-
-```{r}
-if_else( y == "banana", NA_character_, y)
-```
-
-Note that there is no reserved word for an `NA` *date* or *Posix* type in the base R environment. But they are available in the `lubridate` package (`NA_Date_` and `NA_POSIXct_`).
-
-
-### Recoding factors using `recode`
-
-When working with factors, however, `if_else` (as of `dplyr` version `0.7`) will produce the following error:
 
 ```{r error=TRUE}
 if_else(x == "pear", "apple", x)
 ```
 
-The first outcome listed in the function defines the data type or class. Here, `"apple"` is a character, so it expects the *FALSE* outcome to be a character as well (here, the *FALSE* outcome is a factor). A better option for recoding factors is to use `dplyr`'s `recode` function:
+Note that when working with factors, however, `if_else` will strip the `factor` class of an input factor. `dplyr` offers a `recode` function for this purpose however, this function is being superseded according to the documentation as of version `1.1.4`. The workaround is to convert the `if_else` output to a factor.
 
-
-```{r}
-recode(x , "pear" = "apple")
+```{r error=TRUE}
+as.factor(if_else(x == "pear", "apple", x))
 ```
-
-You can recode more than one factor level. In fact, you can even introduce new levels in the recoding scheme:
-
-```{r}
-recode(x , "pear" = "apple", "banana" = "pineapple" )
-```
-
-As with `if_else` and `case_when`, `recode` is strict about preserving data types and classes. So if you want to recode a factor level to `NA` make sure to use `NA_character_` or `as.character(NA)`. `recode` will automatcially convert the character value to a factor if the input vector (`x` in our example) is a factor.
-
-Note that `recode` can also be used with numeric and character data types (i.e. vectors devoid of class attributes). For example,
-
-```{r}
-# Example of recoding a character vector
-recode(y , "pear" = "apple", "banana" = "pineapple" )
-```
-
 
 #### Note on replacing NA factor levels
 
-One operation you cannot perform with `recode` is converting an `NA` level to another factor level. For example, the following will generate an error message:
+One operation you cannot perform with `if_else` is converting an `NA` level to another factor level. For example, let's add an `NA` value to the `x` factor:
 
 ```{r}
 x[2] <- NA
 x
 ```
 
-```{r eval=FALSE}
-recode(x, NA = "other")
-```
+If we want to replace `NA` with `banana` the following will generate an unexpected output.
 
-```
-Error: unexpected '=' in "recode(x, NA ="
-```
-
-The simplest solution is to make use of a specialized factor package called `forcats` and its function, `fct_explicit_na`.
 
 ```{r}
-library(forcats)
-x <- fct_explicit_na(x, na_level = "Other")
-x
+if_else( x == NA, "banana", x)
+```
+
+To evaluate if a value is `NA`, use the `is.na()` function as in:
+
+```{r}
+if_else( is.na(x), "banana", x)
 ```
 
 ### Changing values based on multiple conditions: `case_when`
@@ -354,21 +340,20 @@ unit <- c("F","F","C", "K")
 if_else( unit == "C", "Celsius", if_else(unit == "F", "Fahrenheit", "Kelvin"))
 ```
 
-A simpler solution is to use the `recode` function discussed in the previous section.
+A simpler solution is to use the `case_when` function.
 
 ```{r} 
-recode(unit, "C" = "Celsius",
-             "F" = "Fahrenheit",
-             "K" = "Kelvin")
+case_when(unit == "C" ~ "Celsius",
+          unit == "F" ~ "Fahrenheit",
+          unit == "K" ~ "Kelvin")
 ```
 
-`recode` is well suited for replacing values but it will not allow for more complex operations. For example, given two vectors, `unit` and `temp`, we would like to convert all `temp` values to Fahrenheit by applying a temperature conversion dependent on the `unit` value.
+`case_when` can aso be used for more complex operations. For example, given two vectors, `unit` and `temp`, we would like to convert all `temp` values to Fahrenheit by applying a temperature conversion dependent on the `unit` value.
 
 ```{r}
 temp <- c(45.2, 56.3, 11.0, 285)
 ```
 
-This operation is best performed using the `case_when` function.
 
 ```{r}
 case_when(unit == "F" ~ temp,
@@ -387,14 +372,13 @@ case_when(TRUE ~ (temp - 273.15) * 9/5 + 32,
           unit == "C" ~ (temp * 9/5) + 32)
 ```
 
-As with the `if_else` function, `case_when` is strict about data type in that all output must be of the same data type.
 
-Note that `ifelse`, `if_else`, `recode` and `case_when` can all be used inside of a `mutate` function. For example, to replace `Canada` and `United States of America` in variable `Country` with `CAN` and `USA` respectively and to create a new variable called `Type` which will take on the values of `1`, `2` or `3` depending on the values in variable `Source`, type the following: 
+Note that `case_when` can also be used inside of a `mutate` function. For example, to replace `Canada` and `United States of America` in variable `Country` with `CAN` and `USA` respectively and to create a new variable called `Type` which will take on the values of `1`, `2` or `3` depending on the values in variable `Source`, type the following: 
 
 ```{r}
 dat1 <- dat %>% 
-  mutate(Country = recode(Country, "Canada" = "CAN",
-                                   "United States of America" = "USA"),
+  mutate(Country = case_when(Country == "Canada" ~ "CAN",
+                             Country == "United States of America" ~ "USA"),
          Type = case_when(Source == "Calculated data" ~ 1,
                           Source == "Official data" ~ 2,
                           TRUE ~ 3)) 
@@ -403,10 +387,7 @@ head(dat1)
 
 &nbsp;&nbsp;
 
-## Miscellaneous
-
- 
-### Replacing values with `NA`
+## Replacing values with `NA`
 
 You can replace a specific set of values (numeric or character) using the `na_if()` function. For example, to replace `-999` with `NA`:
 
@@ -430,9 +411,18 @@ val <- c("ab", "", "A b", "  ")
 na_if( str_length(val) , 0 )
 ```
 
-To use `na_if()` in a piping operation, it needs to be embedded in a `mutate()` function.
+To use `na_if()` in a piping operation, it needs to be embedded in a `mutate()` function. For example, to replace `"Calculated data"` with `NA` in the `dat` dataframe, type:
 
-### Outputting a vector instead of a table using `pull`
+```{r}
+dat1 <- dat %>% 
+    mutate(Source = na_if(Source, "Calculated data" ))
+```
+
+```{r}
+unique(dat1$Source)
+```
+
+## Outputting a vector instead of a table using `pull`
 
 Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:
 
@@ -458,19 +448,8 @@ oats
 class(oats)
 ```
 
-The `pull` function can also be used to convert a data table column to a multi-element vector, e.g.:
+The `pull` function can also be used explicitly define the column to extract. For example, to extract the `Value` column type:
 
-```{r}
-# This outputs a one column table
-yield <- dat %>% 
-  filter(Crop == "Oats",
-         Information == "Yield (Hg/Ha)") %>% 
-  select(Value)
-
-head(yield)
-
-class(yield)
-```
 
 ```{r}
 # This outputs a multi-element vector

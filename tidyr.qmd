@@ -28,7 +28,7 @@ An observation consists of a **unique set** of attribute **values**. For example
 
 ![](img/Tidy_census.png)
 
-Note that each row of the table is part of a unique set of variable attributes. A dataset in this format may not be human "readable" (unlike its *wide* counterpart), but is the format of choice for many data analysis and visualization operations.
+Note that each row of the table is part of a unique set of variable values. A dataset in this format may not be human "readable" (unlike its *wide* counterpart), but it's the format of choice for many data analysis and visualization operations and one that will be used extensively in this course.
 
 The next sections will demonstrate how one can convert a wide format to a long format and *vice versa*.
 
@@ -82,7 +82,8 @@ The first 10 lines of the output table are shown here. Note how each `Delay` val
 
 ```{r, echo = FALSE}
 library(tidyr)
-df.long <- gather(df, key = "Quarter", value = "Delay" , Q1, Q2, Q3, Q4 )
+#df.long <- gather(df, key = "Quarter", value = "Delay" , Q1, Q2, Q3, Q4 )
+df.long <- pivot_longer(df, cols=c(Q1,Q2,Q3,Q4), names_to = "Quarter", values_to = "Delay")
 head(df.long, 10)
 ```
 
@@ -106,7 +107,7 @@ df.wide <- pivot_wider(df.long, names_from = Quarter, values_from = Delay)
 We've now recreated the wide version of our table.
 
 ```{r, echo = FALSE}
-head(df.wide, 10)
+df.wide
 ```
 
 The following figure summarizes the long to wide conversion.
@@ -114,25 +115,31 @@ The following figure summarizes the long to wide conversion.
 ![](img/Tidyr_long2wide.png)
 <p>
 
+Additional functionality in `pivot_longer` and `pivot_wider` are highlighted next.
+
+
 ## Advanced `pivot_longer` options
 
-Here’s a subset of median income by sex and by work experience for 2017.
+<p>
+
+
+Let's start off with a subset of median income by sex and by work experience for 2017.
 
 ```{r}
 df2 <- data.frame(state = c("Maine", "Massachusetts", 
                              "New Hampshire", "Vermont"),
-                   male_fulltime = c(50329,66066, 59962, 50530), 
-                   male_other = c(18099, 18574, 20274, 17709), 
+                   male_fulltime   = c(50329,66066, 59962, 50530), 
+                   male_other      = c(18099, 18574, 20274, 17709), 
                    female_fulltime = c(40054, 53841, 46178, 42198),
-                   female_other = c(13781, 14981, 15121, 14422))
+                   female_other    = c(13781, 14981, 15121, 14422))
 df2
 ```
 
-At first glance, it might seem that we have three variables as in the earlier example, but upon closer examination, we see that we can tease out two variables from the column names: sex (`male` and `female`) and work experience (`fulltime` and `other`).
+At first glance, it might seem that we have three variables, but upon closer examination, we see that we can tease out two variables from the column names: sex (`male` and `female`) and work experience (`fulltime` and `other`).
 
 <img src="img/double_header.PNG" style="width: 73%; height: auto;">
 
-`pivot_longer` has an argument, `names_sep`, that is passed the character that is used to delimit the two variable values. In our example, this character is `_`. Since the column values will be split across two variables we will also need to pass **two** column names to the `names_to` argument.
+`pivot_longer` has an argument, `names_sep`, that is passed the character that is used to define the delimiter in the variable name. In our example, this character is `_`. Since the column values will be split across two variables we will also need to pass **two** column names to the `names_to` argument.
 
 <img src="img/long_to_separate_wide.PNG" style="width: 73%; height: auto;">
 
@@ -172,43 +179,67 @@ df3 <- data.frame(var1 = c("a", "a", "b", "b"),
 df3
 ```
 
+Here, we have to `val` values for the combined values `a` an `x`--likewize for `b` and `y`, This will pose a problem when pivoting to w wide table since the intersection of `a` and `x` will result in two values.
+
 ```{r error=TRUE}
-pivot_wider(df3, names_from = var2, values_from = val)
+w1 <- pivot_wider(df3, names_from = var2, values_from = val)
+w1
+```
+Since the intersections of `a`:`x`  and `b`:`y` each have two possible values, the function returns a *list* of values. For example, the intersection of column `x` and row `a` stores the values `5` and `3`.
+
+```{r}
+unlist(w1[1,2])
 ```
 
-Since the intersections of `a`:`x`  and `b`:`y` each have two possible values, the function returns a *list* of values. Assuming that the duplicate records are not an erroneous entry, you will need to instruct the function on how to summarize the multiple values using the `values_fn` argument. For example, to return  the maximum value, type:
+Assuming that the duplicate records are not an erroneous entry, you will need to instruct the function on how to summarize the multiple values using the `values_fn` argument. For example, to return  the maximum of the two values, type:
 
 ```{r error=TRUE}
 pivot_wider(df3, 
             names_from = var2, 
             values_from = val, 
-            values_fn = list(val = min))
+            values_fn =  max)
 ```
+
+If instead of summarizing the multiple values you wish to combine them with commas, you can type:
+
+```{r error=TRUE}
+pivot_wider(df3, 
+            names_from = var2, 
+            values_from = val, 
+            values_fn =  \(x) paste(x, collapse=","))
+```
+
+`\(x)` is a shorthand for `function(x)` in R version `4.1` and greater.
 
 You'll note the empty cells resulting from there not being a valid combination for `a`:`y` and `b`:`x`. You can specify the missing values using the `values_fill` argument. For example, to replace `NA` with `0` type:
 
 ```{r error=TRUE}
 pivot_wider(df3, names_from = var2, values_from = val, 
-            values_fn   = list(val = min),
-            values_fill = list(val = 0))
+            values_fn   =  max,
+            values_fill =  0)
 ```
 
 ## Additional manipulation options
 
-The `tidyr` package offers other functions not directly tied to pivoting. Some of these functions are highlihghted next.
+The `tidyr` package offers other functions not directly tied to pivoting. Some of these functions are highlighted next.
 
 ### Separating elements in one column into separate columns
 
 To split a column into two or more columns based on a existing column's delimited value, use the `separate()` function.
 
+Let's first create a delimited table.
+
 ```{r}
-# Let's first create a delimited table
 df2.long <- pivot_longer(df2, cols = -1, 
                          names_to = "var1", 
                          values_to = "income")
 df2.long
+```
 
-# Split var1 column into two columns
+We can now split `var1` into its two components that we'll name `sex` and `work`.
+
+```{r}
+
 df2.sep <- separate(df2.long, 
                     col = var1, 
                     sep = "_", 
@@ -224,7 +255,7 @@ To split delimited values across rows, use the `separate_rows` function.
 separate_rows(df2.long, var1, sep = "_")
 ```
 
-Note that the output is a `tibble` even if the input is a dataframe. 
+Here, instead of splitting `var1` into two columns, we simply add a new line for each observation. Note that this results in duplicate `income` values.
 
 ### Replicate rows by count
 
@@ -267,7 +298,7 @@ df2 <- unite(df,  col = Time, c(Hour, Min, Sec) , sep=":", remove =TRUE)
 df2
 ```
 
-The `col` parameter defines the new column name; the parameter `c(Hour, Min, Sec)` defines the columns to be combined into column `Time`; `sep=":"` tells the function what characters are to be used to separate the elements (here, we are separating the time elements using `:`); `remove=TRUE` tells the function to remove columns two through four.
+The `col` parameter defines the new column name; the parameter `c(Hour, Min, Sec)` defines the columns to be combined into column `Time`; `sep=":"` tells the function what characters are to be used to separate the elements (here, we are separating the time elements using `:`); `remove=TRUE` tells the function to remove the original columns used to create the new `Time` column.
 
 ### Creating unique combinations of variable values
 
@@ -328,6 +359,7 @@ This is another example that makes use of the `complete` function. Here, we seek
 ```{r}
 df.dt <- data.frame( Date = as.Date(c("2000-01-01", "2000-01-03", "2000-01-05")),
                      Value = c(1,3,5))
+df.dt
 ```
 
 To fill the missing dates between the minimum and maximum dates in `df.dt`, we first need to create the sequence of dates between these minimum and maximum values.  We could do this in the `complete` function, but it will be clearer to the reader if these operations are performed separately.
