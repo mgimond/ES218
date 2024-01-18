@@ -225,7 +225,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./subset_base.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Subsetting and replacing values using base functions</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Manipulating data tables using base functions</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -438,7 +438,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <li><a href="#inner-join" id="toc-inner-join" class="nav-link" data-scroll-target="#inner-join"><span class="header-section-number">12.3</span> Inner join</a></li>
   <li><a href="#full-join" id="toc-full-join" class="nav-link" data-scroll-target="#full-join"><span class="header-section-number">12.4</span> Full join</a></li>
   <li><a href="#joins-in-a-piping-operation" id="toc-joins-in-a-piping-operation" class="nav-link" data-scroll-target="#joins-in-a-piping-operation"><span class="header-section-number">12.5</span> Joins in a piping operation</a></li>
-  <li><a href="#a-note-about-column-names" id="toc-a-note-about-column-names" class="nav-link" data-scroll-target="#a-note-about-column-names"><span class="header-section-number">12.6</span> A note about column names</a></li>
+  <li><a href="#note1" id="toc-note1" class="nav-link" data-scroll-target="#note1"><span class="header-section-number">12.6</span> A note about column names</a></li>
   </ul>
 </nav>
     </div>
@@ -493,8 +493,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>We can use <code>dplyr</code>’s join operations to join elements from one table to another table. Four such functions (with differing behaviors) are <code>left_join</code>, <code>right_join</code>, <code>inner_join</code>, and <code>full join</code>.</p>
-<p>To demonstrate these functions, we’ll be joining two dataframes: <code>df</code> and <code>dj</code>.</p>
-<div class="cell" data-hash="joins_cache/html/unnamed-chunk-3_8440b2bc6b9cc96da46a8530a7c74741">
+<p>To demonstrate these functions, we’ll be joining two dataframes: <code>df</code> and <code>dj</code>. Let’s first create the <code>df</code> dataframe.</p>
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-3_e9b6a460536abd7e04debbb08c71695d">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>
@@ -510,6 +510,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 5  2 a
 6 17 d</code></pre>
 </div>
+</div>
+<p>Next, let’s create the <code>dj</code> dataframe.</p>
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-4_c25abfe45c4674a697265230f4deb995">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dj <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">z =</span> <span class="fu">c</span>(<span class="st">"apple"</span>, <span class="st">"pear"</span>, <span class="st">"orange"</span>),</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>),</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
@@ -521,11 +524,11 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 3 orange c</code></pre>
 </div>
 </div>
-<p>In the examples that follow, we will join both tables by the common column <code>y</code>.</p>
+<p>In the examples that follow, we will join both tables by the common column <code>y</code>. Note that the column names do not need to match (see <a href="#note1">note</a> at the bottom of this page).</p>
 <section id="left-join" class="level2" data-number="12.1">
 <h2 data-number="12.1" class="anchored" data-anchor-id="left-join"><span class="header-section-number">12.1</span> Left join</h2>
 <p>In this example, if a join element in <code>df</code> does not exist in <code>dj</code>, <code>NA</code> will be assigned to column <code>z</code>. In other words, all elements in <code>df</code> will exist in the output regardless if a matching element is found in <code>dj</code>. Note that the output is sorted in the same order as <code>df</code> (the <em>left</em> table).</p>
-<div class="cell" data-hash="joins_cache/html/unnamed-chunk-4_c81c84f54dd952e63349c891c8b0d9f0">
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-5_2ce89b5449a4d8e42564692c0eff8ae2">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(df, dj, <span class="at">by=</span><span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   x y     z
@@ -545,9 +548,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <ul>
 <li>All elements in <code>dj</code> appear at least once in the output (even if they don’t have a match in <code>df</code> in which case an <code>NA</code> value is added),</li>
 <li>The output table is sorted in the order in which the <code>y</code> elements appear in <code>dj</code>.</li>
-<li>Element <code>y</code> will appear as many times as there matching <code>y</code>s in `df.</li>
+<li>Element <code>y</code> will appear as many times as there matching <code>y</code>s in <code>df</code>.</li>
 </ul>
-<div class="cell" data-hash="joins_cache/html/unnamed-chunk-5_d283226cb404a25dad89fb129b88b0df">
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-6_d40bc33cc8eb4576710385388df74db6">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">right_join</span>(df, dj, <span class="at">by=</span><span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   x y      z
@@ -563,8 +566,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </section>
 <section id="inner-join" class="level2" data-number="12.3">
 <h2 data-number="12.3" class="anchored" data-anchor-id="inner-join"><span class="header-section-number">12.3</span> Inner join</h2>
-<p>In this example, <strong>only</strong> matching elements in both <code>df</code> and <code>dj</code> are saved in the output.</p>
-<div class="cell" data-hash="joins_cache/html/unnamed-chunk-6_dd0c4c824be4840899348462de88a768">
+<p>In this example, <strong>only</strong> matching elements in both <code>df</code> and <code>dj</code> are saved in the output. This is basically an “intersection” of both tables.</p>
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-7_debc1c69309a74e9f9454446b9d0567d">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">inner_join</span>(df, dj, <span class="at">by=</span><span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   x y     z
@@ -579,8 +582,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </section>
 <section id="full-join" class="level2" data-number="12.4">
 <h2 data-number="12.4" class="anchored" data-anchor-id="full-join"><span class="header-section-number">12.4</span> Full join</h2>
-<p>In this example, <strong>all</strong> elements in both <code>df</code> and <code>dj</code> are present in the output. For non-matching pairs, <code>NA</code> values are supplied.</p>
-<div class="cell" data-hash="joins_cache/html/unnamed-chunk-7_e9676d8ac860717cffb22f302a978144">
+<p>In this example, <strong>all</strong> elements in both <code>df</code> and <code>dj</code> are present in the output. For non-matching pairs, <code>NA</code> values are supplied. This is basically a “union” of both tables.</p>
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-8_84a3ef656cf6e7484f7bba67ff74abe0">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">full_join</span>(df, dj, <span class="at">by=</span><span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   x y      z
@@ -598,7 +601,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="joins-in-a-piping-operation" class="level2" data-number="12.5">
 <h2 data-number="12.5" class="anchored" data-anchor-id="joins-in-a-piping-operation"><span class="header-section-number">12.5</span> Joins in a piping operation</h2>
 <p>The afrementioned joining functions can be used with pipes. For example:</p>
-<div class="cell" data-hash="joins_cache/html/unnamed-chunk-8_ef2a96a8efd3a546ae60d2460f50871b">
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-9_53b9fa896e3885b890dc6e50b2e7ca6b">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(dj, <span class="at">by =</span> <span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -612,10 +615,10 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 </section>
-<section id="a-note-about-column-names" class="level2" data-number="12.6">
-<h2 data-number="12.6" class="anchored" data-anchor-id="a-note-about-column-names"><span class="header-section-number">12.6</span> A note about column names</h2>
+<section id="note1" class="level2" data-number="12.6">
+<h2 data-number="12.6" class="anchored" data-anchor-id="note1"><span class="header-section-number">12.6</span> A note about column names</h2>
 <p>If the common columns in both tables have different names, you will need to modify the <code>by =</code> argument as <code>by = c("left_col" = "right_col")</code>. For example,</p>
-<div class="cell" data-hash="joins_cache/html/unnamed-chunk-9_dfed17ca6fccf10f4e346323e5201854">
+<div class="cell" data-hash="joins_cache/html/unnamed-chunk-10_12af179c4726bd276e8d090347c449de">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>

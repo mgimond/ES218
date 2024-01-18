@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Joining Data Tables
 
 ```{r echo=FALSE}
@@ -11,7 +16,7 @@ pkg_ver(c("dplyr"))
 
 We can use `dplyr`'s join operations to join elements from one table to another table. Four such functions (with differing behaviors) are `left_join`, `right_join`, `inner_join`, and `full join`.
 
-To demonstrate these functions, we'll be joining two dataframes: `df` and `dj`. 
+To demonstrate these functions, we'll be joining two dataframes: `df` and `dj`. Let's first create the `df` dataframe.
 
 ```{r, message=FALSE}
 library(dplyr)
@@ -20,14 +25,18 @@ df <- data.frame( x = c(1, 23, 4, 43, 2, 17),
                   y = c("a", "b", "b", "b", "a", "d"),
                   stringsAsFactors = FALSE)
 df
+```
 
+Next, let's create the `dj` dataframe.
+
+```{r, message=FALSE}
 dj <- data.frame( z = c("apple", "pear", "orange"),
                   y = c("a", "b", "c"),
                   stringsAsFactors = FALSE)
 dj
 ```
 
-In the examples that follow, we will join both tables by the common column `y`.
+In the examples that follow, we will join both tables by the common column `y`. Note that the column names do not need to match (see [note](#note1) at the bottom of this page).
 
 ## Left join
 
@@ -45,7 +54,7 @@ If a join element in `df` does not exist in `dj`, that element is removed from t
 
 + All elements in `dj` appear at least once in the output (even if they don't have a match in `df` in which case an `NA` value is added),
 + The output table is sorted in the order in which the `y` elements appear in `dj`.
-+ Element `y` will appear as many times as there matching `y`s in `df.
++ Element `y` will appear as many times as there matching `y`s in `df`.
 
 ```{r, warning=FALSE}
 right_join(df, dj, by="y")
@@ -55,7 +64,7 @@ right_join(df, dj, by="y")
 
 ## Inner join
 
-In this example, **only** matching elements in both  `df` and `dj` are saved in the output.
+In this example, **only** matching elements in both  `df` and `dj` are saved in the output. This is basically an "intersection" of both tables.
 
 ```{r, warning=FALSE}
 inner_join(df, dj, by="y")
@@ -65,7 +74,7 @@ inner_join(df, dj, by="y")
 
 ## Full join
 
-In this example, **all** elements in both `df` and `dj` are present in the output. For non-matching pairs, `NA` values are supplied.
+In this example, **all** elements in both `df` and `dj` are present in the output. For non-matching pairs, `NA` values are supplied. This is basically a "union" of both tables.
 
 ```{r warning=FALSE}
 full_join(df, dj, by="y")
@@ -83,7 +92,7 @@ df %>%
   left_join(dj, by = "y")
 ```
 
-## A note about column names
+## A note about column names {#note1}
 
 If the common columns in both tables have different names, you will need to modify the `by =` argument as `by = c("left_col" = "right_col")`. For example,
 
