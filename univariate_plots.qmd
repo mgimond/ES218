@@ -18,101 +18,112 @@ pkg_ver(c("dplyr", "ggplot2","tidyr"))
 
 ## Introduction
 
-Let's create two batches of numbers, `a` and `b`. Even though the number of values are the same between both batches, this need not be the case in a univariate analysis.
+Univariate data consist of a single measurement type that is often broken up into categories.
 
-```{r}
-a  <- rep(12, 10)
+Let's take two batches of values that measure a same variable. We'll label these batches `a` and `b`.
+
+```{r echo=FALSE}
+a  <- rep(12, 6)
 b  <- rep(15, 10)
-df <- data.frame(a, b)
+df <- data.frame(Value = c(a,b), Group = c(rep("a",6), rep("b",10)))
 ```
 
 How do the two batches differ?
 
-```{r echo = FALSE, results = 'asis', fig.width = 2, fig.height=3}
-#pander::pandoc.table(df, justify = 'left')
-a.df <- gridExtra::tableGrob(data.frame(a), rows=NULL)
-b.df <- gridExtra::tableGrob(data.frame(b), rows=NULL)
-gridExtra::grid.arrange(a.df, b.df, nrow = 1, ncol = 2 ,newpage = FALSE)
+```{r echo = FALSE, results = 'asis', fig.width = 4, fig.height=1}
+a.df <- gridExtra::tableGrob(t(a), rows=NULL)
+b.df <- gridExtra::tableGrob(t(b), rows=NULL)
+gridExtra::grid.arrange(a.df, b.df, nrow = 2, ncol = 1 ,newpage = FALSE)
 ```
 
-If the difference wasn't obvious from the table view we can create a jittered point plot from the data. 
+If the difference wasn't obvious from the table view we can create a *jittered* point plot from the data. (The jitter plot spreads the values randomly about their group label to prevent the points from overlapping.)
 
-```{r fig.height=3, fig.width=3}
+```{r fig.height=3, fig.width=3, echo=FALSE}
 # To plot across categories, we need the data in a long (tidy) form
 library(tidyr)
 library(ggplot2)
 
-dfl <- pivot_longer(df, names_to = "Category", values_to = "Value", 1:2)
-ggplot(dfl,  aes(y = Value, x = Category, col = Category)) + 
-             geom_jitter(position = position_jitter(height = 0, width=0.4))
+ggplot(df,  aes(y = Value, x = Group, col = Group)) + 
+             geom_jitter(position = position_jitter(height = 0, width=0.3))
 ```
 
-It's clear that both batches differ by their uniform values, batch `a` is made up of the identical numbers, `12`, and batch `b` is made up of a different set of identical values, `15`. Note that because so many values overlapped, we made use of the `geom_jitter()` function which randomly *jitters* the data about their actual location.
+It's clear that both batches differ by their uniform values: batch `a` is made up of  identical values, `12`, and batch `b` is made up of a different set of identical values, `15`.
 
-Now let's compare a heterogeneous batch of numbers.
+Now let's compare a heterogeneous batch of values.
 
-```{r}
+```{r echo=FALSE}
 # Generate some random numbers
 set.seed(23)
-a   <- round(runif(10, 5, 15))
+a   <- round(runif(6, 5, 15))
 b   <- round(runif(10, 10, 20))
 
-# Create wide and long data frames
-df  <- data.frame(a, b)
-dfl <- pivot_longer(df, names_to = "Category", values_to = "Value", 1:2)
+# Create long data frames
+df <- data.frame(Value = c(a,b), Group = c(rep("a",6), rep("b",10)))
 
 ```
 
 
-```{r echo = FALSE, results='asis',  fig.width = 2, fig.height=3}
-a.df <- gridExtra::tableGrob(data.frame(a), rows=NULL)
-b.df <- gridExtra::tableGrob(data.frame(b), rows=NULL)
-gridExtra::grid.arrange(a.df, b.df, nrow = 1, ncol = 2 ,newpage = FALSE)
+```{r echo = FALSE, results='asis',  fig.width = 4, fig.height=1}
+a.df <- gridExtra::tableGrob(t(a), rows=NULL)
+b.df <- gridExtra::tableGrob(t(b), rows=NULL)
+gridExtra::grid.arrange(a.df, b.df, nrow = 2, ncol = 1 ,newpage = FALSE)
 ```
 
+Comparing the values using a jitter plot gives us:
 
-```{r fig.height=3, fig.width=4, echo=-1}
+```{r fig.height=3, fig.width=4, echo=FALSE}
 set.seed(14)
-ggplot(dfl, aes(y = Value, x = Category, col = Category)) + 
+ggplot(df, aes(y = Value, x = Group, col = Group)) + 
             geom_jitter(position = position_jitter(height = 0, width = 0.2))
 ```
 
 So how do these batches differ? This time, the difference is not so obvious. However, they *seem* to differ by their central value. For example, each batch's mean is:
 
-```{r}
+```{r echo=FALSE}
 library(dplyr)
-dfl %>% group_by(Category) %>% summarize(mean = mean(Value) )
+df %>% group_by(Group) %>% summarize(mean = mean(Value) )
 ```
 
 The center value (aka **location**), is one summary statistic we can use to compare batches. Another property of a batch that we might also want to compare is its distribution (aka **spread**). For example, does the **spread**  between the two batches differ as well? It's difficult to tell from the above plot given that the batches are offset, so we'll **level** the batches by subtracting the means from their respective batches.
 
-```{r fig.height=3, fig.width=4}
+```{r fig.height=3, fig.width=4, echo = FALSE}
 # Subtract the batch mean from each batch value
-dfl2 <- dfl %>% 
-  group_by(Category) %>%
+dfl2 <- df %>% 
+  group_by(Group) %>%
   mutate(Spread = Value - mean(Value))
 
 # Now plot the leveled batches
-ggplot(dfl2, aes(y = Spread, x = Category, col = Category)) + 
+ggplot(dfl2, aes(y = Spread, x = Group, col = Group)) + 
              geom_jitter(position = position_jitter(height = 0, width=0.2))
 ```
 
-Removing the *location* (or mean in our example) from each value facilitates our comparison of both spreads. From our working example we can, at best, say that the batches share the same range. But a spread can be characterized in many more ways than by its range. Next, we'll focus on four exploratory tools that will help us explore and quantify a dataset's spread. These are the **histogram**, the **boxplot**, the **density plot** and the **quantile plot**.
+Removing the *location* (or mean in our example) from each value facilitates our comparison of both spreads. From our working example we can, at best, say that the batches differ in range (i.e. their minimum and maximum values). However, a spread can be characterized in many more ways than by its range. Next, we'll focus on four exploratory tools that will help us explore and quantify a dataset's spread. These are the **histogram**, the **boxplot**, the **density plot** and the **quantile plot**.
 
 ## Histograms
 
-A histogram **bins** the values (usually in equal sized bins) and plots the frequency in which each *bin* is filled. For example, to create a histogram of batch `a` where each bin size covers **one** unit, we type:
+A histogram **bins** the values (usually in equal sized bins) and plots the frequency in which each *bin* is filled. For example, to create a histogram of batch `b` where each bin size covers **one** unit, we type:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 1), colour = "white")
+# Generate some random numbers
+set.seed(23)
+a   <- round(runif(60, 5, 15))
+b   <- round(runif(100, 10, 20))
+df  <- data.frame(Value = c(a,b), Group = c(rep("a",6), rep("b",10))) # Long form
+
+# Generate the histogram for batch a
+library(ggplot2)
+ggplot(as.data.frame(b), aes(x = b)) + geom_histogram(breaks = seq(9.5,20.5, by = 1), color = "white")
 ```
 
-Here, we are explicitly defining the bin width as 1 unit and the range as 6.5 to 16.5 via the parameter `breaks = seq(6.5,16.5,by=1)`. The `colour` parameter specifies the *outline* color. To change the fill color use the `fill` parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range. 
+(Note that because `ggplot` requires a dataframe as input, we have to create a dataframe from vector `a`.)
+
+Here, we are explicitly defining the bin width as 1 unit, and the range as 6.5 to 16.5 via the parameter `breaks = seq(6.5,16.5,by=1)`. The `color` parameter specifies the *outline* color. To change the fill color use the `fill` parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range. 
 
 We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 2), colour = "white") 
+ggplot(as.data.frame(b), aes(x = b)) + geom_histogram(breaks = seq(9.5,20.5,by = 2), 
+                                                      colour = "white") 
 ```
 
 You'll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.
@@ -120,21 +131,13 @@ You'll note that changing bin widths can alter the look of the histogram, this i
 You can also opt to have the function determine the bin width by simply specifying the *number* of bins using the `bins =` parameter:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + geom_histogram(bins = 12, colour = "white")
+ggplot(as.data.frame(b), aes(x = b)) + geom_histogram(bins = 12, colour = "white")
 ```
 
-You'll note that the function will map the total number of observations falling in each bin to the y-axis. This may be easy to interpret, but it may make it difficult to compare batches of values having different number of observations. To demonstrate this, lets first create two batches of values of differing counts in a long form.
-
-```{r}
-set.seed(56) 
-dfl3 <- data.frame(x = rnorm(200), 
-                  grp = sample(c("a","b"), 200, replace = TRUE, prob = c(0.2,0.8)))
-```
-
-Now, lets generate a side-by-side histogram of the the batches:
+You'll note that the function will map the total number of observations falling in each bin to the y-axis. This may be easy to interpret, but it may make it difficult to compare batches of values having different number of observations. To demonstrate this, let's plot both batches side-by-side.
 
 ```{r fig.width = 6, fig.height=3}
-ggplot(dfl3, aes(x = x)) + geom_histogram(bins = 10) + facet_wrap(~ grp)
+ggplot(df, aes(x = Value)) + geom_histogram(bins = 10) + facet_wrap(~ Group)
 ```
 
 The differences in batch sizes results in differing bar heights. To resolve this issue, we can convert counts to density whereby the areas covered by each bin sum to `1`. Each bin's density value is computed from:
@@ -142,32 +145,26 @@ The differences in batch sizes results in differing bar heights. To resolve this
 $$
 density = \frac{count}{bin\ width * total\ observations}
 $$
-To see an example of this, let's revert back to the earlier dataset to facilitate a manual calculation of the density values. Here, we'll map the `..density..` aesthetic to the y-axis to have ggplot compute density values.
-
-```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + 
-  geom_histogram(breaks = seq(5.8, 15.8, by = 2), colour = "white", aes(y = ..density..)) 
-```
-
-The first bin has one observation hence the density of observations within this bin interval is `1 / (2 * 10)` or `0.05`. Likewise, the second bin's density is computed as `2 / (2 * 10)` or `0.1`.
-
-Mapping density instead of count to the y-axis thus generates this side-by-side plot from the two batch `dfl3` dataframe.
+To see an example of this, let's revert back to the earlier dataset to facilitate a manual calculation of the density values. Here, we'll map the `after_stat(density)` aesthetic to the y-axis to have ggplot compute density values.
 
 ```{r fig.width = 6, fig.height=3}
-ggplot(dfl3, aes(x = x, y=..density..)) + geom_histogram(bins = 10) + facet_wrap(~ grp)
+ggplot(df, aes(x = Value, y=after_stat(density))) + geom_histogram(bins = 10) + 
+  facet_wrap(~ Group)
 ```
 
 This makes for a more appropriate comparison.
 
-Note that the `..density..` syntax is deprecated in the latest version of ggplot. Yet, you are likely to see its implementation in many online resources. Its replacement is the `after_stat()` function. For example, the following code will generate the same density histogram.
-
-```{r eval=FALSE}
-ggplot(dfl3, aes(x = x, y = after_stat(density))) + geom_histogram(bins = 10) + facet_wrap(~ grp)
-```
-
 ## Density plots
 
-The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the `a` values. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.
+The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. Let's revert back to the orignal set of values for `a`.
+
+```{r}
+set.seed(23)
+a  <- round(runif(10, 5, 15))
+df   <- data.frame(a)
+```
+
+In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the `a` values. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.
 
 ```{r fig.height=2, fig.width=8, echo=FALSE}
 p1 <- ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(6.5,16.5,by = 2), colour = "white") + geom_rug(col = "darkorange", cex = 2, alpha = 0.5) +
@@ -253,7 +250,7 @@ If we remove the bins and connect the dots, we end up with a **density trace**.
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 ggplot() +
-  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  geom_rug( df, mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
   ylim(range(dens.bins[, 3:4])) +
     geom_line(dens.bins[1:9,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="black") +
   geom_point(dens.bins[1:9,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="orange", cex=2.5) +
@@ -290,13 +287,17 @@ You can generate a density plot of the data using the `geom_density` function.
 ggplot(df, aes(x = a)) + geom_density(fill = "grey60")
 ```
 
-The function adopts the `gaussian` weight function and will automatically define the bandwidth (analogous in concept to the bin width). TO adopt a rectangualr weight, set the `kernel` parameter to `"rectangular"`.
+This plot appears much smoother than the one created in the above demonstration. This is because the density function generates 512 points for its density trace as opposed to the seven points used in the above demonstration.
+
+The function adopts the `gaussian` weight function and will automatically define the bandwidth (analogous in concept to the bin width). 
+
+To adopt a rectangular weight, set the `kernel` parameter to `"rectangular"`.
 
 ```{r fig.height=2, fig.width=4.5}
 ggplot(df, aes(x = a)) + geom_density(fill = "grey60", kernel = "rectangular")
 ```
 
-Note the raggedness in the plot. In this course, we will default to the Gaussian kernel.
+Note the raggedness in the plot.
 
 You can modify the *smoothness* of the density plot by adjusting its bandwidth argument `bw`. Here, the bandwidth defines the standard deviation of the Gaussian function.
 
@@ -314,7 +315,7 @@ ggplot(df, aes(x = a)) + geom_boxplot() +
                              axis.ticks.y = element_blank()) 
 ```
 
-The `geom_boxplot` function can map the values to the x-axis or to the y-axis. Traditionally, it's mapped to the y-axis. Here, we choose to map it the x-axis. You'll note the extra functions `xlab(NULL) + theme(axis.text.y=element_blank(), ... )`; these are added to suppress labels and values/tics along the y-axis given that their default values do not serve a purpose here.
+The `geom_boxplot` function can map the values to the x-axis or to the y-axis. Traditionally, it's mapped to the y-axis. Here, we choose to map it to the x-axis. You'll note the extra functions `xlab(NULL) + theme(axis.text.y=element_blank(), ... )`; these are added to suppress labels and values/tics along the y-axis given that their default values do not serve a purpose here.
 
 The following figure describes the anatomy of a boxplot.
 
@@ -343,10 +344,10 @@ The upper and lower quartiles differ from those of `ggplot` since the three `15`
 
 ### Implementing different quantile types in `geom_boxplot`
 
-If you wish to implement different $f$-value calculations offered by the ` quantile` function, you will need to create a custom function as follows:
+If you wish to implement different $f$-value calculations in `ggplot` ($f$-values will be introduced in the next section), you will need to create a custom function. For example, if you wish to adopt Cleveland's quantile method ( `type = 5` in the `quantile` function) type the following:
 
 ```{r fig.height=1.2, fig.width=6.5}
-# Function to extract quantiles given an f-value type
+# Function to extract quantiles given an f-value type (type = 5 in this example)
 qtl.bxp <- function(x, type = 5) {
   qtl <- quantile(x, type = type)
    df <- data.frame(ymin  = qtl[1], ymax = qtl[5], 
@@ -362,7 +363,7 @@ ggplot(df, aes(x = "", y = a)) +
 
 ```
 
-Note the use of `stat_summary` instead of `geom_boxplot`. The `type` argument is the quantile type implemented in the `quantile` function. 
+Note the use of `stat_summary` instead of `geom_boxplot`. 
 
 ## Quantile plots
 
@@ -381,10 +382,7 @@ a.o <- sort(a)
 a.o
 ```
 
-The concept of sorting values may seem benign, but it is fundamental to many  EDA procedures that require robust techniques.
-
 With the numbers sorted, we can proceed with the computation of $f$ following *Cleveland's* method:
-
 
 $$
 f_i = \frac{i - 0.5}{n} 
