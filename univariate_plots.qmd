@@ -115,7 +115,7 @@ library(ggplot2)
 ggplot(as.data.frame(b), aes(x = b)) + geom_histogram(breaks = seq(9.5,20.5, by = 1), color = "white")
 ```
 
-(Note that because `ggplot` requires a dataframe as input, we have to create a dataframe from vector `a`.)
+(Note that because `ggplot` requires a dataframe as input, we have to create a dataframe from vector `b`.)
 
 Here, we are explicitly defining the bin width as 1 unit, and the range as 6.5 to 16.5 via the parameter `breaks = seq(6.5,16.5,by=1)`. The `color` parameter specifies the *outline* color. To change the fill color use the `fill` parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range. 
 
@@ -174,7 +174,7 @@ p2 <- ggplot(df, aes(x = a)) + geom_histogram(breaks = seq(5.8,15.8,by=2), colou
 gridExtra::grid.arrange(p1, p2, nrow = 1)
 ```
 
-One workaround to the histogram limitations is to compute density values on *overlapping* bins. For example, let's take the first bin and have it count the number of values between 5 and 9 (exclusive), then divide that number by the total number of values times the bin width--this gives us two observations falling in the bin thus a density value of `2 / (10 * 4) = 0.05`. The following plot shows the bin as well as an orange dot representing the bin's midpoint.
+One workaround to the histogram's limitations is to compute density values on *overlapping* bins. For example, let's take the first bin and have it count the number of values between 5 and 9 (exclusive), then divide that number by the total number of values times the bin width--this gives us two observations falling in the bin thus a density value of `2 / (10 * 4) = 0.05`. The following plot shows the bin. An orange dot is also added to represent the bin's midpoint.
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 bw <- 4
@@ -201,7 +201,7 @@ ggplot() +
 
 ```
 
-Next, we shift the bin over by one `x` unit, then we calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps partially with the first bin.
+Next, we shift the bin over by one unit, then we calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps partially with the first bin.
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 ggplot() +
@@ -279,7 +279,7 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 
 ```
 
-With the rectangular weight, all points within a bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. Ggplot's density function defaults to the Gaussian weighting strategy. The  weight type is referred to as a **kernel**.
+With the rectangular weight, all points within a bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. `ggplot`'s density function defaults to the Gaussian weighting strategy. The  weight type is referred to as a **kernel**.
 
 You can generate a density plot of the data using the `geom_density` function.
 
@@ -322,9 +322,9 @@ The following figure describes the anatomy of a boxplot.
 
 ![](./img/Boxplot.png)
 
-The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie along the full range of values (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range (or **IQR** for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. For example, our batch only has four data points falling within the interquartile range because of tied values.
+The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range (or **IQR** for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. For example, our batch only has four data points falling within the interquartile range (instead of five) because of tied values in the upper end of the distribution.
 
-The long narrow lines extending beyond the interquartile range are referred to as the **adjacent values** or as **whiskers**. They represent either 1.5 times the width between the median and the nearest interquartile value *or* the most extreme value, whichever comes first.
+The long narrow lines extending beyond the interquartile range are referred to as the **adjacent values**--you might also see them referred to as **whiskers**. They represent either 1.5 times the width between the median and the nearest interquartile value *or* the most extreme value, whichever is closest to the batch center.
 
 Sometimes, you will encounter values that fall outside of the lower and/or upper adjacent values; such values are often referred to as **outliers**.
 
@@ -340,11 +340,11 @@ boxplot(a, horizontal = TRUE, add = TRUE)
 par(OP)
 ```
 
-The upper and lower quartiles differ from those of `ggplot` since the three `15` values (these are the maximum values in batch `a`) end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers.  In most cases, however, the difference will not matter as long as you *adopt the same boxplot procedure when comparing batches*.
+The upper and lower quartiles differ from those of `ggplot` since the three upper values values, `15`,  end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers.  In most cases, however, the difference will not matter as long as you *adopt the same boxplot procedure when comparing batches*. Also, the difference between the plots become insignificant with larger batch size.
 
 ### Implementing different quantile types in `geom_boxplot`
 
-If you wish to implement different $f$-value calculations in `ggplot` ($f$-values will be introduced in the next section), you will need to create a custom function. For example, if you wish to adopt Cleveland's quantile method ( `type = 5` in the `quantile` function) type the following:
+If you wish to implement different quantile methods in `ggplot`, you will need to create a custom function. For example, if you wish to adopt Cleveland's quantile method (`type = 5` in the `quantile` function) type the following:
 
 ```{r fig.height=1.2, fig.width=6.5}
 # Function to extract quantiles given an f-value type (type = 5 in this example)
@@ -367,7 +367,7 @@ Note the use of `stat_summary` instead of `geom_boxplot`.
 
 ## Quantile plots
 
-A quantile plot generates a point plot that joins the quantile to each value in a batch. The boxplot is a special case of the $f$-quantile function in that it only returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. The $f$-quantile returns the $full$ range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest.  The following figure describes the anatomy of a quantile plot. 
+A quantile plot generates a point plot that joins the quantile to each value in a batch. The boxplot covered in the last section is a special case of the $f$-quantile function in that it only returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. The $f$-quantile returns the *full* range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest.  The following figure describes the anatomy of a quantile plot. 
 
 ![](./img/Quantile.png)
 
@@ -388,14 +388,14 @@ $$
 f_i = \frac{i - 0.5}{n} 
 $$
 
-where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. As noted in the Boxplots section, there are many ways one can compute a quantile, however, the differences may not matter much.
+where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. As noted in the Boxplots section of this chapter, there are many ways one can compute a quantile, however, the differences may not matter much when working with large batches of values.
 
 For each value in `a`, the $f$ value is thus:
 
 ```{r}
-i     <- 1 : length(a)
+i     <- 1 : length(a)          # Create indices
 f.val <- (i - 0.5) / length(a)  # Compute the f-value
-a.fi  <- data.frame(a.o, f.val)
+a.fi  <- data.frame(a.o, f.val) # Create dataframe of sorted values
 ```
 
 Note that in the last line of code, we are appending the ordered representation of `a` to `f.val` given that `f.val` assumes an ordered dataset. The data frame `a.fi` should look like this:
@@ -416,7 +416,7 @@ If we want to get quantile values for multiple fractions, simply wrap the fracti
 quantile(a, c(0.25, 0.5, 0.75))
 ```
 
-The `quantile` function is designed to accept different quantile algorithms. To see the list of algorithm options, type `?quantile` at a command prompt. By default, R adopts algorithm `type = 7`. To adopt Cleveland's algorithm, set `type = 5`. E.g.:
+The `quantile` function is designed to accept different quantile methods. To see the list of algorithm options, type `?quantile` at a command prompt. By default, R adopts algorithm `type = 7`. To adopt Cleveland's algorithm, set `type = 5`. E.g.:
 
 ```{r}
 quantile(a, c(0.25, 0.5, 0.75), type = 5)
@@ -426,7 +426,7 @@ Note the difference in the upper quartile value compared to the default `type = 
 
 ### Creating a quantile plot
 
-A batch's quantile is best viewed as a plot where we plot the batch values as a function of the $f$-values:
+A batch's quantile is best viewed as a plot where we plot the values as a function of the $f$-values:
 
 ```{r fig.height=3, fig.width=3}
 ggplot(a.fi, aes(x = f.val, y = a.o)) + geom_point() + xlab("f-value")

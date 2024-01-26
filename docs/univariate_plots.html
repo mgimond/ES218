@@ -590,7 +590,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="432"></p>
 </div>
 </div>
-<p>(Note that because <code>ggplot</code> requires a dataframe as input, we have to create a dataframe from vector <code>a</code>.)</p>
+<p>(Note that because <code>ggplot</code> requires a dataframe as input, we have to create a dataframe from vector <code>b</code>.)</p>
 <p>Here, we are explicitly defining the bin width as 1 unit, and the range as 6.5 to 16.5 via the parameter <code>breaks = seq(6.5,16.5,by=1)</code>. The <code>color</code> parameter specifies the <em>outline</em> color. To change the fill color use the <code>fill</code> parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range.</p>
 <p>We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-12_4b70ffecb5428ff168f1859f4bfa151b">
@@ -642,13 +642,13 @@ density = \frac{count}{bin\ width * total\ observations}
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="768"></p>
 </div>
 </div>
-<p>One workaround to the histogram limitations is to compute density values on <em>overlapping</em> bins. For example, let’s take the first bin and have it count the number of values between 5 and 9 (exclusive), then divide that number by the total number of values times the bin width–this gives us two observations falling in the bin thus a density value of <code>2 / (10 * 4) = 0.05</code>. The following plot shows the bin as well as an orange dot representing the bin’s midpoint.</p>
+<p>One workaround to the histogram’s limitations is to compute density values on <em>overlapping</em> bins. For example, let’s take the first bin and have it count the number of values between 5 and 9 (exclusive), then divide that number by the total number of values times the bin width–this gives us two observations falling in the bin thus a density value of <code>2 / (10 * 4) = 0.05</code>. The following plot shows the bin. An orange dot is also added to represent the bin’s midpoint.</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-18_f3a0f39cc21a3435b7df3708807a8a7e">
 <div class="cell-output-display">
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="432"></p>
 </div>
 </div>
-<p>Next, we shift the bin over by one <code>x</code> unit, then we calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps partially with the first bin.</p>
+<p>Next, we shift the bin over by one unit, then we calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps partially with the first bin.</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-19_b6addeef9e0ac39e513586226defe0ec">
 <div class="cell-output-display">
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="432"></p>
@@ -679,7 +679,7 @@ density = \frac{count}{bin\ width * total\ observations}
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="432"></p>
 </div>
 </div>
-<p>With the rectangular weight, all points within a bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. Ggplot’s density function defaults to the Gaussian weighting strategy. The weight type is referred to as a <strong>kernel</strong>.</p>
+<p>With the rectangular weight, all points within a bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. <code>ggplot</code>’s density function defaults to the Gaussian weighting strategy. The weight type is referred to as a <strong>kernel</strong>.</p>
 <p>You can generate a density plot of the data using the <code>geom_density</code> function.</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-24_7c6bf5f325d2a8a906e19b12b88c4316">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -719,8 +719,8 @@ density = \frac{count}{bin\ width * total\ observations}
 <p>The <code>geom_boxplot</code> function can map the values to the x-axis or to the y-axis. Traditionally, it’s mapped to the y-axis. Here, we choose to map it to the x-axis. You’ll note the extra functions <code>xlab(NULL) + theme(axis.text.y=element_blank(), ... )</code>; these are added to suppress labels and values/tics along the y-axis given that their default values do not serve a purpose here.</p>
 <p>The following figure describes the anatomy of a boxplot.</p>
 <p><img src="./img/Boxplot.png" class="img-fluid"></p>
-<p>The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie along the full range of values (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the <strong>interquartile</strong> range (or <strong>IQR</strong> for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. For example, our batch only has four data points falling within the interquartile range because of tied values.</p>
-<p>The long narrow lines extending beyond the interquartile range are referred to as the <strong>adjacent values</strong> or as <strong>whiskers</strong>. They represent either 1.5 times the width between the median and the nearest interquartile value <em>or</em> the most extreme value, whichever comes first.</p>
+<p>The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the <strong>interquartile</strong> range (or <strong>IQR</strong> for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. For example, our batch only has four data points falling within the interquartile range (instead of five) because of tied values in the upper end of the distribution.</p>
+<p>The long narrow lines extending beyond the interquartile range are referred to as the <strong>adjacent values</strong>–you might also see them referred to as <strong>whiskers</strong>. They represent either 1.5 times the width between the median and the nearest interquartile value <em>or</em> the most extreme value, whichever is closest to the batch center.</p>
 <p>Sometimes, you will encounter values that fall outside of the lower and/or upper adjacent values; such values are often referred to as <strong>outliers</strong>.</p>
 <section id="not-all-boxplots-are-created-equal" class="level3" data-number="16.4.1">
 <h3 data-number="16.4.1" class="anchored" data-anchor-id="not-all-boxplots-are-created-equal"><span class="header-section-number">16.4.1</span> Not all boxplots are created equal!</h3>
@@ -731,11 +731,11 @@ density = \frac{count}{bin\ width * total\ observations}
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="624"></p>
 </div>
 </div>
-<p>The upper and lower quartiles differ from those of <code>ggplot</code> since the three <code>15</code> values (these are the maximum values in batch <code>a</code>) end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers. In most cases, however, the difference will not matter as long as you <em>adopt the same boxplot procedure when comparing batches</em>.</p>
+<p>The upper and lower quartiles differ from those of <code>ggplot</code> since the three upper values values, <code>15</code>, end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers. In most cases, however, the difference will not matter as long as you <em>adopt the same boxplot procedure when comparing batches</em>. Also, the difference between the plots become insignificant with larger batch size.</p>
 </section>
 <section id="implementing-different-quantile-types-in-geom_boxplot" class="level3" data-number="16.4.2">
 <h3 data-number="16.4.2" class="anchored" data-anchor-id="implementing-different-quantile-types-in-geom_boxplot"><span class="header-section-number">16.4.2</span> Implementing different quantile types in <code>geom_boxplot</code></h3>
-<p>If you wish to implement different <span class="math inline">\(f\)</span>-value calculations in <code>ggplot</code> (<span class="math inline">\(f\)</span>-values will be introduced in the next section), you will need to create a custom function. For example, if you wish to adopt Cleveland’s quantile method ( <code>type = 5</code> in the <code>quantile</code> function) type the following:</p>
+<p>If you wish to implement different quantile methods in <code>ggplot</code>, you will need to create a custom function. For example, if you wish to adopt Cleveland’s quantile method (<code>type = 5</code> in the <code>quantile</code> function) type the following:</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-29_cf476d5dfe471df05ab2c40181fa229f">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to extract quantiles given an f-value type (type = 5 in this example)</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>qtl.bxp <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">type =</span> <span class="dv">5</span>) {</span>
@@ -759,7 +759,7 @@ density = \frac{count}{bin\ width * total\ observations}
 </section>
 <section id="quantile-plots" class="level2" data-number="16.5">
 <h2 data-number="16.5" class="anchored" data-anchor-id="quantile-plots"><span class="header-section-number">16.5</span> Quantile plots</h2>
-<p>A quantile plot generates a point plot that joins the quantile to each value in a batch. The boxplot is a special case of the <span class="math inline">\(f\)</span>-quantile function in that it only returns the 1<sup>st</sup>, 2<sup>nd</sup> (median) and 3<sup>rd</sup> quartiles. The <span class="math inline">\(f\)</span>-quantile returns the <span class="math inline">\(full\)</span> range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest. The following figure describes the anatomy of a quantile plot.</p>
+<p>A quantile plot generates a point plot that joins the quantile to each value in a batch. The boxplot covered in the last section is a special case of the <span class="math inline">\(f\)</span>-quantile function in that it only returns the 1<sup>st</sup>, 2<sup>nd</sup> (median) and 3<sup>rd</sup> quartiles. The <span class="math inline">\(f\)</span>-quantile returns the <em>full</em> range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest. The following figure describes the anatomy of a quantile plot.</p>
 <p><img src="./img/Quantile.png" class="img-fluid"></p>
 <p>The x-axis shows the <span class="math inline">\(f\)</span>-values: the full range of fractions. The y-axis is the <span class="math inline">\(f\)</span>-quantile, <span class="math inline">\(q(f)\)</span>, which shows the sorted batch values (from smallest to largest). The points in the plot link the values on the y-axis to the <span class="math inline">\(f\)</span>-values on the x-axis. For example, the <span class="math inline">\(f\)</span>-value of 0.25 (~the 25<sup>th</sup> percentile) is associated with the <span class="math inline">\(q(f)\)</span> value of 9 meaning that 25% of the values in the dataset have values of 9 or less. Likewise, the <span class="math inline">\(f\)</span>-value of 0.5 (the median) is associated with a <span class="math inline">\(q(f)\)</span> value of 12.5 implying that half of the dataset’s values are 12.5 or less. The boxplot is shown alongside the quantile plot to highlight the analogy.</p>
 <section id="computing-the-f-quantile" class="level3" data-number="16.5.1">
@@ -776,12 +776,12 @@ density = \frac{count}{bin\ width * total\ observations}
 <p><span class="math display">\[
 f_i = \frac{i - 0.5}{n}
 \]</span></p>
-<p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section, there are many ways one can compute a quantile, however, the differences may not matter much.</p>
+<p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section of this chapter, there are many ways one can compute a quantile, however, the differences may not matter much when working with large batches of values.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-31_2850d6df2a607c440a536127ad6eec33">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)</span>
+<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-31_d4bb95f37a91802288930bc42561f55f">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)          <span class="co"># Create indices</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>f.val <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(a)  <span class="co"># Compute the f-value</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val) <span class="co"># Create dataframe of sorted values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that in the last line of code, we are appending the ordered representation of <code>a</code> to <code>f.val</code> given that <code>f.val</code> assumes an ordered dataset. The data frame <code>a.fi</code> should look like this:</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-32_5e90fb3398465e1b75c11c0db764a948">
@@ -856,7 +856,7 @@ f_i = \frac{i - 0.5}{n}
  9.5 12.5 14.5 </code></pre>
 </div>
 </div>
-<p>The <code>quantile</code> function is designed to accept different quantile algorithms. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
+<p>The <code>quantile</code> function is designed to accept different quantile methods. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-35_727d7666aa377d0a1ab6b46adafe3635">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -868,7 +868,7 @@ f_i = \frac{i - 0.5}{n}
 </section>
 <section id="creating-a-quantile-plot" class="level3" data-number="16.5.2">
 <h3 data-number="16.5.2" class="anchored" data-anchor-id="creating-a-quantile-plot"><span class="header-section-number">16.5.2</span> Creating a quantile plot</h3>
-<p>A batch’s quantile is best viewed as a plot where we plot the batch values as a function of the <span class="math inline">\(f\)</span>-values:</p>
+<p>A batch’s quantile is best viewed as a plot where we plot the values as a function of the <span class="math inline">\(f\)</span>-values:</p>
 <div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-36_89f10be697cb1db435f058c537641573">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
