@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 17&nbsp; Comparing data distributions</title>
+<title>Exploratory Data Analysis in R - 17&nbsp; Comparing data distributions: The q-q plot</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -124,7 +124,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./compare_batches.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing data distributions</span></a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./compare_batches.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing data distributions: The q-q plot</span></a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -303,7 +303,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./compare_batches.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing data distributions</span></span></a>
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing data distributions: The q-q plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -436,11 +436,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
    
   <ul>
   <li><a href="#boxplots" id="toc-boxplots" class="nav-link active" data-scroll-target="#boxplots"><span class="header-section-number">17.1</span> Boxplots</a></li>
-  <li><a href="#the-quantile-quantile-q-q-plot" id="toc-the-quantile-quantile-q-q-plot" class="nav-link" data-scroll-target="#the-quantile-quantile-q-q-plot"><span class="header-section-number">17.2</span> The quantile-quantile (Q-Q) plot</a>
-  <ul class="collapse">
-  <li><a href="#manual-construction-of-a-q-q-plot" id="toc-manual-construction-of-a-q-q-plot" class="nav-link" data-scroll-target="#manual-construction-of-a-q-q-plot"><span class="header-section-number">17.2.1</span> Manual construction of a q-q plot</a></li>
-  <li><a href="#using-the-base-qqplot" id="toc-using-the-base-qqplot" class="nav-link" data-scroll-target="#using-the-base-qqplot"><span class="header-section-number">17.2.2</span> Using the base <code>qqplot</code></a></li>
-  </ul></li>
+  <li><a href="#the-empirical-quantile-quantile-q-q-plot" id="toc-the-empirical-quantile-quantile-q-q-plot" class="nav-link" data-scroll-target="#the-empirical-quantile-quantile-q-q-plot"><span class="header-section-number">17.2</span> The empirical quantile-quantile (q-q) plot</a></li>
   <li><a href="#q-q-plots-vs.-traditional-scatter-plots" id="toc-q-q-plots-vs.-traditional-scatter-plots" class="nav-link" data-scroll-target="#q-q-plots-vs.-traditional-scatter-plots"><span class="header-section-number">17.3</span> q-q plots vs.&nbsp;traditional scatter plots</a></li>
   <li><a href="#what-can-we-learn-from-a-q-q-plot" id="toc-what-can-we-learn-from-a-q-q-plot" class="nav-link" data-scroll-target="#what-can-we-learn-from-a-q-q-plot"><span class="header-section-number">17.4</span> What can we learn from a q-q plot?</a>
   <ul class="collapse">
@@ -455,7 +451,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#generating-a-tukey-m-d-plot-using-ggplot" id="toc-generating-a-tukey-m-d-plot-using-ggplot" class="nav-link" data-scroll-target="#generating-a-tukey-m-d-plot-using-ggplot"><span class="header-section-number">17.6.1</span> Generating a Tukey m-d plot using <code>ggplot</code></a></li>
   </ul></li>
-  <li><a href="#pairwise-q-q-plots" id="toc-pairwise-q-q-plots" class="nav-link" data-scroll-target="#pairwise-q-q-plots"><span class="header-section-number">17.7</span> Pairwise q-q plots</a></li>
+  <li><a href="#the-eda_qq-function" id="toc-the-eda_qq-function" class="nav-link" data-scroll-target="#the-eda_qq-function"><span class="header-section-number">17.7</span> The <code>eda_qq</code> function</a></li>
   </ul>
 </nav>
     </div>
@@ -464,7 +460,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing data distributions</span></h1>
+<h1 class="title"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing data distributions: The q-q plot</span></h1>
 </div>
 
 
@@ -566,164 +562,80 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 2 Tenor 1        68</code></pre>
 </div>
 </div>
-<p>When characterizing the batches using theor median values, we determine that the bassists tend to be slightly taller than the tenors.</p>
-<p>This is one way to compare the batches. But is the median (or any measure of centrality) the only way to compare batches? Why not compare the top ten percentile of value or the lower quartile of values? Will such a summary lead to the same conclusion</p>
+<p>When characterizing the batches using their median values, we determine that the bassists tend to be slightly taller than the tenors.</p>
+<p>This is one way to compare the batches. But is the median (or any measure of centrality) the only way to compare batches? Why not compare the top tenth percentile of values or the lower quartile of values? Will such a summary lead to a similar conclusion? We expand on this question next.</p>
 <p>&nbsp;&nbsp;</p>
 <section id="boxplots" class="level2" data-number="17.1">
 <h2 data-number="17.1" class="anchored" data-anchor-id="boxplots"><span class="header-section-number">17.1</span> Boxplots</h2>
-<p>We can compare the batches using side-by-side boxplots.</p>
+<p>A boxplot gives us additional handles by which to compare batches of values.</p>
 <div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-6_982a67a0ff650edebc9f18175cfe89f5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2) <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x =</span> voice.part, <span class="at">y =</span> height) <span class="sc">+</span> <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="compare_batches_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>The differences in median values is obvious. What’s more, the difference in overall height values is more pronounced with the boxplot than it is with a simple point distributions plot shown earlier.</p>
-<p>Are the spreads between the batches comparable? It’s difficult to tell given that the batches are offset by about four inches. So let’s level the playing field by subtracting the median values from their respective batches.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-7_eaa345ea35fa8c48ef965b05722d6a44">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df2.med <span class="ot">&lt;-</span> df2 <span class="sc">%&gt;%</span> </span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>          <span class="fu">group_by</span>(voice.part) <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mutate</span>( <span class="at">NormHeight =</span> height <span class="sc">-</span> <span class="fu">median</span>(height)) </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2.med, <span class="fu">aes</span>(<span class="at">x=</span>voice.part, <span class="at">y=</span>NormHeight)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="288"></p>
+<p>In addition to providing us with the median, it also allows us to compare the lower and upper quartiles. Here, the bassists are taller than the tenors by all three measures. But note that the difference in height values is not consistent.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-7_ea18ce55d7ff1d6f4aba9f00e3353661">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(voice.part) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">upper =</span> <span class="fu">quantile</span>(height,<span class="fl">0.75</span>), </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">mid =</span> <span class="fu">quantile</span>(height,<span class="fl">0.5</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">lower =</span> <span class="fu">quantile</span>(height,<span class="fl">0.25</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+  voice.part upper   mid lower
+  &lt;fct&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 Bass 2        74    72    70
+2 Tenor 1       71    68    66</code></pre>
 </div>
 </div>
-<p>Leveling the boxplots certainly helps in assessing the difference in spreads. It seems that the <code>Tenor 1</code> group has a slightly wider range of heights than the <code>Bass 2</code> group. About 50% of singers in the <code>Tenor 1</code> group have heights that range five inches whereas the singers in the <code>Bass 2</code> group have heights that range four inches. We also note that the <code>Tenor 1</code> height distribution tends to be skewed towards taller singers whereas the <code>Bass 2</code> height distribution tends to be a little less skewed toward smaller heights.</p>
+<p>We see that the singer heights differ by 3 inches when comparing the upper quartiles, and by 4 inches when comparing the medians and lower quartiles.</p>
+<p>When comparing the minimum values, (these values can be extracted from the lower ends of the whiskers), we see that the difference is just 2 inches. And, interestingly, the tallest bassist is taller than the tallest tenor! So the offset between singer heights when paired up by their ordered height values is not consistent in size and int direction.</p>
+<p>As you can see from this example, there is more than one way to compare a batch of values and yet, we’ve limited our comparisons to just 5 values. So, how can we compare <em>all</em> values in both datasets? By comparing their quantile functions.</p>
 </section>
-<section id="the-quantile-quantile-q-q-plot" class="level2" data-number="17.2">
-<h2 data-number="17.2" class="anchored" data-anchor-id="the-quantile-quantile-q-q-plot"><span class="header-section-number">17.2</span> The quantile-quantile (Q-Q) plot</h2>
-<p>A quantile-quantile plot (or Q-Q plot for short) combines two separate quantile plots from different batches of values by pairing the point values by their common <span class="math inline">\(f\)</span>-value.</p>
+<section id="the-empirical-quantile-quantile-q-q-plot" class="level2" data-number="17.2">
+<h2 data-number="17.2" class="anchored" data-anchor-id="the-empirical-quantile-quantile-q-q-plot"><span class="header-section-number">17.2</span> The empirical quantile-quantile (q-q) plot</h2>
+<p>An <strong>empirical quantile-quantile</strong> plot (or <strong>q-q plot</strong> for short) combines two separate quantile functions from different batches of values by pairing their quantile values with their common <span class="math inline">\(f\)</span>-value.</p>
 <p><img src="img/QQ_plot.png" class="img-fluid"></p>
-<p>To generate a q-q plot, we first need to compute the <span class="math inline">\(f\)</span>-values for both batches of singer data (<code>Bass 2</code> and <code>Tenor 1</code>).</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-8_4fa4521b2f4a2d06bf89fd5292f74e99">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.qq <span class="ot">&lt;-</span> df2 <span class="sc">%&gt;%</span> </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>         <span class="fu">group_by</span>(voice.part) <span class="sc">%&gt;%</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>         <span class="fu">arrange</span>(height) <span class="sc">%&gt;%</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>         <span class="fu">mutate</span>( <span class="at">f.val =</span> (<span class="fu">row_number</span>() <span class="sc">-</span> <span class="fl">0.5</span> ) <span class="sc">/</span> <span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In the above figure, batches <code>a</code> and <code>b</code> have the same number of observations. As such, they have the same f-values. If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs.&nbsp;the other batch.</p>
+<p>If, on the other hand, the two batches differ in size (as is the case with our example where we have 21 tenors and 26 bassists), we won’t be able to match sorted values.</p>
+<p><img src="img/qq_plot_diff_lengths.png" class="img-fluid"></p>
+<p>For example, in the above graph, you’ll note that the Bass height value of <code>74</code> is associated with an <span class="math inline">\(f\)</span>-value of <code>0.75</code>, however, there is no singer height value associated with an <span class="math inline">\(f\)</span>-value of 0.75 in the <code>Tenor1</code> batch.</p>
+<p>To overcome the problem of batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the <em>smallest</em> sized batch (21 in our working example). This requires that we find matching singer height values to the set of <span class="math inline">\(f\)</span>-values associated with a batch of 21 values. There are a few ways this can be accomplished in R. The easiest way is to make use of the built-in <code>qqplot</code> function.</p>
+<p><code>qqplot</code> is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects. It also offers the option to output the q-q plot interpolated values as a <strong>list</strong> by setting the parameter <code>plot.it = FALSE</code>. We then convert this list object to a dataframe using <code>as.data.frame</code>.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-8_df4dddafb65217cba0d6f3d94e624878">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Tenor <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Tenor 1"</span>) <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>Bass  <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Bass 2"</span>)  <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>qq.out <span class="ot">&lt;-</span> <span class="fu">qqplot</span>(<span class="at">x=</span>Tenor, <span class="at">y=</span>Bass, <span class="at">plot.it=</span><span class="cn">FALSE</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>qq.out <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(qq.out)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(qq.out) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Tenor"</span>, <span class="st">"Bass"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Let’s generate quantile plots for both batches.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-9_0a6612d197694586e0569e1a61979f33">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df.qq, <span class="fu">aes</span>(<span class="at">x=</span>f.val, <span class="at">y =</span> height)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">col=</span><span class="st">"grey"</span>) <span class="sc">+</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>              <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">facet_grid</span>( voice.part <span class="sc">~</span> .) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We can now generate the q-q plot using <code>ggplot</code>.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-9_ace5383e8f324027e0c3e525e7287841">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the x and y limits</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>xylim <span class="ot">&lt;-</span> <span class="fu">range</span>( <span class="fu">c</span>(qq.out<span class="sc">$</span>Tenor, qq.out<span class="sc">$</span>Bass) )</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the QQ plot</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(qq.out, <span class="fu">aes</span>( <span class="at">x=</span> Tenor, <span class="at">y =</span> Bass)) <span class="sc">+</span> </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>               <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>               <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>               <span class="fu">coord_fixed</span>(<span class="at">ratio =</span> <span class="dv">1</span>, <span class="at">xlim=</span>xylim, <span class="at">ylim =</span> xylim) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="480"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>While the geometric structure of a boxplot lends itself well to side-by-side comparison, the same cannot be said for side-by-side quantile plot comparison hence the need for an amalgamation of these two plots into a <strong>quantile-quantile</strong> (<strong>q-q</strong>) plot. If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs.&nbsp;the other batch.</p>
-<p>If the two batches differ in size (as is the case with our example where we have 21 tenors and 26 bassists), we won’t be able to match sorted values. For example, in the above graph, you’ll note that one of the singer’s height in the <code>Bass 2</code> batch is associated with an <span class="math inline">\(f\)</span>-value of 0.75, however, there are no singer heights associated with an <span class="math inline">\(f\)</span>-value of 0.75 in the <code>Tenor 1</code> batch.</p>
-<p>To overcome the problem of batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the <em>smallest</em> sized batch (21 in our working example). This requires that we find matching singer height values to the set of <span class="math inline">\(f\)</span>-values associated with a batch of 21 values. The following chunk of code computes the 21 <span class="math inline">\(f\)</span>-values. We are rounding the output to two decimal places for presentation only.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-10_171a8e5bbf481b0c8a53d02894298967">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate and index</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>i  <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">21</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the f-values</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>fi <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="dv">21</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># view rounded values</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(fi,<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] 0.02 0.07 0.12 0.17 0.21 0.26 0.31 0.36 0.40 0.45 0.50 0.55 0.60 0.64 0.69 0.74 0.79 0.83 0.88 0.93 0.98</code></pre>
-</div>
-</div>
-<p>To find the matching singer height values in <code>Bass2</code>, we need to interpolate the original height values. In practice, a linear interpolation is sought unless theory justifies otherwise.</p>
-<p>We will explore two methods:</p>
-<ul>
-<li>a <em>manual</em> approach to constructing a q-q plot;</li>
-<li>using the built-in <code>qqplot()</code> function.</li>
-</ul>
-<p>In all cases, we will add a 45° line (i.e.&nbsp;the <code>Bass 1</code> <span class="math inline">\(=\)</span> <code>Tenor 1</code> line) that shows where we would expect the points to be plotted if both distributions were identical.</p>
-<section id="manual-construction-of-a-q-q-plot" class="level3" data-number="17.2.1">
-<h3 data-number="17.2.1" class="anchored" data-anchor-id="manual-construction-of-a-q-q-plot"><span class="header-section-number">17.2.1</span> Manual construction of a q-q plot</h3>
-<p>To find a value in the larger dataset (i.e.&nbsp;<code>Bass 2</code>) that matches the 21 quantiles of the smaller dataset, <code>Tenor 1</code>, we can use the <code>approx()</code> function.</p>
-<p>First, we will extract all values associated with <code>Bass 2</code> from the dataset.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-11_90eee540cc3ce3781260ba73d4c38733">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df.bass  <span class="ot">&lt;-</span> df.qq <span class="sc">%&gt;%</span>  <span class="fu">filter</span>( voice.part <span class="sc">==</span> <span class="st">"Bass 2"</span>) </span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>df.tenor <span class="ot">&lt;-</span> df.qq <span class="sc">%&gt;%</span>  <span class="fu">filter</span>( voice.part <span class="sc">==</span> <span class="st">"Tenor 1"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Next, we will interpolate a new set of height values for <code>Bass 2</code> that match the 21 quantile values in <code>fi</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-12_b101b32932e5607cafe29dd2120ed47e">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>b.hgt.interp <span class="ot">&lt;-</span> <span class="fu">approx</span>(df.bass<span class="sc">$</span>f.val, df.bass<span class="sc">$</span>height, fi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>The output generates two columns: the 21 quantiles, <code>fi</code>, and the 21 <code>Bass 2</code> interpolated height values. Note that we could have substituted <code>fi</code> with <code>df.tenor$f.val</code>. The approach shown here is used to reinforce the idea that we are interpolating height values based on a <em>new</em> set of f-values.</p>
-<p>Finally, we will combine the interpolated <code>Bass 2</code> values (which is already in an ascending order) with <strong>sorted</strong> heights for the <code>Tenor 1</code> singers (these were sorted in <code>df.qq</code>). Then, we will plot the paired values using <code>ggplot</code>. We will also add the 45° line to facilitate comparison.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-13_841899d6505f5efaeac86a490db2d0d0">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>s.qq <span class="ot">&lt;-</span> df.tenor <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="st">`</span><span class="at">Bass 2</span><span class="st">`</span>  <span class="ot">=</span> b.hgt.interp<span class="sc">$</span>y) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">rename</span>(<span class="st">`</span><span class="at">Tenor 1</span><span class="st">`</span> <span class="ot">=</span> height) </span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(s.qq, <span class="fu">aes</span>( <span class="at">x=</span> <span class="st">`</span><span class="at">Tenor 1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">Bass 2</span><span class="st">`</span>)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note that the <code>qqplot</code> function can also generate a base plot.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-10_20431f050c9349fbd42c4d90acebf04b">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qqplot</span>(<span class="at">x=</span>Tenor, <span class="at">y=</span>Bass, <span class="at">asp=</span><span class="dv">1</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="288"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-14_f14e9fbef4656f3391c4e6e9b449f1a4">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the range of both datasets</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>xylim <span class="ot">&lt;-</span> <span class="fu">range</span>( <span class="fu">c</span>(s.qq<span class="sc">$</span><span class="st">"Bass"</span>, s.qq<span class="sc">$</span><span class="st">`</span><span class="at">Tenor 1</span><span class="st">`</span>) )</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a 5% buffer to the xy limits</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># (This avoids having the points plotted on the edge of the plot)</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>xylim <span class="ot">&lt;-</span> xylim <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.05</span> <span class="sc">*</span> <span class="fu">diff</span>(xylim), <span class="sc">+</span> <span class="fl">0.05</span> <span class="sc">*</span> <span class="fu">diff</span>(xylim))</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(s.qq, <span class="fu">aes</span>( <span class="at">x=</span> <span class="st">`</span><span class="at">Tenor 1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">Bass 2</span><span class="st">`</span>)) <span class="sc">+</span> </span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>             <span class="fu">coord_fixed</span>(<span class="at">ratio =</span> <span class="dv">1</span>, <span class="at">xlim=</span>xylim, <span class="at">ylim =</span> xylim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="288"></p>
-</div>
-</div>
-</section>
-<section id="using-the-base-qqplot" class="level3" data-number="17.2.2">
-<h3 data-number="17.2.2" class="anchored" data-anchor-id="using-the-base-qqplot"><span class="header-section-number">17.2.2</span> Using the base <code>qqplot</code></h3>
-<p>This approach is quicker and requires fewer lines of code, but it does not afford the insight into the inner workings of a q-q plot as does the manual approach from the previous section.</p>
-<p><code>qqplot</code> is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-15_3f7f14b76e65ebc1fb825231ecdff7d0">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>Tenor <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Tenor 1"</span>) <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>Bass  <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Bass 2"</span>)  <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">qqplot</span>(<span class="at">x=</span>Tenor, <span class="at">y=</span>Bass, <span class="at">asp=</span><span class="dv">1</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="288"></p>
-</div>
-</div>
-<p><code>qqplot</code> offers the option to output the q-q plot values (including the interpolated values) as a <strong>list</strong> by setting the parameter <code>plot.it=FALSE</code>. We then need to convert this list object to a dataframe using <code>as.data.frame</code>. The output can then be used in a call to <code>ggplot</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-16_36f8fcfabacaad615fbb8f1142c8b2b2">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the quantile-quantile data table</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>qq.out <span class="ot">&lt;-</span> <span class="fu">qqplot</span>(<span class="at">x=</span>Tenor, <span class="at">y=</span>Bass, <span class="at">plot.it=</span><span class="cn">FALSE</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>qq.out <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(qq.out)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the x and y limits</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>xylim <span class="ot">&lt;-</span> <span class="fu">range</span>( <span class="fu">c</span>(qq.out<span class="sc">$</span>x, qq.out<span class="sc">$</span>y) )</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the QQ plot</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(qq.out, <span class="fu">aes</span>( <span class="at">x=</span> x, <span class="at">y =</span> y)) <span class="sc">+</span> </span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>               <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>               <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>               <span class="fu">coord_fixed</span>(<span class="at">ratio =</span> <span class="dv">1</span>, <span class="at">xlim=</span>xylim, <span class="at">ylim =</span> xylim) <span class="sc">+</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>               <span class="fu">xlab</span>(<span class="st">"Tenor"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Bass"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="288"></p>
-</div>
-</div>
-<p>Note that <code>qqplot</code> generates a wide table where the <code>Tenor</code> height values and the interpolated <code>Bass</code> values are side-by-side (note that <code>x</code> and <code>y</code> were assigned when we called the <code>qqplot</code> function in the last code chunk).</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-17_5b0ccacae5b5b335eaf95109402dba0a">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(qq.out)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   x    y
-1 64 66.0
-2 64 67.0
-3 65 67.5
-4 66 68.0
-5 66 69.0
-6 66 70.0</code></pre>
-</div>
-</div>
-</section>
 </section>
 <section id="q-q-plots-vs.-traditional-scatter-plots" class="level2" data-number="17.3">
 <h2 data-number="17.3" class="anchored" data-anchor-id="q-q-plots-vs.-traditional-scatter-plots"><span class="header-section-number">17.3</span> q-q plots vs.&nbsp;traditional scatter plots</h2>
-<p>It’s important to note the difference between a quantile-quantile plot and a <em>traditional</em> <a href="https://en.wikipedia.org/wiki/Scatter_plot">scatter plot</a> whereby the pairing of values between variables is explicitly defined (for example average male and female income values paired by county). The singer data does not assume any pairing of observations (e.g.&nbsp;the height measurement for a singer in <code>Bass 2</code> is independent for that of a singer in <code>Tenor 2</code>). This is made more evident with our working example which has unequal number of singers in both groups being compared. The pairing of values in a q-q plot is constructed from the <em>ordering</em> of values in each batch and nothing more.</p>
+<p>It’s important to note the difference between a quantile-quantile plot and a <em>traditional</em> <a href="https://en.wikipedia.org/wiki/Scatter_plot">scatter plot</a> whereby the pairing of values between variables is explicitly defined (for example average male and female income values paired by county). The singer data does not assume any pairing of observations (e.g.&nbsp;the height measurement for a singer in <code>Bass</code> is independent for that of a singer in <code>Tenor 2</code>). This is made more evident with our working example which has unequal number of singers in both groups being compared. The pairing of values in a q-q plot is constructed from the <em>ordering</em> of values in each batch and nothing more.</p>
 </section>
 <section id="what-can-we-learn-from-a-q-q-plot" class="level2" data-number="17.4">
 <h2 data-number="17.4" class="anchored" data-anchor-id="what-can-we-learn-from-a-q-q-plot"><span class="header-section-number">17.4</span> What can we learn from a q-q plot?</h2>
@@ -731,16 +643,16 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h3 data-number="17.4.1" class="anchored" data-anchor-id="additive-offset"><span class="header-section-number">17.4.1</span> Additive offset</h3>
 <p>A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e.&nbsp;all the points of a q-q plot fall on the 45° line) then we could characterize the relationship as <code>batch1 = batch2</code>.</p>
 <p>If the points follow a pattern mimicking a line parallel to the 45° line as in the following plot, then we say that there is an <strong>additive shift</strong> between <code>batch1</code> and <code>batch2</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-18_ca2d6608fd9ec262240e57796eb7447d">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-11_d3144bddb29353a3fc1955727ec75465">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>An additive shift between batches results in an offset in density distributions with matching shape as shown in the the figure on the right.</p>
 <p>The shift can usually be eyeballed from the plot. In this example, the shift is around 2 units or <code>batch2 =  batch1 + 2</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-19_ddb2cb670710842e12a14a1a1eca2134">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-12_d945d6018e31326309cfd202fe20f7e6">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Adding 2 to <code>batch1</code> lines the points up along the 45° line. This translates to overlapping the density plots as shown on the right.</p>
@@ -748,16 +660,16 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="multiplicative-offset" class="level3" data-number="17.4.2">
 <h3 data-number="17.4.2" class="anchored" data-anchor-id="multiplicative-offset"><span class="header-section-number">17.4.2</span> Multiplicative offset</h3>
 <p>When the points follow a line at an angle to the 45° line as in the following plot, then we say that there is a <strong>multiplicative shift</strong> between the batches.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-20_cabf1269a09a9f69f62fa008bf8b2244">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-13_edbf1036f5ef366f251ebb773165c2cb">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>A multiplicative shift between the batches results in a change in density shapes with one batch’s density being shorter and wider (<code>batch2</code> in this example) than that of the other batch (<code>batch1</code> in this example).</p>
 <p>The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, after some experimenting, we arrive at a multiplier of 2 which seems to do a good job in aligning the q-q points along the 45° line. We thus define a relationship of <code>batch2 = batch1 * 2</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-21_4acb611ec5b3d63a546aa5d20c1ba686">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-14_ccc47fd8821c1e48b96908272b826982">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Notice how applying a multiplier not only re-aligns the shape of both densities, but it also corrects the offset observed between both density distributions in the previous figure.</p>
@@ -766,34 +678,34 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="additive-and-multiplicative-offsets" class="level2" data-number="17.5">
 <h2 data-number="17.5" class="anchored" data-anchor-id="additive-and-multiplicative-offsets"><span class="header-section-number">17.5</span> Additive and multiplicative offsets</h2>
 <p>Sometimes, you might encounter a relationship that is both additive <em>and</em> multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to being parallel with the 45° line. Once the multiplicative component is taken care of, resolve the additive portion.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-22_6a87eb089eaeab0735fdd33a9703a6dc">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-15_11612a557838565a4cc8f6ff0ceeccca">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>The above dataset can be decomposed into its multiplicative component (multiply <code>batch1</code> by ~ 1.5),</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-23_6c6f2836b45f7b159de2a48b56f3ff24">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-16_21d6b3c568e2d0e4ba4faf760d137c75">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>then by its additive component (we’ll try and additive offset of 4):</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-24_59deb71afc34150130dab44be0456b03">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-17_98a2d3cbd184cf8084ed55958404cdf4">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>The relationship between both batches can thus be defined by <code>batch2 = batch1 * 1.5 + 4</code>.</p>
 <section id="is-the-relationship-between-tenor-and-bass-additive-or-multiplicative" class="level3" data-number="17.5.1">
 <h3 data-number="17.5.1" class="anchored" data-anchor-id="is-the-relationship-between-tenor-and-bass-additive-or-multiplicative"><span class="header-section-number">17.5.1</span> Is the relationship between tenor and bass additive or multiplicative?</h3>
-<p>Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we’ll add 2.5 to the <code>Bass 2</code> value.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-25_43f3610768d5c1649701ba8cc1e1254d">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(s.qq, <span class="fu">aes</span>( <span class="at">x=</span> <span class="st">`</span><span class="at">Tenor 1</span><span class="st">`</span> <span class="sc">+</span> <span class="fl">2.5</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">Bass 2</span><span class="st">`</span>)) <span class="sc">+</span> </span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>             <span class="fu">coord_fixed</span>(<span class="at">ratio =</span> <span class="dv">1</span>, <span class="at">xlim=</span><span class="fu">c</span>(<span class="dv">65</span>,<span class="dv">80</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">65</span>,<span class="dv">80</span>)) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Tenor 1 + 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we’ll add 2.5 to the <code>Bass</code> value.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-18_711506606626a461dfe2d2ec3e5fb810">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(qq.out, <span class="fu">aes</span>( <span class="at">x=</span> Tenor <span class="sc">+</span> <span class="fl">2.5</span>, <span class="at">y =</span> Bass)) <span class="sc">+</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>             <span class="fu">coord_fixed</span>(<span class="at">ratio =</span> <span class="dv">1</span>, <span class="at">xlim=</span><span class="fu">c</span>(<span class="dv">65</span>,<span class="dv">80</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">65</span>,<span class="dv">80</span>)) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Tenor + 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="288"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here.</p>
@@ -810,63 +722,99 @@ X = \frac{Bass + Tenor}{2}
 <p>This forces the 45° line in the previous q-q plots to a 0° slope. The final plot is a <strong>Tukey mean-difference</strong> plot or <strong>m-d</strong> for short.</p>
 <section id="generating-a-tukey-m-d-plot-using-ggplot" class="level3" data-number="17.6.1">
 <h3 data-number="17.6.1" class="anchored" data-anchor-id="generating-a-tukey-m-d-plot-using-ggplot"><span class="header-section-number">17.6.1</span> Generating a Tukey m-d plot using <code>ggplot</code></h3>
-<p>We continue with the <code>qq.out</code> dataset generated from the <code>qqplot</code> function.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-26_5c76d29964b737affadbcdba5822059d">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>md.y  <span class="ot">&lt;-</span> (qq.out<span class="sc">$</span>y <span class="sc">-</span> qq.out<span class="sc">$</span>x) </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>md.x  <span class="ot">&lt;-</span> (qq.out<span class="sc">$</span>y <span class="sc">+</span> qq.out<span class="sc">$</span>x) <span class="sc">*</span> <span class="fl">0.5</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>df.md <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(md.x, md.y)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df.md,  <span class="fu">aes</span>(<span class="at">x =</span> md.x, <span class="at">y =</span> md.y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_abline</span>( <span class="at">slope=</span><span class="dv">0</span> ) <span class="sc">+</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>               <span class="fu">xlab</span>(<span class="st">"Mean height (in)"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Difference in height (in)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We will continue with the <code>qq.out</code> dataset generated from the <code>qqplot</code> function.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-19_28f32b8e839c6457c787f2543bf62187">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>md.y  <span class="ot">&lt;-</span> (qq.out<span class="sc">$</span>Bass <span class="sc">-</span> qq.out<span class="sc">$</span>Tenor) </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>md.x  <span class="ot">&lt;-</span> (qq.out<span class="sc">$</span>Bass <span class="sc">+</span> qq.out<span class="sc">$</span>Tenor) <span class="sc">*</span> <span class="fl">0.5</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df.md <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(md.x, md.y)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df.md,  <span class="fu">aes</span>(<span class="at">x =</span> md.x, <span class="at">y =</span> md.y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_abline</span>( <span class="at">slope=</span><span class="dv">0</span> ) <span class="sc">+</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>               <span class="fu">xlab</span>(<span class="st">"Mean height (in)"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Difference in height (in)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="288"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>The units on both axes are in inches. It’s clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.</p>
 <p>We can leverage this plot to help fine tune the additive offset by computing the median value from the height difference values.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-27_b60e19b54b428afdce104d0530d81a83">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>md.offset <span class="ot">&lt;-</span> <span class="fu">median</span>(md.y)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>md.offset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-20_530b2f84147c145024c9d71f7de10af2">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>md.offset <span class="ot">&lt;-</span> <span class="fu">median</span>(md.y)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>md.offset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.5</code></pre>
+<pre><code>[1] NA</code></pre>
 </div>
 </div>
-<p>The value of 2.5 is in agreement with what we eyeballed earlier.</p>
+<p>The value of NA is in agreement with what we eyeballed earlier.</p>
 </section>
 </section>
-<section id="pairwise-q-q-plots" class="level2" data-number="17.7">
-<h2 data-number="17.7" class="anchored" data-anchor-id="pairwise-q-q-plots"><span class="header-section-number">17.7</span> Pairwise q-q plots</h2>
-<p>A <strong>pairwise q-q plot</strong> allows one to view all combinations of batch pairs. This requires that we first find the smallest batch of height values, then interpolate all other batch values to match the smallest batch quantiles. Note that the pairwise plot is symmetrical about the diagonal. Here, we’ll make use of the <code>lattice</code> package to generate the pairwise q-q plots.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-28_686ba2d32d63d7444302bf2a03ef9779">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lattice)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Find smallest batch</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>f.rng <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">tapply</span>(singer<span class="sc">$</span>height, singer<span class="sc">$</span>voice.part, length))</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Define quantile function</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>fun1  <span class="ot">&lt;-</span> <span class="cf">function</span>(x,f.rng) {<span class="fu">approx</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x), <span class="fu">sort</span>(x), <span class="at">n =</span> f.rng )<span class="sc">$</span>y}</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute quantiles for all factors</span></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>t1    <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(singer<span class="sc">$</span>height <span class="sc">~</span> singer<span class="sc">$</span>voice.part, <span class="at">FUN=</span>fun1, <span class="at">f.rng=</span>f.rng )</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Flip table and name columns</span></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>t2    <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">t</span>(t1[,<span class="sc">-</span><span class="dv">1</span>]))</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(t2) <span class="ot">&lt;-</span> t1[,<span class="dv">1</span>]</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Label columns of qmat using names of voice parts.</span></span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="fu">splom</span>(<span class="sc">~</span>t2,  <span class="at">axis.text.cex=</span><span class="fl">0.6</span>, <span class="at">pch =</span> <span class="dv">20</span>,</span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">varname.cex=</span><span class="fl">0.8</span>,</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">pscales=</span><span class="dv">3</span>,</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">xlab=</span><span class="st">"Heights (inches)"</span>,</span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">prepanel.limits =</span> <span class="cf">function</span>(x) (<span class="fu">range</span>(t2)), <span class="co"># force all axes the same</span></span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel =</span> <span class="cf">function</span>(x,y,...){</span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">panel.grid</span>()</span>
-<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>        <span class="fu">panel.splom</span>(x,y,...)</span>
-<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">panel.abline</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="at">col=</span><span class="st">"grey"</span>)</span>
-<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>      })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="the-eda_qq-function" class="level2" data-number="17.7">
+<h2 data-number="17.7" class="anchored" data-anchor-id="the-eda_qq-function"><span class="header-section-number">17.7</span> The <code>eda_qq</code> function</h2>
+<p>The <code>tukeyedar</code> package offers an improved version of the q-q plot function that you will be encouraged to use in this course. Some of its features that you may find helpful are highlighted next.</p>
+<p>The function can take two separate vectors as input:</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-21_d21e0467369d1b283ac492253b12d2c6">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="576"></p>
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
+<p>It can also take a dataframe in long form as input. Note that the grouping variable assigned to the y-axis will be the first one listed in the group’s levels.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-22_0b7f7705f494969c768ca475bc36ccc5">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(df2<span class="sc">$</span>voice.part)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Bass 2"  "Tenor 1"</code></pre>
+</div>
+</div>
+<p>Hence, <code>Bass 2</code> will be mapped to the y-axis.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-23_ff6d35669042dce38e7dd85277799699">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(df2, height, voice.part) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="240"></p>
+</div>
+</div>
+<p>The plot includes:</p>
+<ul>
+<li>Shaded boxes representing each batch’s interquartile range (mid 50% of values).</li>
+<li>Solid dashed lines inside the shaded boxes representing each batch’s medians.</li>
+<li>Lightly shaded dashed dots representing each batch’s 12.5th and 87.5th quantiles (i.e.&nbsp;they show the ends of the mid 80% of values).</li>
+<li>The power transformation applied to both batches shown in the upper right-hand corner of the plot. Power transformations will be covered later in this course.</li>
+</ul>
+<p>To add the offset to the x-axis, pass <code>"x + 2.5"</code> to the <code>fx</code> argument.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-24_6fb2b48fef77dfd811efe216b60fe5e7">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">fx =</span> <span class="st">"x + 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="240"></p>
+</div>
+</div>
+<p>If you want to apply an offset to the y-axis, use the <code>fy</code> argument. Don’t forget to reference the <code>y</code> variable instead of the <code>x</code> variable.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-25_831637cb66ad6e0711cc6a76fe6b40b4">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">fy =</span> <span class="st">"y - 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="240"></p>
+</div>
+</div>
+<p>You’ll note that the function returns a “suggested” offset in the console. For example, the above code chunks return the following suggested offset:</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-26_91d4766f864f97a24283c267ffad0030">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Suggested offsets:y = x * 0.8571 + (12.4286)"</code></pre>
+</div>
+</div>
+<p>When applied to the x-axis variable, we get:</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-27_dd2077401f308bdcb970e2638397015d">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">fx =</span> <span class="st">" x * 0.8571 + 12.4286 "</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="240"></p>
+</div>
+</div>
+<p>This seems to improve little over the simpler <code>x + 2</code> offset expression. Always seek a parsimonious relationship between batches when possible.</p>
+<p>This function will also generate the Tukey mean-difference plot by setting <code>md</code> to <code>TRUE</code>.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-28_623484c437b1bd4d0981f9cffed0664c">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">md =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="240"></p>
+</div>
+</div>
+<p>Note that the offset arguments <code>fx</code> and <code>fy</code> can be applied to the mean-difference plot.</p>
+<p>To learn more about the function, see <a href="https://mgimond.github.io/tukeyedar/articles/qq.html">here</a>.</p>
 
 
 </section>

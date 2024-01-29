@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Comparing data distributions
+# Comparing data distributions: The q-q plot
 
 ```{r echo=FALSE, message=FALSE}
 source("libs/Common.R")
@@ -45,7 +45,7 @@ df2 %>% group_by(voice.part) %>% summarise(median = median(height))
 
 When characterizing the batches using their median values, we determine that the bassists tend to be slightly taller than the tenors.
 
-This is one way to compare the batches. But is the median (or any measure of centrality) the only way to compare batches? Why not compare the top tenth percentile of values or the lower quartile of values? Will such a summary lead to a smilar conclusion? We expand on this question next.
+This is one way to compare the batches. But is the median (or any measure of centrality) the only way to compare batches? Why not compare the top tenth percentile of values or the lower quartile of values? Will such a summary lead to a similar conclusion? We expand on this question next.
 
 &nbsp;&nbsp;
 
@@ -80,120 +80,53 @@ An **empirical quantile-quantile** plot (or **q-q plot** for short) combines two
 
 ![](img/QQ_plot.png)
 
-If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs. the other batch.
+In the above figure, batches `a` and `b` have the same number of observations. As such, they have the same f-values. If the number of values in both batches are equal, then the plotting process is straightforward: sort both batches (from smallest value to largest value), then pair up the sorted values and plot one batch vs. the other batch. 
 
-If the two batches differ in size (as is the case with our example where we have 21 tenors and 26 bassists), we won't be able to match sorted values. For example, in the above graph, you'll note that one of the singer's height in the `Bass 2` batch is associated with an $f$-value of 0.75, however, there are no singer heights associated with an $f$-value of 0.75 in the `Tenor 1` batch. 
+If, on the other hand, the two batches differ in size (as is the case with our example where we have 21 tenors and 26 bassists), we won't be able to match sorted values. 
 
-To overcome the problem of batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the *smallest* sized batch (21 in our working example). This requires that we find matching singer height values to the set of $f$-values associated with a batch of 21 values. The following chunk of code computes the 21 $f$-values. We are rounding the output to two decimal places for presentation only.
+![](img/qq_plot_diff_lengths.png)
 
-```{r}
-# Generate and index
-i  <- 1:21
-# Compute the f-values
-fi <- (i - 0.5) / 21
-# view rounded values
-round(fi,2)
-```
+For example, in the above graph, you'll note that the Bass height value of `74` is associated with an $f$-value of `0.75`, however, there is no singer height value associated with an $f$-value of 0.75 in the `Tenor1` batch. 
 
+To overcome the problem of batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the *smallest* sized batch (21 in our working example). This requires that we find matching singer height values to the set of $f$-values associated with a batch of 21 values. There are a few ways this can be accomplished in R. The easiest way is to make use of the built-in `qqplot` function.
 
-To find the matching singer height values in `Bass2`, we need to interpolate the original height values. In practice, a linear interpolation is sought unless theory justifies otherwise. 
-
-We will explore two methods: 
-
-- a *manual* approach to constructing a q-q plot; 
-- using the built-in  `qqplot()` function. 
-
-In all cases, we will add a 45&deg; line (i.e. the `Bass 1` $=$ `Tenor 1` line) that shows where we would expect the points to be plotted if both distributions were identical.
-
-### Manual construction of a q-q plot 
-
-To find a value in the larger dataset (i.e. `Bass 2`) that matches the 21 quantiles of the smaller dataset, `Tenor 1`, we can use the `approx()` function. 
-
-First, we will extract all values associated with `Bass 2` from the dataset.
+`qqplot` is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects. It also offers the option to output the q-q plot interpolated values as a **list**  by setting the parameter `plot.it = FALSE`. We then convert this list object to a dataframe using `as.data.frame`. 
 
 ```{r}
-df.bass  <- df.qq %>%  filter( voice.part == "Bass 2") 
-df.tenor <- df.qq %>%  filter( voice.part == "Tenor 1") 
-```
-
-Next, we will interpolate a new set of height values for `Bass 2` that match the 21 quantile values in `fi`.
-
-```{r}
-b.hgt.interp <- approx(df.bass$f.val, df.bass$height, fi)
-```
-
-The output generates two columns: the 21 quantiles, `fi`, and the 21 `Bass 2` interpolated height values. Note that we could have substituted `fi` with `df.tenor$f.val`. The approach shown here is used to reinforce the idea that we are interpolating height values based on a *new* set of f-values.
-
-Finally, we will combine the interpolated `Bass 2` values (which is already in an ascending order) with  **sorted** heights for the `Tenor 1` singers (these were sorted in `df.qq`). Then, we will plot the paired values using `ggplot`. We will also add the 45&deg; line to facilitate comparison.
-
-```{r , fig.width=3, fig.height=3}
-s.qq <- df.tenor %>% mutate(`Bass 2`  = b.hgt.interp$y) %>% 
-                     rename(`Tenor 1` = height) 
-
-ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) + geom_point() +
-  geom_abline( intercept=0, slope=1)
-```
-
-Note that the range of values for both axes may not match; this may influence our visual assessment of the differences. To remedy this, we can force a fixed aspect ratio between both axes. 
-
-```{r , fig.width=3, fig.height=3}
-# Get the range of both datasets
-xylim <- range( c(s.qq$"Bass", s.qq$`Tenor 1`) )
-
-# Add a 5% buffer to the xy limits
-# (This avoids having the points plotted on the edge of the plot)
-xylim <- xylim + c(-0.05 * diff(xylim), + 0.05 * diff(xylim))
-
-ggplot(s.qq, aes( x= `Tenor 1`, y = `Bass 2`)) + 
-             geom_point() + 
-             geom_abline( intercept=0, slope=1) +
-             coord_fixed(ratio = 1, xlim=xylim, ylim = xylim)
-```
-
-
-### Using the base `qqplot` 
-
-This approach is quicker and requires fewer lines of code, but it does not afford the insight into the inner workings of a q-q plot as does the manual approach from the previous section.
-
-`qqplot` is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects. 
-
-
-```{r fig.height=3, fig.width=3, echo=2:5}
-OP <- par(mar=c(4,4,0,0))
 Tenor <- filter(df, voice.part == "Tenor 1") %>%  pull(height)
 Bass  <- filter(df, voice.part == "Bass 2")  %>%  pull(height)
+
+qq.out <- qqplot(x=Tenor, y=Bass, plot.it=FALSE)
+qq.out <- as.data.frame(qq.out)
+names(qq.out) <- c("Tenor", "Bass")
+```
+
+We can now generate the q-q plot using `ggplot`.
+
+```{r fig.height=3, fig.width=3}
+# Set the x and y limits
+xylim <- range( c(qq.out$Tenor, qq.out$Bass) )
+
+# Generate the QQ plot
+ggplot(qq.out, aes( x= Tenor, y = Bass)) + 
+               geom_point() + 
+               geom_abline( intercept=0, slope=1) +
+               coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) 
+```
+
+Note that the `qqplot` function can also generate a base plot.
+
+```{r fig.height=3, fig.width=3, echo=2:3}
+OP <- par(mar=c(4,4,0,0))
 qqplot(x=Tenor, y=Bass, asp=1)
 abline( c(0,1))
 par(OP)
 ```
 
-`qqplot` offers the option to output the q-q plot values (including the interpolated values) as a **list**  by setting the parameter `plot.it=FALSE`. We then need to convert this list object to a dataframe using `as.data.frame`. The output can then be used in a call to `ggplot`.
-
-```{r fig.height=3, fig.width=3}
-# Create the quantile-quantile data table
-qq.out <- qqplot(x=Tenor, y=Bass, plot.it=FALSE)
-qq.out <- as.data.frame(qq.out)
-
-# Set the x and y limits
-xylim <- range( c(qq.out$x, qq.out$y) )
-
-# Generate the QQ plot
-ggplot(qq.out, aes( x= x, y = y)) + 
-               geom_point() + 
-               geom_abline( intercept=0, slope=1) +
-               coord_fixed(ratio = 1, xlim=xylim, ylim = xylim) +
-               xlab("Tenor") + ylab("Bass")
-```
-
-Note that `qqplot` generates a wide table where the `Tenor` height values and the interpolated `Bass` values are side-by-side (note that `x` and `y` were assigned when we called the `qqplot` function in the last code chunk).
-
-```{r}
-head(qq.out)
-```
 
 ## q-q plots vs. traditional scatter plots
 
-It's important to note the difference between a quantile-quantile plot and a *traditional* [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot) whereby the pairing of values between variables is explicitly defined  (for example average male and female income values paired by county). The singer data does not assume any pairing of observations (e.g. the height measurement for a singer in `Bass 2` is independent for that of a singer in `Tenor 2`).  This is made more evident with our working example which has unequal number of singers in both groups being compared. The pairing of values in a q-q plot is constructed from the *ordering* of values in each batch and nothing more.
+It's important to note the difference between a quantile-quantile plot and a *traditional* [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot) whereby the pairing of values between variables is explicitly defined  (for example average male and female income values paired by county). The singer data does not assume any pairing of observations (e.g. the height measurement for a singer in `Bass` is independent for that of a singer in `Tenor 2`).  This is made more evident with our working example which has unequal number of singers in both groups being compared. The pairing of values in a q-q plot is constructed from the *ordering* of values in each batch and nothing more.
 
 ## What can we learn from a q-q plot?
 
@@ -204,36 +137,29 @@ A valuable by-product of an empirical q-q plot is the mathematical relationship 
 
 If the points follow a pattern mimicking a line parallel to the 45&deg; line as in the following plot, then we say that there is an **additive shift** between `batch1` and `batch2`.
 
-```{r echo=FALSE, fig.width=6,fig.height=2}
+```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
+library(tukeyedar)
 set.seed(132)
 set.seed(132)
 batch1  <- sort(runif(50,10,20))
 batch2  <- sort(batch1 + 2 + rnorm(length(batch1), 0,1))
 s1 <- data.frame(batch1, batch2)
-xylim <- range(s1)
-qq1 <- ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-  coord_fixed(xlim=xylim, ylim = xylim)
-dd1 <- ggplot() + 
-  geom_density(data = s1, aes(x=batch1, fill = "batch1" ),  bw=5) +  
-  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
-  labs(fill="batches") + xlab("values")
 
-grid.arrange(qq1, dd1, ncol =2)
+OP <- par(mfrow=c(1,2))
+eda_qq(batch1, batch2, show.par = FALSE)
+eda_dens(batch1, batch2, show.par = FALSE, bw=2)
+par(OP)
 ```
 
 An additive shift between batches results in an offset in density distributions with matching shape as shown in the the figure on the right.
 
 The shift can usually be eyeballed from the plot. In this example, the shift is around 2 units or `batch2 =  batch1 + 2`. 
 
-```{r echo=FALSE, fig.width=6,fig.height=2}
-qq1 <- ggplot(s1, aes(batch1 + 2,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-  coord_fixed(xlim=xylim, ylim = xylim)
-dd1 <- ggplot() + 
-  geom_density(data = s1, aes(x=batch1 + 2, fill = "batch1+1" ),  bw=5) +  
-  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
-  labs(fill="batches") + xlab("values")
-
-grid.arrange(qq1, dd1, ncol =2)
+```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
+OP <- par(mfrow=c(1,2))
+eda_qq(batch1, batch2,fx = "x + 2"  ,show.par = FALSE, xlab = "batch1 + 2")
+eda_dens(batch1, batch2,fx = "x + 2", show.par = FALSE, bw = 2)
+par(OP)
 ```
 
 Adding 2 to `batch1` lines the points up along the 45&deg; line. This translates to overlapping the density plots as shown on the right.
@@ -242,31 +168,23 @@ Adding 2 to `batch1` lines the points up along the 45&deg; line. This translates
 
 When the points follow a line at an angle to the 45&deg; line as in the following plot, then we say that there is a **multiplicative shift** between the batches.
 
-```{r echo=FALSE, fig.width=6,fig.height=2}
+```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
 batch2  <- sort(batch1 * 2 + rnorm(length(batch1), 0,1))
-s1 <- data.frame(batch1, batch2)
-xylim <- range(s1)
-qq1 <- ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-  coord_fixed(xlim=xylim, ylim = xylim)
-dd1 <- ggplot() + 
-  geom_density(data = s1, aes(x=batch1, fill = "batch1" ),  bw=5) +  
-  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
-  labs(fill="batches") + xlab("values")
-grid.arrange(qq1, dd1, ncol =2)
+OP <- par( mfrow=c(1,2) )
+eda_qq(batch1, batch2 , show.par = FALSE)
+eda_dens(batch1, batch2, show.par = FALSE, bw = 2)
+par(OP)
 ```
 
 A multiplicative shift between the batches results in a change in density shapes with one batch's density being shorter and wider (`batch2` in this example) than that of the other batch  (`batch1` in this example).
 
 The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, after some experimenting, we arrive at a multiplier of 2 which seems to do a good job in aligning the q-q points along the 45&deg; line. We thus define a relationship of `batch2 = batch1 * 2`.
  
-```{r echo=FALSE, fig.width=6,fig.height=2}
-qq1 <- ggplot(s1, aes(batch1*2,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-  coord_fixed(xlim=xylim, ylim = xylim)
-dd1 <- ggplot() + 
-  geom_density(data = s1, aes(x=batch1*2, fill = "batch1*2" ),  bw=5) +  
-  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
-  labs(fill="batches") + xlab("values")
-grid.arrange(qq1, dd1, ncol =2)
+```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
+OP <- par(mfrow=c(1,2))
+eda_qq(batch1, batch2, fx = "x * 2", show.par = FALSE, xlab = "batch1 * 2")
+eda_dens(batch1, batch2, fx = "x * 2", show.par = FALSE, bw = 2)
+par(OP)
 ```
 
 Notice how applying a multiplier not only re-aligns the shape of both densities, but it also corrects the offset observed between both density distributions in the previous figure.
@@ -275,56 +193,48 @@ Notice how applying a multiplier not only re-aligns the shape of both densities,
 
 Sometimes, you might encounter a relationship that is both additive *and* multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to being parallel with the 45&deg; line. Once the multiplicative component is taken care of, resolve the additive portion. 
 
-```{r echo=FALSE, fig.width=6, fig.height=2}
+```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
 set.seed(132)
 batch1  <- sort(runif(10,10,20))
 batch2  <- sort(batch1 * 1.5 + 4 + rnorm(length(batch1), 0,1))
-s1 <- data.frame(batch1, batch2)
-xylim <- range(s1)
-qq1 <- ggplot(s1, aes(batch1,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-  coord_fixed(xlim=xylim, ylim = xylim)
-dd1 <- ggplot() + 
-  geom_density(data = s1, aes(x=batch1, fill = "batch1" ),  bw=5) +  
-  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
-  labs(fill="batches") + xlab("values")
-grid.arrange(qq1, dd1, ncol =2)
+
+OP <- par(mfrow=c(1,2))
+eda_qq(batch1, batch2 ,show.par = FALSE)
+eda_dens(batch1, batch2, show.par = FALSE, bw = 3)
+par(OP)
 ```        
 
 The above dataset can be decomposed into its multiplicative component (multiply `batch1` by ~ 1.5),
 
-```{r echo=FALSE, fig.width=6,fig.height=2}
-qq1 <- ggplot(s1, aes(batch1*1.5,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-  coord_fixed(xlim=xylim, ylim = xylim)
-dd1 <- ggplot() + 
-  geom_density(data = s1, aes(x=batch1*1.5, fill = "batch1*1.5" ),  bw=5) +  
-  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
-  labs(fill="batches") + xlab("values")
-grid.arrange(qq1, dd1, ncol =2)
+```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
+OP <- par(mfrow=c(1,2))
+eda_qq(batch1, batch2 , fx = "x * 1.5", show.par = FALSE, xlab = "batch1 * 1.5")
+eda_dens(batch1, batch2, fx = "x * 1.5", show.par = FALSE, bw =3 )
+par(OP)
+
 ``` 
 
 then by its additive component (we'll try and additive offset of 4):
  
-```{r echo=FALSE, fig.width=6,fig.height=2}
-qq1 <- ggplot(s1, aes(batch1*1.5+4,batch2)) + geom_point() + geom_abline( intercept=0, slope=1) +
-  coord_fixed(xlim=xylim, ylim = xylim)
-dd1 <- ggplot() + 
-  geom_density(data = s1, aes(x=batch1*1.5+4, fill = "batch1*1.5+4" ),  bw=5) +  
-  geom_density(data=s1, aes(x=batch2, fill = "batch2"), alpha = 0.4, bw=5) +
-  labs(fill="batches") + xlab("values")
-grid.arrange(qq1, dd1, ncol =2)
+```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
+OP <- par(mfrow=c(1,2))
+ eda_qq(batch1, batch2 , fx = "x * 1.5 + 4", show.par = FALSE, xlab = "batch1 * 1.5")
+ eda_dens(batch1, batch2, fx = "x * 1.5 + 4", show.par = FALSE, bw =3 )
+par(OP)
+
 ``` 
 
 The relationship between both batches can thus be defined by `batch2 = batch1 * 1.5 + 4`.
 
 ### Is the relationship between tenor and bass additive or multiplicative?
 
-Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we'll add 2.5 to the `Bass 2` value.
+Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we'll add 2.5 to the `Bass` value.
 
 ```{r , fig.width=3, fig.height=3}
-ggplot(s.qq, aes( x= `Tenor 1` + 2.5, y = `Bass 2`)) + 
+ggplot(qq.out, aes( x= Tenor + 2.5, y = Bass)) + 
              geom_point() + 
              geom_abline( intercept=0, slope=1) +
-             coord_fixed(ratio = 1, xlim=c(65,80), ylim = c(65,80)) + xlab("Tenor 1 + 2.5")
+             coord_fixed(ratio = 1, xlim=c(65,80), ylim = c(65,80)) + xlab("Tenor + 2.5")
 ```
 
 The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here. 
@@ -344,11 +254,11 @@ This forces the 45&deg; line in the previous q-q plots to a 0° slope. The final
 
 ### Generating a Tukey m-d plot using `ggplot`
 
-We continue with the `qq.out` dataset generated from the `qqplot` function.
+We will continue with the `qq.out` dataset generated from the `qqplot` function.
 
 ```{r fig.height=3, fig.width=3}
-md.y  <- (qq.out$y - qq.out$x) 
-md.x  <- (qq.out$y + qq.out$x) * 0.5
+md.y  <- (qq.out$Bass - qq.out$Tenor) 
+md.x  <- (qq.out$Bass + qq.out$Tenor) * 0.5
 df.md <- data.frame(md.x, md.y)
 
 ggplot(df.md,  aes(x = md.x, y = md.y)) + geom_point() + geom_abline( slope=0 ) +
@@ -366,37 +276,70 @@ md.offset
 
 The value of `r md.offset` is in agreement with what we eyeballed earlier. 
 
+## The `eda_qq` function
 
-## Pairwise q-q plots
+The `tukeyedar` package offers an improved version of the q-q plot function that you will be encouraged to use in this course. Some of its features that you may find helpful are highlighted next.
 
-A **pairwise q-q plot** allows one to view all combinations of batch pairs. This requires that we first find the smallest batch of height values, then interpolate all other batch values to match the smallest batch quantiles. Note that the pairwise plot is symmetrical about the diagonal. Here, we'll make use of the `lattice` package to generate the pairwise q-q plots.
+The function can take two separate vectors as input:
 
-
-```{r fig.width=6, fig.height=6} 
-library(lattice)
-# Find smallest batch
-f.rng <- min(tapply(singer$height, singer$voice.part, length))
-
-# Define quantile function
-fun1  <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
-
-# Compute quantiles for all factors
-t1    <- aggregate(singer$height ~ singer$voice.part, FUN=fun1, f.rng=f.rng )
-
-# Flip table and name columns
-t2    <- as.data.frame(t(t1[,-1]))
-names(t2) <- t1[,1]
-
-# Label columns of qmat using names of voice parts.
-splom(~t2,  axis.text.cex=0.6, pch = 20,
-      varname.cex=0.8,
-      pscales=3,
-      xlab="Heights (inches)",
-      prepanel.limits = function(x) (range(t2)), # force all axes the same
-      panel = function(x,y,...){
-        panel.grid()
-        panel.splom(x,y,...)
-        panel.abline(0,1,col="grey")
-      })
+```{r  class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+library(tukeyedar)
+eda_qq(Tenor, Bass) 
 ```
+
+It can also take a dataframe in long form as input. Note that the grouping variable assigned to the y-axis will be the first one listed in the group's levels. 
+
+```{r}
+levels(df2$voice.part)
+```
+
+Hence, `Bass 2` will be mapped to the y-axis.
+
+```{r  class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+eda_qq(df2, height, voice.part) 
+```
+
+The plot includes:
+
+ +  Shaded boxes representing each batch’s interquartile range (mid 50% of values).
+ +  Solid dashed lines inside the shaded boxes representing each batch’s medians.
+ +  Lightly shaded dashed dots representing each batch’s 12.5th and 87.5th quantiles (i.e. they show the ends of the mid 80% of values).
+ +  The power transformation applied to both batches shown in the upper right-hand corner of the plot. Power transformations will be covered later in this course.
+
+To add the offset to the x-axis, pass `"x + 2.5"` to the `fx` argument.
+
+```{r class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+eda_qq(Tenor, Bass, fx = "x + 2.5")
+```
+
+If you want to apply an offset to the y-axis, use the `fy` argument. Don't forget to reference the `y` variable instead of the `x` variable.
+
+```{r class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+eda_qq(Tenor, Bass, fy = "y - 2.5")
+```
+
+
+You'll note that the function returns a "suggested" offset in the console. For example, the above code chunks return the following suggested offset:
+
+```{r echo = FALSE}
+eda_qq(Tenor, Bass, show.par = FALSE, plot=FALSE)
+```
+
+When applied to the x-axis variable, we get:
+
+```{r class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+eda_qq(Tenor, Bass, fx = " x * 0.8571 + 12.4286 ")
+```
+
+This seems to improve little over the simpler `x + 2` offset expression. Always seek a parsimonious relationship between batches when possible.
+
+This function will also generate the Tukey mean-difference plot by setting `md` to `TRUE`.
+
+```{r class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+eda_qq(Tenor, Bass, md = TRUE)
+```
+
+Note that the offset arguments `fx` and `fy` can be applied to the mean-difference plot.
+
+To learn more about the function, see [here](https://mgimond.github.io/tukeyedar/articles/qq.html).
 
