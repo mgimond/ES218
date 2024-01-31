@@ -1,4 +1,9 @@
-# The theoretical q-q
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# The theoretical q-q plot
 
 
 ```{r echo=FALSE}
@@ -7,13 +12,13 @@ source("libs/Common.R")
 
 
 ```{r echo = FALSE}
-pkg_ver(c("dplyr", "ggplot2","lattice", "tidyr"))
+pkg_ver(c("dplyr", "ggplot2","lattice", "tukeyedar"))
 ```
 
 
 ## Introduction
 
-Thus far, we have used the quantile-quantile plots to compare the distributions between two empirical (i.e. observational) datasets. This is sometimes referred to as an *empirical Q-Q plot*. We can also use the q-q plot to compare an empirical distribution to a theoretical distribution (i.e. one defined mathematically). Such a plot is usually referred to as a *theoretical Q-Q plot*. Examples of popular theoretical distribution are the normal distribution (aka the Gaussian distribution), the chi-square distribution, and the exponential distribution just to name a few.
+Thus far, we have used the quantile-quantile plots to compare the distributions between two empirical (i.e. observational) datasets--hence the name *empirical q-q plot*. We can also use the q-q plot to compare an empirical distribution to a theoretical distribution (i.e. one defined mathematically). Such a plot is usually referred to as a *theoretical Q-Q plot*. Examples of popular theoretical distribution are the normal distribution (aka the Gaussian distribution), the chi-square distribution, and the exponential distribution just to name a few.
 
 ```{r, fig.height=2, fig.width=7, echo=FALSE}
 OP <- par( mfrow=c(1,4))
@@ -25,6 +30,8 @@ x <- seq(0, 10, 0.1)
 plot(dexp(x,1) ~ x, type = "l",axes = FALSE, ylab = NA, xlab = ("Exponential"))
 par(OP)
 ```
+
+
 
 There are many reasons we might want to compare empirical data to theoretical distributions:
 
@@ -38,106 +45,85 @@ There are many reasons we might want to compare empirical data to theoretical di
  
 But very few empirical datasets follow any theoretical distributions exactly. So the questions usually ends up being "how well does theoretical distribution *X* fit my data?"
 
-The theoretical quantile-quantile plot is a tool to explore how a batch of numbers deviates from a theoretical distribution and to visually assess whether the difference is significant for the purpose of the analysis. In the following examples, we will compare empirical data to the normal distribution using the **normal quantile-quantile** plot.
+The theoretical quantile-quantile plot is a tool to explore how a batch of numbers deviates from a theoretical distribution and to visually assess whether the difference is significant for the purpose of the analysis. In the following examples, we will compare empirical data to the normal distribution using the **normal quantile-quantile** plot or **normal q-q** plot for short.
 
 ## The normal q-q plot
 
-The *normal q-q plot* is just a special case of the *empirical q-q plot* we've explored so far; the difference being that we assign the normal distribution quantiles to the x-axis.
+The *normal q-q plot* is just a special case of the *empirical q-q plot* we've covered in the previous chapter, the difference being that we assign the empirical quantiles to the y-axis and the matching normal quantiles to the x-axis. 
 
-### Drawing a normal q-q plot from scratch
 
-In the following example, we'll compare the `Alto 1` group to a normal distribution. We'll work off of the `Alto 1` height values.
+```{r echo=FALSE, fig.height=3, fig.width=3}
+library(tukeyedar)
+set.seed(121)
+x <- rnorm(30) * 2 + 32
+eda_qq(x, norm=T, show.par = FALSE, q = FALSE)
+```
 
-The data manipulation steps include:
-* Sorting the `height` values in ascending order;
-* Computing the f-values (we'll adopt Cleveland's algorithm);
-* Computing the matching quantile values from a *Normal* distribution (using the `qnorm` function).
+When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45&deg; (x=y) slope as was done with the empirical q-q plot--the range of values between both sets of numbers do not match. Here, we are only seeking the **straightness** of the point pattern.
 
- 
+
+We'll first learn how to generate this plot using the built-in R function, then we'll do the same with `ggplot2`.
+
+
+### Using R’s built-in functions
+
+In the following example, we'll compare the `Alto 1` group to a normal distribution. 
+
 ```{r}
 library(dplyr)
 
 alto  <- lattice::singer %>% 
   filter(voice.part == "Alto 1") %>% 
-  arrange(height) %>% 
-  mutate(fval = (row_number() -0.5) / n(),
-         x.norm = qnorm(fval))
+  pull(height)
 ```
 
-Next, we'll plot the sorted `alto` values against the normal values using the base plotting environment.
-
-```{r fig.height = 3, fig.width = 3, echo=2}
-OP <-par(mar=c(4,4,1,1))
-plot( height ~ x.norm, alto, type = "p", xlab = "Normal quantiles", pch = 20)
-par(OP)
-```
-
-When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45&deg; (x=y) slope as was done with the empirical q-q plot--the range of values between both sets of numbers do not match. Here, we are only seeking the **straightness** of the point pattern.
-
-There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile of the q-q plot. The following chunk of code identifies the quantiles for both the `alto` dataset and the theoretical normal distribution. It then computes the slope and intercept from these coordinates.
-
-```{r}
-# Find 1st and 3rd quartile for the Alto 1 data
-y <- quantile(alto$height, c(0.25, 0.75), type = 5)
-
-# Find the 1st and 3rd quartile of the normal distribution
-x <- qnorm( c(0.25, 0.75))
-
-# Now we can compute the intercept and slope of the line that passes
-# through these points
-slope <- diff(y) / diff(x)
-int   <- y[1] - slope * x[1]
-```
-
-Next, we add the line to the plot.
-
-```{r, fig.height = 3, fig.width = 3, echo=3}
-OP <-par(mar=c(4,4,1,1))
-plot( height ~ x.norm, alto, type = "p", xlab = "Normal quantiles", pch = 20)
-abline(a = int, b = slope )
-par(OP)
-```
-
-
-### Using R's built-in functions
-
-R has two built-in functions that facilitate the plot building task when comparing a batch to a normal distribution: `qqnorm` and `qqline`. Note that the function `qqline` allows the user to define the quantile method via the `qtype=` parameter. Here, we set it to 5 to match the $f$-value calculation adopted in this course.
+Note that `alto` is a single vector element. We'll use two built-in functions to generate a normal q-q plot: `qqnorm` and `qqline`. 
 
 ```{r fig.height=3, fig.width=3, echo=2:3, results='hold'}
 OP <-par(mar=c(4,4,1,1))
-qqnorm(alto$height)
-qqline(alto$height, qtype = 5)
+qqnorm(alto)
+qqline(alto, qtype = 5)
 par(OP)
 ```
 
-That's it. Just two lines of code!
+There are many ways one can fit a line to the data, Cleveland opts to fit a line to the first and third quartile (IQR) of the q-q plot (this is the method we adopted by setting `qtype = 5` in the call to `qqline`). 
+
 
 ### Using the ggplot2 plotting environment
 
-#### `ggplot2` version 3.0 or greater
-
-As of version 3.0, `ggplot` has  the `stat_qq_line` function (or `geom_qq_line`) that will generate the interquartile fit. So to generate the theoretical q-q plot, use the `stat_qq` function (or `geom_qq`) to generate the point plot, then call `stat_qq_line` to generate the IQR fit.
+To generate the theoretical q-q plot, we first use the `stat_qq` function to generate the point plot, then we call the `stat_qq_line` function to generate the IQR fit.
 
 ```{r, fig.height=3, fig.width=3}
 library(ggplot2)
 
-ggplot(alto, aes(sample = height)) + stat_qq(distribution = qnorm) + 
-  stat_qq_line(line.p = c(0.25, 0.75), col = "blue") + 
+ggplot() + aes(sample = alto) + stat_qq(distribution = qnorm) +
+  stat_qq_line(line.p = c(0.25, 0.75), col = "blue") +
   xlab("Unit normal quantile") + ylab("Height")
 
 ```
 
-The `stat_qq_line` function uses the built-in `quantile` function and as such will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This differs from Cleveland's approach to computing the f-value. This setting cannot be changed in `stat_qq_line`.
+Note the slight difference in syntax used with `ggplot` when passing a vector instead of a dataframe to the function. Here, we take the `aes()` function outside of the `ggplot()` function. This is done to render a cleaner syntax. The alternative, `ggplot(,aes(sample = alto))`, would make it difficult to notice the comma thus increasing the chance for a typo.
+
+The `stat_qq_line` function uses the built-in `quantile` function and as such will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This differs from Cleveland's approach to computing the f-value. This explain the slight difference in the fitted line between the `ggplot` method and the base method where we set `qtype` to `5`. This setting cannot be changed in `stat_qq_line`.
+
+Note that `geom_qq` and  `geom_qq_line` functions are identical to `stat_qq`and `stat_qq_line`.
 
 ## How normal is my dataset?
 
-Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal Q-Q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The `rnorm` function is used in this example to randomly pick a number from a normal distribution whose mean is `0` and whose standard deviation is `1`. You can, of course, change the mean and standard deviation values to reflect the data being simulated.
+The `alto` batch of values seem to do a good job in following a normal distribution given how well they follow a straight line. The stair-step pattern in the points is simply a byproduct of the rounding of height values to the nearest inch. A few observations at the tail ends of the distribution deviate from normal, but this is to be expected given that tail ends of distributions tend to be noisy.
+
+## What would a normal distribution look like?
+
+Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal q-q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The `rnorm` function is used in this example to randomly pick a number from a normal distribution whose mean is set to the mean of the `alto` values  and whose standard deviation is set to the mean of the `alto` values. We also round the values to mimic the rounding of height values observed in the `singer` dataset.
 
 
-```{r fig.height=3, fig.width=9}
-set.seed(211)  # Sets random generator seed for consistent output
+```{r fig.height=2.7, fig.width=9}
+set.seed(321)  # Sets random generator seed for consistent output
+
+# Simulate values from a normal distribution
 sim <- data.frame(sample = paste0("Sample",1:5),
-                  value  = rnorm(20*5, mean = 0, sd = 1))
+                  value  = round(rnorm(length(alto)*5, 
+                                 mean = mean(alto), sd = sd(alto))))
 
 # Generate q-q plots of the simulated values
 ggplot(sim, aes(sample = value)) + stat_qq(distribution = qnorm) +
@@ -147,8 +133,10 @@ ggplot(sim, aes(sample = value)) + stat_qq(distribution = qnorm) +
 
 ```
 
-Of the five simulated batches, only `Sample2` generates a *textbook*  q-q plot one would expect from a normally distributed batch of values. The other simulated batches generate plots that *could* lead one to question whether the data were pulled from a normal distribution, even though we know that they were!
 
+Of the five simulated batches, `Sample3` generates a *textbook*  normal q-q plot that one would expect from a normally distributed batch of values. `Sample2` *could* lead one to question whether the data were pulled from a normal distribution, even though we know that they were!
+
+Our actual normal q-q plot of the `alto` values does not look different from some of these simulated plots. This lends confidence in our earlier verdict that the `alto` height distribution can be characterized by a normal distribution.
 
 ## How normal q-q plots behave in the face of skewed data
 
@@ -204,3 +192,16 @@ for (i in 1:5 ) {
 par(OP)
 
 ```
+
+## The `eda_qq` function
+
+You were introduced to the `eda_qq` custom function in the previous chapter. This function can also be used to generate normal q-q plots by setting `norm` to `TRUE`. In such a case, the function takes as input a single vector of values.
+
+```{r  class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+library(tukeyedar)
+eda_qq(alto, norm=TRUE) 
+```
+
+The function defaults to the quantile type `5`. To adopt the default quantile type used in `ggplot2`, set `q.type = 7`.
+
+Note that when the `eda_qq` function is used to generate a normal q-q plot, the light dashed lines highlight the standard deviation for both sets of values. This differs from the mid 80% representation of values adopted by the function when generating an empirical q-q plot.
