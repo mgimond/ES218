@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Spread-level plots
 
 
@@ -41,55 +46,54 @@ The red line in the plot helps identify the type of relationship between spread 
 
 The singer dataset does not seem to exhibit any dependence between a voice part's spread and its median value.
 
-Next, we'll look at an example of a dataset that does exhibit a dependence between spread and fitted values.
+Next, we'll look at an example of a dataset that *does* exhibit a dependence between spread and fitted values.
 
-## Cleveland's food web dataset
+## R's built in `iris` dataset
 
-On page 60, Cleveland compares spread vs location for three different batches of values: two, three and mixed dimensional ecosystems. The values represent the mean chain length of a web (defined by the  number of hierarchical prey-predator links in the web) for the three different ecosystem types. 
+R has a built-in dataset called `iris` that provide measurements of sepal and petal dimensions for three different species of the iris family. In this next example, we will plot the spreads of the `Petal.Length` residuals (after removing their group median values) to their group medians.
 
 ```{r, fig.height=3,fig.width=3.5}
-df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
-
 # Create two new columns: group median and group residuals
-df1 <- df %>%
-  group_by(dimension)  %>%
-  mutate( Median = median(mean.length),
-          Residuals = sqrt(abs( mean.length - Median)))   
+ df1 <- iris %>%
+   group_by(Species)  %>%
+   mutate( Median = median(Petal.Length),
+           Residuals = sqrt(abs( Petal.Length - Median)))  
 
-# Generate the s-l plot
-ggplot(df1, aes(x = Median, y = Residuals)) + 
-  geom_jitter(alpha = 0.4, width = 0.05, height = 0) +
-  stat_summary(fun = median, geom = "line", col = "red") +
-  ylab(expression(sqrt( abs(" Residuals ")))) +
-  geom_text(aes(x = Median, y = 1.75, label = dimension))
-
+# Generate the s-l plot 
+ ggplot(df1, aes(x = Median, y = Residuals)) + 
+   geom_jitter(alpha = 0.4, width = 0.05, height = 0) +
+   stat_summary(fun = median, geom = "line", col = "red") +
+   ylab(expression(sqrt( abs(" Residuals ")))) +
+   geom_text(aes(x = Median, y = 1.3, label = Species))
+ 
 ```
 
-A monotonic spread is apparent in this dataset too, i.e. as the median chain length increases, so does the spread.
+A monotonic spread is apparent in this dataset too, i.e. as the median length of the Petal increases, so does the spread.
 
 ## How can we stabilize spreads in a dataset?
 
-A common technique used to help reduce or eliminate monotonic variations in the spreads as a function of fitted values is to **re-express** the original values. Re-expression is covered in the next chapter.
+A technique used to help reduce or eliminate monotonic variations in the spreads as a function of fitted values is to **re-express** the original values. Re-expression, which involves transforming values via a pwoer transformation, will be covered in the next chapter. However, in the next section, we learn of a variation of the s-l plot that can identify a power transformation that can help stabilize spread. 
 
-## Variations of the S-L plot
 
-Another version of the S-L plot (and one that seems to be the most popular) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).  
+### Variations of the S-L plot
+
+Another version of the S-L plot (and one that seems to be more mainstream) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).  
 
 This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week's lecture) via **power = 1 - slope**.
 
 This variant of the s-l plot can be computed in R as follows (we will use the food web data as an example).
 
 ```{r fig.height=2.8, fig.width=2.8}
-sl <- df1 %>%
-  group_by(dimension)  %>%
-  summarise (level  = log(median(mean.length)),
-                IQR = IQR(mean.length),  # Computes the interquartile range
+sl <- iris %>%
+  group_by(Species)  %>%
+  summarise (level  = log(median(Petal.Length)),
+                IQR = IQR(Petal.Length),  # Computes the interquartile range
              spread = log(IQR))
 
 ggplot(sl, aes(x = level, y = spread)) + geom_point() + 
   stat_smooth(method = MASS::rlm, se = FALSE) +
   xlab("Median (log)") + ylab("Spread (log)") +
-  geom_text(aes(x = level, y = spread, label = dimension), 
+  geom_text(aes(x = level, y = spread, label = Species), 
             vjust = 1.21, cex = 2.8)
 ```
 
@@ -101,6 +105,24 @@ The slope suggests a monotonic increase in spread vs location. We can extract th
 coefficients(MASS::rlm(spread ~ level, sl))
 ```
 
-The slope is the second coefficient in the above output. The computed slope value is `2.97`. This suggests a power transformation of `1 - 2.97` (or about `-1.97`).
+The slope is the second coefficient in the above output. The computed slope value is `1.14`. This suggests a power transformation of `1 - 1.14` (or about `-0.14`). You will learn in the next chapter that as a power transformation value approaches `0`, when can opt to use the `log` transformation instead. We'll try this next.
 
-A re-expression of this dataset will be explored in the next chapter.
+```{r, fig.height=3,fig.width=3.5}
+# Create two new columns: group median and group residuals
+ df1 <- iris %>%
+   group_by(Species)  %>%
+   mutate( log.length = log(Petal.Length),
+           Median = median(log.length),
+           Residuals = sqrt(abs( log.length - Median)))  
+
+# Generate the s-l plot 
+ ggplot(df1, aes(x = Median, y = Residuals)) + 
+   geom_jitter(alpha = 0.4, width = 0.05, height = 0) +
+   stat_summary(fun = median, geom = "line", col = "red") +
+   ylab(expression(sqrt( abs(" Residuals ")))) +
+   geom_text(aes(x = Median, y = 1.3, label = Species))
+ 
+```
+
+Applying a log transformation to the petal length values seems to have helped stabilize the spread given that the connected lines are close to flat. Would applying a power transformation of `-0.14` have helped? We will revisit this dataset in the next chapter.
+

@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Re-expressing values
 
 
@@ -244,33 +249,31 @@ The choice of re-rexpression will depend on the analysis context. For example, i
 
 ## Re-expressing to stabilize spread
 
-We learned in the last chapter that one rendering of the spread-level plot can suggest the power transformation to use. We'll recreate the plots (however this time, we'll make use if the base plotting functions).
+We learned in the last chapter that one version of the spread-level plot can suggest the power transformation to use. We'll recreate the plots (however this time, we'll make use if the base plotting functions).
 
-```{r fig.height=2, fig.width=2.2, echo=2:9}
+```{r fig.height=2, fig.width=2.2, echo=2:8}
 OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
 library(dplyr)
-df <- read.csv("http://mgimond.github.io/ES218/Data/Food_web.csv")
 
 # Create s-l table 
-df.sl <- df %>%
-  group_by(dimension) %>%
-  summarise(med  = log(median(mean.length)),
-            IQR  = IQR(mean.length),  
-            sprd = log(IQR))
+df.sl <- iris %>%
+  group_by(Species)  %>%
+  summarise (level  = log(median(Petal.Length)),
+                IQR = IQR(Petal.Length),  # Computes the interquartile range
+             spread = log(IQR))
 
 # Plot spread vs median
-plot(sprd ~ med, df.sl, pch = 16)
+plot(spread ~ level, df.sl, pch = 16)
 par(OP)
 ```
 
 The plot suggests a monotonic relationship between spread and median. Next, we'll  fit a line to this scatter plot and compute its slope. We'll use the `MASS::rlm()` function, but note that any other line fitting strategies could be used as well.
 
-```{r fig.height=2, fig.width=2.2, echo=2:6}
+```{r fig.height=2, fig.width=2.2, echo=3:4}
 OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
-plot(sprd ~ med, df.sl, pch = 16)
+plot(spread ~ level, df.sl, pch = 16)
 
-# Run regression model
-M <- MASS::rlm(sprd ~ med, df.sl)
+M <- MASS::rlm(spread ~ level, df.sl)
 abline(M, col = "red")
 par(OP)
 ```
@@ -283,40 +286,39 @@ The slope can be extracted from the model `M` using the `coef` function:
 coef(M)
 ```
 
-The second value in the output is the slope. So the power to use is `1 - 2.97` or `-1.97`. We will use the  power transformation function `BC`  to re-express the `mean.length` values. We'll add the re-expressed values as a new  column to `df`:
+The second value in the output is the slope. So the power to use is `1 - 1.14` or `-0.97`. We will use the  power transformation function `BC`  to re-express the `Petal.Length` values. We'll add the re-expressed values as a new  column to `df`:
 
 ```{r}
-df$re.mean.length <- BC(df$mean.length, -1.97)
+iris$re.Petal.Length <- BC(iris$Petal.Length, -0.14)
 ```
 
 Let's compare boxplots between the original values with the re-expressed values.
 
 ```{r fig.height=3, fig.width=6, fig.show='hold', echo=2:3}
 OP <- par(mfrow = c(1,2), mar=c(3,2,2,0.1))
-boxplot(mean.length ~ reorder(dimension, mean.length, median), df, 
+boxplot(Petal.Length ~ reorder(Species, Petal.Length, median), iris, 
         main = "Original data")
-boxplot(re.mean.length ~ reorder(dimension, mean.length, median), df, 
+boxplot(re.Petal.Length ~ reorder(Species, Petal.Length, median), iris, 
         main = "Re-expressed data")
 par(OP)
 ```
 
-Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have eliminated the monotonic increase in spread, but did the re-expression go too far? Could we be seeing a slight decrease in spread with increasing medians? 
+Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have eliminated the monotonic increase in spread, but an s-l plot will be more effective in helping confirm this.
 
-We'll check for a homogeneous spread across fitted medians using one of the spread-level plots covered in the last chapter.
 
 ```{r fig.height=2.5, fig.width=3.2}
 library(ggplot2)
-df1 <- df %>%
-  group_by(dimension)  %>%
-  mutate( Median = median(re.mean.length),
-          Residuals = sqrt( abs( re.mean.length - Median)))   
+df1 <- iris %>%
+  group_by(Species)  %>%
+  mutate( Median = median(re.Petal.Length),
+          Residuals = sqrt( abs( re.Petal.Length - Median)))   
 
 # Generate the s-l plot
 ggplot(df1, aes(x = Median, y = Residuals)) + 
   geom_jitter(alpha = 0.3, width = 0.003, height = 0) +
   stat_summary(fun.y = median, geom = "line", col = "red") +
   ylab(expression(sqrt( abs( " Residuals ")))) +
-  geom_text(aes(x = Median, y = 0.6, label = dimension) )
+  geom_text(aes(x = Median, y = 0.6, label = Species) )
 ```
 
 The plot suggests a slightly decreasing spread with increasing fitted values. We may want to scale back on the power to see if we can eliminate one monotonic spread (increasing) without creating another one (decreasing).
@@ -324,19 +326,19 @@ The plot suggests a slightly decreasing spread with increasing fitted values. We
 An examination of other powers leads us to a power of `-1.5` which seems to remove any increasing spreads without creating a decreasing spread.
 
 ```{r}
-df$re.mean.length <- BC(df$mean.length, -1.5)
+iris$re.Petal.Length <- BC(iris$Petal.Length, -0.1)
 ```
 
 ```{r fig.height=2.5, fig.width=3.2}
-df1 <- df %>%
-  group_by(dimension)  %>%
-  mutate( Median = median(re.mean.length),
-          Residuals = sqrt( abs( re.mean.length - Median)))   
+df1 <- iris %>%
+  group_by(Species)  %>%
+  mutate( Median = median(re.Petal.Length),
+          Residuals = sqrt( abs( re.Petal.Length - Median)))   
 
 # Generate the s-l plot
 ggplot(df1, aes(x = Median, y = Residuals)) + 
   geom_jitter(alpha = 0.3, width = 0.003, height = 0) +
   stat_summary(fun.y = median, geom = "line", col = "red") +
   ylab(expression(sqrt( abs( " Residuals ")))) +
-  geom_text(aes(x = Median, y = 0.6, label = dimension) )
+  geom_text(aes(x = Median, y = 0.6, label = Species) )
 ```
