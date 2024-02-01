@@ -442,7 +442,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <li><a href="#using-the-ggplot2-plotting-environment" id="toc-using-the-ggplot2-plotting-environment" class="nav-link" data-scroll-target="#using-the-ggplot2-plotting-environment"><span class="header-section-number">18.2.2</span> Using the ggplot2 plotting environment</a></li>
   </ul></li>
   <li><a href="#how-normal-is-my-dataset" id="toc-how-normal-is-my-dataset" class="nav-link" data-scroll-target="#how-normal-is-my-dataset"><span class="header-section-number">18.3</span> How normal is my dataset?</a></li>
-  <li><a href="#what-would-a-normal-distribution-look-like" id="toc-what-would-a-normal-distribution-look-like" class="nav-link" data-scroll-target="#what-would-a-normal-distribution-look-like"><span class="header-section-number">18.4</span> What would a normal distribution look like?</a></li>
+  <li><a href="#what-would-a-dataset-pulled-from-a-normal-distribution-look-like" id="toc-what-would-a-dataset-pulled-from-a-normal-distribution-look-like" class="nav-link" data-scroll-target="#what-would-a-dataset-pulled-from-a-normal-distribution-look-like"><span class="header-section-number">18.4</span> What would a dataset pulled from a normal distribution look like?</a></li>
   <li><a href="#how-normal-q-q-plots-behave-in-the-face-of-skewed-data" id="toc-how-normal-q-q-plots-behave-in-the-face-of-skewed-data" class="nav-link" data-scroll-target="#how-normal-q-q-plots-behave-in-the-face-of-skewed-data"><span class="header-section-number">18.5</span> How normal q-q plots behave in the face of skewed data</a></li>
   <li><a href="#the-eda_qq-function" id="toc-the-eda_qq-function" class="nav-link" data-scroll-target="#the-eda_qq-function"><span class="header-section-number">18.6</span> The <code>eda_qq</code> function</a></li>
   </ul>
@@ -571,12 +571,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="using-rs-built-in-functions" class="level3" data-number="18.2.1">
 <h3 data-number="18.2.1" class="anchored" data-anchor-id="using-rs-built-in-functions"><span class="header-section-number">18.2.1</span> Using R’s built-in functions</h3>
 <p>In the following example, we’ll compare the <code>Alto 1</code> group to a normal distribution.</p>
-<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-5_7f96c58bd63894d727afee4217b34908">
+<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-5_1b560da5ef202195967b4c09ee2ecb45">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>alto  <span class="ot">&lt;-</span> lattice<span class="sc">::</span>singer <span class="sc">%&gt;%</span> </span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(voice.part <span class="sc">==</span> <span class="st">"Alto 1"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(height)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> lattice<span class="sc">::</span>singer</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>alto  <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(voice.part <span class="sc">==</span> <span class="st">"Alto 1"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(height)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that <code>alto</code> is a single vector element. We’ll use two built-in functions to generate a normal q-q plot: <code>qqnorm</code> and <code>qqline</code>.</p>
 <div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-6_5a1aceafee812807459bd266c4807af2">
@@ -591,11 +593,11 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="using-the-ggplot2-plotting-environment" class="level3" data-number="18.2.2">
 <h3 data-number="18.2.2" class="anchored" data-anchor-id="using-the-ggplot2-plotting-environment"><span class="header-section-number">18.2.2</span> Using the ggplot2 plotting environment</h3>
 <p>To generate the theoretical q-q plot, we first use the <code>stat_qq</code> function to generate the point plot, then we call the <code>stat_qq_line</code> function to generate the IQR fit.</p>
-<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-7_237a6efe0169ddef219b847a5068e75d">
+<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-7_18bbf41a5425a5cf46824bcbdc912df7">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">sample =</span> alto) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>(<span class="at">line.p =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">col =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>(<span class="at">col =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Unit normal quantile"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Height"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="theoretical_qq_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="288"></p>
@@ -609,47 +611,58 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="how-normal-is-my-dataset" class="level2" data-number="18.3">
 <h2 data-number="18.3" class="anchored" data-anchor-id="how-normal-is-my-dataset"><span class="header-section-number">18.3</span> How normal is my dataset?</h2>
 <p>The <code>alto</code> batch of values seem to do a good job in following a normal distribution given how well they follow a straight line. The stair-step pattern in the points is simply a byproduct of the rounding of height values to the nearest inch. A few observations at the tail ends of the distribution deviate from normal, but this is to be expected given that tail ends of distributions tend to be noisy.</p>
-</section>
-<section id="what-would-a-normal-distribution-look-like" class="level2" data-number="18.4">
-<h2 data-number="18.4" class="anchored" data-anchor-id="what-would-a-normal-distribution-look-like"><span class="header-section-number">18.4</span> What would a normal distribution look like?</h2>
-<p>Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal q-q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The <code>rnorm</code> function is used in this example to randomly pick a number from a normal distribution whose mean is set to the mean of the <code>alto</code> values and whose standard deviation is set to the mean of the <code>alto</code> values. We also round the values to mimic the rounding of height values observed in the <code>singer</code> dataset.</p>
-<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-8_aa1615b0e0ced342f69a9bb03919210c">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">321</span>)  <span class="co"># Sets random generator seed for consistent output</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate values from a normal distribution</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sample =</span> <span class="fu">paste0</span>(<span class="st">"Sample"</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>),</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">value  =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="fu">length</span>(alto)<span class="sc">*</span><span class="dv">5</span>, </span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">mean =</span> <span class="fu">mean</span>(alto), <span class="at">sd =</span> <span class="fu">sd</span>(alto))))</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate q-q plots of the simulated values</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sim, <span class="fu">aes</span>(<span class="at">sample =</span> value)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>(<span class="at">line.p =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">col =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Unit normal quantile"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Simulated normals"</span>) <span class="sc">+</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> sample, <span class="at">nrow =</span> <span class="dv">1</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>So how do the other singer groups compare to a normal distribution? We’ll make use of ggplot’s faceting function to generate all eight normal q-q plots.</p>
+<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-8_a896851db245a82bc32a54a321a29046">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample=</span>height)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution=</span>qnorm) <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>( <span class="at">col =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Unit normal quantile"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Height"</span>) <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>voice.part, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="theoretical_qq_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="864"></p>
+<p><img src="theoretical_qq_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="768"></p>
+</div>
+</div>
+<p>For the most part, all eight batches appear to follow a normal distribution.</p>
+</section>
+<section id="what-would-a-dataset-pulled-from-a-normal-distribution-look-like" class="level2" data-number="18.4">
+<h2 data-number="18.4" class="anchored" data-anchor-id="what-would-a-dataset-pulled-from-a-normal-distribution-look-like"><span class="header-section-number">18.4</span> What would a dataset pulled from a normal distribution look like?</h2>
+<p>Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal q-q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The <code>rnorm</code> function is used in this example to randomly pick a number from a normal distribution whose mean is set to the mean of the <code>alto</code> values and whose standard deviation is set to the standard deviation of the <code>alto</code> values. We also round the values to mimic the rounding of height values observed in the <code>singer</code> dataset.</p>
+<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-9_c4f5ee6ad922f2286ff35e833a37ebcb">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">321</span>)  <span class="co"># Sets random generator seed for consistent output</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate values from a normal distribution</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sample =</span> <span class="fu">paste0</span>(<span class="st">"Sample"</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">value  =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="fu">length</span>(alto)<span class="sc">*</span><span class="dv">5</span>, </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">mean =</span> <span class="fu">mean</span>(alto), <span class="at">sd =</span> <span class="fu">sd</span>(alto))))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate q-q plots of the simulated values</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sim, <span class="fu">aes</span>(<span class="at">sample =</span> value)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>(<span class="at">line.p =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), <span class="at">col =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Unit normal quantile"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Simulated normals"</span>) <span class="sc">+</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> sample, <span class="at">nrow =</span> <span class="dv">1</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="theoretical_qq_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="864"></p>
 </div>
 </div>
 <p>Of the five simulated batches, <code>Sample3</code> generates a <em>textbook</em> normal q-q plot that one would expect from a normally distributed batch of values. <code>Sample2</code> <em>could</em> lead one to question whether the data were pulled from a normal distribution, even though we know that they were!</p>
-<p>Our actual normal q-q plot of the <code>alto</code> values does not look different from some of these simulated plots. This lends confidence in our earlier verdict that the <code>alto</code> height distribution can be characterized by a normal distribution.</p>
+<p>The singer height normal q-q plots do not look different from some of these simulated plots. In fact, they probably look more <em>Normal</em> then the simulated set of values! This lends confidence in our earlier verdict that the <code>singer</code> height distributions can be characterized by a normal distribution.</p>
 </section>
 <section id="how-normal-q-q-plots-behave-in-the-face-of-skewed-data" class="level2" data-number="18.5">
 <h2 data-number="18.5" class="anchored" data-anchor-id="how-normal-q-q-plots-behave-in-the-face-of-skewed-data"><span class="header-section-number">18.5</span> How normal q-q plots behave in the face of skewed data</h2>
 <p>It can be helpful to simulate distributions of difference skewness to see how a normal quantile plot may behave. In the following figure, the top row shows different density distribution plots; the bottom row shows the <strong>normal q-q plots</strong> for each distribution.</p>
-<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-9_3b0bd2ee760ee6a56b7db6f9ea2acca0">
+<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-10_7cb7fbce3e782328d8c00f585dfb1376">
 <div class="cell-output-display">
-<p><img src="theoretical_qq_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="864"></p>
+<p><img src="theoretical_qq_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="864"></p>
 </div>
 </div>
 </section>
 <section id="the-eda_qq-function" class="level2" data-number="18.6">
 <h2 data-number="18.6" class="anchored" data-anchor-id="the-eda_qq-function"><span class="header-section-number">18.6</span> The <code>eda_qq</code> function</h2>
 <p>You were introduced to the <code>eda_qq</code> custom function in the previous chapter. This function can also be used to generate normal q-q plots by setting <code>norm</code> to <code>TRUE</code>. In such a case, the function takes as input a single vector of values.</p>
-<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-10_2aaa08fe06ab5c251f9233a70577f305">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(alto, <span class="at">norm=</span><span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="theoretical_qq_cache/html/unnamed-chunk-11_7a23a95f7d9ef55c4ab324dbbe7329a4">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(alto, <span class="at">norm=</span><span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="theoretical_qq_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="240"></p>
+<p><img src="theoretical_qq_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
 <p>The function defaults to the quantile type <code>5</code>. To adopt the default quantile type used in <code>ggplot2</code>, set <code>q.type = 7</code>.</p>

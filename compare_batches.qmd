@@ -352,18 +352,22 @@ To learn more about the `eda_qq` function, see [here](https://mgimond.github.io/
 
 ## So how to the batches of singer heights compare?
 
-We've learned that the `Tenor 1` and `Bass 2` batches differ only by location (i.e. central value) and not by spread (i.e. shape of their distribution). How do the other singer groups compare? This requires making 28 comparisons, something that is best done by generating a plot matrix.
-
+We've learned that the `Tenor 1` and `Bass 2` batches differ only by location (i.e. central value) and not by spread (i.e. shape of their distribution). How do the other singer groups compare? This requires making $8 * (8-1) /2 = 28$ comparisons, something that is best done by generating a plot matrix.
 
 ```{r fig.height = 7, fig.width = 7}
-min_size <- min(tapply(df$height, df$voice.part, length)) # get smallest batch size
+# Find smallest batch size
+min_size <- min(tapply(df$height, df$voice.part, length)) 
+
+# Split singers into groups based on their voice parts
 singer_split <- split(df$height, df$voice.part) # Split singers into groups
-rng <- range(df$height) # Get range of height values
+
+# Get the range of height values for all groups
+rng <- range(df$height) 
 
 # Compute quantiles for each batch using the smallest range of f-values defined
-# in rng
+# in min_size
 qq_df <- as.data.frame(lapply(singer_split, 
-                              function(x) quantile(x, 
+                              function(x) quantile(x, type = 5,
                                                    p = (1:min_size -0.5)/min_size) ))
 
 # Generate plot matrix
@@ -373,19 +377,23 @@ points(x,y,pch=18)
 }
 
 pairs(qq_df, upper.panel=NULL, panel = plotfun, xlim = rng, ylim=rng)  
-
 ```
 
 With a few exceptions, the singer height distributions differ mostly by an additive offset given that most points are parallel to the 45&deg; line. There is one notable exception: the `Tenor 1` and `Tenor 2` q-q plot which seems to show a prominent multiplicative offset. We can explore this pair in greater detail. We'll make use of our custom q-q plot function:
 
-```{r class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+```{r class.source="eda", fig.height=3.2, fig.width=2.5, results='hide'}
 Tenor1 <- filter(df, voice.part == "Tenor 1") %>%  pull(height)
 Tenor2 <- filter(df, voice.part == "Tenor 2") %>%  pull(height)
 eda_qq(Tenor2, Tenor1)
 ```
 
-The point pattern looks different here than it does in the matrix, this is because the batch sizes between `Tenor1` and `Tenor2` are the same and the `eda_qq` function will not interpolate the values. The matrix operation forces an interpolation using the `quantile` function even though none is needed. Hence, the quantile function will add a fractional component to some of the values.
+It may help to understand how these batches differ by comparing their density distributions. Here, we'll make use of another custom function, `eda_dens`.
 
+```{r class.source="eda", fig.height=3.3, fig.width=3, results='hide'}
+eda_dens(Tenor2, Tenor1)
+```
+
+The differences in shape between both distributions explains the multiplicative offset observed in the q-q plot. The distribution of height values is wider for the `Tenor 1` group than it is for the `Tenor 2` group.  This suggests greater variability in height values for `Tenor 1`.
 
 
 

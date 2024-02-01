@@ -1,4 +1,9 @@
-# Univariate analysis: Fits and residuals
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Fits and residuals
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -10,7 +15,7 @@ pkg_ver(c("dplyr", "tidyr", "ggplot2","lattice"))
 ```
 
 
-In previous lectures, we've determined that the `voice.part` singer groups differed only by location (central value) and not so much by spread. In this section, we will expand this analysis by  **fitting** a model (the mean) to the data, then we'll explore the residuals (i.e. the part of the data not explained by the fitted model). This exercise will tackle two objectives:
+In the previous chapters, we've determined that the `voice.part` singer groups differed only by location (central value) and not so much by spread. In this section, we will expand this analysis by  **fitting** a model (the mean) to the data, then we'll explore the residuals (i.e. the part of the data not explained by the fitted model). This exercise will tackle two objectives:
 
  + To seek a simple *mathematical* model to characterize both the mean and spread of the data.
  + To compare the influence of the voice part to that of the spread in characterizing the variation in height values (this to help address the question *"are the mean values of the voice parts significantly different?"*).
@@ -19,7 +24,7 @@ In previous lectures, we've determined that the `voice.part` singer groups diffe
 
 Univariate data can be characterized by their location and by their spread. The different groups of singers differ by their central values, we will therefore **fit** the group means to each group batch and compare the **residuals** between groups.
 
-First, we'll load the libraries that will be used in this exercise, then we'll load the `singer` data into the `df` object.
+First, we'll load the libraries that will be used in this chapter, then we'll load the `singer` data into the `df` object.
 
 ```{r}
 library(dplyr)
@@ -67,34 +72,36 @@ We've *normalized* the batches to a common location. Note that the values along 
 
 The feature that interests us in the residuals is the **spread**. We've learned that a good way to compare spreads is to plot the quantiles of each batch against one another. 
 
-### Pairwise q-q plots with the `lattice` package
+### Residual q-q plots 
 
-If we want to compare *all* batches of residuals, we can create a pairwise q-q plot using the `lattice` package.
+If we want to compare *all* batches of residuals, we can create a matrix of pairwise **residual q-q plots**. We'll adopt the same code chunk used to generate the pairwise empirical q-q plots in chapter 17.
 
-```{r fig.width = 5, fig.height= 5}
-f.rng <- min(tapply(df2$Height.res, df2$voice.part, length))
-fun1  <- function(x,f.rng) {approx(1:length(x), sort(x), n = f.rng )$y}
-t1    <- aggregate(df2$Height.res ~ df2$voice.part, FUN = fun1, f.rng = f.rng )
-t2    <- as.data.frame(t(t1[,-1]))
-names(t2) <- t1[,1]
-splom(~t2,  axis.text.cex = 0.4, pch = 20,
-      varname.cex=0.5,
-      pscales=3,
-      prepanel.limits = function(x) (range(t2)), 
-      panel = function(x,y,...){
-        panel.grid()
-        panel.splom(x,y,...)
-        panel.abline(0, 1, col="grey")
-      })
+```{r fig.width = 6, fig.height= 6}
+min_size     <- min(tapply(df2$Height.res, df$voice.part, length)) 
+singer_split <- split(df2$Height.res, df$voice.part)
+rng          <- range(df2$Height.res) 
+ 
+qq_df <- as.data.frame(lapply(singer_split, 
+                              function(x) quantile(x, type = 5,
+                                                   p = (1:min_size -0.5)/min_size) ))
+
+plotfun = function(x,y, ...){
+points(x,y,pch=18)
+  abline(c(0,1),col="blue")
+}
+
+pairs(qq_df, upper.panel=NULL, panel = plotfun, xlim = rng, ylim=rng) 
 ```
 
-Note that the plots are symmetrical about the diagonal. The q-q plots suggest that the spreads are very similar across singer heights given that the points fall almost perfectly along the one-to-one line.
+Since we removed the means from each batch of values, each pair of values should no longer display any significant offsets. This facilitates our comparison of the spreads and allows us to focus just on the multiplicative offsets.
+
+The residual q-q plots suggest that the spreads are very similar across singer heights given that the points fall almost perfectly along the one-to-one line. 
 
 ### Comparing batches to pooled residuals using a q-q plot
 
-Since the spreads are homogeneous across the batches, we may choose to combine (pool) the residuals and compare the residuals of each batch to the **pooled** residuals. The advantage with this approach is that we are increasing the *size* of the reference residual distribution thus reducing uncertainty that results from a relatively small sample size.
+Since the spreads are homogeneous across the batches, we may choose to combine (pool) the residuals and compare the residuals of each batch to the **pooled** residuals. The advantage with this approach is that we are increasing the *size* of the reference residual distribution thus reducing noise that results from a relatively small sample size. It also reduces the number of q-q plots to analyze--even gone from 28 plots to just eight!
 
-```{r fig.width=8, fig.height=2.5 }
+```{r fig.width=8, fig.height=2.3 }
 
 df3 <- df2 %>%
   group_by(voice.part)  %>%
@@ -109,11 +116,11 @@ ggplot(df3, aes(y = Height.res, x = Pooled.res)) + geom_point(alpha = 0.5) +
               facet_wrap(~ voice.part, nrow = 1) 
 ```
 
-All eight batches seem to have similar spreads. This makes it possible to compare batch means using a **residual-fit spread** plot (covered in the next section).
+All eight batches seem to have similar spreads. This makes it possible to compare batch means using a **residual-fit spread** plot (covered later in this chapter).
 
 #### What to expect if one or more of the batches have different spreads
 
-The residual vs. pooled residual plots can be effective at identifying batches with different spreads. In the following example, we combine four batches generated from an identical distribution (`V1`, `V2`, `V3` and `V4`) with two batches generated from a different distribution (`V5` and `V6`). Their boxplots are shown next.
+The residual vs. pooled residual plots can be effective at identifying batches with different spreads. In the following example, we combine four simulated batches generated from an identical distribution (`V1`, `V2`, `V3` and `V4`) with two simulated batches generated from a different distribution (`V5` and `V6`). Their boxplots are shown next.
 
 ```{r, echo = FALSE}
 set.seed(26)
@@ -163,9 +170,11 @@ ggplot(ex2, aes(y = value.res, x = Pooled.res)) + geom_point(alpha = 0.5) +
 
 The *tightness* of points around the one-to-one line suggests nearly identical distributions between `V1`, `V2`, `V3` and `V4` as would be expected given that they were generated from the same underlying distribution.
 
+Performing simulations like this can help understand how a pooled residual q-q plot may behave under different sets of distributions.
+
 ## Residual-fit spread plot
 
-So far, we've learned that the spreads of singer height are the same across all batches. This makes it feasible to assess whether the differences in means are comparable in magnitude to the spread of the pooled residuals.
+So far, we've learned that the spreads of singer heights are the same across all batches. This makes it feasible to assess whether the differences in mean heights between voice parts are comparable in magnitude to the spread of the pooled residuals.
 
 ### A simple example 
 
@@ -189,7 +198,7 @@ par(OP)
 
 `Plot 2` does not allow us to say, with confidence, that the two batches differ significantly despite both means being different. `Plot 1`  on the other hand, shows a significant difference in batch locations. One cannot make inferences about differences in central values without knowing the batches' distributions. 
 
-For example, in `Plot 1`, the *spread* (or difference) in mean values is relatively large compared to the spread of the residuals for each group (note that the spreads are nearly identical between both batches `a` and `b`). The difference in means spans one unit while the spread of each sets of residuals spans about the same amount. So the difference in location is significant. 
+For example, in `Plot 1`, the *spread* (or difference) in mean values is relatively large compared to the spread of the residuals for each group (note that the spreads are nearly identical between both batches `a` and `b`). The difference in means spans one unit while the spread of each sets of residuals spans about the same amount. So the difference in location is significant and is very likely not due to chance alone. The same cannot be said for `Plot 2`.
 
 If we split each batch in `Plot 1` into a location component plot (normalized to the overall mean) and a pooled residual component plot, and then compare those values against a quantile, we get a **residual-fit spread** plot, or **r-f spread** plot for short.
 
@@ -248,7 +257,7 @@ The spread between each batch's fitted mean is small compared to that of the com
 
 ### Are the fitted voice part values significantly different?
 
-We will first need to normalize the data to the global mean, then we will split the *normalized* singer height data into two parts: the modeled means and the residuals. For example, the smallest value in the `Bass 2` group is `66`. When normalized to the global mean, that value is `-1.29`. The normalized value is then split between the group (normalized) mean of `4.1` and its residual of `-5.39` (i.e. the difference between its value and the `Bass 2` group mean). These two values are then each added to two separate plots: the *fitted values* plot and the *residuals* plot. This process is repeated for each observation in the dataset to generate the final r-f spread plot.
+To generate the r-f plot, we first need to normalize the data to the global mean. We then split the *normalized* singer height data into two parts: the modeled means and the residuals. For example, the smallest value in the `Bass 2` group is `66`. When normalized to the global mean, that value is `-1.29`. The normalized value is then split between the group (normalized) mean of `4.1` and its residual of `-5.39` (i.e. the difference between its value and the `Bass 2` group mean). These two values are then each added to two separate plots: the *fitted values* plot and the *residuals* plot. This process is repeated for each observation in the dataset to generate the final r-f spread plot.
 
 ![](img/RF_plot_explained.png)
 
@@ -278,7 +287,7 @@ ggplot(df4, aes(x = fval, y = value)) +
   ylab("Height (inches)") 
 ```
 
-An alternative to the side-by-side R-F plot is one where both fits and residuals are overlapping.
+An alternative to the side-by-side r-f plot is one where both fits and residuals are overlapping.
 
 ```{r fig.height=3, fig.width=4.5}
 ggplot(df4, aes(x = fval, y = value, col = type)) + 
@@ -288,11 +297,11 @@ ggplot(df4, aes(x = fval, y = value, col = type)) +
 ```
 
 <p></p>
-The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. **The spread in the fitted values (aka the means) encompasses about 90% of the spread in the residuals** (you can eyeball the percentage by matching the upper and lower mean values with the residuals' f-values).  So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts *can* explain a good part of the variation in the data.
+The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. **The spread in the fitted values (aka the means) encompasses about 90% of the spread in the residuals** (you can eyeball the percentage by matching the upper and lower mean values with the residuals' f-values).  So height differences between singer groups cannot be explained by random chance alone or, put another way, the voice-parts *can* explain a good part of the variation in the data!
 
 ## Comparing pooled residuals to the normal distribution
 
-Our exploration of the singer height batches have been visual thus far. But there may be times when the analysis may need to culminate in a statistical test. Some of these tests reduce the data to mathematically tractable models such as the mean and the standard deviation (which follows a normal distribution). 
+Our exploration of the singer height batches have been visual thus far. But there may be times when the analysis may need to culminate in a statistical test. Some of these tests reduce the data to mathematically tractable models such as the mean and the standard deviation. 
 
 We'll  take advantage of the pooled residuals to give us a larger sample size for comparison with the theoretical normal distribution.
 

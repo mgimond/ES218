@@ -72,7 +72,9 @@ In the following example, we'll compare the `Alto 1` group to a normal distribut
 ```{r}
 library(dplyr)
 
-alto  <- lattice::singer %>% 
+df <- lattice::singer
+
+alto  <- df %>% 
   filter(voice.part == "Alto 1") %>% 
   pull(height)
 ```
@@ -97,7 +99,7 @@ To generate the theoretical q-q plot, we first use the `stat_qq` function to gen
 library(ggplot2)
 
 ggplot() + aes(sample = alto) + stat_qq(distribution = qnorm) +
-  stat_qq_line(line.p = c(0.25, 0.75), col = "blue") +
+  stat_qq_line(col = "blue") +
   xlab("Unit normal quantile") + ylab("Height")
 
 ```
@@ -112,12 +114,23 @@ Note that `geom_qq` and  `geom_qq_line` functions are identical to `stat_qq`and 
 
 The `alto` batch of values seem to do a good job in following a normal distribution given how well they follow a straight line. The stair-step pattern in the points is simply a byproduct of the rounding of height values to the nearest inch. A few observations at the tail ends of the distribution deviate from normal, but this is to be expected given that tail ends of distributions tend to be noisy.
 
-## What would a normal distribution look like?
+So how do the other singer groups compare to a normal distribution? We'll make use of ggplot's faceting function to generate all eight normal q-q plots.
 
-Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal q-q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The `rnorm` function is used in this example to randomly pick a number from a normal distribution whose mean is set to the mean of the `alto` values  and whose standard deviation is set to the mean of the `alto` values. We also round the values to mimic the rounding of height values observed in the `singer` dataset.
+```{r fig.height=2.3, fig.width=8}
+ggplot(df, aes(sample=height)) + stat_qq(distribution=qnorm) +
+  stat_qq_line( col = "blue") +
+  xlab("Unit normal quantile") + ylab("Height") +
+  facet_wrap(~voice.part, nrow = 1)
+```
+
+For the most part, all eight batches appear to follow a normal distribution.
+
+## What would a dataset pulled from a normal distribution look like?
+
+Simulations are a great way to develop an intuitive feel for what a dataset pulled from a normal distribution might look like in a normal q-q plot. You will seldom come across perfectly normal data in the real world. Noise is an inherent part of any underlying process. As such, random noise can influence the shape of a q-q plot despite the data coming from a normal distribution. This is especially true with small datasets as demonstrated in the following example where we simulate five small batches of values pulled from a normal distribution. The `rnorm` function is used in this example to randomly pick a number from a normal distribution whose mean is set to the mean of the `alto` values  and whose standard deviation is set to the  standard deviation of the `alto` values. We also round the values to mimic the rounding of height values observed in the `singer` dataset.
 
 
-```{r fig.height=2.7, fig.width=9}
+```{r fig.height=2.5, fig.width=9}
 set.seed(321)  # Sets random generator seed for consistent output
 
 # Simulate values from a normal distribution
@@ -136,7 +149,7 @@ ggplot(sim, aes(sample = value)) + stat_qq(distribution = qnorm) +
 
 Of the five simulated batches, `Sample3` generates a *textbook*  normal q-q plot that one would expect from a normally distributed batch of values. `Sample2` *could* lead one to question whether the data were pulled from a normal distribution, even though we know that they were!
 
-Our actual normal q-q plot of the `alto` values does not look different from some of these simulated plots. This lends confidence in our earlier verdict that the `alto` height distribution can be characterized by a normal distribution.
+The singer height normal q-q plots do not look different from some of these simulated plots. In fact, they probably look more *Normal* then the simulated set of values! This lends confidence in our earlier verdict that the `singer` height distributions can be characterized by a normal distribution.
 
 ## How normal q-q plots behave in the face of skewed data
 

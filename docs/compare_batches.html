@@ -841,31 +841,36 @@ X = \frac{Bass + Tenor}{2}
 </section>
 <section id="so-how-to-the-batches-of-singer-heights-compare" class="level2" data-number="17.8">
 <h2 data-number="17.8" class="anchored" data-anchor-id="so-how-to-the-batches-of-singer-heights-compare"><span class="header-section-number">17.8</span> So how to the batches of singer heights compare?</h2>
-<p>We’ve learned that the <code>Tenor 1</code> and <code>Bass 2</code> batches differ only by location (i.e.&nbsp;central value) and not by spread (i.e.&nbsp;shape of their distribution). How do the other singer groups compare? This requires making 28 comparisons, something that is best done by generating a plot matrix.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-30_450177f814cb7c27dd01bbecf9b0d488">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>min_size <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">tapply</span>(df<span class="sc">$</span>height, df<span class="sc">$</span>voice.part, length)) <span class="co"># get smallest batch size</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>singer_split <span class="ot">&lt;-</span> <span class="fu">split</span>(df<span class="sc">$</span>height, df<span class="sc">$</span>voice.part) <span class="co"># Split singers into groups</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>rng <span class="ot">&lt;-</span> <span class="fu">range</span>(df<span class="sc">$</span>height) <span class="co"># Get range of height values</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute quantiles for each batch using the smallest range of f-values defined</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># in rng</span></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>qq_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(singer_split, </span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>                              <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, </span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">p =</span> (<span class="dv">1</span><span class="sc">:</span>min_size <span class="sc">-</span><span class="fl">0.5</span>)<span class="sc">/</span>min_size) ))</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate plot matrix</span></span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>plotfun <span class="ot">=</span> <span class="cf">function</span>(x,y, ...){</span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(x,y,<span class="at">pch=</span><span class="dv">18</span>)</span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">abline</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">col=</span><span class="st">"blue"</span>)</span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="fu">pairs</span>(qq_df, <span class="at">upper.panel=</span><span class="cn">NULL</span>, <span class="at">panel =</span> plotfun, <span class="at">xlim =</span> rng, <span class="at">ylim=</span>rng)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We’ve learned that the <code>Tenor 1</code> and <code>Bass 2</code> batches differ only by location (i.e.&nbsp;central value) and not by spread (i.e.&nbsp;shape of their distribution). How do the other singer groups compare? This requires making <span class="math inline">\(8 * (8-1) /2 = 28\)</span> comparisons, something that is best done by generating a plot matrix.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-30_8d7a29804e2981f7f13d708b3d84afd7">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find smallest batch size</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>min_size <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">tapply</span>(df<span class="sc">$</span>height, df<span class="sc">$</span>voice.part, length)) </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Split singers into groups based on their voice parts</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>singer_split <span class="ot">&lt;-</span> <span class="fu">split</span>(df<span class="sc">$</span>height, df<span class="sc">$</span>voice.part) <span class="co"># Split singers into groups</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the range of height values for all groups</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>rng <span class="ot">&lt;-</span> <span class="fu">range</span>(df<span class="sc">$</span>height) </span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute quantiles for each batch using the smallest range of f-values defined</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co"># in min_size</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>qq_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(singer_split, </span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>                              <span class="cf">function</span>(x) <span class="fu">quantile</span>(x, <span class="at">type =</span> <span class="dv">5</span>,</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">p =</span> (<span class="dv">1</span><span class="sc">:</span>min_size <span class="sc">-</span><span class="fl">0.5</span>)<span class="sc">/</span>min_size) ))</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate plot matrix</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>plotfun <span class="ot">=</span> <span class="cf">function</span>(x,y, ...){</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(x,y,<span class="at">pch=</span><span class="dv">18</span>)</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">abline</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">col=</span><span class="st">"blue"</span>)</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="fu">pairs</span>(qq_df, <span class="at">upper.panel=</span><span class="cn">NULL</span>, <span class="at">panel =</span> plotfun, <span class="at">xlim =</span> rng, <span class="at">ylim=</span>rng)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="compare_batches_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>With a few exceptions, the singer height distributions differ mostly by an additive offset given that most points are parallel to the 45° line. There is one notable exception: the <code>Tenor 1</code> and <code>Tenor 2</code> q-q plot which seems to show a prominent multiplicative offset. We can explore this pair in greater detail. We’ll make use of our custom q-q plot function:</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-31_bac8492cfadfbe50197e0db13565f279">
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-31_02e7a14f06893d780d7351fb2e05926b">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>Tenor1 <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Tenor 1"</span>) <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>Tenor2 <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Tenor 2"</span>) <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor2, Tenor1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -873,7 +878,14 @@ X = \frac{Bass + Tenor}{2}
 <p><img src="compare_batches_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>The point pattern looks different here than it does in the matrix, this is because we are not limitting our f-values to just 21 which was the minimum batch size among all singer groups.</p>
+<p>It may help to understand how these batches differ by comparing their density distributions. Here, we’ll make use of another custom function, <code>eda_dens</code>.</p>
+<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-32_f0bbc3e9f2a79fadd7a533d485a10630">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_dens</span>(Tenor2, Tenor1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="288"></p>
+</div>
+</div>
+<p>The differences in shape between both distributions explains the multiplicative offset observed in the q-q plot. The distribution of height values is wider for the <code>Tenor 1</code> group than it is for the <code>Tenor 2</code> group. This suggests greater variability in height values for <code>Tenor 1</code>.</p>
 
 
 </section>
