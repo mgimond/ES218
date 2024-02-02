@@ -440,6 +440,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <li><a href="#the-tukey-transformation" id="toc-the-tukey-transformation" class="nav-link" data-scroll-target="#the-tukey-transformation"><span class="header-section-number">21.3</span> The Tukey transformation</a></li>
   <li><a href="#the-box-cox-transformation" id="toc-the-box-cox-transformation" class="nav-link" data-scroll-target="#the-box-cox-transformation"><span class="header-section-number">21.4</span> The Box-Cox transformation</a></li>
   <li><a href="#re-expressing-to-stabilize-spread" id="toc-re-expressing-to-stabilize-spread" class="nav-link" data-scroll-target="#re-expressing-to-stabilize-spread"><span class="header-section-number">21.5</span> Re-expressing to stabilize spread</a></li>
+  <li><a href="#the-eda_re-function" id="toc-the-eda_re-function" class="nav-link" data-scroll-target="#the-eda_re-function"><span class="header-section-number">21.6</span> The <code>eda_re</code> function</a></li>
   </ul>
 </nav>
     </div>
@@ -463,7 +464,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 </header>
 
-<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-2_5b18032b799cde8cf3b7cc47164c1ce7">
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-2_86d2b28babfa1ff2d05b8486c8412fb6">
 <div class="cell-output-display">
 
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
@@ -483,6 +484,13 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;"> ggplot2 </th>
+   <th style="text-align:left;color: rgba(85, 85, 85, 255) !important;background-color: rgba(221, 221, 221, 255) !important;text-align: center;border: 1px solid white !important;
+             font-family: 'Source Code Pro', 'Open Sans';
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;"> tukeyedar </th>
   </tr>
  </thead>
 <tbody>
@@ -501,6 +509,13 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-right:4px !important;
              font-size: 0.8em;
              border-radius: 5px;"> 3.4.4 </td>
+   <td style="text-align:left;color: darkred !important;background-color: rgba(250, 232, 232, 255) !important;text-align: center;border: 1px solid white;
+             font-family: 'Open Sans', Arial;
+             padding:1px !important;
+             padding-left:4px !important;
+             padding-right:4px !important;
+             font-size: 0.8em;
+             border-radius: 5px;"> 0.2.1 </td>
   </tr>
 </tbody>
 </table>
@@ -758,7 +773,7 @@ y = log_b(x) \Leftrightarrow  x=b^y
   -2.204242    1.143365 </code></pre>
 </div>
 </div>
-<p>The second value in the output is the slope. So the power to use is <code>1 - 1.14</code> or <code>-0.97</code>. We will use the power transformation function <code>BC</code> to re-express the <code>Petal.Length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
+<p>The second value in the output is the slope. So the power to use is <code>1 - 1.14</code> or <code>-0.14</code>. In the previous chapter, we suggested that rounding the power to <code>0</code> (i.e.&nbsp;a log transformation). Here, we will apply the suggested power using <code>BC</code> function to re-express the <code>Petal.Length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
 <div class="cell" data-hash="re_express_cache/html/unnamed-chunk-20_1e743b6e90e5f78eb76831866df824e9">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>iris<span class="sc">$</span>re.Petal.Length <span class="ot">&lt;-</span> <span class="fu">BC</span>(iris<span class="sc">$</span>Petal.Length, <span class="sc">-</span><span class="fl">0.14</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -790,25 +805,24 @@ y = log_b(x) \Leftrightarrow  x=b^y
 <p><img src="re_express_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="307"></p>
 </div>
 </div>
-<p>The plot suggests a slightly decreasing spread with increasing fitted values. We may want to scale back on the power to see if we can eliminate one monotonic spread (increasing) without creating another one (decreasing).</p>
-<p>An examination of other powers leads us to a power of <code>-1.5</code> which seems to remove any increasing spreads without creating a decreasing spread.</p>
-<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-23_2c3546d74206a93b6c19433d487334e7">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>iris<span class="sc">$</span>re.Petal.Length <span class="ot">&lt;-</span> <span class="fu">BC</span>(iris<span class="sc">$</span>Petal.Length, <span class="sc">-</span><span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-24_704b3d056bf223089d1875cab64872b1">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> iris <span class="sc">%&gt;%</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Species)  <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">Median =</span> <span class="fu">median</span>(re.Petal.Length),</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">Residuals =</span> <span class="fu">sqrt</span>( <span class="fu">abs</span>( re.Petal.Length <span class="sc">-</span> Median)))   </span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the s-l plot</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df1, <span class="fu">aes</span>(<span class="at">x =</span> Median, <span class="at">y =</span> Residuals)) <span class="sc">+</span> </span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">width =</span> <span class="fl">0.003</span>, <span class="at">height =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun.y =</span> median, <span class="at">geom =</span> <span class="st">"line"</span>, <span class="at">col =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">expression</span>(<span class="fu">sqrt</span>( <span class="fu">abs</span>( <span class="st">" Residuals "</span>)))) <span class="sc">+</span></span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">x =</span> Median, <span class="at">y =</span> <span class="fl">0.6</span>, <span class="at">label =</span> Species) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The transformation does a good job in stabilizing the spread. But, given that the log transformation did just as good a job in stabilizing the spread, it may prove easier, for sake of interpretation, to adopt the ubiquitous log transformation for this dataset.</p>
+</section>
+<section id="the-eda_re-function" class="level2" data-number="21.6">
+<h2 data-number="21.6" class="anchored" data-anchor-id="the-eda_re-function"><span class="header-section-number">21.6</span> The <code>eda_re</code> function</h2>
+<p>The <code>tukeyedar</code> package offers a re-expression function that implements both the Tukey and Box-Cox transformations. To apply the Tukey transformation set <code>tukey = TRUE</code> (the default setting). For the Box-Cox transformation, set <code>tukey = FALSE</code>. The power parameter is defined by the <code>p</code> argument.</p>
+<p>For a Tukey transformation:</p>
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-23_819b87aee4b9eff7f10ca7bc818a650d">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>( <span class="fu">eda_re</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p=</span><span class="sc">-</span><span class="dv">1</span>), <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="re_express_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="307"></p>
+<p><img src="re_express_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="288"></p>
+</div>
+</div>
+<p>For a Box-Cox transformation:</p>
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-24_68daf07f8dbf971994a29a0c877f7c24">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>( <span class="fu">eda_re</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p=</span><span class="sc">-</span><span class="dv">1</span>, <span class="at">tukey =</span> <span class="cn">FALSE</span>), <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="re_express_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 

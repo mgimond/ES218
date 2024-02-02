@@ -17,7 +17,7 @@ options(width = 100)
 
 
 ```{r echo = FALSE}
-pkg_ver(c("dplyr", "ggplot2"))
+pkg_ver(c("dplyr", "ggplot2", "tukeyedar"))
 ```
 
 
@@ -286,7 +286,7 @@ The slope can be extracted from the model `M` using the `coef` function:
 coef(M)
 ```
 
-The second value in the output is the slope. So the power to use is `1 - 1.14` or `-0.97`. We will use the  power transformation function `BC`  to re-express the `Petal.Length` values. We'll add the re-expressed values as a new  column to `df`:
+The second value in the output is the slope. So the power to use is `1 - 1.14` or `-0.14`. In the previous chapter, we suggested that rounding the power to `0` (i.e. a log transformation). Here, we will apply the suggested power using `BC`  function to re-express the `Petal.Length` values. We'll add the re-expressed values as a new  column to `df`:
 
 ```{r}
 iris$re.Petal.Length <- BC(iris$Petal.Length, -0.14)
@@ -321,24 +321,26 @@ ggplot(df1, aes(x = Median, y = Residuals)) +
   geom_text(aes(x = Median, y = 0.6, label = Species) )
 ```
 
-The plot suggests a slightly decreasing spread with increasing fitted values. We may want to scale back on the power to see if we can eliminate one monotonic spread (increasing) without creating another one (decreasing).
+The transformation does a good job in stabilizing the spread. But, given that the log transformation did just as good a job in stabilizing the spread, it may prove easier, for sake of interpretation, to adopt the ubiquitous log transformation for this dataset.
 
-An examination of other powers leads us to a power of `-1.5` which seems to remove any increasing spreads without creating a decreasing spread.
+## The `eda_re` function
 
-```{r}
-iris$re.Petal.Length <- BC(iris$Petal.Length, -0.1)
+The `tukeyedar` package offers a re-expression function that implements both the Tukey and Box-Cox transformations. To apply the Tukey transformation set `tukey = TRUE` (the default setting). For the Box-Cox transformation, set `tukey = FALSE`. The power parameter is defined by the `p` argument.
+
+For a Tukey transformation:
+
+```{r  class.source="eda", fig.width=3, fig.height=1, echo=2:3}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+library(tukeyedar)
+boxplot( eda_re(mtcars$mpg, p=-1), horizontal = TRUE)
+par(OP)
 ```
 
-```{r fig.height=2.5, fig.width=3.2}
-df1 <- iris %>%
-  group_by(Species)  %>%
-  mutate( Median = median(re.Petal.Length),
-          Residuals = sqrt( abs( re.Petal.Length - Median)))   
+For a Box-Cox transformation:
 
-# Generate the s-l plot
-ggplot(df1, aes(x = Median, y = Residuals)) + 
-  geom_jitter(alpha = 0.3, width = 0.003, height = 0) +
-  stat_summary(fun.y = median, geom = "line", col = "red") +
-  ylab(expression(sqrt( abs( " Residuals ")))) +
-  geom_text(aes(x = Median, y = 0.6, label = Species) )
+
+```{r  class.source="eda", fig.width=3, fig.height=1, echo=2}
+OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
+boxplot( eda_re(mtcars$mpg, p=-1, tukey = FALSE), horizontal = TRUE)
+par(OP)
 ```
