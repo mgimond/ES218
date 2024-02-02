@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Letter value summaries
 
 ```{r echo=FALSE}
@@ -6,7 +11,7 @@ source("libs/Common.R")
 
 
 ```{r echo = FALSE}
-pkg_ver(c("dplyr"))
+pkg_ver(c("dplyr", "tukeyedar"))
 ```
 
 
@@ -26,7 +31,7 @@ Let's start with a simple batch of numbers: `r x`.
 
 #### Order the values
 
-First, we order the numbers from lowest to highest.
+First, we order the numbers from smallest to largest.
 
 ![](./img/letter_value_summary_a.png)
 
@@ -38,11 +43,11 @@ $$
 depth\ of\ median = \frac{n + 1}{2}
 $$
 
-where $n$ is the number of values in the batch. In our example, we have 11 values, so the the median is (11 + 1)/2 or 6; it's the 6^th^ element from the left (or the right) of the sorted values. 
+where $n$ is the number of values in the batch. In our example, we have 11 values, so the median is (11 + 1)/2 or 6; it's the 6^th^ element from the left (or the right) of the sorted values. 
 
 ![](./img/letter_value_summary_median.png)
 
-If our batch consisted of an even number of values such as 10, the the median would be the 5.5th value which does not coincide with an existing value. This would require that we find the 5th and 6th element in the batch, then compute their average to find the median.
+If our batch consisted of an even number of values such as 10, the median would be the 5.5th value which does not coincide with an existing value. This would require that we find the 5th and 6th elements in the batch, then compute their average to find the median.
 
 The median is the value furthest from the extreme values; it's said to have the greatest **depth** (e.g. a depth of 6 in our example). The minimum and maximum values have the lowest depth with a depth value of 1, each. 
 
@@ -56,17 +61,17 @@ $$
 depth\ of\ hinge = \frac{d(M) + 1}{2}
 $$
 
-In our working example, the depth of the median is 6, therefore the depth of the hinge is (6+1)/2 = 3.5. So the hinge is the 3.5th element from the left (or right) of the first half of the batch and the 3.5th element from the left (or right) of the second half of the batch. Since the depth does not fall on an existing value, we need to compute it using the two closes values (depth 3 and depth 4). This gives us (8+11)/2=9.5 for the left hinge and (22+24)/2=23 for the right hinge.
+In our working example, the depth of the median is 6, therefore the depth of the hinge is (6+1)/2 = 3.5. So the hinge is the 3.5th element from the left (or right) of the first half of the batch and the 3.5th element from the left (or right) of the second half of the batch. Since the depth does not fall on an existing value, we need to compute it using the two closest values (depth 3 and depth 4). This gives us (8+11)/2=9.5 for the left hinge and (22+24)/2=23 for the right hinge.
 
 ![](./img/letter_value_summary_hinge.png)
 
 If our batch consisted of even number of values, we would need to drop the ½ fraction from depth of the median before computing the depth of the hinge. For example, if we had 10 values the depth of the median would be 5.5 and the depth of the hinge would be calculated as (5+1)/2.
 
-Note that the hinges are similar to the quartiles but because they are computed differently, their values may be slightly different.
+Note that the hinges are similar to the quartiles but because they are computed differently, their values may be slightly different from what you might get from a boxplot, for example.
 
 #### Find the other letter summaries (E, D, C, B, A, etc...)
 
-SO far, we've found the median (M)  and the hinges (H). We keep computing the depths for each outer group of values delimited by the outer extreme values and the previous depth. For example, the mid-point of the outer quarters gives us our **eights** (**E**):
+So far, we've found the median (M)  and the hinges (H). We keep computing the depths for each outer group of values delimited by the outer extreme values and the previous depth. For example, the mid-point of the outer quarters gives us our **eights** (**E**):
 
 $$
 depth\ of\ eights = \frac{d(H) + 1}{2}
@@ -88,22 +93,27 @@ Once we've identified the values associated with each depth, we compute the **mi
 The letter value summary is usually reported in tabular form:
 
 ```{r echo=FALSE}
-source("https://raw.githubusercontent.com/mgimond/ES218/gh-pages/es218.R")
-x.lsum <- lsum(x)
+library(tukeyedar)
+x.lsum <- eda_lsum(x)
 knitr::kable(x.lsum)
 ```
 
-A custom function is available on the course website that will compute the letter value summaries. To access the function (named `lsum`) source the R `es218.R` script as follows.
+## The `eda_lsum` function
 
-```{r}
-source("https://raw.githubusercontent.com/mgimond/ES218/gh-pages/es218.R")
+A custom function, `eda_lsum`, is available in the `tukeyedar` package that will compute the letter value summaries.
+
+For example, to generate the letter summary function for a batch of values `x`, type:
+
+```{r class.source="eda"}
+library(tukeyedar)
+x <- c(22, 8, 11, 3, 26, 1, 14, 18, 20, 25, 24)
+eda_lsum(x)
 ```
 
-Then to generate the letter summary function for a batch of values `x`,
+You can specify the number of levels with the `l=` argument.  For example, to limit the output to just 3 depths, type:
 
-```{r}
-x <- c(22, 8, 11, 3, 26, 1, 14, 18, 20, 25, 24)
-lsum(x)
+```{r class.source="eda"}
+eda_lsum(x, l = 3)
 ```
 
 ## Interpreting the letter value summaries
@@ -129,7 +139,7 @@ for (i in 1:5 ) {
   }
   
   plot(density(a),main=NA,xlab=NA)
-  a.ls <- lsum(a, l=9)
+  a.ls <- eda_lsum(a, l=9)
   plot(mid ~ eval(n/2 - depth), a.ls ,main=NA,xlab=NA, pch=16)
   text(eval(n/2 - a.ls$depth), a.ls$mid, a.ls$letter, col="blue",pos=4)
 }
@@ -138,7 +148,7 @@ par(OP)
 
 Note the shape of the letter summaries *vis-a-vis* the direction of the skew. Note too that the letter value summary plot is extremely sensitive to deviations from perfect symmetry. This is apparent in the middle plot which is for a perfectly symmetrical (Gaussian) distribution. The reason has to do with machine precision: the range of values along the y-axis is extremely small, $10^{-16}$, which is the lower limit of the computer's precision. 
 
-This sensitivity has its rewards. Note the second plot from the left and the right. The asymmetry is barely noticeable in both distributions, yet the letter value summaries does a great job in identifying the slight asymmetry. Even the boxplots cannot convey this asymmetry as effectively.
+This sensitivity has its rewards. Note the second plot from the left and the right. The asymmetry is barely noticeable in both distributions, yet the letter value summaries do a great job in identifying the slight asymmetry. Even the boxplots cannot convey this asymmetry as effectively.
 
 ```{r, fig.width=8, fig.height=1, echo=FALSE}
 OP <- par( mfcol = c(1,5), mar = c(2,2,1,1) )

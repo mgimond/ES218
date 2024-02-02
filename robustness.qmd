@@ -1,4 +1,9 @@
-# Fine-tuning re-expression and Robust statistics
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# A working example and a case for robust statistics
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -6,13 +11,13 @@ source("libs/Common.R")
 
 
 ```{r echo = FALSE}
-pkg_ver(c("dplyr", "ggplot2"))
+pkg_ver(c("dplyr", "ggplot2", "tukeyedar"))
 ```
 
 
 ## Introduction
   
-The data represent 1,2,3,4-tetrachlorobenzen (**TCB**)  concentrations (in ppb) for two site locations: a reference site free of external contaminants and a *cleaned* contaminated site (Millard *et al.*, p. 416-417).
+The following data represent 1,2,3,4-tetrachlorobenzene (**TCB**)  concentrations (in units of ppb) for two site locations: a reference site free of external contaminants and a contaminated site that went through remediation (dataset from Millard *et al.*, p. 416-417).
   
 ```{r}
 # Create the two data objects (TCB concentrations for reference and contaminated sites)
@@ -38,9 +43,9 @@ Our goal is to assess if, overall, the concentrations of TCB at the contaminated
 
 ## A typical statistical approach: the two sample t-Test
 
-We are interested in answering the question: "Did the cleanup at the contaminated site reduce the concentration of TCB down to background (reference) levels?". If the question being addressed is part of a decision making process such as "Should we continue with the remediation?" we might want to assess if the difference in TCBs between both sites is "significant" enough to conclude that the TCBs are higher than would be expected if chance alone was the process at play.
+We are interested in answering the question: *"Did the cleanup at the contaminated site reduce the concentration of TCB down to background (reference) levels?"*. If the question being addressed is part of a decision making process such as "Should we continue with the remediation?" we might want to assess if the difference in TCBs between both sites is "significant" enough to conclude that the TCBs are higher than would be expected if chance alone was the process at play.
 
-A popular statistical procedure used to help address this question is the two sample [t-Test](http://mgimond.github.io/Tutorial--Stats/02_z_t_tests.html#assumption-of-equal-variance). The test is used to assess whether or not the mean concentration between both batches of values are significantly different from one another.  The test can be framed in one of three ways: We can see if the batches are similar, if one batch is greater than the other batch, or if one batch is smaller than the other batch. In our case, we will assess if the `Cont` batch is greater than the `Ref` batch (this is the *alternative* hypothesis). We'll make use of the `t.test` function and set the parameter `alt` to `"greater"` (indicating that we are assessing if the `Cont` mean is significantly greater than that of `Ref`). 
+A popular statistical procedure used to help address this question is the two sample [t-Test](https://mgimond.github.io/Stats-in-R/z_t_tests.html#t-test-with-two-samples-small-sample-sizes). The test is used to assess whether or not the mean concentration between both batches of values are significantly different from one another.  The test can be framed in one of three ways: We can see if the batches are similar, if one batch is greater than the other batch, or if one batch is smaller than the other batch. In our case, we will assess if the `Cont` batch is greater than the `Ref` batch (this is the *alternative* hypothesis). We'll make use of the `t.test` function and set the parameter `alt` to `"greater"` (indicating that we are assessing if the `Cont` mean is significantly greater than that of `Ref`). 
 
 ```{r}
 t.test(Cont, Ref, alt="greater")
@@ -59,63 +64,42 @@ Cont.mean <- mean(Cont) # Contaminated site mean
 Cont.sd   <- sd(Cont)   # Contaminated site standard deviation
 ```
 
-The t-test uses these pairs of numbers to reconstruct, then compare the distributions. Here are the distributions the t-test *thinks* it's comparing:
+The t-test uses these pairs of numbers to reconstruct, then compare the distributions. Here's how the t-test is characterizing the distribution of value for the reference site, `Ref`:
 
-```{r fig.width=5, fig.height=1.5, echo=FALSE}
-OP <- par(mar=c(2,0,0,0))
-fi <- seq(0.01,0.99,0.01)
-Ref.norm  <- qnorm( fi , mean=Ref.mean, sd=Ref.sd)
-Cont.norm <- qnorm( fi , mean=Cont.mean, sd=Cont.sd)
-Ref.dens  <- density(Ref.norm)
-Cont.dens <- density(Cont.norm)
-Ref.dens$y <- Ref.dens$y / max(Ref.dens$y)
-Cont.dens$y <- Cont.dens$y / max(Cont.dens$y)
-plot(Cont.dens$x, Cont.dens$y, type="l", col="red",axes=FALSE,
-     xlab=NA,ylab=NA)
-axis(1)
-lines(Ref.dens$x, Ref.dens$y, type="l")
-abline(v=Cont.mean,col="red", lty=3)
-par(OP)
-``` 
+```{r echo = FALSE, fig.width=3, fig.height=3.5}
+library(tukeyedar)
+eda_normfit(Ref, size = 0.5, tsize = 1.1, show.par = FALSE)
+```
+The right side of the plot is the fitted *Normal* distribution computed from the sample's standard deviation--this is how the t-test is characterizing the `Ref` distribution. The left side of the plot is the density distribution of the actual values. The points in between both plot halves are the actual values. Note the skew towards higher concentrations. With the `Ref` data, one might argue that the *Normal* fit is doing a reasonable job in characterizing the distribution of values.  
 
-The red line is the distribution of TCB values for the contaminated site (standard deviation = `r round(Cont.sd,2)`) and the black line is the concentration of TCB values for the reference site (standard deviation = `r round(Ref.sd,2)`). The red vertical line is the mean concentration of the contaminated site which falls well outside the range of concentrations observed at the reference site.
+Now let's see how well the *Normal* fit characterizes the dsitrbuion of the contaminated site values, `Cont`.
+
+```{r echo = FALSE, fig.width=3, fig.height=3.5}
+eda_normfit(Cont, size = 0.5, tsize = 1.1, show.par = FALSE)
+
+```
+The *Normal* fit is on the right. The density plot is barely noticeable of the left! You'll also note the tight clusters the points near the center of the Normal distribution. There are just a few points that extend beyond the tight cluster. This small handful of points is what disproportionately inflates the standard deviation which, in turns, leads to the disproportionately large Normal distribution as adopted in the t-test.
 
 > As an aside, it's worth mentioning that the variances are clearly unequal thus violating a basic requirement for the t-test however, R invokes the Welch's t-test by default to mitigate for unequal variance and sample size. But, Welch's test does require that the distributions follow a normal theoretical distribution (i.e. they can be different in size but must be normal in shape).
 
-The spread for the contaminated site is several orders of magnitude greater than that of the reference site. But are these reconstructed distributions really representative of the data?
+Since the t-test adopts a Normal characterization of the spread, it would behoove us to check the assumption of normality using the *normal q-q plot*.
 
-Let's plot the density distributions for both batches:
-
-```{r fig.width=6,fig.height=3, fig.show='hold'}
-OP <- par(mfrow = c(1,2), mar=c(3,3,2,2))
-plot(density(Ref))
-plot(density(Cont))
-par(OP)
+```{r echo = FALSE, fig.width = 3, fig.height = 3.5}
+eda_qq(Cont, norm=TRUE, show.par = FALSE)
 ```
 
-These are clearly different looking distributions from those assumed by the t-test which should put the t-test results into question.
-
-The t-test is clearly not properly representing the distribution of the two batches. The contaminated site, `Cont`, has several extreme values that is severely skewing the distribution. We can create a normal q-q plot to see how many values are skewing the distribution.
-
-```{r fig.height=3, fig.width=3, echo=2:3}
-OP <- par(mar=c(4,4,1,1))
-  qqnorm(Cont, pch=20, col=rgb(0,0,0,0.4))
-  qqline(Cont,lty=3)
-par(OP)
-```
-
-It looks like at least four values (which represent ~5% of the data) are contributing to the strong skew and to a much distorted representation of location and spread. The mean and standard deviation are **not robust** to extreme values. In essence, all it takes is one single outlier to heavily distort the representation of location and spread in our data. We say that the mean and standard deviation have a breakdown point of `1/n` where `n` is the sample size.
+This is a textbook example of a batch of values that does **not** conform to a *Normal* distribution. At least four values (which represent ~5% of the data) seem to contribute to the strong skew and to a much distorted representation of location and spread. The mean and standard deviation are **not robust** to extreme values. In essence, all it takes is one single outlier to heavily distort the representation of location and spread in our data. We say that the mean and standard deviation have a breakdown point of `1/n` where `n` is the sample size.
 
 The median and interquartile range are less sensitive to extreme values. In fact, the median has a breakdown point of `n/2`. In other words, half of the values would have to be modified to alter the median.
 
 The boxplot makes use of these robust measures of location and spread; let's compare the batches with and without the extreme (outlier) values.
 
-```{r fig.width=6, fig.height=3, fig.show='hold'}
+```{r fig.width=6, fig.height=3.5, fig.show='hold', echo = FALSE}
 OP <- par(mfrow=c(1,2), mar=c(3,2,1,1))
 # Boxplot with outliers
-boxplot(TCB ~ Site, df, main="With outliers")
+eda_boxls(df, TCB, Site, ylab = "With outliers")
 # Boxplot without outliers
-boxplot(TCB ~ Site, df, main="Without outliers", outline=FALSE)
+eda_boxls(df, TCB, Site, outlier = FALSE, ylab = "Without outliers")
 par(OP)
 ```
 
@@ -125,53 +109,34 @@ One observation that can also be gleaned from this plot is the skewed nature of 
 
 ## Re-expression
 
-If we are to use the t-test, we need to make sure that the distributional requirements are met. Even Welch's modification has one requirement about the distribution: **both spreads must follow a normal distribution**. Let's compare the batches to a theoretical normal distribution via a theoretical q-q  plot:
+If we are to use the t-test, we need to make sure that the distributional requirements are met. Even Welch's modification has one requirement about the distribution: **both spreads must follow a normal distribution**. Let's compare both batches to a normal distribution via a normal q-q  plot. We'll make use of the custom `eda_qq` function:
 
-```{r fig.width=6, fig.height=3, fig.show='hold'}
+```{r class.source="eda", fig.width=6, fig.height=3.5, fig.show='hold', echo=2:3}
 OP <- par(mfrow=c(1,2), mar=c(2,2,1,1))
-qqnorm(Ref, pch=20, col=rgb(0,0,0,0.3))
-qqline(Ref)
-qqnorm(Cont, pch=20, col=rgb(0,0,0,0.3))
-qqline(Cont)
+eda_qq(Ref, norm=TRUE)
+eda_qq(Cont, norm=TRUE)
 par(OP)
 ```
 
-These batches do not follow the straight line suggesting skewness in the distribution (as was noted with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation:
+These batches do not follow the straight line. This suggests skewness in the distribution (as was observed with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation. The `eda_qq` function has an argument, `p=`, that takes as input a re-expression that will be applied to the values. The function will also allow us to choose between a Tukey (`tukey=TRUE`) or Box-Cox (`tukey=FALSE`) method. The default is set to `tukey=FALSE`. To apply a log transformation, we set `p` to `0`.
 
-```{r fig.width=6, fig.height=3, fig.show='hold'}
+```{r class.source="eda", fig.width=6, fig.height=3.5, fig.show='hold', echo=2:3}
 OP <- par(mfrow=c(1,2), mar=c(2,2,1,1))
-qqnorm(log(Ref), pch=20, col=rgb(0,0,0,0.3))
-qqline(log(Ref))
-qqnorm(log(Cont), pch=20, col=rgb(0,0,0,0.3))
-qqline(log(Cont))
+eda_qq(Ref, norm=TRUE, p = 0)
+eda_qq(Cont, norm=TRUE, p = 0)
 par(OP)
 ```
-
-Log-transforming the concentrations seems to have done a good job in creating normally distributed numbers. Let's re-run the t-Test on the log-transformed values.
-
-```{r}
-t.test(log(Cont), log(Ref), alt="greater")
-```
-
-Note that the result differs significantly from that with the raw data. This last run gives us a p-value of **0.34** (suggesting little difference in overall concentrations) whereas the first run gave us a p-value of **0.075** (suggesting that the contaminated site may have had, overall, greater concentration values).
-
-At this point, it's important to remind ourselves what we are comparing after having log-transformed the data; we are no longer comparing means but the **log of means** instead. More specifically, via mathematical construct, it can be shown that a log-transformation of the data results in testing the hypothesis that the **ratio of mean concentrations are equal to 1**.
-
 
 ## Fine-tuning the re-expression
 
-The log transformation is one of many re-expressions that can be applied to the data. Let's explore the skewness across different "depths" of the `Cont` values to see if the skewness is systematic. We'll use letter value summary plots to help guide us to a reasonable re-expression.
+The log transformation is one of many re-expressions that can be applied to the data. Let's explore the skewness across different "depths" of the `Cont` values to see if the skewness is systematic. We'll use letter value summary plots to help guide us to a reasonable re-expression. We'll make use of the `eda_lsum` function to generate the table and `ggplot2` to generate the plot.
 
 First, we'll look at the raw contaminated site data:
 
-```{r fig.width=4, fig.height=3}
-source("https://raw.githubusercontent.com/mgimond/ES218/gh-pages/es218.R") # Needed to run the lsum() function
+```{r fig.width=3, fig.height=2.8}
 library(ggplot2)
 
-# Generate letter value summary table
-Cont.lsum <- lsum(Cont, l=7)
-
-# Plot the letter values
+Cont.lsum <- eda_lsum(Cont, l=7)
 ggplot(Cont.lsum) + aes(x=depth, y=mid, label=letter) +geom_point() + 
                     scale_x_reverse() +geom_text(vjust=-.5, size=4)
 
@@ -179,15 +144,15 @@ ggplot(Cont.lsum) + aes(x=depth, y=mid, label=letter) +geom_point() +
 
 The data become strongly skewed for 1/32^th^ of the data (depth letter `C`). Let's now look at the reference site.
 
-```{r fig.width=4, fig.height=3}
-Ref.lsum <- lsum(Ref, l=7)
+```{r fig.width=3, fig.height=2.8}
+Ref.lsum <- eda_lsum(Ref, l=7)
 ggplot(Ref.lsum) + aes(x=depth, y=mid, label=letter) +geom_point() + 
                    scale_x_reverse() +geom_text(vjust=-.5, size=4)
 ```
 
 A skew is also prominent here but a bit more consistent across the depths with a slight drop between depths `D` and `C` (16^th^ and 32^nd^ extreme values). 
 
-Next, we will find a power function that re-expresses the values to satisfy the t-test distribution shape requirement. We'll first look at the log transformation implemented in the last section. Note that we are using the custom Box-cox function `bc` from the `ES218.R` source script to transform the data (recall that the log transformation is one of a large family of Box-Cox transformations).
+Next, we will find a power function that re-expresses the values to satisfy the t-test distribution requirement. We'll first look at the log transformation implemented in the last section. Note that we are using the custom `eda_re` function to transform the data. We'll also make use of some *advanced* coding to reduce the code chunk size.
 
 
 ```{r fig.width=5, fig.height=3, message=FALSE}
@@ -195,27 +160,28 @@ library(dplyr)
 
 df  %>% 
   group_by(Site) %>%
-  do(lsum( bc(.$TCB,0), l=7) ) %>%
+  do(eda_lsum( eda_re(.$TCB,0), l=7) ) %>%
   ggplot() + aes(x=depth, y=mid, label=letter) + geom_point() + 
   scale_x_reverse() +geom_text(vjust=-.5, size=4) + facet_grid(.~Site)
 ```
 
-The log transformation seems to work well with the reference site, but it's not aggressive enough for the contaminated site. Recall that to ensure symmetry across *all* levels of the batches, the letter values must follow a straight (horizontal) line. Let's try a  power of -1/2:
+
+The log transformation seems to work well with the reference site, but it's not aggressive enough for the contaminated site. Recall that to ensure symmetry across *all* levels of the batches, the letter values must follow a straight (horizontal) line. Let's try a  power of `-0.5`. Given that the negative power will reverse the order of the values if we adopt the Tukey transformation, we'll use the default Box-Cox method.
 
 ```{r fig.width=5, fig.height=3, message=FALSE}
 df  %>% 
   group_by(Site) %>%
-  do(lsum( bc(.$TCB,-0.5), l=7) ) %>%
+  do(eda_lsum( eda_re(.$TCB,-0.5), l=7) ) %>%
   ggplot() + aes(x=depth, y=mid, label=letter) + geom_point() + 
   scale_x_reverse() +geom_text(vjust=-.5, size=4) + facet_grid(.~Site)
 ```
 
-This seems to be too aggressive. We are facing a situation where attempting to normalize one batch distorts the other batch. Let's try a compromise and use -.35.
+This seems to be too aggressive. We are facing a situation where attempting to normalize one batch distorts the other batch. Let's try a compromise and use `-.35`.
 
 ```{r fig.width=5, fig.height=3, message=FALSE}
 df  %>% 
   group_by(Site) %>%
-  do(lsum( bc(.$TCB,-0.35), l=7) ) %>%
+  do(eda_lsum( eda_re(.$TCB,-0.35), l=7) ) %>%
   ggplot() + aes(x=depth, y=mid, label=letter) + geom_point() + 
   scale_x_reverse() +geom_text(vjust=-.5, size=4) + facet_grid(.~Site)
 ```
@@ -224,35 +190,43 @@ This seems to be a bit better. It's obvious that we will not find a power transf
 
 Let's compare the re-expressed batches with a normal distribution.
 
-```{r fig.width=5, fig.height=3, message=FALSE, fig.show='hold'}
+```{r class.source="eda", fig.width=5, fig.height=3, message=FALSE, fig.show='hold', echo= 2:3}
 OP <- par(mfrow=c(1,2), mar=c(2,2,1,1))
-qqnorm(bc(Ref,-0.35), pch=20, col=rgb(0,0,0,0.3), main="Reference")
-qqline(bc(Ref,-0.35))
-qqnorm(bc(Cont,-0.35), pch=20, col=rgb(0,0,0,0.3), main="Contaminated")
-qqline(bc(Cont,-0.35))
+eda_qq(Cont, norm = TRUE, p = -0.35)
+eda_qq(Ref, norm = TRUE, p = -0.35)
 par(OP)
 ```
 
-The distributions do not look too bad when viewed in a q-q plot. Note how the letter values summary plot can pick up on subtle skewness that may not be apparent in a q-q plot. But is the observed skewed distribution after applying a power transformation really significant? I.e. is it small enough not to bias our t-test results? 
+The distributions do not look too bad when viewed in a normal q-q plot. Let's now compare the bacthes via boxplots.
 
-Let's run the t-test.
-
-```{r}
-t.test(bc(Cont,-0.35), bc(Ref,-0.35), alt="greater")
+```{r fig.width=3, fig.height=3, fig.show='hold', echo = FALSE}
+ggplot(df, aes(x=Site, y=eda_re(TCB, -0.35))) + geom_boxplot() + 
+  geom_jitter(width = 0.02, height=0) +
+  ylab(expression( "TCB"^{-0.35} ))
 ```
 
-Note that the result differs significantly from that with the raw data. This last run gives us a p-value of **0.85**  whereas the first run gave us a p-value of **0.075** and the log-transformed run gave us a p-value of **0.34**. 
-If you tweak the power transformation ever so slightly, you will note that the p-value can change measurably, but fortunately not enough to alter the conclusion that there is no significant difference in concentrations between both sites when comparing the batches using the mean **raised to the -0.35^th^** power.
+The data are far more symmetrical. So, how much impact did the skewed distributions have on the t-test? Now that we have normally distributed values, let's rerun the t-test using the re-expressed values.
+
+```{r class.source="eda"}
+t.test(eda_re(Cont,-0.35), eda_re(Ref,-0.35), alt="greater")
+```
+
+Note that the result differs significantly from that with the raw data. This last run gives us a p-value of **0.15**  whereas the first run gave us a p-value of **0.075**. 
+
+## Don't forget the outliers!
+
+It's obvious once we look at the re-expressed data via the prism of a boxplot that for a few sites, more remediation is needed. But, you will also note that for many other sites, the concentrations are much less than those found at the reference site. No statistical procedure is needed to come to this conclusion! So while the t-test tells us something about *overall* differences, it fails to pick up on some of these intricate details that can only be gleaned from plots. This is the whole essence of exploratory data analysis.
 
 ## Robust tests
 
-It should be clear by now that many of the popular statistical procedures that reduce the data to a mean and standard deviation are not robust to datasets that don't fit these models well. In fact, most observational data seldom follow a nice normal distribution. The above exercise demonstrates how a very simple implementation of a t-Test can result in a lengthy detour through exploration and re-expression. This can be time consuming when exploring many different datasests. Fortunately there are several alternative statistics that are far less restrictive than the t-Test but serve the same purpose: comparing batches of numbers. These are covered here very superficially for reference.
+It should be clear by now that many of the popular statistical procedures that reduce the data to a mean and standard deviation are not robust to datasets having skewed distributions or extreme outliers. In fact, most observational data seldom follow a nice normal distribution. The above exercise demonstrates how a very simple implementation of a t-Test can result in a lengthy detour through exploration and re-expression. This can be time consuming when exploring many different datasests. Fortunately there are several alternative statistics that are far less restrictive than the t-Test but serve the same purpose: comparing batches of numbers. These are covered here very superficially for reference.
 
 ### Permutation test
 
-The idea here is that if concentrations of TCB come from an identical site, then it should not matter which batch (`Ref` or `Cont`)  a concentration comes from. By mixing up (permuting) the values across batches, we can come up with a distribution of mean (or median) concentration differences between batches  we would expect to get if there was no difference, then compare our observed mean (or median) differences to that of the distribution of simulated mean (or median) differences. In the following example, we will we choose the median over the mean because of its robust measure of location.
+The idea here is that if concentrations of TCB come from sites with identical TCB profiles, then one should not be able to notice a difference in values measured at both sites. By mixing up (permuting) the values across batches, we can come up with a distribution of mean (or median) concentration differences between batches that we would expect to get if there was no difference. We then compare our observed mean (or median) differences to that of the distribution of simulated mean (or median) differences. In the following example, we will choose the median over the mean because of its robust measure of location.
 
 ```{r, fig.height=3.5, fig.width=4.0}
+set.seed(321)
 # Pool the concentrations
 Pool <- c(Ref, Cont)
 
@@ -260,7 +234,7 @@ Pool <- c(Ref, Cont)
 med.dif <- vector()
 
 # Run simulations
-for (i in 1:999){
+for (i in 1:9999){
   # Permute the pooled data then assign the resampled data to each batch
   Pool.rnd <- sample(Pool, replace=FALSE)
   # Grab the first batch of values
@@ -277,31 +251,29 @@ hist(med.dif)
 abline(v = median(Cont) - median(Ref), col="red", lw=2)
 ```
 
-We can compute a *pseudo* p-value from the above. Note that we are interested in the number of simulated values that are *different* than our observed value (i.e. we're not concerned with the direction of our value), we are therefore conducting a *two-side* test whose p-value can be computed as:
+We can compute a *pseudo* p-value from the above. Note that we are interested in the number of simulated values that are more extreme than our observed value.
 
 ```{r}
 N.greater <- sum( (median(Cont) - median(Ref)) >= med.dif) # Number of simulated differences
                                                            # greater than the observed value
 n <- length(med.dif) #number of simulated values
-p <- 2 * min(N.greater + 1, n + 1 - N.greater) / (n +1)
+p <- min(N.greater + 1, n + 1 - N.greater) / (n +1)
 p
 ```
 
-Here, the p-value gives us the probability that our observed difference in median concentration value is consistent with the expected difference if the two sites were identical. In our example, that probability is around `r round(p,2)` suggesting that *overall*, the concentrations at both sites are relatively the same.
+Here, the p-value gives us the probability that our observed difference in median concentration value is consistent with the expected difference if the two sites were identical. In our example, that probability is around `r round(p,2)` suggesting that *overall*, the concentrations at both sites are relatively the same if we adopt the traditional cutoff of 0.05. But note that this p-value is 
 
 ### Wilcoxon rank sum test
 
 This is another popular alternative to the t-Test. The technical implementation and interpretation is identical to that of the t-Test. It differs from the t-Test in that it is based on the observation ranks as opposed to the observation means. Here, we implement a two-sided test addressing the question *"are the differences in concentrations between the sites significant"*.
 
 ```{r}
-wilcox.test(Cont, Ref, alternative = "two.sided")
+wilcox.test(Cont, Ref, alternative = "greater")
 ```
 
 The p-value (which is similar to that found via the permutation technique) suggests that the difference in *overall* concentrations is not that great between both sites... despite the presence of a few outliers!
 
-## Don't forget the outliers!
 
-But let's not loose site of our question which is "Did the cleanup at the contaminated site reduce the concentration of TCB down to background (reference) levels?" It's obvious once we look at the data that for a few sites, more remediation is needed--particularly for the sites with the three highest concentrations of 6.61, 18.4 and 168.64 ppb and possibly the sites whose concentrations are  5.56 and 6.61. No statistical procedure is needed to come to this conclusion!
 
 ## References
 

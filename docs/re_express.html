@@ -441,6 +441,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <li><a href="#the-box-cox-transformation" id="toc-the-box-cox-transformation" class="nav-link" data-scroll-target="#the-box-cox-transformation"><span class="header-section-number">21.4</span> The Box-Cox transformation</a></li>
   <li><a href="#re-expressing-to-stabilize-spread" id="toc-re-expressing-to-stabilize-spread" class="nav-link" data-scroll-target="#re-expressing-to-stabilize-spread"><span class="header-section-number">21.5</span> Re-expressing to stabilize spread</a></li>
   <li><a href="#the-eda_re-function" id="toc-the-eda_re-function" class="nav-link" data-scroll-target="#the-eda_re-function"><span class="header-section-number">21.6</span> The <code>eda_re</code> function</a></li>
+  <li><a href="#the-eda_unipow-function" id="toc-the-eda_unipow-function" class="nav-link" data-scroll-target="#the-eda_unipow-function"><span class="header-section-number">21.7</span> The <code>eda_unipow</code> function</a></li>
   </ul>
 </nav>
     </div>
@@ -525,9 +526,10 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="introduction" class="level2" data-number="21.1">
 <h2 data-number="21.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">21.1</span> Introduction</h2>
 <p>Datasets do not always follow a nice symmetrical distribution nor do their spreads behave systematically across different levels (e.g.&nbsp;medians). Such distributions do not lend themselves well to visual exploration since they can mask simple patterns. They can also be a problem when testing hypotheses using traditional statistical procedures. A solution to this problem is non-linear <strong>re-expression</strong> (aka transformation) of the values. In univariate analysis, we often seek to <strong>symmetrize</strong> the distribution and/or <strong>equalize</strong> the spread. In multivariate analysis, the objective is to usually <strong>linearize</strong> the relationship between variables and/or to <strong>normalize</strong> the residual in a regression model.</p>
+<p>Re-expressing values consist of changing the scale of measurement from what is usually a linear scale to a non-linear scale. One popular form of re-expression is the <strong>log</strong> (natural or base 10).</p>
 <img src="img/Reexpression_properties.png" class="img-fluid">
 <p></p>
-<p>One popular form of re-expression is the <strong>log</strong> (natural or base 10). The other is the family of power transformations (of which the <em>log</em> is a special case) implemented using either the <strong>Tukey</strong> transformation or the <strong>Box-Cox</strong> transformation.</p>
+<p>The log is not the only transformation that can be applied to a dataset. There is a whole family of power transformations (of which the <em>log</em> is a special case) that can be implemented using either the <strong>Tukey</strong> transformation or the <strong>Box-Cox</strong> transformation.</p>
 </section>
 <section id="the-log-transformation" class="level2" data-number="21.2">
 <h2 data-number="21.2" class="anchored" data-anchor-id="the-log-transformation"><span class="header-section-number">21.2</span> The log transformation</h2>
@@ -537,12 +539,12 @@ y = log_b(x) \Leftrightarrow  x=b^y
 \]</span></p>
 <p>In R, the base is defined by passing the parameter <code>base=</code> to the <code>log()</code> function as in <code>log(x , base=10)</code>.</p>
 <p>Re-expressing with the log is particularly useful when the change in one value as a function of another is multiplicative and not additive. An example of such a dataset is the compounding interest. Let’s assume that we start off with $1000 in an investment account that yields 10% interest each year. We can calculate the size of our investment for the next 50 years as follows:</p>
-<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-3_5dd70aeca9988f05766e1dcd04d75c2f">
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-3_9dc762951f475a005815d0b1c91ad6a4">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>rate <span class="ot">&lt;-</span> <span class="fl">0.1</span>                 <span class="co"># Rate is stored as a fraction</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y    <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="at">length =</span> <span class="dv">50</span>) <span class="co"># Create an empty vector that can hold 50 values</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>y[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1000</span>                <span class="co"># Start 1st year with $1000</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Next, compute the investment ammount for years 2, 3, ..., 50.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Next, compute the investment amount for years 2, 3, ..., 50.</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Each iteration of the loop computes the new amount for year i based </span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># on the previous year's amount (i-1).</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">length</span>(y)){</span>
@@ -639,7 +641,7 @@ y = log_b(x) \Leftrightarrow  x=b^y
 </div>
 <p>It’s clear from the log plot that the rate of growth for the US has not been consistent over the years (had it been consistent, the line would have been straight). In fact, there seems to be a gradual decrease in growth rate over the 150 year period (though a more thorough analysis would be needed to see where and when the growth rates changed).</p>
 <p>A logarithm is defined by a base. Some of the most common bases are <code>10</code>, <code>2</code> and <code>exp(1)</code> with the latter being the natural log. The bases can be defined in the call to <code>log()</code> by adding a second parameter to that function. For example, to apply the log base 2 to the 5<sup>th</sup> value of the vector <code>y</code>, type <code>log( y[5], 2)</code>. To apply the natural log to that same value, simply type <code>log( y[5], exp(1))</code>. If you don’t specify a base, <code>R</code> will default to the natural log.</p>
-<p>The choice of a log base will not impact the shape of the logged values in the plot, only in its absolute value. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values thus more decimal places to work with whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.</p>
+<p>The choice of a log base will not impact the shape of the logged values in the plot, it only changes its absolute values. So unless interpretation of the logged value is of concern, any base will do. Generally, you want to avoid difficult to interpret logged values. For example, if you apply log base 10 to the investment dataset, you will end up with a smaller range of values–thus more decimal places to work with–whereas a base 2 logarithm will generate a wider range of values and thus fewer decimal places to work with.</p>
 <div class="cell" data-hash="re_express_cache/html/unnamed-chunk-9_1a3eaf1760dc652cf8ecf4b7fba51efe">
 <div class="cell-output-display">
 <p><img src="re_express_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="576"></p>
@@ -735,12 +737,12 @@ y = log_b(x) \Leftrightarrow  x=b^y
 <p><img src="re_express_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="576"></p>
 </div>
 </div>
-<p>The original data shows a negative relationship between <code>mpg</code> and <code>disp</code>; the Tukey re-expression takes the inverse of <code>mpg</code> which changes the nature of the relationship between the y and x variables where whe have a positive relationship between the re-expressed <code>mpg</code> variable and <code>disp</code> variable (note that by simply changing the sign of the re-expressed value, <code>-x^(-1)</code> maintains the nature of the original relationship); the Box-Cox transformation, on the other hand, maintains this negative relationship.</p>
-<p>The choice of re-rexpression will depend on the analysis context. For example, if you want an easily interpretable transformation then opt for the Tukey re-expression. If you want to compare the shape of transformed variables, the Box-Cox approach will be better suited.</p>
+<p>The original data shows a negative relationship between <code>mpg</code> and <code>disp</code>; the Tukey re-expression takes the inverse of <code>mpg</code> which changes the nature of the relationship between the y and x variables where we have a positive relationship between the re-expressed <code>mpg</code> variable and <code>disp</code> variable (note that by simply changing the sign of the re-expressed value, <code>-x^(-1)</code> maintains the nature of the original relationship); the Box-Cox transformation, on the other hand, maintains this negative relationship.</p>
+<p>The choice of re-expression will depend on the analysis context. For example, if you want an easily interpretable transformation then opt for the Tukey re-expression. If you want to compare the shape of transformed variables, the Box-Cox approach will be better suited.</p>
 </section>
 <section id="re-expressing-to-stabilize-spread" class="level2" data-number="21.5">
 <h2 data-number="21.5" class="anchored" data-anchor-id="re-expressing-to-stabilize-spread"><span class="header-section-number">21.5</span> Re-expressing to stabilize spread</h2>
-<p>We learned in the last chapter that one version of the spread-level plot can suggest the power transformation to use. We’ll recreate the plots (however this time, we’ll make use if the base plotting functions).</p>
+<p>We learned in the last chapter that one version of the spread-level plot can suggest the power transformation to use. We’ll recreate the plots (however, this time we’ll make use of the base plotting environment).</p>
 <div class="cell" data-hash="re_express_cache/html/unnamed-chunk-17_ec74f9f9fc8f187bc9751b29e828a05b">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -757,7 +759,7 @@ y = log_b(x) \Leftrightarrow  x=b^y
 <p><img src="re_express_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="211"></p>
 </div>
 </div>
-<p>The plot suggests a monotonic relationship between spread and median. Next, we’ll fit a line to this scatter plot and compute its slope. We’ll use the <code>MASS::rlm()</code> function, but note that any other line fitting strategies could be used as well.</p>
+<p>The plot suggests a monotonic relationship between spread and median. Next, we’ll fit a line to this scatter plot and compute its slope. We’ll use the robust <code>MASS::rlm()</code> function, but note that any other line fitting strategies could be used as well.</p>
 <div class="cell" data-hash="re_express_cache/html/unnamed-chunk-18_5ebcbbd2a21bc9490e9532c0b910927e">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">rlm</span>(spread <span class="sc">~</span> level, df.sl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -765,7 +767,7 @@ y = log_b(x) \Leftrightarrow  x=b^y
 </div>
 </div>
 <p>The slope can be used to come up with the best power transformation to minimize the systematic increase in spread: <span class="math inline">\(p = 1 - slope\)</span>.</p>
-<p>The slope can be extracted from the model <code>M</code> using the <code>coef</code> function:</p>
+<p>The slope is extracted from the model <code>M</code> using the <code>coef</code> function:</p>
 <div class="cell" data-hash="re_express_cache/html/unnamed-chunk-19_609cbfe3d96ca457775f9bea9552bd37">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -773,7 +775,7 @@ y = log_b(x) \Leftrightarrow  x=b^y
   -2.204242    1.143365 </code></pre>
 </div>
 </div>
-<p>The second value in the output is the slope. So the power to use is <code>1 - 1.14</code> or <code>-0.14</code>. In the previous chapter, we suggested that rounding the power to <code>0</code> (i.e.&nbsp;a log transformation). Here, we will apply the suggested power using <code>BC</code> function to re-express the <code>Petal.Length</code> values. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
+<p>The second value in the output is the slope. So the power to use is <code>1 - 1.14</code> or <code>-0.14</code>. In the previous chapter, we suggested rounding the power to <code>0</code> (i.e.&nbsp;a log transformation). Here, we will apply the suggested power using <code>BC</code> function to re-express the <code>Petal.Length</code> values. We choose the Box-Cox method over the Tukey method because the power is negative. We’ll add the re-expressed values as a new column to <code>df</code>:</p>
 <div class="cell" data-hash="re_express_cache/html/unnamed-chunk-20_1e743b6e90e5f78eb76831866df824e9">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>iris<span class="sc">$</span>re.Petal.Length <span class="ot">&lt;-</span> <span class="fu">BC</span>(iris<span class="sc">$</span>Petal.Length, <span class="sc">-</span><span class="fl">0.14</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -787,7 +789,7 @@ y = log_b(x) \Leftrightarrow  x=b^y
 <p><img src="re_express_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="576"></p>
 </div>
 </div>
-<p>Recall that our goal here was to minimize any systematic relationship between spread and median. The re-expression seems to have eliminated the monotonic increase in spread, but an s-l plot will be more effective in helping confirm this.</p>
+<p>Recall that our goal here is to minimize any systematic relationship between spread and median. The re-expression seems to have eliminated the monotonic increase in spread, but an s-l plot will be more effective in helping confirm this.</p>
 <div class="cell" data-hash="re_express_cache/html/unnamed-chunk-22_85727a710caf616eddcb06013995231f">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> iris <span class="sc">%&gt;%</span></span>
@@ -811,20 +813,39 @@ y = log_b(x) \Leftrightarrow  x=b^y
 <h2 data-number="21.6" class="anchored" data-anchor-id="the-eda_re-function"><span class="header-section-number">21.6</span> The <code>eda_re</code> function</h2>
 <p>The <code>tukeyedar</code> package offers a re-expression function that implements both the Tukey and Box-Cox transformations. To apply the Tukey transformation set <code>tukey = TRUE</code> (the default setting). For the Box-Cox transformation, set <code>tukey = FALSE</code>. The power parameter is defined by the <code>p</code> argument.</p>
 <p>For a Tukey transformation:</p>
-<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-23_819b87aee4b9eff7f10ca7bc818a650d">
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-23_926f8e49b36f12eb6080bbba959b3dcc">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>( <span class="fu">eda_re</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p=</span><span class="sc">-</span><span class="dv">1</span>), <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>( <span class="fu">eda_re</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p=</span><span class="sc">-</span><span class="fl">0.25</span>), <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="re_express_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>For a Box-Cox transformation:</p>
-<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-24_68daf07f8dbf971994a29a0c877f7c24">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>( <span class="fu">eda_re</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p=</span><span class="sc">-</span><span class="dv">1</span>, <span class="at">tukey =</span> <span class="cn">FALSE</span>), <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-24_d948cd4cd8f492b44dac7cdd7ac24385">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>( <span class="fu">eda_re</span>(mtcars<span class="sc">$</span>mpg, <span class="at">p=</span><span class="sc">-</span><span class="fl">0.25</span>, <span class="at">tukey =</span> <span class="cn">FALSE</span>), <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="re_express_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
+</section>
+<section id="the-eda_unipow-function" class="level2" data-number="21.7">
+<h2 data-number="21.7" class="anchored" data-anchor-id="the-eda_unipow-function"><span class="header-section-number">21.7</span> The <code>eda_unipow</code> function</h2>
+<p>The <code>eda_unipow</code> function will generate a matrix of distribution plots for a given vector of values using different power of transformations. By default, these powers are <code>c(2, 1, 1/2, 1/3, 0, -1/3, -1/2, -1, -2)</code>–this generates a 3-by-3 plot matrix.</p>
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-25_37bb8c0d8826dd790c40044201c00bc1">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_unipow</span>(a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="re_express_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="576"></p>
+</div>
+</div>
+<p>What we are seeking is a symmetrical distribution. The power of <code>1/3</code> comes close. We can tweak the input power parameters to cove a smaller range of values.</p>
+<div class="cell" data-hash="re_express_cache/html/unnamed-chunk-26_553ba49458b0349eefb5f1a886bfaeb4">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_unipow</span>(a, <span class="at">p =</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="re_express_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="364"></p>
+</div>
+</div>
+<p>The above plot suggests that we could go with a power transformation of <code>0.25</code> or <code>0.2</code>. The choice may come down to convenience and “interpretability”.</p>
+<p>The next chapter looks at an advanced technique in tweaking a power transformation: Letter value summaries.</p>
 
 
 </section>
