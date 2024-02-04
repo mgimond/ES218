@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 23&nbsp; A working example and a case for robust statistics</title>
+<title>Exploratory Data Analysis in R - 23&nbsp; A working example: t-tests and re-expression</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -122,7 +122,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./robustness.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example and a case for robust statistics</span></a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./robustness.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -337,7 +337,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./robustness.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example and a case for robust statistics</span></span></a>
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></span></a>
   </div>
 </li>
       </ul>
@@ -437,13 +437,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <li><a href="#a-typical-statistical-approach-the-two-sample-t-test" id="toc-a-typical-statistical-approach-the-two-sample-t-test" class="nav-link" data-scroll-target="#a-typical-statistical-approach-the-two-sample-t-test"><span class="header-section-number">23.2</span> A typical statistical approach: the two sample t-Test</a></li>
   <li><a href="#re-expression" id="toc-re-expression" class="nav-link" data-scroll-target="#re-expression"><span class="header-section-number">23.3</span> Re-expression</a></li>
   <li><a href="#fine-tuning-the-re-expression" id="toc-fine-tuning-the-re-expression" class="nav-link" data-scroll-target="#fine-tuning-the-re-expression"><span class="header-section-number">23.4</span> Fine-tuning the re-expression</a></li>
-  <li><a href="#dont-forget-the-outliers" id="toc-dont-forget-the-outliers" class="nav-link" data-scroll-target="#dont-forget-the-outliers"><span class="header-section-number">23.5</span> Don’t forget the outliers!</a></li>
-  <li><a href="#robust-tests" id="toc-robust-tests" class="nav-link" data-scroll-target="#robust-tests"><span class="header-section-number">23.6</span> Robust tests</a>
-  <ul class="collapse">
-  <li><a href="#permutation-test" id="toc-permutation-test" class="nav-link" data-scroll-target="#permutation-test"><span class="header-section-number">23.6.1</span> Permutation test</a></li>
-  <li><a href="#wilcoxon-rank-sum-test" id="toc-wilcoxon-rank-sum-test" class="nav-link" data-scroll-target="#wilcoxon-rank-sum-test"><span class="header-section-number">23.6.2</span> Wilcoxon rank sum test</a></li>
-  </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">23.7</span> References</a></li>
+  <li><a href="#addendum" id="toc-addendum" class="nav-link" data-scroll-target="#addendum"><span class="header-section-number">23.5</span> Addendum</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">23.6</span> References</a></li>
   </ul>
 </nav>
     </div>
@@ -452,7 +447,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example and a case for robust statistics</span></h1>
+<h1 class="title"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></h1>
 </div>
 
 
@@ -527,7 +522,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <section id="introduction" class="level2" data-number="23.1">
 <h2 data-number="23.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">23.1</span> Introduction</h2>
-<p>The following data represent 1,2,3,4-tetrachlorobenzene (<strong>TCB</strong>) concentrations (in units of ppb) for two site locations: a reference site free of external contaminants and a contaminated site that went through remediation (dataset from Millard <em>et al.</em>, p.&nbsp;416-417).</p>
+<p>The following data represent 1,2,3,4-tetrachlorobenzene (TCB) concentrations (in units of ppb) for two site locations: a reference site free of external contaminants and a contaminated site that went through remediation (dataset from Millard <em>et al.</em>, p.&nbsp;416-417).</p>
 <div class="cell" data-hash="robustness_cache/html/unnamed-chunk-3_11363bc775bc324003b17a375f4daf63">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the two data objects (TCB concentrations for reference and contaminated sites)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>Ref <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="fl">0.22</span>,<span class="fl">0.23</span>,<span class="fl">0.26</span>,<span class="fl">0.27</span>,<span class="fl">0.28</span>,<span class="fl">0.28</span>,<span class="fl">0.29</span>,<span class="fl">0.33</span>,<span class="fl">0.34</span>,<span class="fl">0.35</span>,<span class="fl">0.38</span>,<span class="fl">0.39</span>,</span>
@@ -547,12 +542,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Site =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"Cont"</span>,<span class="fu">length</span>(Cont) ), <span class="fu">rep</span>(<span class="st">"Ref"</span>,<span class="fu">length</span>(Ref) ) ),</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                  <span class="at">TCB  =</span> <span class="fu">c</span>(Cont, Ref ) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Our goal is to assess if, overall, the concentrations of TCB at the contaminated site are greater than those at the reference.</p>
+<p>Our goal is to assess if, overall, the concentrations of TCB at the contaminated site are different from those of the reference site with the alternative being that the contaminated site has concentrations greater than those at the reference site.</p>
 </section>
 <section id="a-typical-statistical-approach-the-two-sample-t-test" class="level2" data-number="23.2">
 <h2 data-number="23.2" class="anchored" data-anchor-id="a-typical-statistical-approach-the-two-sample-t-test"><span class="header-section-number">23.2</span> A typical statistical approach: the two sample t-Test</h2>
 <p>We are interested in answering the question: <em>“Did the cleanup at the contaminated site reduce the concentration of TCB down to background (reference) levels?”</em>. If the question being addressed is part of a decision making process such as “Should we continue with the remediation?” we might want to assess if the difference in TCBs between both sites is “significant” enough to conclude that the TCBs are higher than would be expected if chance alone was the process at play.</p>
-<p>A popular statistical procedure used to help address this question is the two sample <a href="https://mgimond.github.io/Stats-in-R/z_t_tests.html#t-test-with-two-samples-small-sample-sizes">t-Test</a>. The test is used to assess whether or not the mean concentration between both batches of values are significantly different from one another. The test can be framed in one of three ways: We can see if the batches are similar, if one batch is greater than the other batch, or if one batch is smaller than the other batch. In our case, we will assess if the <code>Cont</code> batch is greater than the <code>Ref</code> batch (this is the <em>alternative</em> hypothesis). We’ll make use of the <code>t.test</code> function and set the parameter <code>alt</code> to <code>"greater"</code> (indicating that we are assessing if the <code>Cont</code> mean is significantly greater than that of <code>Ref</code>).</p>
+<p>A popular statistical procedure used to help address this question is the two sample <a href="https://mgimond.github.io/Stats-in-R/z_t_tests.html#t-test-with-two-samples-small-sample-sizes">t-Test</a>. The test is used to assess whether or not the mean concentration between both batches of values are significantly different from one another. The test can be framed in one of three ways: We can see if the batches are similar, if one batch is greater than the other batch, or if one batch is smaller than the other batch. In our case, we will assess if the <code>Cont</code> batch is greater than the <code>Ref</code> batch (this is the <em>alternative</em> hypothesis). We’ll make use of the <code>t.test</code> function and set the parameter <code>alt</code> to <code>"greater"</code>.</p>
 <div class="cell" data-hash="robustness_cache/html/unnamed-chunk-4_adcec3869add8c7ef5d7d082ac5052aa">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(Cont, Ref, <span class="at">alt=</span><span class="st">"greater"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -569,89 +564,89 @@ mean of x mean of y
 3.9151948 0.5985106 </code></pre>
 </div>
 </div>
-<p>The test suggests that there is just a small chance (<strong>7.5%</strong>) that the two batches of concentrations are the same. The test outputs the means of each batch: <strong>3.9 ppb</strong> for the contaminated site and <strong>0.6 ppb</strong> for the reference site.</p>
+<p>The test suggests that there is just a small chance (a <strong>7.5%</strong> chance) that the reference site could have generated mean concentrations as great as those found at the contaminated site. The test also outputs the means of each batch: <strong>3.9 ppb</strong> for the contaminated site and <strong>0.6 ppb</strong> for the reference site.</p>
 <p>Many ancillary data analysts may stop here and proceed with the decision making process. This is not good practice. To see why, let’s deconstruct the t-test.</p>
-<p>First, we need to find out how the test is representing the batches of numbers. The t-test characterizes the <em>location</em> of the batch using the <strong>mean</strong>, and the <em>spread</em> using the <strong>standard deviation</strong>. Nothing more. In essence, the test is reducing the complexity of the batches down to two pairs of numbers.</p>
-<p>The t-test uses these pairs of numbers to reconstruct, then compare the distributions. Here’s how the t-test is characterizing the distribution of value for the reference site, <code>Ref</code>:</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-6_793522941c55ac9d5e90cb5839a4151a">
+<p>First, we need to find out how the test is <em>characterizing</em> the batches of numbers. The t-test characterizes the <em>location</em> of the batch using the <strong>mean</strong>, and the <em>spread</em> using the <strong>standard deviation</strong>. In essence, the test is reducing the complexity of the batches down to two numbers.</p>
+<p>The t-test uses these numbers to reconstruct, then compare the distributions. For example, here’s how the t-test is characterizing the distribution of value for the reference site, <code>Ref</code>:</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-5_afd1ed83bd9b5a52a75377a292580baa">
+<div class="cell-output-display">
+<p><img src="robustness_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="288"></p>
+</div>
+</div>
+<p>The right side of the plot is the fitted <em>Normal</em> distribution computed from the sample’s standard deviation–this is how the t-test is characterizing the <code>Ref</code> distribution. The left side of the plot is the density distribution showing the <em>actual</em> shape of the distribution. The points in between both plot halves are the actual values. Note the skew towards higher concentrations. For the <code>Ref</code> data, one might argue that the <em>Normal</em> fit is doing a reasonably good job in characterizing the distribution of values though the outliers may be exaggerating the width of the Normal distribution.</p>
+<p>Now, let’s see how well the <em>Normal</em> fit characterizes the distribution of the contaminated site values, <code>Cont</code>.</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-6_8ac4af3d2f0bcf31f14df422a89bd6fd">
 <div class="cell-output-display">
 <p><img src="robustness_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>The right side of the plot is the fitted <em>Normal</em> distribution computed from the sample’s standard deviation–this is how the t-test is characterizing the <code>Ref</code> distribution. The left side of the plot is the density distribution of the actual values. The points in between both plot halves are the actual values. Note the skew towards higher concentrations. With the <code>Ref</code> data, one might argue that the <em>Normal</em> fit is doing a reasonable job in characterizing the distribution of values.</p>
-<p>Now let’s see how well the <em>Normal</em> fit characterizes the dsitrbuion of the contaminated site values, <code>Cont</code>.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-7_d5bd954b499c57fde40caa8d1d06689a">
+<p>The <em>Normal</em> fit is on the right. The density plot is barely noticeable on the left side of the plot! You’ll note the tight cluster of points near the center of the Normal distribution. There are just a few points that extend beyond the tight cluster. These outliers are disproportionately inflating the standard deviation which, in turn, leads to the disproportionately large Normal distribution that is adopted in the t-test.</p>
+<p>Since the t-test adopts a Normal characterization of the spread, it would behoove us to check the assumption of normality using the <em>normal q-q plot</em>. Here, we’ll compare the <code>Cont</code> values to a Normal distribution.</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-7_2141ffb80fb895bdecc56dadba281c94">
 <div class="cell-output-display">
 <p><img src="robustness_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>The <em>Normal</em> fit is on the right. The density plot is barely noticeable of the left! You’ll also note the tight clusters the points near the center of the Normal distribution. There are just a few points that extend beyond the tight cluster. This small handful of points is what disproportionately inflates the standard deviation which, in turns, leads to the disproportionately large Normal distribution as adopted in the t-test.</p>
-<blockquote class="blockquote">
-<p>As an aside, it’s worth mentioning that the variances are clearly unequal thus violating a basic requirement for the t-test however, R invokes the Welch’s t-test by default to mitigate for unequal variance and sample size. But, Welch’s test does require that the distributions follow a normal theoretical distribution (i.e.&nbsp;they can be different in size but must be normal in shape).</p>
-</blockquote>
-<p>Since the t-test adopts a Normal characterization of the spread, it would behoove us to check the assumption of normality using the <em>normal q-q plot</em>.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-8_2b994c90e95b81b660d67ca573033e3a">
-<div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="288"></p>
-</div>
-</div>
-<p>This is a textbook example of a batch of values that does <strong>not</strong> conform to a <em>Normal</em> distribution. At least four values (which represent ~5% of the data) seem to contribute to the strong skew and to a much distorted representation of location and spread. The mean and standard deviation are <strong>not robust</strong> to extreme values. In essence, all it takes is one single outlier to heavily distort the representation of location and spread in our data. We say that the mean and standard deviation have a breakdown point of <code>1/n</code> where <code>n</code> is the sample size.</p>
+<p>This is a textbook example of a batch of values that does <strong>not</strong> conform to a <em>Normal</em> distribution. At least four values (which represent ~5% of the data) seem to contribute to the strong skew and to a much distorted representation of location and spread. The mean and standard deviation are <strong>not robust</strong> to extreme values. In essence, all it takes is one single outlier to heavily distort the representation of location and spread in our data. The mean and standard deviation have a breakdown point of <code>1/n</code> where <code>n</code> is the sample size.</p>
 <p>The median and interquartile range are less sensitive to extreme values. In fact, the median has a breakdown point of <code>n/2</code>. In other words, half of the values would have to be modified to alter the median.</p>
 <p>The boxplot makes use of these robust measures of location and spread; let’s compare the batches with and without the extreme (outlier) values.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-9_4d87258f86d7973597b8fd5f54c5ce89">
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-8_b4ee9219686b028e5332e1ce5d58bd58">
 <div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="576"></p>
+<p><img src="robustness_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="576"></p>
 </div>
 </div>
-<p>Note that because of the robust nature of the median and interquartile range, the boxplot helps us to spot the outliers. In fact, the boxplot has a breakdown point of <code>n/4</code> (i.e.&nbsp;25% of the values must be extreme before we see any masking of extreme values). The standard deviation, on the other hand, can be inflated by <em>one</em> extreme value thus <em>masking</em> the potentially problematic values.</p>
+<p>Note that because of the robust nature of the median and interquartile range, the boxplot helps us spot the outliers. In fact, the boxplot has a breakdown point of <code>n/4</code> (i.e.&nbsp;25% of the values must be extreme before we see any masking of extreme values). The standard deviation, on the other hand, can be inflated by <em>one</em> extreme value thus <em>masking</em> the potentially problematic values.</p>
 <p>One observation that can also be gleaned from this plot is the skewed nature of the <code>Cont</code> data within the interquartile range (IQR). This suggests that even if we were to remove the outliers, the data would violate the normal distribution requirements.</p>
+<p>But, most importantly, the boxplot seems to contradict the conclusion gleaned from the t-test. The plot suggests that the contaminated site has a lower overall concentration than that of the reference site when comparing medians instead of means!</p>
 </section>
 <section id="re-expression" class="level2" data-number="23.3">
 <h2 data-number="23.3" class="anchored" data-anchor-id="re-expression"><span class="header-section-number">23.3</span> Re-expression</h2>
 <p>If we are to use the t-test, we need to make sure that the distributional requirements are met. Even Welch’s modification has one requirement about the distribution: <strong>both spreads must follow a normal distribution</strong>. Let’s compare both batches to a normal distribution via a normal q-q plot. We’ll make use of the custom <code>eda_qq</code> function:</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-10_25ab19a72134c34d43d488b0f60d382b">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm=</span><span class="cn">TRUE</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-9_dbeac1972bc67480287b8c1d097a34a7">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="robustness_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="576"></p>
+</div>
+</div>
+<p>These batches do not follow the straight line. This suggests skewness in the distribution (as was observed with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation. The <code>eda_qq</code> function has an argument, <code>p=</code>, that takes as input a re-expression that will be applied to the values. The function will also allow us to choose between a Tukey (<code>tukey=TRUE</code>) or Box-Cox (<code>tukey=FALSE</code>) method. The default is set to <code>tukey=FALSE</code>. To apply a log transformation, we set <code>p</code> to <code>0</code>.</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-10_000ca671d63332413e1a8a64ebc8ee65">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm=</span><span class="cn">TRUE</span>, <span class="at">p =</span> <span class="dv">0</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm=</span><span class="cn">TRUE</span>, <span class="at">p =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="robustness_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="576"></p>
 </div>
 </div>
-<p>These batches do not follow the straight line. This suggests skewness in the distribution (as was observed with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation. The <code>eda_qq</code> function has an argument, <code>p=</code>, that takes as input a re-expression that will be applied to the values. The function will also allow us to choose between a Tukey (<code>tukey=TRUE</code>) or Box-Cox (<code>tukey=FALSE</code>) method. The default is set to <code>tukey=FALSE</code>. To apply a log transformation, we set <code>p</code> to <code>0</code>.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-11_d31da9b9f1bc989fb486f7a1f3edbd18">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm=</span><span class="cn">TRUE</span>, <span class="at">p =</span> <span class="dv">0</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm=</span><span class="cn">TRUE</span>, <span class="at">p =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="576"></p>
-</div>
-</div>
+<p>The log transformed data is an improvement, but a skew in both batches is still apparent. We’ll need to explore other powers next.</p>
 </section>
 <section id="fine-tuning-the-re-expression" class="level2" data-number="23.4">
 <h2 data-number="23.4" class="anchored" data-anchor-id="fine-tuning-the-re-expression"><span class="header-section-number">23.4</span> Fine-tuning the re-expression</h2>
-<p>The log transformation is one of many re-expressions that can be applied to the data. Let’s explore the skewness across different “depths” of the <code>Cont</code> values to see if the skewness is systematic. We’ll use letter value summary plots to help guide us to a reasonable re-expression. We’ll make use of the <code>eda_lsum</code> function to generate the table and <code>ggplot2</code> to generate the plot.</p>
+<p>The log transformation is one of many re-expressions that can be applied to the data. Let’s explore the skewness across different “depths” of the <code>Cont</code> values to see if the skewness is systematic. We’ll use letter value summary plots to help guide us to a reasonable re-expression. We’ll make use of the custom <code>eda_lsum</code> function to generate the table and <code>ggplot2</code> to generate the plot.</p>
 <p>First, we’ll look at the raw contaminated site data:</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-12_927d44d12674f20cf06041d31152c413">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-11_ebf0b5e3ed2b666a686cb6a525d04c1d">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>Cont.lsum <span class="ot">&lt;-</span> <span class="fu">eda_lsum</span>(Cont, <span class="at">l=</span><span class="dv">7</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Cont.lsum) <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span><span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="288"></p>
+<p><img src="robustness_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>The data become strongly skewed for 1/32<sup>th</sup> of the data (depth letter <code>C</code>). Let’s now look at the reference site.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-13_0b1d626434f29522b833e27f8b6d7e8f">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Ref.lsum <span class="ot">&lt;-</span> <span class="fu">eda_lsum</span>(Ref, <span class="at">l=</span><span class="dv">7</span>)</span>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-12_d5b58c28542e59208555ce763372f900">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Ref.lsum <span class="ot">&lt;-</span> <span class="fu">eda_lsum</span>(Ref, <span class="at">l=</span><span class="dv">7</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Ref.lsum) <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span><span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="288"></p>
+<p><img src="robustness_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>A skew is also prominent here but a bit more consistent across the depths with a slight drop between depths <code>D</code> and <code>C</code> (16<sup>th</sup> and 32<sup>nd</sup> extreme values).</p>
 <p>Next, we will find a power function that re-expresses the values to satisfy the t-test distribution requirement. We’ll first look at the log transformation implemented in the last section. Note that we are using the custom <code>eda_re</code> function to transform the data. We’ll also make use of some <em>advanced</em> coding to reduce the code chunk size.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-14_9d5a3e3fe1dc01e99e3a6c4270fe2cf9">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-13_7debf91a4fc4c35fccabf5cb60ee6b7f">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Site) <span class="sc">%&gt;%</span></span>
@@ -659,135 +654,72 @@ mean of x mean of y
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(.<span class="sc">~</span>Site)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="480"></p>
+<p><img src="robustness_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="480"></p>
 </div>
 </div>
 <p>The log transformation seems to work well with the reference site, but it’s not aggressive enough for the contaminated site. Recall that to ensure symmetry across <em>all</em> levels of the batches, the letter values must follow a straight (horizontal) line. Let’s try a power of <code>-0.5</code>. Given that the negative power will reverse the order of the values if we adopt the Tukey transformation, we’ll use the default Box-Cox method.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-15_6d48020458de68ff7200be02993d48f2">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-14_241dec2a8175c284a47625249b29004f">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Site) <span class="sc">%&gt;%</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>(<span class="fu">eda_lsum</span>( <span class="fu">eda_re</span>(.<span class="sc">$</span>TCB,<span class="sc">-</span><span class="fl">0.5</span>), <span class="at">l=</span><span class="dv">7</span>) ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>(<span class="fu">eda_lsum</span>( <span class="fu">eda_re</span>(.<span class="sc">$</span>TCB,<span class="sc">-</span><span class="fl">0.5</span>, <span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="at">l=</span><span class="dv">7</span>) ) <span class="sc">%&gt;%</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(.<span class="sc">~</span>Site)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="robustness_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="480"></p>
+</div>
+</div>
+<p>This seems to be too aggressive. We are facing a situation where attempting to normalize one batch distorts the other batch. Let’s try a compromise and use <code>-.35</code>.</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-15_ca7da029db23e8c341e4001c9e3b02a2">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Site) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>(<span class="fu">eda_lsum</span>( <span class="fu">eda_re</span>(.<span class="sc">$</span>TCB,<span class="sc">-</span><span class="fl">0.35</span>, <span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="at">l=</span><span class="dv">7</span>) ) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(.<span class="sc">~</span>Site)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="robustness_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="480"></p>
 </div>
 </div>
-<p>This seems to be too aggressive. We are facing a situation where attempting to normalize one batch distorts the other batch. Let’s try a compromise and use <code>-.35</code>.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-16_598b55f74a6ae1492ad0aa843ef837ce">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Site) <span class="sc">%&gt;%</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>(<span class="fu">eda_lsum</span>( <span class="fu">eda_re</span>(.<span class="sc">$</span>TCB,<span class="sc">-</span><span class="fl">0.35</span>), <span class="at">l=</span><span class="dv">7</span>) ) <span class="sc">%&gt;%</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(.<span class="sc">~</span>Site)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This seems to be a bit better. It’s obvious that we will not find a power transformation that will satisfy both batches, so we will need to make a judgement call and work with a power of -.35 for now.</p>
+<p>Let’s compare the re-expressed batches with a normal distribution.</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-16_5aada43100d261cb6425349142ad6143">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm =</span> <span class="cn">TRUE</span>, <span class="at">p =</span> <span class="sc">-</span><span class="fl">0.35</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm =</span> <span class="cn">TRUE</span>, <span class="at">p =</span> <span class="sc">-</span><span class="fl">0.35</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="robustness_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="480"></p>
 </div>
 </div>
-<p>This seems to be a bit better. It’s obvious that we will not find a power transformation that will satisfy both batches, so we will need to make a judgement call and work with a power of -.35 for now.</p>
-<p>Let’s compare the re-expressed batches with a normal distribution.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-17_c8455553b27e9bf787fe482ada450a1e">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm =</span> <span class="cn">TRUE</span>, <span class="at">p =</span> <span class="sc">-</span><span class="fl">0.35</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm =</span> <span class="cn">TRUE</span>, <span class="at">p =</span> <span class="sc">-</span><span class="fl">0.35</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The distributions look quite good when viewed in a normal q-q plot. Let’s now compare the re-expressed batches using a density/normal fit plot.</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-17_ecf9440a3a8725cc3fc378731cd38112">
 <div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="480"></p>
+<p><img src="robustness_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>The distributions do not look too bad when viewed in a normal q-q plot. Let’s now compare the bacthes via boxplots.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-18_53ce810419632dc86d5ed747376621c7">
-<div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="288"></p>
-</div>
-</div>
-<p>The data are far more symmetrical. So, how much impact did the skewed distributions have on the t-test? Now that we have normally distributed values, let’s rerun the t-test using the re-expressed values.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-19_8a14411ed546c76da23c83d9bcf813c6">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(<span class="fu">eda_re</span>(Cont,<span class="sc">-</span><span class="fl">0.35</span>), <span class="fu">eda_re</span>(Ref,<span class="sc">-</span><span class="fl">0.35</span>), <span class="at">alt=</span><span class="st">"greater"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Recall that the right half is the <em>Normal</em> fit to the data and the left half is the density plot. There is far greater agreement between the normal fits and their accompanying density distributions for both sites. You’ll also note that the mean concentration is now smaller at the contaminated site than it is a the reference site–this is in agreement with what we observed in the boxplots.</p>
+<p>So, how much impact did the skewed distributions have on the t-test? Now that we have normally distributed values, let’s rerun the t-test using the re-expressed values. Note that because the power is negative, we will adopt the Box-Cox transformation to preserve order by setting <code>tukey=FALSE</code> to the <code>eda_re</code> function.</p>
+<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-18_af29e7e9870bbea709ce9156dc3c8397">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(<span class="fu">eda_re</span>(Cont,<span class="sc">-</span><span class="fl">0.35</span>, <span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="fu">eda_re</span>(Ref,<span class="sc">-</span><span class="fl">0.35</span>,<span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="at">alt=</span><span class="st">"greater"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Welch Two Sample t-test
 
-data:  eda_re(Cont, -0.35) and eda_re(Ref, -0.35)
-t = 1.0495, df = 111.68, p-value = 0.1481
+data:  eda_re(Cont, -0.35, tukey = FALSE) and eda_re(Ref, -0.35, tukey = FALSE)
+t = -1.0495, df = 111.68, p-value = 0.8519
 alternative hypothesis: true difference in means is greater than 0
 95 percent confidence interval:
- -0.03814322         Inf
+ -0.4845764        Inf
 sample estimates:
-mean of x mean of y 
- 1.324247  1.258517 </code></pre>
+ mean of x  mean of y 
+-0.9264188 -0.7386209 </code></pre>
 </div>
 </div>
-<p>Note that the result differs significantly from that with the raw data. This last run gives us a p-value of <strong>0.15</strong> whereas the first run gave us a p-value of <strong>0.075</strong>.</p>
+<p>The result differs significantly from that with the raw data. This last run gives us a p-value of <strong>0.85</strong> whereas the first run gave us a p-value of <strong>0.075</strong>. This suggests that there is an 85% chance that the reference site could have generated a mean concentration greater than that observed at the contaminated site.</p>
 </section>
-<section id="dont-forget-the-outliers" class="level2" data-number="23.5">
-<h2 data-number="23.5" class="anchored" data-anchor-id="dont-forget-the-outliers"><span class="header-section-number">23.5</span> Don’t forget the outliers!</h2>
-<p>It’s obvious once we look at the re-expressed data via the prism of a boxplot that for a few sites, more remediation is needed. But, you will also note that for many other sites, the concentrations are much less than those found at the reference site. No statistical procedure is needed to come to this conclusion! So while the t-test tells us something about <em>overall</em> differences, it fails to pick up on some of these intricate details that can only be gleaned from plots. This is the whole essence of exploratory data analysis.</p>
+<section id="addendum" class="level2" data-number="23.5">
+<h2 data-number="23.5" class="anchored" data-anchor-id="addendum"><span class="header-section-number">23.5</span> Addendum</h2>
+<p>It was obvious from the boxplot of the original (un-transformed) data that for a few sites, more remediation was needed given their higher than typical TCB values. But, it was also quite apparent from the boxplot that for many other sites, the concentrations were <em>much less</em> than those found at the reference site suggesting that the remediation reduced TCB concentrations that occur naturally in that environment given that none of the reference site values were as low as those found at the contaminated site. No statistical procedure was needed to come to this conclusion! So while the t-test told us something about the <em>significance</em> of differences in their mean values, it failed to pick up on some of the intricate details that could only be gleaned from our plots. This is the whole essence of exploratory data analysis!</p>
 </section>
-<section id="robust-tests" class="level2" data-number="23.6">
-<h2 data-number="23.6" class="anchored" data-anchor-id="robust-tests"><span class="header-section-number">23.6</span> Robust tests</h2>
-<p>It should be clear by now that many of the popular statistical procedures that reduce the data to a mean and standard deviation are not robust to datasets having skewed distributions or extreme outliers. In fact, most observational data seldom follow a nice normal distribution. The above exercise demonstrates how a very simple implementation of a t-Test can result in a lengthy detour through exploration and re-expression. This can be time consuming when exploring many different datasests. Fortunately there are several alternative statistics that are far less restrictive than the t-Test but serve the same purpose: comparing batches of numbers. These are covered here very superficially for reference.</p>
-<section id="permutation-test" class="level3" data-number="23.6.1">
-<h3 data-number="23.6.1" class="anchored" data-anchor-id="permutation-test"><span class="header-section-number">23.6.1</span> Permutation test</h3>
-<p>The idea here is that if concentrations of TCB come from sites with identical TCB profiles, then one should not be able to notice a difference in values measured at both sites. By mixing up (permuting) the values across batches, we can come up with a distribution of mean (or median) concentration differences between batches that we would expect to get if there was no difference. We then compare our observed mean (or median) differences to that of the distribution of simulated mean (or median) differences. In the following example, we will choose the median over the mean because of its robust measure of location.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-20_d695b38af68fc12041f1e7c5f516d805">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">321</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Pool the concentrations</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>Pool <span class="ot">&lt;-</span> <span class="fu">c</span>(Ref, Cont)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an empty vector that will store the simulated median differences</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>med.dif <span class="ot">&lt;-</span> <span class="fu">vector</span>()</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run simulations</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">9999</span>){</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Permute the pooled data then assign the resampled data to each batch</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  Pool.rnd <span class="ot">&lt;-</span> <span class="fu">sample</span>(Pool, <span class="at">replace=</span><span class="cn">FALSE</span>)</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Grab the first batch of values</span></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  Cont.rnd <span class="ot">&lt;-</span> Pool.rnd[<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(Cont)]</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Grab the second batch of values</span></span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  Ref.rnd <span class="ot">&lt;-</span> Pool.rnd[ (<span class="fu">length</span>(Cont)<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(Pool)]</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute median differences</span></span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  med.dif[i] <span class="ot">&lt;-</span> <span class="fu">median</span>(Cont.rnd) <span class="sc">-</span> <span class="fu">median</span>(Ref.rnd)</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the distribution of median differences  </span></span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(med.dif)</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Now let's see where our observed difference in median concentration lies</span></span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">median</span>(Cont) <span class="sc">-</span> <span class="fu">median</span>(Ref), <span class="at">col=</span><span class="st">"red"</span>, <span class="at">lw=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="robustness_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="384"></p>
-</div>
-</div>
-<p>We can compute a <em>pseudo</em> p-value from the above. Note that we are interested in the number of simulated values that are more extreme than our observed value.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-21_955d428a109d8ed12301871bb0cd1058">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>N.greater <span class="ot">&lt;-</span> <span class="fu">sum</span>( (<span class="fu">median</span>(Cont) <span class="sc">-</span> <span class="fu">median</span>(Ref)) <span class="sc">&gt;=</span> med.dif) <span class="co"># Number of simulated differences</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                                                           <span class="co"># greater than the observed value</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(med.dif) <span class="co">#number of simulated values</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">min</span>(N.greater <span class="sc">+</span> <span class="dv">1</span>, n <span class="sc">+</span> <span class="dv">1</span> <span class="sc">-</span> N.greater) <span class="sc">/</span> (n <span class="sc">+</span><span class="dv">1</span>)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.0896</code></pre>
-</div>
-</div>
-<p>Here, the p-value gives us the probability that our observed difference in median concentration value is consistent with the expected difference if the two sites were identical. In our example, that probability is around 0.09 suggesting that <em>overall</em>, the concentrations at both sites are relatively the same if we adopt the traditional cutoff of 0.05. But note that this p-value is</p>
-</section>
-<section id="wilcoxon-rank-sum-test" class="level3" data-number="23.6.2">
-<h3 data-number="23.6.2" class="anchored" data-anchor-id="wilcoxon-rank-sum-test"><span class="header-section-number">23.6.2</span> Wilcoxon rank sum test</h3>
-<p>This is another popular alternative to the t-Test. The technical implementation and interpretation is identical to that of the t-Test. It differs from the t-Test in that it is based on the observation ranks as opposed to the observation means. Here, we implement a two-sided test addressing the question <em>“are the differences in concentrations between the sites significant”</em>.</p>
-<div class="cell" data-hash="robustness_cache/html/unnamed-chunk-22_17307ad1e92ddfcbfb6ea41aeb1c4f50">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wilcox.test</span>(Cont, Ref, <span class="at">alternative =</span> <span class="st">"two.sided"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Wilcoxon rank sum test with continuity correction
-
-data:  Cont and Ref
-W = 1582, p-value = 0.2423
-alternative hypothesis: true location shift is not equal to 0</code></pre>
-</div>
-</div>
-<p>The p-value (which is similar to that found via the permutation technique) suggests that the difference in <em>overall</em> concentrations is not that great between both sites… despite the presence of a few outliers!</p>
-</section>
-</section>
-<section id="references" class="level2" data-number="23.7">
-<h2 data-number="23.7" class="anchored" data-anchor-id="references"><span class="header-section-number">23.7</span> References</h2>
+<section id="references" class="level2" data-number="23.6">
+<h2 data-number="23.6" class="anchored" data-anchor-id="references"><span class="header-section-number">23.6</span> References</h2>
 <p>Millard S.P, Neerchal N.K., <em>Environmental Statistics with S-Plus</em>, 2001.</p>
 
 
