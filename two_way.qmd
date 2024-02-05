@@ -53,15 +53,15 @@ dotchart( as.matrix(df)- median(df$Income), pch=16,cex=0.6)
 abline(v = 0, col="red")
 ```
 
-We have separated the income values into two parts: an **overall** value and the difference between each value and the overall--the **residuals**. This can be written in the following algebraic form:
+We have separated the income values into two parts: an **overall** value and the difference between each value and the overall--i.e. the **residuals**. This can be written in the following algebraic form:
 
 $$
 Income_{Occupation} = Income_{median} + Income_{residual}
 $$
 
-For example, 'Healthcare Support' average income of  $`r sprintf("%i",df$Income[12])` can be separated into the the median, $`r sprintf("%i",median(df$Income))`, and the residual, $`r sprintf("%i",df$Income[12]-median(df$Income))`. 
+For example, 'Healthcare Support' average income of  $`r sprintf("%i",df$Income[12])` can be separated into the median, $`r sprintf("%i",median(df$Income))`, and its residual, $`r sprintf("%i",df$Income[12]-median(df$Income))`. 
 
-So in addition to gleaning a median income value from this batch of values, we have also devised a way to facilitate the comparison of the income values to one another. Alternatively, we could have assigned colors to each cell of the table reflecting their values *relative* to the overall median.
+So, in addition to gleaning a median income value from this batch of values, we have also devised a way to facilitate the comparison of the income values to one another. Alternatively, we could have assigned colors to each cell of the table reflecting their values *relative* to the overall median.
 
 ```{r small.mar=TRUE, fig.width=4,fig.height=5, echo=FALSE}
 library(RColorBrewer)
@@ -233,7 +233,7 @@ The final version of the table (along with the column and row values) is shown b
 
 ![](img/twoway_09.jpg)
 
-A progression of each iteration is shown side-by-side in the next figure. Note how, at the end of the iterations, the *common factor* ends up contributing the largest effect. Also note the one abnormally high residual in the southern region associated with 8^th^ grade education.
+A progression of each iteration is shown side-by-side in the next figure. The left-most table is the original data showing death rates. The second table shows the outcome of the first round of polishing (including the initial overall median value of 20.2). The third and forth table show the second and third iterations of the smoothing operations. Additional iterations are not deemed necessary given that little more can be extracted from the residuals.
 
 ```{r echo = FALSE, fig.width = 11, fig.height=2.5}
 library(tukeyedar)
@@ -259,7 +259,11 @@ OP <- par(mfrow = c(1,4))
 par(OP)
 ```
 
-The left-most table is the original data showing death rates. The second table shows the outcome of the first round of polishing (including the initial overall median value of 20.2). The third and forth table show the second and third iterations of the smoothing operations. Additional iterations are not deemed necessary given that little more can be extracted from the residuals.
+A few takeway observations from the analysis follow:
+
+ * The *common factor* ends up contributing the largest effect. 
+ * Between `Region` and `Education` effects, the latter explains more of the variability in deaths with a range of 7.43 - (-3.7) = 11.13 deaths per 1000 births. The `Region` effect explains about 2.3 - (-1.46) = 3.76 deaths per 1000 births of the variability in the data.
+ * One abnormally high residual--10.97 deaths above the overall median deaths--is associated with the southern region and an 8^th^ grade education.
 
 ### Interpreting the median polish
 
@@ -356,7 +360,7 @@ df.pol <- eda_pol(dfl, row = Region, col = Education , val = Deaths,
                    res.size = 0.8, row.size = 0.8, col.size = 0.8)
 ```
 
-Here, the `eda_pol` function required five iterations which explains the slight difference in values from those generated with the medpolish function. You can control the maximum number of iterations in `eda_pol` with the `maxiter` argument.
+Here, the `eda_pol` function required five iterations which explains the slight difference in values from those generated with the `medpolish` function. You can control the maximum number of iterations in `eda_pol` with the `maxiter` argument.
 
 By default, the column and row values are listed in the same order as they are presented in the input data frame (either defined alphabetically or defined by their levels). You can have the function sort the values by their effect size using the `sort` argument.
 
@@ -383,7 +387,7 @@ The `eda_pol` will also output a diagnostic plot.
 plot(df.pol, type = "diagnostic")
 ```
 
-In addition to generating the plot, the function will also return the slope of the fitted line.
+In addition to generating the plot, the function will also return the slope of the fitted line in the console.
 
 For a comprehensive review of the median polish and the `eda_pol` function, see the `eda_pol` [vignette](https://mgimond.github.io/tukeyedar/articles/polish.html).
 
