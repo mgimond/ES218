@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # The third R of EDA: Residuals
 
 ```{r echo=FALSE}
@@ -9,9 +14,13 @@ source("libs/Common.R")
 pkg_ver(c("dplyr", "ggplot2","tidyr", "lubridate"))
 ```
 
+So far, we've used residuals to help diagnose model fits in both univariate and bivariate analyses. We've also learned how to leverage re-expression and robust methods (the two other R's of EDA) in helping improve model fits.
+
+In this chapter, we work through an example that highlights the importance of exploring residuals to reveal additional patterns in the data--patterns that may not necessarily be observed in an initial model fit.
+
 ## An EDA example: CO2 analysis
 
-Let's start off by plotting the atmospheric CO2 concentrations (in ppm). The original dataset was pulled from [NOAA's website](http://www.esrl.noaa.gov/gmd/ccgg/trends/).
+Let's start off by plotting the atmospheric CO2 concentrations (in ppm) over time. The original dataset was pulled from [NOAA's website](http://www.esrl.noaa.gov/gmd/ccgg/trends/).
 
 ```{r message=FALSE}
 library(lubridate)
@@ -45,7 +54,7 @@ We note two patterns of interest: an overall upward trend, and a cyclical trend.
 
 ## Exploring the overall trend
 
-We can attempt to model the overall trend by fitting a straight line to the data using a standard regression analysis procedure. The fitted line is displayed in red in the following plot. We will use `ggplot2`'s built-in smoothing function to plot the regression line.
+We can attempt to model the overall trend by fitting a straight line to the data using a 1^st^ order polynomial. The fitted line is displayed in red in the following plot. We will use `ggplot2`'s built-in smoothing function to plot the regression line.
 
 
 ```{r fig.height=2, fig.width=6}
@@ -67,7 +76,7 @@ ggplot(dat2, aes(x = Year, y = res1)) + geom_point()
 
 An overall trend is still present, despite having attempted to control for it. This suggests that our simple linear model does not do a good job in *capturing* the shape of the overall trend. 
 
-It appears that the overall trend is slightly convex and has a small peak around the 1990's. We can first try to fit the trend using a 2^nd^ order polynomial of the form:
+It appears that the overall trend is slightly convex and has a small peak around the 1990's. This suggests that we should move on to a 2^nd^ order polynomial of the form:
 
 $$
 CO2_{trend} = a + b(Year) + c(Year^2) 
@@ -110,7 +119,7 @@ ggplot(dat2 , aes(x = Year, y = res2)) + geom_point() +
            stat_smooth(method = "loess", se = FALSE)
 ```
 
-This does not seem to be an improvement over the 2^nd^ order polynomial. At this point, we could play with different order polynomials in an attempt to smooth the trend or, we may opt for a non-parametric fit. When the goal is to *peel* off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. An example of such a smoothing technique is the loess fit which is shown in the following figure.
+This does not seem to be an improvement over the 2^nd^ order polynomial. At this point, we could play with different order polynomials in an attempt to smooth the trend or, we may opt for a non-parametric fit. When the goal is to *peel* off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. We'll make use of the loess fit which is shown in the following figure.
 
 ```{r fig.height=2, fig.width=6}
 ggplot(dat2, aes(x = Year, y = CO2)) + geom_line() + 
@@ -129,9 +138,9 @@ ggplot(dat2,  aes(x = Year, y = res3)) + geom_point() +
 
 ## Exploring the seasonal component
 
-Let's now explore the cyclical pattern in the residuals. Note the y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating nature along the overall trend is relatively small (the CO2 values have a range of [`r range(dat2$CO2)`] ppm whereas the residuals have a range of [`r round(range(residuals(lo)),2)`] ppm).
+Let's now explore the cyclical pattern in the residuals. Note the residuals' y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating component of the data is relatively small (the CO2 values have a range of [`r range(dat2$CO2)`] ppm whereas the residuals have a range of [`r round(range(residuals(lo)),2)`] ppm).
 
-Now, we may be tempted to fit a *smooth* (as Tukey would say) to the residuals but that may not prove to be fruitful. Instead let's see if the oscillation follows a 12 month cycle. We'll group all the residual values by month of the year. In other words, we will remove the year *tag* associated with each value and explore those values as a function of month alone. Each month's batch of values is distilled into a boxplot.
+Now, we may be tempted to fit a *smooth* to the residuals but that may not prove to be fruitful. Instead, let's see if the oscillation follows a 12 month cycle. We'll group all the residual values by month of the year. In other words, we will remove the year *tag* associated with each value and explore those values as a function of month alone. Each month's batch of values is distilled into a boxplot.
 
 ```{r fig.height=3, fig.width=6}
 # Aggregate residuals by year
@@ -213,4 +222,4 @@ ggplot(d3, aes(x = Year, y = Resid.lev)) +
 
 The blue lines represent the residuals (with the bold blue line showing the loess fit) and the red lines represent the SOI trend (with the bold line showing its loess fit). Note that we halved the SOI values to match the range along the y-scale; the intent is to facilitate the comparison of SOI trend to CO2 trend. There appears to be matching maxima (notably around 1975 and 1988) but we also note some opposing trends such as in the period after 2010. When the index drops below 0, "El Nino" events become more prominent and upwelling flows are suppressed. Though this may prevent CO2 trapped in the deeper Pacific oceans from reaching the surface, "El Nino" events can also have a measurable impact on land climate thus influencing the rate of vegetation growth and, by extension, CO2 uptake. El nino is also believed to increase the rate of forest and brush fires around the world which may also contribute to atmospheric CO2 concentrations.  
 
-It's important to realize that this is one of many ways in which we could have proceeded with the analysis. For example, we could have started off the analysis by removing the seasonal component from the data, then analyzed the long term trend. This is the approach taken by William Cleveland on page 165 of the course's text.
+It's important to realize that this is one of many ways in which we could have proceeded with the analysis. For example, we could have started off the analysis by removing the seasonal component from the data, then analyzed the long term trend. 

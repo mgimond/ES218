@@ -16,7 +16,7 @@ pkg_ver(c("dplyr", "ggplot2", "MASS"))
 
 ## Introduction
 
-Ordinary least squares regression lines (those created with the `lm()` function) suffer from sensitivity to outliers. Because `lm`'s best fit line makes use of the mean (which is not a robust measure of location), its breakdown point is $1/n$  meaning that all it takes is for one data point to behave differently from the rest of the points to significantly alter the slope and intercept of the best fit line. For example, let's start with a well behaved dataset where all points are perfectly aligned and fit this batch with a regression line:
+Ordinary least squares regression lines (those created with the `lm()` function) suffer from sensitivity to outliers. Because `lm`'s best fit line makes use of the mean (which is not a robust measure of location), its breakdown point is $1/n$,  meaning that all it takes is for one data point to behave differently from the rest of the points to significantly alter the slope and intercept of the best fit line. For example, let's start with a well behaved dataset where all points are perfectly aligned, and fit this batch with a regression line:
 
 ```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
 x <- seq(1:11)
@@ -50,92 +50,122 @@ coef(M)
 
 The slope dropped from 2 to 0.86 because of a single point!
 
-If our goal is to explore what the bulk of the data has to say about the phenomena being investigated, we certainly don't want a small batch of "maverick" values to hijack the analysis. We therefore need a set of fitting tools that minimize the influence of outliers. There are many options out there; most notable are Tukey's **3-point summary line** and the **bisquare** robust estimation method outlined in Cleveland's text.
+If our goal is to explore what the *bulk* of the data has to say about the phenomena being investigated, we certainly don't want a few "maverick" values to hijack the analysis. We therefore need a set of fitting tools that minimize the influence of outliers. There are many options out there; most notable are the **resistant line** (that builds off of Tukey's **3-point summary line**) and the **bisquare** robust estimation method.
 
 &nbsp;&nbsp;
 
 ## Robust lines
 &nbsp;&nbsp;
 
-### Tukey's 3-point summary
+### Tukey's resistant line
 
-The idea is simple in concept and easy to implement with a pen and paper if the dataset is not too big. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. Two half-slopes are then used to join the three points. Note that points that share the same x value are lumped into the same batch which can lead to unequal group sizes. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables. Such plots are often used to help guide re-expression of the variables x or y or both for the sole purpose of straightening the x-y relationship.
+The idea is simple in concept. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. Two half-slopes are then used to join the three points. Note that points that share the same x value are lumped into the same batch which can lead to unequal group sizes. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables. Such plots are often used to help guide re-expression of the variables x or y or both for the sole purpose of straightening the x-y relationship.
 
-Let's look at an example using the last (modified) dataset. First, we'll divide the plot into three approximately equal batches.
+Let's look at an example using the last (modified) dataset. First, we divide the plot into three approximately equal batches.
 
 
-```{r echo=FALSE, fig.show='hide'}
-#source("http://www.colby.edu/~mgimond/R/MG_EDA.R")
-#r.lm <- sum3pt(x=x, y=y, dir=F)
-#source("https://raw.githubusercontent.com/mgimond/tukeyedar/master/R/eda_3pt.R")
+```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
 library(tukeyedar)
-r.lm <- eda_3pt(x = x, y = y, dir = FALSE)
+df <- data.frame(x,y)
+Mr <- eda_rline(df, x, y, iter=1)
+plot(Mr, model=F, pt3=F, fit = F)
 ```
 
-```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,echo=FALSE}
-# Find the three parts
-x.u <- unique(x)
-n <- length( unique(match(x, x.u[order(x.u)] )) )
-span <- floor(n/3)
-r    <- n %% 3
-
-# Compute the max index of each third
-if( r == 0) d <- c(span, span *2, span *3)
-if( r == 1) d <- c(span, span *2 + 1, span *3 + 1)
-if( r == 2) d <- c(span + 1, span * 2 + 1, span *3 + 2)
-  
-plot(x, y, pch = 20)
-abline(v = d[1:2], lty = 2, col = "grey80")
-```
 
 Next, compute the median x and y values within each section. 
 
-```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,echo=FALSE}
-plot(x, y, pch = 20)
-abline(v = d[1:2], lty = 2, col = "grey80")
-points(cbind(r.lm$xmed, r.lm$ymed), pch = 16, col = "red")
-
+```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
+plot(Mr, model=F, pt3=T, fit = F)
 ```
 
 Note that we do not include the same point in any two median calculations. This implies that for the mid-third of the data, we do not include the point straddling the left boundary line when computing its median value. Likewise with the right-third of the data. 
 
-The x median values are `r r.lm$xmed` and the y median values are `r r.lm$ymed`.
+The x median values are `r Mr$xmed` and the y median values are `r Mr$ymed` respectively.
 
-Finally, we fit the tail end medians with a straight line.
+The two end medians are used to compute the slope as:
 
-```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,echo=FALSE}
-plot(x, y, pch = 20)
-abline(v = d[1:2], lty = 2, col = "grey80")
-points(cbind(r.lm$xmed, r.lm$ymed), pch = 16,col = "red")
-lines(cbind(r.lm$xmed[-2], r.lm$ymed[-2]), lty = 1, col = "#444444")
+$$
+b = \frac{y_r - y_l}{x_r-x_l}
+$$
+where the subscripts $r$ and $l$ reference the median values for the right-most and left-most batches.
+
+Once the slope is computed, the intercept can be computed as follows:
+
+$$
+median(y_{l,m,r} - b * x_{l,m,r})
+$$
+
+where $(x,y)_{l,m,r}$ are the median x and y values for each batch.
+
+
+```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
+plot(Mr, model=F, pt3=T, fit = F)
+rl1 <- line(x,y,iter=1)
+abline(rl1, col="red")
 ```
 
-This gives us the slope of the line (we can, of course, extend the lines to the boundaries of the x range of values). Note that we have not completely eliminated the influence of the outlier. The outlier does take part in helping fit the line, but it doesn't wield the same disproportionate influence on the line as did the regression line.
 
-So what purpose does the middle median serve? It helps us adjust the vertical location of the line. The goal is to nudge the line upward or downward about 1/3 of the way towards the middle median value (parallel to the y-axis). This then defines the line's *intercept* (which is where the line crosses the y-axis when x = 0).
+This is not bad for a first iteration. But the outlier's influence is still present given that the line is not passing through all nine points. Recall that the goal is to *not* allow one lone observation from influencing a fitted line.
 
-```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,echo=FALSE}
-plot(x, y, pch = 20)
-abline(v = d[1:2], lty = 2, col = "grey80")
-points(cbind(r.lm$xmed, r.lm$ymed), pch = 16, col = "red")
-lines(cbind(r.lm$xmed[-2], r.lm$ymed[-2] + 0.4), lty = 1, col = "#444444")
+From this first iteration, we can extract the residuals. A line is then fitted to the residuals following the same procedure outlined above.
+
+```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
+df$r1 <- residuals(rl1)
+plot(eda_rline(df, x, r1), model=F, pt3=T, fit = F)
+rl1r <- line(x,df$r1,iter=1)
+abline(rl1r,col="red")
 ```
 
-But you need not stop here. The next logical step is to look at the residuals. The following two plots compare the residuals from the regression model and the 3-point summary plot.
+The initial model slope and intercept are `r round(rl1$coefficients[1],2)` and `r round(rl1$coefficients[2],2)` respectively and the residual's slope and intercept are `r round(rl1r$coefficients[1],2)` and `r round(rl1r$coefficients[2],2)` respectively.
+The residual slope is then added to the first computed slope and the process is again repeated thus generating the following tweaked slope and updated residuals:
 
-```{r fig.height=2.5, fig.width=6,  small.mar=TRUE,echo=FALSE}
+```{r fig.height=3, fig.width=6,  small.mar=TRUE,echo=FALSE}
 OP <- par(mfrow = c(1, 2))
-M.line <- line(x, y)
-r1 <- residuals(M)
-r2 <- residuals(M.line)
-plot(x, r1, ylim = range(r1,r2), pch = 16, main="lm residual", ylab="Residual")
-plot(x, r2, ylim = range(r1,r2), pch = 16, main="3pt residual", ylab="Residual")
+plot(Mr, model=F, pt3=T, fit = F)
+rl2 <- line(x,y,iter=2)
+abline(rl2, col="red")
+
+df$r2 <- residuals(rl2)
+plot(eda_rline(df, x, r2), model=F, pt3=T, fit = F)
+rl2r <- line(x,df$r2,iter=1)
+abline(rl2r,col="red")
 par(OP)
 ```
 
-Recall that we are seeking to minimize any non-random pattern in the residual. Even though a monotonic increase in residuals is discernible in both plots, the 3-point summary residual has less of a slope and (ignoring the outlier) has a smaller spread.
+The updated slope is now `r round(rl2$coefficients[1],2)`.  The iteration continues until the slope residuals stabilize. Each successive iteration is shown in the following plot with the final line in dark red. One more iteration should be enough to stabilize the residuals. Giving use the following fitted line whose intercept and slope are `r round(line(x,y,iter=3)$coefficients[1],2)` and `r round(line(x,y,iter=3)$coefficients[2],2)` respectively
 
-The 3-point summary fitting process can be extended by adding the residual slope to the original slope. This process is iterated as many times as needed until the residual slope is close to zero.
+```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
+df$r1 <- residuals(rl1)
+plot(eda_rline(df, x, y), model=F, pt3=T, fit = F)
+abline(line(x,y,iter=1),col="#FFCCCC")
+abline(line(x,y,iter=2),col="#FF8888")
+abline(line(x,y,iter=3),col="#FF0000")
+```
+
+Tukey's resistant line can be computed using the R built-in `line()` function. You specify the number of iteration via the `iter` argument. Usually, five iterations will be enough.
+
+```{r}
+r.fit <- line(x,y, iter = 5)
+```
+
+You can the resistant to a base plot as follows:
+
+```{r fig.height=3, fig.width=3, echo = 2:3}
+OP <- par(mar = c(4,4,1,0))
+plot(y ~ x, df)
+abline(r.fit, col = "red")
+par(OP)
+```
+
+You can also add the line to a `ggplot`:
+
+```{r fig.height=3, fig.width=3}
+ggplot(df, aes(x,y)) + geom_point() +
+  geom_abline(intercept = r.fit$coefficients[1], 
+              slope = r.fit$coefficients[2],
+              col = "red")
+```
+
 
 ### Bisquare
 
@@ -205,7 +235,7 @@ In the above example, the bisquare method does a great job in eliminating the ou
 
 The `MASS` package has a robust linear modeling function called `rlm` that will implement a variation of the aforementioned bisquare estimation technique. Its results may differ slightly from those presented here, but the difference will be insignificant for the most part. 
 
-Note that if you make use of `dplyr` in a work flow, loading `MASS` after `dplyr` will mask dplyr's `select` function. This can be problematic. So you either want to load `MASS` before `dplyr`, or you can call the function via `MASS::rlm`. An example of its use follows.
+Note that if you make use of `dplyr` in a workflow, loading `MASS` after `dplyr` will mask dplyr's `select` function. This can be problematic. So you either want to load `MASS` before `dplyr`, or you can call the function via `MASS::rlm`. An example of its use follows. The default regression model is added as a dashed line for reference.
 
 ```{r fig.height=2.5, fig.width=3,  small.mar=TRUE, fig.show='hold'}
 dat <- data.frame(x,y)
@@ -254,7 +284,9 @@ lines(dat$x, predict(lo), col = "grey50", lty = 2)
 lines(dat$x, predict(lor), col = "red")
 ```
 
-The R base `loess` function can be implemented in `ggplot2`'s `stat_smooth` function as follows:
+The default loess fit is added as a dashed line for reference.
+
+The robust `loess` can be implemented in `ggplot2`'s `stat_smooth` function as follows:
 
 ```{r fig.height=2.5, fig.width=3,  small.mar=TRUE, fig.show='hold'}
 library(ggplot2)

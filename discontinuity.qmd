@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 #  Slicing data
 
 
@@ -10,20 +15,22 @@ source("libs/Common.R")
 pkg_ver(c("dplyr", "ggplot2","tidyr"))
 ```
 
+So far, we've assumed that the underlying process that relates the $x$ and $y$ variables is homogeneous across the full range of x-values. This assumption simplifies model fitting strategies. But sometimes, that assumption does not hold as we will see next.
+
 
 ## Introduction
 
 Let's start off by downloading a dataset.
 
 ```{r}
-library(ggplot2)
-
 df <- read.csv("http://mgimond.github.io/ES218/Data/Sample1.csv")
 ```
 
 Next, we'll plot the data and fit a straight line.
 
 ```{r fig.width=3.5, fig.height=2.5, small.mar=TRUE}
+library(ggplot2)
+
 ggplot(df, aes(x = x,y = y)) + geom_point(alpha = 0.3) +
   stat_smooth(method = "lm", se = FALSE)
 ```
@@ -66,14 +73,17 @@ df2  %>%
   select(-M1)
 ```
 
+So, three separate models were needed to capture, what we believed to be, three different underlying processes.  
 
-## Example
+Exploring the residuals using the loess fit was pivotal in identifying the  breaks in the pattern. But, as we will learn in the next section, these breaks may not always be so obvious in a dataset.
+
+## Case study: Trends in daily temperature extremes
 
 > Disclaimer: the analysis presented here is only exploratory and does not mirror the complete analysis conducted by Vincent *et al.* nor the one conducted by Stone.
 
 ### Original analysis
 
-The following data are pulled from the paper titled "*Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000*" (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90^th^ and 10^th^ percentiles respectively within each year. The percentiles are calculated for the 1961 to 2000 period.
+The following data are pulled from the paper titled "*Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000*" (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90^th^ and 10^th^ percentiles respectively within each year. The percentiles were calculated for the 1961 to 2000 period.
 
 
 
@@ -155,7 +165,7 @@ ggplot(df2.l, aes(x = Year, y = Percent, col = seg)) + geom_point() +
   stat_smooth(method = "lm", se=FALSE) + facet_wrap( ~ Temp, nrow = 1)
 ```
  
-To test for "straightness" in the fits, we'll fit a loess to the points.
+To check for "straightness" in the fits, we'll fit a loess to the points.
 
 ```{r fig.width=5, fig.height=2.5}
 ggplot(df2.l, aes(x = Year, y = Percent, col = seg)) + geom_point() +
@@ -166,7 +176,7 @@ ggplot(df2.l, aes(x = Year, y = Percent, col = seg)) + geom_point() +
 
 There is a clear "stair-step" pattern for the percent cold nights. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period which could imply that in addition to the PDO effect, another process could be at play.
 
-It should be noted that in a followup to Stone's comment, Vincent *et al.* defend their analysis results. However, this little exercise highlights the ease in which an analysis can follow different (and seemingly sound) paths. 
+This little exercise highlights the ease in which an analysis can follow different (and seemingly sound) paths. It also serves as a reminder of the importance of domain knowledge when exploring data.
 
 ## Reference
 

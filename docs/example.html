@@ -338,7 +338,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./robustness.html" class="sidebar-item-text sidebar-link">
+  <a href="./case_study.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></span></a>
   </div>
 </li>
@@ -534,9 +534,11 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 </div>
 </div>
+<p>So far, we’ve used residuals to help diagnose model fits in both univariate and bivariate analyses. We’ve also learned how to leverage re-expression and robust methods (the two other R’s of EDA) in helping improve model fits.</p>
+<p>In this chapter, we work through an example that highlights the importance of exploring residuals to reveal additional patterns in the data–patterns that may not necessarily be observed in an initial model fit.</p>
 <section id="an-eda-example-co2-analysis" class="level2" data-number="26.1">
 <h2 data-number="26.1" class="anchored" data-anchor-id="an-eda-example-co2-analysis"><span class="header-section-number">26.1</span> An EDA example: CO2 analysis</h2>
-<p>Let’s start off by plotting the atmospheric CO2 concentrations (in ppm). The original dataset was pulled from <a href="http://www.esrl.noaa.gov/gmd/ccgg/trends/">NOAA’s website</a>.</p>
+<p>Let’s start off by plotting the atmospheric CO2 concentrations (in ppm) over time. The original dataset was pulled from <a href="http://www.esrl.noaa.gov/gmd/ccgg/trends/">NOAA’s website</a>.</p>
 <div class="cell" data-hash="example_cache/html/unnamed-chunk-3_8ff541de663eb986fb7aa84d57d9e4a8">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -568,7 +570,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </section>
 <section id="exploring-the-overall-trend" class="level2" data-number="26.2">
 <h2 data-number="26.2" class="anchored" data-anchor-id="exploring-the-overall-trend"><span class="header-section-number">26.2</span> Exploring the overall trend</h2>
-<p>We can attempt to model the overall trend by fitting a straight line to the data using a standard regression analysis procedure. The fitted line is displayed in red in the following plot. We will use <code>ggplot2</code>’s built-in smoothing function to plot the regression line.</p>
+<p>We can attempt to model the overall trend by fitting a straight line to the data using a 1<sup>st</sup> order polynomial. The fitted line is displayed in red in the following plot. We will use <code>ggplot2</code>’s built-in smoothing function to plot the regression line.</p>
 <div class="cell" data-hash="example_cache/html/unnamed-chunk-6_2161d4afd86c476bae6977716b12b4a3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat2, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> CO2)) <span class="sc">+</span> <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>             <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -589,7 +591,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>An overall trend is still present, despite having attempted to control for it. This suggests that our simple linear model does not do a good job in <em>capturing</em> the shape of the overall trend.</p>
-<p>It appears that the overall trend is slightly convex and has a small peak around the 1990’s. We can first try to fit the trend using a 2<sup>nd</sup> order polynomial of the form:</p>
+<p>It appears that the overall trend is slightly convex and has a small peak around the 1990’s. This suggests that we should move on to a 2<sup>nd</sup> order polynomial of the form:</p>
 <p><span class="math display">\[
 CO2_{trend} = a + b(Year) + c(Year^2)
 \]</span></p>
@@ -633,7 +635,7 @@ CO2_{trend} = a + b(Year) + c(Year^2)
 <p><img src="example_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="576"></p>
 </div>
 </div>
-<p>This does not seem to be an improvement over the 2<sup>nd</sup> order polynomial. At this point, we could play with different order polynomials in an attempt to smooth the trend or, we may opt for a non-parametric fit. When the goal is to <em>peel</em> off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. An example of such a smoothing technique is the loess fit which is shown in the following figure.</p>
+<p>This does not seem to be an improvement over the 2<sup>nd</sup> order polynomial. At this point, we could play with different order polynomials in an attempt to smooth the trend or, we may opt for a non-parametric fit. When the goal is to <em>peel</em> off one pattern to explore any underlying pattern we should not limit ourselves to parametric fits (which impose a mathematical model on our data) and instead explore non-parametric smoothing techniques that do not impose any structure on the data whatsoever. We’ll make use of the loess fit which is shown in the following figure.</p>
 <div class="cell" data-hash="example_cache/html/unnamed-chunk-12_83a89c9aa33856f9a0d1116388596410">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat2, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> CO2)) <span class="sc">+</span> <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>             <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">span =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">4</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -655,8 +657,8 @@ CO2_{trend} = a + b(Year) + c(Year^2)
 </section>
 <section id="exploring-the-seasonal-component" class="level2" data-number="26.3">
 <h2 data-number="26.3" class="anchored" data-anchor-id="exploring-the-seasonal-component"><span class="header-section-number">26.3</span> Exploring the seasonal component</h2>
-<p>Let’s now explore the cyclical pattern in the residuals. Note the y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating nature along the overall trend is relatively small (the CO2 values have a range of [313.33, 417.31] ppm whereas the residuals have a range of [-4.34, 4.34] ppm).</p>
-<p>Now, we may be tempted to fit a <em>smooth</em> (as Tukey would say) to the residuals but that may not prove to be fruitful. Instead let’s see if the oscillation follows a 12 month cycle. We’ll group all the residual values by month of the year. In other words, we will remove the year <em>tag</em> associated with each value and explore those values as a function of month alone. Each month’s batch of values is distilled into a boxplot.</p>
+<p>Let’s now explore the cyclical pattern in the residuals. Note the residuals’ y-axis values: they are three orders of magnitude less than the overall range of CO2 values. This indicates that the oscillating component of the data is relatively small (the CO2 values have a range of [313.33, 417.31] ppm whereas the residuals have a range of [-4.34, 4.34] ppm).</p>
+<p>Now, we may be tempted to fit a <em>smooth</em> to the residuals but that may not prove to be fruitful. Instead, let’s see if the oscillation follows a 12 month cycle. We’ll group all the residual values by month of the year. In other words, we will remove the year <em>tag</em> associated with each value and explore those values as a function of month alone. Each month’s batch of values is distilled into a boxplot.</p>
 <div class="cell" data-hash="example_cache/html/unnamed-chunk-14_34a9ab0e1daca67c09ee77a017a7e443">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate residuals by year</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dat2<span class="sc">$</span>Month <span class="ot">&lt;-</span> <span class="fu">month</span>(dat2<span class="sc">$</span>Date, <span class="at">label=</span><span class="cn">TRUE</span>) </span>
@@ -738,7 +740,7 @@ CO2_{trend} = a + b(Year) + c(Year^2)
 </div>
 </div>
 <p>The blue lines represent the residuals (with the bold blue line showing the loess fit) and the red lines represent the SOI trend (with the bold line showing its loess fit). Note that we halved the SOI values to match the range along the y-scale; the intent is to facilitate the comparison of SOI trend to CO2 trend. There appears to be matching maxima (notably around 1975 and 1988) but we also note some opposing trends such as in the period after 2010. When the index drops below 0, “El Nino” events become more prominent and upwelling flows are suppressed. Though this may prevent CO2 trapped in the deeper Pacific oceans from reaching the surface, “El Nino” events can also have a measurable impact on land climate thus influencing the rate of vegetation growth and, by extension, CO2 uptake. El nino is also believed to increase the rate of forest and brush fires around the world which may also contribute to atmospheric CO2 concentrations.</p>
-<p>It’s important to realize that this is one of many ways in which we could have proceeded with the analysis. For example, we could have started off the analysis by removing the seasonal component from the data, then analyzed the long term trend. This is the approach taken by William Cleveland on page 165 of the course’s text.</p>
+<p>It’s important to realize that this is one of many ways in which we could have proceeded with the analysis. For example, we could have started off the analysis by removing the seasonal component from the data, then analyzed the long term trend.</p>
 
 
 </section>

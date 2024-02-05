@@ -108,6 +108,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="libs/style.css">
 </head>
@@ -336,7 +338,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./robustness.html" class="sidebar-item-text sidebar-link">
+  <a href="./case_study.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></span></a>
   </div>
 </li>
@@ -434,7 +436,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">27.1</span> Introduction</a></li>
-  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">27.2</span> Example</a>
+  <li><a href="#case-study-trends-in-daily-temperature-extremes" id="toc-case-study-trends-in-daily-temperature-extremes" class="nav-link" data-scroll-target="#case-study-trends-in-daily-temperature-extremes"><span class="header-section-number">27.2</span> Case study: Trends in daily temperature extremes</a>
   <ul class="collapse">
   <li><a href="#original-analysis" id="toc-original-analysis" class="nav-link" data-scroll-target="#original-analysis"><span class="header-section-number">27.2.1</span> Original analysis</a></li>
   <li><a href="#changepoint" id="toc-changepoint" class="nav-link" data-scroll-target="#changepoint"><span class="header-section-number">27.2.2</span> Changepoint</a></li>
@@ -521,18 +523,19 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 </div>
 </div>
+<p>So far, we’ve assumed that the underlying process that relates the <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> variables is homogeneous across the full range of x-values. This assumption simplifies model fitting strategies. But sometimes, that assumption does not hold as we will see next.</p>
 <section id="introduction" class="level2" data-number="27.1">
 <h2 data-number="27.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">27.1</span> Introduction</h2>
 <p>Let’s start off by downloading a dataset.</p>
-<div class="cell" data-hash="discontinuity_cache/html/unnamed-chunk-3_33227dcfae06ebd18310a7b4855f0359">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"http://mgimond.github.io/ES218/Data/Sample1.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="discontinuity_cache/html/unnamed-chunk-3_df1c58cf0059c14b0f0828f3651b78f4">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"http://mgimond.github.io/ES218/Data/Sample1.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we’ll plot the data and fit a straight line.</p>
-<div class="cell" data-small.mar="true" data-hash="discontinuity_cache/html/unnamed-chunk-4_6ae1cc441eca9c67445dacd14535c06c">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> x,<span class="at">y =</span> y)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-small.mar="true" data-hash="discontinuity_cache/html/unnamed-chunk-4_ec1ed7560e9123cccdad82bce32f64c6">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> x,<span class="at">y =</span> y)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="discontinuity_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="336"></p>
 </div>
@@ -582,15 +585,17 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 3     3    -53.4   2.50</code></pre>
 </div>
 </div>
+<p>So, three separate models were needed to capture, what we believed to be, three different underlying processes.</p>
+<p>Exploring the residuals using the loess fit was pivotal in identifying the breaks in the pattern. But, as we will learn in the next section, these breaks may not always be so obvious in a dataset.</p>
 </section>
-<section id="example" class="level2" data-number="27.2">
-<h2 data-number="27.2" class="anchored" data-anchor-id="example"><span class="header-section-number">27.2</span> Example</h2>
+<section id="case-study-trends-in-daily-temperature-extremes" class="level2" data-number="27.2">
+<h2 data-number="27.2" class="anchored" data-anchor-id="case-study-trends-in-daily-temperature-extremes"><span class="header-section-number">27.2</span> Case study: Trends in daily temperature extremes</h2>
 <blockquote class="blockquote">
 <p>Disclaimer: the analysis presented here is only exploratory and does not mirror the complete analysis conducted by Vincent <em>et al.</em> nor the one conducted by Stone.</p>
 </blockquote>
 <section id="original-analysis" class="level3" data-number="27.2.1">
 <h3 data-number="27.2.1" class="anchored" data-anchor-id="original-analysis"><span class="header-section-number">27.2.1</span> Original analysis</h3>
-<p>The following data are pulled from the paper titled “<em>Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000</em>” (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90<sup>th</sup> and 10<sup>th</sup> percentiles respectively within each year. The percentiles are calculated for the 1961 to 2000 period.</p>
+<p>The following data are pulled from the paper titled “<em>Observed Trends in Indices of Daily Temperature Extremes in South America 1960-2000</em>” (Vincent et al., 2005) and represent the percentage of nights with temperatures greater than or colder than the 90<sup>th</sup> and 10<sup>th</sup> percentiles respectively within each year. The percentiles were calculated for the 1961 to 2000 period.</p>
 <div class="cell" data-hash="discontinuity_cache/html/unnamed-chunk-8_4d0c8bb1befb60089b94b89caad2e9bb">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -668,7 +673,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p><img src="discontinuity_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="480"></p>
 </div>
 </div>
-<p>To test for “straightness” in the fits, we’ll fit a loess to the points.</p>
+<p>To check for “straightness” in the fits, we’ll fit a loess to the points.</p>
 <div class="cell" data-hash="discontinuity_cache/html/unnamed-chunk-15_8ae1d0ed312298e9f2f87919172cec82">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2.l, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Percent, <span class="at">col =</span> seg)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>)) <span class="sc">+</span> </span>
@@ -678,7 +683,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>There is a clear “stair-step” pattern for the percent cold nights. However, there seems to be an upward trend in the percent of hot nights for the post-1977 period which could imply that in addition to the PDO effect, another process could be at play.</p>
-<p>It should be noted that in a followup to Stone’s comment, Vincent <em>et al.</em> defend their analysis results. However, this little exercise highlights the ease in which an analysis can follow different (and seemingly sound) paths.</p>
+<p>This little exercise highlights the ease in which an analysis can follow different (and seemingly sound) paths. It also serves as a reminder of the importance of domain knowledge when exploring data.</p>
 </section>
 </section>
 <section id="reference" class="level2" data-number="27.3">

@@ -65,7 +65,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./resistant_lines.html" rel="next">
-<link href="./robustness.html" rel="prev">
+<link href="./case_study.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -338,7 +338,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./robustness.html" class="sidebar-item-text sidebar-link">
+  <a href="./case_study.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></span></a>
   </div>
 </li>
@@ -501,11 +501,11 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 </div>
 </div>
-<p>Bivariate data are datasets that store two variables measured from a same observation (e.g.&nbsp;wind speed <em>and</em> temperature at a single location). This differs from univariate data where only one variable is measured for each observation (e.g.&nbsp;temperature at a single location). This chapter will explore common fitting strategies applied to bivariate data.</p>
+<p>Bivariate data are datasets that store two variables measured from a same observation (e.g.&nbsp;wind speed <em>and</em> temperature at each location). This differs from univariate data where only one variable is measured for each observation (e.g.&nbsp;temperature at each location). This chapter will explore common fitting strategies applied to bivariate data.</p>
 <section id="scatter-plot" class="level2" data-number="24.1">
 <h2 data-number="24.1" class="anchored" data-anchor-id="scatter-plot"><span class="header-section-number">24.1</span> Scatter plot</h2>
-<p>A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed <em>dependent</em> on another variable; the latter being the <em>independent</em> variable. Cleveland refers to the former as the <em>response</em> and the latter as the <em>factor</em> (this is not to be confused with the <em>factor</em> data type used in R as a grouping variable). The dependent variable is usually plotted on the y-axis and the independent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between them.</p>
-<p>A scatter plot can be generated using the base plotting environment as follows:</p>
+<p>A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed <em>dependent</em> on another variable; the latter being the <em>independent</em> variable. The dependent variable is also sometimes referred to as the <em>response</em> variable and the independent variable as the <em>factor</em> (this is not to be confused with the <em>factor</em> data type used in R as a grouping variable). The dependent variable is usually plotted on the y-axis and the independent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between the tow variables.</p>
+<p>A scatter plot can be generated using the base plotting environment as follows. Here, we’ll plot Cleveland’s Ganglion dataset.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <div class="cell" data-small.mar="true" data-hash="bivariate_cache/html/unnamed-chunk-3_6ae7c138354447098c4077e0ba30d0f2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"http://mgimond.github.io/ES218/Data/ganglion.csv"</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -526,14 +526,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </section>
 <section id="fitting-the-data" class="level2" data-number="24.2">
 <h2 data-number="24.2" class="anchored" data-anchor-id="fitting-the-data"><span class="header-section-number">24.2</span> Fitting the data</h2>
-<p>Scatter plots are a good first start in visualizing the data, but this is sometimes not enough. Our eyes need “guidance” to help perceive patterns. Another visual aid involves <strong>fitting</strong> the data with a line. We will explore two fitting strategies: the <em>parametric</em> fit and the <em>non-parametric</em> fit.</p>
+<p>Scatter plots are a good first start in visualizing bivariate data, but this is sometimes not enough. Our eyes need “guidance” to help perceive patterns. Another visual aid involves <strong>fitting</strong> the data with a line. We will explore two fitting strategies: the <em>parametric</em> fit and the <em>non-parametric</em> fit.</p>
 <section id="parametric-fit" class="level3" data-number="24.2.1">
 <h3 data-number="24.2.1" class="anchored" data-anchor-id="parametric-fit"><span class="header-section-number">24.2.1</span> Parametric fit</h3>
 <p>A parametric fit is one where we impose a structure to the data–an example of which is a <em>straight</em> line (also referred to as a 1<sup>st</sup> order polynomial fit). The parametric fit is by far the most popular fitting strategy used in the realm of data analysis and statistics.</p>
 <section id="fitting-a-straight-line" class="level4" data-number="24.2.1.1">
 <h4 data-number="24.2.1.1" class="anchored" data-anchor-id="fitting-a-straight-line"><span class="header-section-number">24.2.1.1</span> Fitting a straight line</h4>
 <p>A straight line is the simplest fit one can make to bivariate data. A popular method for fitting a straight line is the least-squares method. We’ll use R’s <code>lm()</code> function which provides us with a slope and intercept for the best fit line.</p>
-<p>In the base plotting environment, we can do the following:</p>
+<p>This can be implemented in the base plotting environment as follows:</p>
 <div class="cell" data-small.mar="true" data-hash="bivariate_cache/html/unnamed-chunk-5_249c3ddc1a61993b362c4c57828abe85">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">lm</span>(cp.ratio <span class="sc">~</span> area, <span class="at">dat =</span> df)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(cp.ratio <span class="sc">~</span> area, <span class="at">dat =</span> df)</span>
@@ -554,7 +554,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>The <code>se = FALSE</code> option prevents R from drawing a confidence envelope around the regression line. Confidence envelopes are used in inferential statistics (a topic not covered in this course).</p>
 <p>The straight line is a <strong>first order polynomial</strong> with two parameters, <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>, that define an equation that best describes the relationship between the two variables:</p>
 <p><span class="math display">\[
-CP_{Ratio} = a + b (Area)
+y = a + b (x)
 \]</span></p>
 <p>where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> can be extracted from the regression model object <code>M</code> as follows:</p>
 <div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-7_cfd529c6d9e093921d1608763cdbd9a9">
@@ -603,7 +603,7 @@ y = 2.87 - 0.012 x + 0.000839 x^2
 </section>
 <section id="non-parametric-fits" class="level3" data-number="24.2.2">
 <h3 data-number="24.2.2" class="anchored" data-anchor-id="non-parametric-fits"><span class="header-section-number">24.2.2</span> Non-parametric fits</h3>
-<p>Non-parametric fits apply to the family of fitting strategies that <em>do not</em> impose a structure to the data. Instead, they are designed to let the dataset reveal its inherent structure.</p>
+<p>Non-parametric fit applies to the family of fitting strategies that <em>do not</em> impose a structure on the data. Instead, they are designed to let the dataset reveal its inherent structure. One explored in this course is the <em>loess</em> fit.</p>
 <section id="loess" class="level4" data-number="24.2.2.1">
 <h4 data-number="24.2.2.1" class="anchored" data-anchor-id="loess"><span class="header-section-number">24.2.2.1</span> Loess</h4>
 <p>A flexible curve fitting option is the <strong>loess</strong> curve (short for <strong>lo</strong>cal regr<strong>ess</strong>ion; also known as the <em>local weighted regression</em>). Unlike the parametric approach to fitting a curve, the loess does <strong>not</strong> impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the <em>smooth</em> curve. The range of x-values that contribute to each localized regression lines is defined by the <span class="math inline">\(\alpha\)</span> parameter which usually ranges from 0.2 to 1. The larger the <span class="math inline">\(\alpha\)</span> value, the smoother the curve. The other parameter that defines a loess curve is <span class="math inline">\(\lambda\)</span>: it defines the polynomial order of the localized regression line. This is usually set to 1 (though <code>ggplot2</code>’s implementation of the loess defaults to a 2<sup>nd</sup> order polynomial).</p>
@@ -612,17 +612,17 @@ y = 2.87 - 0.012 x + 0.000839 x^2
 <h4 data-number="24.2.2.2" class="anchored" data-anchor-id="how-a-loess-is-constructed"><span class="header-section-number">24.2.2.2</span> How a loess is constructed</h4>
 <p>Behind the scenes, each point (x<sub>i</sub>,y<sub>i</sub>) that defines the loess curve is constructed as follows:</p>
 <ol type="a">
-<li>A subset of data points closest to point x<sub>i</sub> are identified. The number of points in the subset is computed by multiplying the bandwidth <span class="math inline">\(\alpha\)</span> by the total number of observations. In our current example, the number of points defining the subset is 0.5 * 14 = 7. The points are identified in the light blue area of the plot in panel (a) of the figure below.</li>
+<li>A subset of data points closest to point x<sub>i</sub> are identified (x<sub>i</sub> i shown as the vertical dashed line in the figures below). The number of points in the subset is computed by multiplying the bandwidth <span class="math inline">\(\alpha\)</span> by the total number of observations. In our current example, <span class="math inline">\(\alpha\)</span> is set to 0.5. The number of points defining the subset is thus 0.5 * 14 = 7. The points are identified in the light blue area of the plot in panel (a) of the figure below.</li>
 <li>The points in the subset are assigned weights. Greater weight is assigned to points closest to x<sub>i</sub> and vice versa. The weights define the points’ influence on the fitted line. Different weighting techniques can be implemented in a loess with the <code>gaussian</code> weight being the most common. Another weighting strategy we will also explore later in this course is the <code>symmetric</code> weight.</li>
 <li>A regression line is fit to the subset of points. Points with smaller weights will have less leverage on the fitted line than points with larger weights. The fitted line can be either a first order polynomial fit or a second order polynomial fit.</li>
-<li>Next, the value y<sub>i</sub> from the regression line is computed. This is shown a the red dot in panel (d). This is one of the points that will define the shape of the loess.</li>
+<li>Next, the value y<sub>i</sub> from the regression line is computed. This is shown as the red dot in panel (d). This is one of the points that will define the shape of the loess.</li>
 </ol>
 <div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-12_2738cc72a9cd1411d48ecc0a87a211ce">
 <div class="cell-output-display">
 <p><img src="bivariate_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="960"></p>
 </div>
 </div>
-<p>The above steps are repeated for as many x<sub>i</sub> values practically possible. Note that when x<sub>i</sub> approaches an upper or lower x limit, the subset of points becomes skewed to one side of x<sub>i</sub>. For example, when estimating x<sub>10</sub>, the seven closest points to the right of x<sub>10</sub> are selected.</p>
+<p>The above steps are repeated for as many x<sub>i</sub> values practically possible. Note that when x<sub>i</sub> approaches an upper or lower x limit, the subset of points becomes skewed to one side of x<sub>i</sub>. For example, when estimating x<sub>10</sub>, the seven closest points to the right of x<sub>10</sub> are selected. Likewise, for the upper bound x<sub>140</sub>, the seven closest points to the left of x<sub>140</sub> are selected.</p>
 <div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-13_575e382a03e54bd5f373838aa3ea8acc">
 <div class="cell-output-display">
 <p><img src="bivariate_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="960"></p>
@@ -666,7 +666,7 @@ y = 2.87 - 0.012 x + 0.000839 x^2
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> area, <span class="at">y =</span> cp.ratio)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>             <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>However, <code>ggplot</code> defaults to a second degree loess (i.e.&nbsp;the small regression line elements that define the loess are defined by a 2<sup>nd</sup> order polynomial and not a 1<sup>st</sup> order polynomial). If a first order polynomial (<code>degree=1</code>) is desired, you need to include an argument list in the form of <code>method.args=list(degree=1)</code> to the <code>stat_smooth</code> function.</p>
+<p>However, <code>ggplot</code> defaults to a second degree loess (i.e.&nbsp;the small regression line elements that define the loess are modeled using a 2<sup>nd</sup> order polynomial and not a 1<sup>st</sup> order polynomial). If a first order polynomial (<code>degree=1</code>) is desired, you need to include an argument list in the form of <code>method.args=list(degree=1)</code> to the <code>stat_smooth</code> function.</p>
 <div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-19_2d63cba7a4f3e42dcc9d57fadd1e0635">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> area, <span class="at">y =</span> cp.ratio)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>             <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="fl">0.5</span>, </span>
@@ -680,7 +680,7 @@ y = 2.87 - 0.012 x + 0.000839 x^2
 </section>
 <section id="residuals" class="level2" data-number="24.3">
 <h2 data-number="24.3" class="anchored" data-anchor-id="residuals"><span class="header-section-number">24.3</span> Residuals</h2>
-<p>Fitting the data with a line is just the first step in EDA. Your next step should be to explore the residuals. The residuals are the distances (parallel to the y-axis) between the observed points and the fitted line. The closer the points to the line (i.e.&nbsp;the smaller the residuals) the better the fit.</p>
+<p>Fitting the data with a line is just the first step in EDA. Your next step should be to explore the residuals. The residuals are the distances (parallel to the y-axis) between the observed points and the fitted line. The closer the points are to the line (i.e.&nbsp;the smaller the residuals) the better the fit.</p>
 <p>The residuals can be computed using the <code>residuals()</code> function. It takes as argument the model object. For example, to extract the residuals from the linear model <code>M</code> computed earlier type,</p>
 <div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-20_c257b594fc3fad5428ea78cc900f1a68">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">residuals</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -693,7 +693,7 @@ y = 2.87 - 0.012 x + 0.000839 x^2
 </div>
 <section id="residual-dependence-plot" class="level3" data-number="24.3.1">
 <h3 data-number="24.3.1" class="anchored" data-anchor-id="residual-dependence-plot"><span class="header-section-number">24.3.1</span> Residual-dependence plot</h3>
-<p>We’ll create a <strong>residual dependence plot</strong> to plot the residuals as a function of the x-values. We’ll do this using <code>ggplot</code> so that we can also fit a loess curve to help discern any pattern in the residuals.</p>
+<p>One way to visualize the residuals is to create a <strong>residual-dependence plot</strong>–this plots the residuals as a function of the x-values. We’ll do this using <code>ggplot</code> so that we can also fit a loess curve to help discern any pattern in the residuals.</p>
 <div class="cell" data-small.mar="true" data-hash="bivariate_cache/html/unnamed-chunk-21_ed2a31b57f97aee574d18acca34364a5">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>residuals <span class="ot">&lt;-</span> <span class="fu">residuals</span>(M)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> area, <span class="at">y =</span> residuals)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
@@ -714,7 +714,7 @@ y = 2.87 - 0.012 x + 0.000839 x^2
 <p><img src="bivariate_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>There is no indication of dependency between the residual and the <code>area</code> values. The second order polynomial is an improvement over the first order polynomial. Let’s look at the loess model.</p>
+<p>There is no indication of dependency between the residual and the <code>area</code> values. The second order polynomial is a large improvement over the first order polynomial. Let’s look at the loess model.</p>
 <div class="cell" data-small.mar="true" data-hash="bivariate_cache/html/unnamed-chunk-23_8d12f413241d867f664f42fb163793c7">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>residuals3 <span class="ot">&lt;-</span> <span class="fu">residuals</span>(lo)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> area, <span class="at">y =</span> residuals3)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
@@ -724,14 +724,14 @@ y = 2.87 - 0.012 x + 0.000839 x^2
 <p><img src="bivariate_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>The loess model also seems to do a good job in capturing any overall pattern in the data. But note that this is to be expected given that the loess fit is a non-parametric model.</p>
+<p>No surprise here. The loess model does a good job in capturing any overall pattern in the data. But note that this is to be expected given that the loess fit is a non-parametric model–it lets the data define its shape!</p>
 <blockquote class="blockquote">
 <p>You may ask <em>“if the loess model does such a good job in fitting the data, why bother with polynomial fits?”</em> If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in identifying a pattern in the data, then a loess fit is a good choice.</p>
 </blockquote>
-<p>A well defined model is one where the residuals (aka spread) are constant over the full range of <span class="math inline">\(x\)</span>. In essence, we expect a formula of the form:</p>
+<p>A model is deemed “well defined” when its residuals are constant over the full range of <span class="math inline">\(x\)</span>. In essence, we expect a formula of the form:</p>
 <p><span class="math display">\[
 Y = a + bx + \epsilon
-\]</span> where <span class="math inline">\(\epsilon\)</span> is a constant that does not vary as a function of varying <span class="math inline">\(x\)</span>. This should sound quite familiar to you given that we’ve spent a good part of the univariate analysis section seeking a homogeneous spread in the data. So what other diagnostic plots can we (and <em>should we</em>) generate from the fitted model? We explore such plots next.</p>
+\]</span> where <span class="math inline">\(\epsilon\)</span> is a constant that does not vary as a function of varying <span class="math inline">\(x\)</span>. This should sound quite familiar to you given that we’ve spent a good part of the univariate analysis section seeking a homogeneous spread in the data (i.e.&nbsp;a spread that did not change as a function of fitted group values). So what other diagnostic plots can we (and <em>should we</em>) generate from the fitted model? We explore such plots next.</p>
 </section>
 <section id="spread-location-plot" class="level3" data-number="24.3.2">
 <h3 data-number="24.3.2" class="anchored" data-anchor-id="spread-location-plot"><span class="header-section-number">24.3.2</span> Spread-location plot</h3>
@@ -747,7 +747,7 @@ Y = a + bx + \epsilon
 <p><img src="bivariate_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>The function <code>predict()</code> extracts the y-values from the fitted model <code>M2</code> and is plotted along the x-axis. It’s clear from this plot that the residuals are not homogeneous; they increase as a function of increasing <em>fitted</em> CP ratio. The “bend” observed in the loess curve is most likely due to a single point at the far (right) end of the fitted range. Given that we have a small batch of numbers, a loess can be easily influenced by an outlier. We may want to increase the span.</p>
+<p>The function <code>predict()</code> extracts the y-values from the fitted model <code>M2</code> and is plotted along the x-axis. It’s clear from this plot that the residuals are not homogeneous; they increase as a function of increasing <em>fitted</em> CP ratio. The “bend” observed in the loess curve is most likely due to a single point at the far (right) end of the fitted range. Given that we have a small batch of numbers, a loess can be easily influenced by an outlier. We may want to increase the loess span.</p>
 <div class="cell" data-small.mar="true" data-hash="bivariate_cache/html/unnamed-chunk-25_015ed87426b2e1459bdf2eaf4001adcd">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sl2, <span class="fu">aes</span>(<span class="at">x =</span> fit, <span class="at">y =</span> std.res)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>              <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="fl">1.5</span>, </span>
@@ -756,15 +756,17 @@ Y = a + bx + \epsilon
 <p><img src="bivariate_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>The point’s influence is reduced enough to convince us that the observed monotonic increase is real (Note that we would observe this monotone spread with our loess model as well). At this point, we should look into re-expressing the data.</p>
+<p>The point’s influence is reduced enough to convince us that the observed monotonic increase is real (Note that we would observe this monotone spread with our loess model as well).</p>
+<p>We learned with the univariate data that re-expressing values was one way to correct for any increasing or decreasing spreads across the range of fitted values. At this point, we may want to look into re-expressing the data. But, before we do, we’ll explore another diagnostic plot: the <em>normal q-q plot</em>.</p>
 </section>
 <section id="checking-residuals-for-normality" class="level3" data-number="24.3.3">
 <h3 data-number="24.3.3" class="anchored" data-anchor-id="checking-residuals-for-normality"><span class="header-section-number">24.3.3</span> Checking residuals for normality</h3>
-<p>If you are interested in conducting a hypothesis test (i.e.&nbsp;addressing the question <em>“is the slope significantly different from 0”</em>) you will likely want to check the residuals for normality since this is an assumption made when computing a confidence interval and a p-value. We’ll make use of <code>geom_qq</code> and <code>geom_qq_line</code> to compare the residuals to a normal distribution.</p>
-<div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-26_0d0184c62e219d5c7de6e395dcf3fdda">
+<p>If you are interested in conducting a hypothesis test (i.e.&nbsp;addressing the question <em>“is the slope significantly different from 0”</em>) you will likely want to check the residuals for normality since this is an assumption made when computing a confidence interval and a p-value.</p>
+<p>In <code>ggplot</code>, we learned that a normal q-q plot could be generated using the <code>stat_qq</code> and <code>stat_qq_line</code> function.</p>
+<div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-26_9fcbd2104879b4a70212036f1fceb72b">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> residuals2)) <span class="sc">+</span> </span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_qq_line</span>(<span class="at">distribution =</span> qnorm, <span class="at">col =</span> <span class="st">"blue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qnorm) <span class="sc">+</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>(<span class="at">distribution =</span> qnorm, <span class="at">col =</span> <span class="st">"blue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="bivariate_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="240"></p>
 </div>
@@ -774,12 +776,12 @@ Y = a + bx + \epsilon
 </section>
 <section id="re-expressing-the-data" class="level2" data-number="24.4">
 <h2 data-number="24.4" class="anchored" data-anchor-id="re-expressing-the-data"><span class="header-section-number">24.4</span> Re-expressing the data</h2>
-<p>The monotone spread can be problematic if we are to characterize the spread of <code>cp.ratio</code> as being the same across all values of <code>area</code>. To remedy this, we can re-express the <code>cp.ratio</code> values. Ratios are good candidates for log transformation. We will therefore fit a new linear model to the data after transforming the y-value.</p>
+<p>The monotone spread can be problematic if we are to characterize the spread of <code>cp.ratio</code> as being the same (homogeneous) across the full range of <code>area</code> values. To remedy this, we can re-express the <code>cp.ratio</code> values. Variables measured as ratios (such is the case with <code>cp.ratio</code>) are good candidates for log transformation. We will therefore fit a new linear model to the data after transforming the y-value.</p>
 <div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-27_d38858296dbb71bac437737a6244f270">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.log <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">area =</span> df<span class="sc">$</span>area, <span class="at">cp.ratio.log =</span> <span class="fu">log</span>(df<span class="sc">$</span>cp.ratio))</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>M3     <span class="ot">&lt;-</span> <span class="fu">lm</span>(cp.ratio.log <span class="sc">~</span> area, <span class="at">dat =</span> df.log)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next, let’s plot the transformed data and add the fitted line.</p>
+<p>Transforming a variable, whether <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>, will change the nature of the relationship between both variables. We therefore need to recreate the scatter plot. We’ll also see how well a 1<sup>st</sup> order polynomial can characterize this relationship (re-expressing values can sometimes help “straighten” a relationship between variables, hence why we are not starting off first with a 2<sup>nd</sup> order polynomial fit).</p>
 <div class="cell" data-small.mar="true" data-hash="bivariate_cache/html/unnamed-chunk-28_1ea5b877947b62f2f8f2391da8d2f199">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df.log, <span class="fu">aes</span>(<span class="at">x =</span> area, <span class="at">y =</span> cp.ratio.log)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -787,7 +789,7 @@ Y = a + bx + \epsilon
 <p><img src="bivariate_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>At first glance, the log transformation seems to have done a good job at straightening the batch of values. Next, let’s look at the residual dependence plot.</p>
+<p>At first glance, the log transformation seems to have done a good job at straightening the batch of values. Next, let’s look at the residual-dependence plot.</p>
 <div class="cell" data-small.mar="true" data-hash="bivariate_cache/html/unnamed-chunk-29_e4fadbd6ce27b6af00b2ec13298b2a4c">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df.log<span class="sc">$</span>residuals <span class="ot">&lt;-</span> <span class="fu">residuals</span>(M3)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df.log, <span class="fu">aes</span>(<span class="at">x =</span> area, <span class="at">y =</span> residuals)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
@@ -808,7 +810,7 @@ Y = a + bx + \epsilon
 <p><img src="bivariate_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>We do not observe a systematic increase in spread, the log transformation seems to have removed the monotone spread.</p>
+<p>Even though we observe a mid range peak in spread, we do not observe a <strong>systematic increase</strong> in spread. The log transformation seems to have removed the monotone spread.</p>
 <p>Finally, we’ll check for normality of the residuals.</p>
 <div class="cell" data-hash="bivariate_cache/html/unnamed-chunk-31_d728bc95c2a9ea455acc40e39d8db6b7">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df.log, <span class="fu">aes</span>(<span class="at">sample =</span> residuals)) <span class="sc">+</span> </span>
@@ -818,9 +820,15 @@ Y = a + bx + \epsilon
 <p><img src="bivariate_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="240"></p>
 </div>
 </div>
-<p>An added benefit of re-expressing the data seems to have improved the <em>normality</em> of the residuals. A good thing!</p>
+<p>Re-expressing the data seems to have improved the <em>normality</em> of the residuals somewhat. Though not perfect, more points seem to follow a straight line. But, recall from chapter 18.4 that noise can be quite prominent in a normal q-q plot when working with small datasets.</p>
 
 
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>Cleveland, William. <em>Visualizing data</em>. Hobart Press. 1993. [pp 87-88]<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
@@ -1059,7 +1067,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./robustness.html" class="pagination-link">
+      <a href="./case_study.html" class="pagination-link">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></span>
       </a>          
   </div>

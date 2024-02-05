@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Fits and residuals
 
 ```{r echo=FALSE}
@@ -8,13 +13,13 @@ source("libs/Common.R")
 pkg_ver(c("ggplot2"))
 ```
 
-Bivariate data are datasets that store two variables measured from a same observation (e.g. wind speed *and* temperature at a single location). This differs from univariate data where only one variable is measured for each observation (e.g. temperature at a single location). This chapter will explore common fitting strategies applied to bivariate data.
+Bivariate data are datasets that store two variables measured from a same observation (e.g. wind speed *and* temperature at each location). This differs from univariate data where only one variable is measured for each observation (e.g. temperature at each location). This chapter will explore common fitting strategies applied to bivariate data.
 
 ## Scatter plot
 
-A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed *dependent* on another variable; the latter being the *independent* variable. Cleveland refers to the former as the *response*  and the latter as the *factor* (this is not to be confused with the *factor* data type used in R as a grouping variable). The dependent variable is usually plotted on the y-axis and the independent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between them.
+A scatter plot is a popular visualization tool used to compare values between two variables. Sometimes one variable is deemed *dependent* on another variable; the latter being the *independent* variable. The dependent variable is also sometimes referred to as the  *response*  variable and the independent variable as the *factor* (this is not to be confused with the *factor* data type used in R as a grouping variable). The dependent variable is usually plotted on the y-axis and the independent variable is usually plotted on the x-axis. Other times, one does not seek a dependent-independent relationship between variables but is simply interested in studying the relationship between the tow variables.
 
-A scatter plot can be generated using the base plotting environment as follows:
+A scatter plot can be generated using the base plotting environment as follows. Here, we'll plot Cleveland's Ganglion dataset.[^1]
 
 ```{r fig.width=2.5, fig.height=2.5, small.mar=TRUE}
 df <- read.csv("http://mgimond.github.io/ES218/Data/ganglion.csv")
@@ -33,7 +38,7 @@ The data represent the ratio between the ganglion cell density of a cat's centra
 
 ## Fitting the data
 
-Scatter plots are a good first start in visualizing the data, but this is sometimes not enough. Our eyes need "guidance" to help perceive patterns. Another visual aid involves **fitting** the data with a line. We will explore two fitting strategies: the *parametric* fit and the *non-parametric* fit.
+Scatter plots are a good first start in visualizing bivariate data, but this is sometimes not enough. Our eyes need "guidance" to help perceive patterns. Another visual aid involves **fitting** the data with a line. We will explore two fitting strategies: the *parametric* fit and the *non-parametric* fit.
 
 ### Parametric fit
 
@@ -43,7 +48,7 @@ A parametric fit is one where we impose a structure to the data--an example of w
 
 A straight line is the simplest fit one can make to bivariate data. A popular method for fitting a straight line is the  least-squares method. We'll use R's `lm()` function which provides us with a slope and intercept for the best fit line.
 
-In the base plotting environment, we can do the following:
+This can be implemented in the base plotting environment as follows:
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 M <- lm(cp.ratio ~ area, dat = df)
@@ -64,7 +69,7 @@ The `se = FALSE` option prevents R from drawing a confidence envelope around the
 The straight line is a **first order polynomial** with two parameters, $a$ and $b$, that define an equation that best describes the relationship between the two variables:
 
 $$
-CP_{Ratio} = a + b (Area)
+y = a + b (x)
 $$
 
 where $a$ and $b$ can be extracted from the regression model object `M` as follows:
@@ -109,7 +114,7 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
 
 ### Non-parametric fits
 
-Non-parametric fits apply to the family of fitting strategies that *do not* impose a structure to the data. Instead, they are designed to let the dataset reveal its inherent structure.
+Non-parametric fit applies to the family of fitting strategies that *do not* impose a structure on the data. Instead, they are designed to let the dataset reveal its inherent structure. One explored in this course is the *loess* fit.
 
 #### Loess
 
@@ -177,10 +182,10 @@ f.plot <- function(start , line = FALSE, point = FALSE, bnds =FALSE,
 
 Behind the scenes, each point (x~i~,y~i~) that defines the loess curve is constructed as follows: 
  
- a) A subset of data points closest to point x~i~ are identified. The number of points in the subset is computed by multiplying the bandwidth $\alpha$ by the total number of observations. In our current example, the number of points defining the subset is 0.5 * 14 = 7. The points are identified in the light blue area of the plot in panel (a) of the figure below.
+ a) A subset of data points closest to point x~i~ are identified (x~i~ i shown as the vertical dashed line in the figures below). The number of points in the subset is computed by multiplying the bandwidth $\alpha$ by the total number of observations. In our current example, $\alpha$ is set to `r alpha`. The number of points defining the subset is thus 0.5 * 14 = 7. The points are identified in the light blue area of the plot in panel (a) of the figure below.
  b) The points in the subset are assigned weights. Greater weight is assigned to points closest to x~i~ and vice versa. The weights define the points' influence on the fitted line. Different weighting techniques can be implemented in a loess with the `gaussian` weight being the most common. Another weighting strategy we will also explore later in this course is the `symmetric` weight.
  c) A regression line is fit to the subset of points. Points with smaller weights will have less leverage on the fitted line than points with larger weights. The fitted line can be either a first order polynomial fit or a second order polynomial fit.
- d) Next, the value y~i~ from the regression line is computed. This is shown a the red dot in panel (d). This is one of the points that will define the shape of the loess.
+ d) Next, the value y~i~ from the regression line is computed. This is shown as the red dot in panel (d). This is one of the points that will define the shape of the loess.
    
 
 ```{r fig.height = 2.7, fig.width = 10, echo = FALSE}
@@ -193,7 +198,7 @@ f.plot(start = 50,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE,
 par(OP)
 ```
 
-The above steps are repeated for as many x~i~ values practically possible. Note that when x~i~ approaches an upper or lower x limit, the subset of points becomes skewed to one side of x~i~. For example, when estimating x~10~, the seven closest points to the right of x~10~ are selected.
+The above steps are repeated for as many x~i~ values practically possible. Note that when x~i~ approaches an upper or lower x limit, the subset of points becomes skewed to one side of x~i~. For example, when estimating x~10~, the seven closest points to the right of x~10~ are selected. Likewise, for the upper bound x~140~, the seven closest points to the left of  x~140~ are selected.
 
 ```{r fig.height = 2.5, fig.width = 10, echo = FALSE}
 OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
@@ -261,7 +266,7 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
              stat_smooth(method = "loess", se = FALSE, span = 0.5)
 ```
 
-However, `ggplot` defaults to a second degree loess (i.e. the small regression line elements that define the loess are defined by a 2^nd^ order polynomial and not a 1^st^ order polynomial). If a first order polynomial (`degree=1`) is desired, you need to include an argument list in the form of `method.args=list(degree=1)` to the `stat_smooth` function.
+However, `ggplot` defaults to a second degree loess (i.e. the small regression line elements that define the loess are modeled using a 2^nd^ order polynomial and not a 1^st^ order polynomial). If a first order polynomial (`degree=1`) is desired, you need to include an argument list in the form of `method.args=list(degree=1)` to the `stat_smooth` function.
 
 ```{r fig.width=2.5, fig.height=2.5}
 ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() + 
@@ -271,7 +276,7 @@ ggplot(df, aes(x = area, y = cp.ratio)) + geom_point() +
 
 ## Residuals
 
-Fitting the data with a line is just the first step in EDA. Your next step should be to explore the residuals. The residuals are the distances (parallel to the y-axis) between the observed points and the fitted line. The closer the points to the line (i.e. the smaller the residuals) the better the fit. 
+Fitting the data with a line is just the first step in EDA. Your next step should be to explore the residuals. The residuals are the distances (parallel to the y-axis) between the observed points and the fitted line. The closer the points are to the line (i.e. the smaller the residuals) the better the fit. 
 
 The residuals can be computed using the `residuals()` function. It takes as argument the model object. For example, to extract the residuals from the linear model `M` computed earlier type, 
 
@@ -281,7 +286,7 @@ residuals(M)
 
 ### Residual-dependence plot
 
-We'll create a **residual dependence plot** to plot the residuals as a function of the x-values. We'll do this using `ggplot` so that we can also fit a loess curve to help discern any pattern in the residuals.
+One way to visualize the residuals is to create a **residual-dependence plot**--this plots the residuals as a function of the x-values. We'll do this using `ggplot` so that we can also fit a loess curve to help discern any pattern in the residuals.
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
@@ -304,7 +309,7 @@ ggplot(df, aes(x = area, y = residuals2)) + geom_point() +
 
 ```
 
-There is no indication of dependency between the residual and the `area` values. The second order polynomial is an improvement over the first order polynomial. Let's look at the loess model.
+There is no indication of dependency between the residual and the `area` values. The second order polynomial is a large improvement over the first order polynomial. Let's look at the loess model.
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
@@ -315,16 +320,16 @@ ggplot(df, aes(x = area, y = residuals3)) + geom_point() +
 
 ```
 
-The loess model also seems to do a good job in capturing any overall pattern in the data. But note that this is to be expected given that the loess fit is a non-parametric model.
+No surprise here. The loess model does a good job in capturing any overall pattern in the data. But note that this is to be expected given that the loess fit is a non-parametric model--it lets the data define its shape!
 
 > You may ask *“if the loess model does such a good job in fitting the data, why bother with polynomial fits?”* If you are seeking to generate a predictive model that explains the relationship between the y and x variables, then a mathematically tractable model (like a polynomial model) should be sought. If the interest is simply in identifying a pattern in the data, then a loess fit is a good choice.
 
-A well defined model is one where the residuals (aka spread) are constant over the full range of $x$. In essence, we expect a formula  of the form:
+A model is deemed "well defined" when its residuals are constant over the full range of $x$. In essence, we expect a formula  of the form:
 
 $$
 Y = a + bx + \epsilon
 $$
-where $\epsilon$ is a constant that does not vary as a function of varying $x$.  This should sound quite familiar to you given that we've spent a good part of the univariate analysis section seeking a homogeneous spread in the data. So what other diagnostic plots can we (and *should we*) generate from the fitted model? We explore such plots next.
+where $\epsilon$ is a constant that does not vary as a function of varying $x$.  This should sound quite familiar to you given that we've spent a good part of the univariate analysis section seeking a homogeneous spread in the data (i.e. a spread that did not change as a function of fitted group values). So what other diagnostic plots can we (and *should we*) generate from the fitted model? We explore such plots next.
 
 
 ### Spread-location plot
@@ -340,7 +345,7 @@ ggplot(sl2, aes(x = fit, y  =std.res)) + geom_point() +
                           method.args = list(degree = 1) )
 ```
 
-The function `predict()` extracts the y-values from the fitted model `M2` and is plotted along the x-axis. It's clear from this plot that the residuals are not homogeneous; they increase as a function of increasing *fitted* CP ratio. The "bend" observed in the loess curve is most likely due to a single point at the far (right) end of the fitted range. Given that we have a small batch of numbers, a loess can be easily influenced by an outlier. We may want to increase the span.
+The function `predict()` extracts the y-values from the fitted model `M2` and is plotted along the x-axis. It's clear from this plot that the residuals are not homogeneous; they increase as a function of increasing *fitted* CP ratio. The "bend" observed in the loess curve is most likely due to a single point at the far (right) end of the fitted range. Given that we have a small batch of numbers, a loess can be easily influenced by an outlier. We may want to increase the loess span.
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
@@ -349,37 +354,41 @@ ggplot(sl2, aes(x = fit, y = std.res)) + geom_point() +
                           method.args = list(degree = 1) )
 ```
 
-The point's influence is reduced enough to convince us that the observed monotonic increase is real (Note that we would observe this monotone spread with our loess model as well). At this point, we should look into re-expressing the data.
+The point's influence is reduced enough to convince us that the observed monotonic increase is real (Note that we would observe this monotone spread with our loess model as well). 
+
+We learned with the univariate data that re-expressing values was one way to correct for any increasing or decreasing spreads across the range of fitted values. At this point, we may want to look into re-expressing the data. But, before we do, we'll explore another diagnostic plot: the *normal q-q plot*.
 
 ### Checking residuals for normality
 
-If you are interested in conducting a hypothesis test (i.e. addressing the question *"is the slope significantly different from 0"*) you will likely want to check the residuals for normality since this is an assumption made when computing a confidence interval and a p-value. We'll make use of `geom_qq` and `geom_qq_line` to compare the residuals to a normal distribution.
+If you are interested in conducting a hypothesis test (i.e. addressing the question *"is the slope significantly different from 0"*) you will likely want to check the residuals for normality since this is an assumption made when computing a confidence interval and a p-value. 
+
+In `ggplot`, we learned that a normal q-q plot could be generated using the `stat_qq` and `stat_qq_line` function.
 
 ```{r fig.height=2.5, fig.width=2.5}
 ggplot(df, aes(sample = residuals2)) + 
-  geom_qq(distribution = qnorm) +
-  geom_qq_line(distribution = qnorm, col = "blue")
+  stat_qq(distribution = qnorm) +
+  stat_qq_line(distribution = qnorm, col = "blue")
 ```
 
 Here, the residuals seem to stray a little from a normal distribution.
 
 ## Re-expressing the data
 
-The monotone spread can be problematic if we are to characterize the spread of `cp.ratio` as being the same across all values of `area`. To remedy this, we can re-express the `cp.ratio` values. Ratios are good candidates for log transformation. We will therefore fit a new linear model to the data after transforming the y-value.
+The monotone spread can be problematic if we are to characterize the spread of `cp.ratio` as being the same (homogeneous) across the full range of `area` values. To remedy this, we can re-express the `cp.ratio` values. Variables measured as ratios (such is the case with `cp.ratio`) are good candidates for log transformation. We will therefore fit a new linear model to the data after transforming the y-value. 
 
 ```{r}
 df.log <- data.frame( area = df$area, cp.ratio.log = log(df$cp.ratio))
 M3     <- lm(cp.ratio.log ~ area, dat = df.log)
 ```
 
-Next, let's plot the transformed data and add the fitted line.
+Transforming a variable, whether $x$ or $y$, will change the nature of the relationship between both variables. We therefore need to recreate the scatter plot. We'll also see how well a 1^st^ order polynomial can characterize this relationship (re-expressing values can sometimes help "straighten" a relationship between variables, hence why we are not starting off first with a 2^nd^ order polynomial fit).
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 ggplot(df.log, aes(x = area, y = cp.ratio.log)) + geom_point() +
   stat_smooth(method = "lm", se = FALSE)
 ```
  
-At first glance, the log transformation seems to have done a good job at straightening the batch of values. Next, let's look at the residual dependence plot.
+At first glance, the log transformation seems to have done a good job at straightening the batch of values. Next, let's look at the residual-dependence plot.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 df.log$residuals <- residuals(M3)
@@ -398,7 +407,7 @@ ggplot(sl3, aes(x = fit, y = std.res)) + geom_point() +
                            method.args=list(degree = 1) )
 ```
 
-We do not observe a systematic increase in spread, the log transformation seems to have removed the monotone spread.
+Even though we observe a mid range peak in spread, we do not observe a **systematic increase** in spread. The log transformation seems to have removed the monotone spread. 
 
 Finally, we'll check for normality of the residuals.
 
@@ -408,4 +417,6 @@ ggplot(df.log, aes(sample = residuals)) +
   geom_qq_line(distribution = qnorm, col = "blue")
 ```
 
-An added benefit of re-expressing the data seems to have improved the *normality* of the residuals. A good thing!
+Re-expressing the data seems to have improved the *normality* of the residuals somewhat. Though not perfect, more points seem to follow a straight line. But, recall from chapter 18.4 that noise can be quite prominent in a normal q-q plot when working with small datasets.
+
+[^1]: Cleveland, William. *Visualizing data*. Hobart Press. 1993. [pp 87-88]

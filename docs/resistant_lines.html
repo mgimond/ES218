@@ -338,7 +338,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./robustness.html" class="sidebar-item-text sidebar-link">
+  <a href="./case_study.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></span></a>
   </div>
 </li>
@@ -438,7 +438,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">25.1</span> Introduction</a></li>
   <li><a href="#robust-lines" id="toc-robust-lines" class="nav-link" data-scroll-target="#robust-lines"><span class="header-section-number">25.2</span> Robust lines</a>
   <ul class="collapse">
-  <li><a href="#tukeys-3-point-summary" id="toc-tukeys-3-point-summary" class="nav-link" data-scroll-target="#tukeys-3-point-summary"><span class="header-section-number">25.2.1</span> Tukey’s 3-point summary</a></li>
+  <li><a href="#tukeys-resistant-line" id="toc-tukeys-resistant-line" class="nav-link" data-scroll-target="#tukeys-resistant-line"><span class="header-section-number">25.2.1</span> Tukey’s resistant line</a></li>
   <li><a href="#bisquare" id="toc-bisquare" class="nav-link" data-scroll-target="#bisquare"><span class="header-section-number">25.2.2</span> Bisquare</a></li>
   </ul></li>
   <li><a href="#robust-loess" id="toc-robust-loess" class="nav-link" data-scroll-target="#robust-loess"><span class="header-section-number">25.3</span> Robust loess</a></li>
@@ -525,7 +525,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <section id="introduction" class="level2" data-number="25.1">
 <h2 data-number="25.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">25.1</span> Introduction</h2>
-<p>Ordinary least squares regression lines (those created with the <code>lm()</code> function) suffer from sensitivity to outliers. Because <code>lm</code>’s best fit line makes use of the mean (which is not a robust measure of location), its breakdown point is <span class="math inline">\(1/n\)</span> meaning that all it takes is for one data point to behave differently from the rest of the points to significantly alter the slope and intercept of the best fit line. For example, let’s start with a well behaved dataset where all points are perfectly aligned and fit this batch with a regression line:</p>
+<p>Ordinary least squares regression lines (those created with the <code>lm()</code> function) suffer from sensitivity to outliers. Because <code>lm</code>’s best fit line makes use of the mean (which is not a robust measure of location), its breakdown point is <span class="math inline">\(1/n\)</span>, meaning that all it takes is for one data point to behave differently from the rest of the points to significantly alter the slope and intercept of the best fit line. For example, let’s start with a well behaved dataset where all points are perfectly aligned, and fit this batch with a regression line:</p>
 <div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-3_13afcb547db239b5d1b99b3857d50cf4">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">5</span> <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> x</span>
@@ -563,112 +563,146 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>The slope dropped from 2 to 0.86 because of a single point!</p>
-<p>If our goal is to explore what the bulk of the data has to say about the phenomena being investigated, we certainly don’t want a small batch of “maverick” values to hijack the analysis. We therefore need a set of fitting tools that minimize the influence of outliers. There are many options out there; most notable are Tukey’s <strong>3-point summary line</strong> and the <strong>bisquare</strong> robust estimation method outlined in Cleveland’s text.</p>
+<p>If our goal is to explore what the <em>bulk</em> of the data has to say about the phenomena being investigated, we certainly don’t want a few “maverick” values to hijack the analysis. We therefore need a set of fitting tools that minimize the influence of outliers. There are many options out there; most notable are the <strong>resistant line</strong> (that builds off of Tukey’s <strong>3-point summary line</strong>) and the <strong>bisquare</strong> robust estimation method.</p>
 <p>&nbsp;&nbsp;</p>
 </section>
 <section id="robust-lines" class="level2" data-number="25.2">
 <h2 data-number="25.2" class="anchored" data-anchor-id="robust-lines"><span class="header-section-number">25.2</span> Robust lines</h2>
 <p>&nbsp;&nbsp;</p>
-<section id="tukeys-3-point-summary" class="level3" data-number="25.2.1">
-<h3 data-number="25.2.1" class="anchored" data-anchor-id="tukeys-3-point-summary"><span class="header-section-number">25.2.1</span> Tukey’s 3-point summary</h3>
-<p>The idea is simple in concept and easy to implement with a pen and paper if the dataset is not too big. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. Two half-slopes are then used to join the three points. Note that points that share the same x value are lumped into the same batch which can lead to unequal group sizes. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables. Such plots are often used to help guide re-expression of the variables x or y or both for the sole purpose of straightening the x-y relationship.</p>
-<p>Let’s look at an example using the last (modified) dataset. First, we’ll divide the plot into three approximately equal batches.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-8_c062468b19e32c1d4458b92467086526">
+<section id="tukeys-resistant-line" class="level3" data-number="25.2.1">
+<h3 data-number="25.2.1" class="anchored" data-anchor-id="tukeys-resistant-line"><span class="header-section-number">25.2.1</span> Tukey’s resistant line</h3>
+<p>The idea is simple in concept. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. Two half-slopes are then used to join the three points. Note that points that share the same x value are lumped into the same batch which can lead to unequal group sizes. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables. Such plots are often used to help guide re-expression of the variables x or y or both for the sole purpose of straightening the x-y relationship.</p>
+<p>Let’s look at an example using the last (modified) dataset. First, we divide the plot into three approximately equal batches.</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-7_b8f03c002c624a936661d3fc72e36a2d">
+<div class="cell-output-display">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="288"></p>
+</div>
+</div>
+<p>Next, compute the median x and y values within each section.</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-8_3f38d7ceef20e0dfcde207f1ab4a141e">
 <div class="cell-output-display">
 <p><img src="resistant_lines_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>Next, compute the median x and y values within each section.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-9_d3898616c13e4e5ae37fdcfe90ee8f53">
+<p>Note that we do not include the same point in any two median calculations. This implies that for the mid-third of the data, we do not include the point straddling the left boundary line when computing its median value. Likewise with the right-third of the data.</p>
+<p>The x median values are 2.5, 6, 9.5 and the y median values are 10, 17, 22 respectively.</p>
+<p>The two end medians are used to compute the slope as:</p>
+<p><span class="math display">\[
+b = \frac{y_r - y_l}{x_r-x_l}
+\]</span> where the subscripts <span class="math inline">\(r\)</span> and <span class="math inline">\(l\)</span> reference the median values for the right-most and left-most batches.</p>
+<p>Once the slope is computed, the intercept can be computed as follows:</p>
+<p><span class="math display">\[
+median(y_{l,m,r} - b * x_{l,m,r})
+\]</span></p>
+<p>where <span class="math inline">\((x,y)_{l,m,r}\)</span> are the median x and y values for each batch.</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-9_9171072a0f5a32f9ece384613639f70e">
 <div class="cell-output-display">
 <p><img src="resistant_lines_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>Note that we do not include the same point in any two median calculations. This implies that for the mid-third of the data, we do not include the point straddling the left boundary line when computing its median value. Likewise with the right-third of the data.</p>
-<p>The x median values are 2.5, 6, 9.5 and the y median values are 10, 17, 22.</p>
-<p>Finally, we fit the tail end medians with a straight line.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-10_472bd62c050d1532dcb982041e1a5baf">
+<p>This is not bad for a first iteration. But the outlier’s influence is still present given that the line is not passing through all nine points. Recall that the goal is to <em>not</em> allow one lone observation from influencing a fitted line.</p>
+<p>From this first iteration, we can extract the residuals. A line is then fitted to the residuals following the same procedure outlined above.</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-10_f05e07280210339891d5d97d22ddb550">
 <div class="cell-output-display">
 <p><img src="resistant_lines_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>This gives us the slope of the line (we can, of course, extend the lines to the boundaries of the x range of values). Note that we have not completely eliminated the influence of the outlier. The outlier does take part in helping fit the line, but it doesn’t wield the same disproportionate influence on the line as did the regression line.</p>
-<p>So what purpose does the middle median serve? It helps us adjust the vertical location of the line. The goal is to nudge the line upward or downward about 1/3 of the way towards the middle median value (parallel to the y-axis). This then defines the line’s <em>intercept</em> (which is where the line crosses the y-axis when x = 0).</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-11_4c9ee4ef9776538ba3bf6d1642242168">
+<p>The initial model slope and intercept are 6.43 and 1.71 respectively and the residual’s slope and intercept are -1.22 and 0.24 respectively. The residual slope is then added to the first computed slope and the process is again repeated thus generating the following tweaked slope and updated residuals:</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-11_b19fce4230a230eb339f211b686407eb">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="288"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="576"></p>
 </div>
 </div>
-<p>But you need not stop here. The next logical step is to look at the residuals. The following two plots compare the residuals from the regression model and the 3-point summary plot.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-12_b8be8aaade165041e121f5181147670a">
+<p>The updated slope is now 5.2. The iteration continues until the slope residuals stabilize. Each successive iteration is shown in the following plot with the final line in dark red. One more iteration should be enough to stabilize the residuals. Giving use the following fitted line whose intercept and slope are 5.03 and 1.99 respectively</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-12_e85a23ab58acc055ba33325b3854ece6">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="576"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>Recall that we are seeking to minimize any non-random pattern in the residual. Even though a monotonic increase in residuals is discernible in both plots, the 3-point summary residual has less of a slope and (ignoring the outlier) has a smaller spread.</p>
-<p>The 3-point summary fitting process can be extended by adding the residual slope to the original slope. This process is iterated as many times as needed until the residual slope is close to zero.</p>
+<p>Tukey’s resistant line can be computed using the R built-in <code>line()</code> function. You specify the number of iteration via the <code>iter</code> argument. Usually, five iterations will be enough.</p>
+<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-13_be2f218c284612df28118901bdba9dea">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>r.fit <span class="ot">&lt;-</span> <span class="fu">line</span>(x,y, <span class="at">iter =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can the resistant to a base plot as follows:</p>
+<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-14_613f81c207e185507c6d409afd4aae11">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, df)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(r.fit, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="288"></p>
+</div>
+</div>
+<p>You can also add the line to a <code>ggplot</code>:</p>
+<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-15_7494a1816f080868e5824f192c16c90d">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(x,y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> r.fit<span class="sc">$</span>coefficients[<span class="dv">1</span>], </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">slope =</span> r.fit<span class="sc">$</span>coefficients[<span class="dv">2</span>],</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="288"></p>
+</div>
+</div>
 </section>
 <section id="bisquare" class="level3" data-number="25.2.2">
 <h3 data-number="25.2.2" class="anchored" data-anchor-id="bisquare"><span class="header-section-number">25.2.2</span> Bisquare</h3>
 <p>A bisquare fitting strategy makes use of a non-parametric model that assigns <em>weights</em> to observations based on their proximity to the center of the distribution. The closer an observation is to that center, the greater its weight.</p>
 <p>The first step is to run a linear regression model on the data then to extract its residuals. Next, a weighting scheme is fit to the residuals such that the points associated with extreme residuals are assigned the smallest weight and the points associated with the smaller residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals stabilize. The following figure shows three iterations of the bisquare function whereby the weights (shown as grey text next to each point) start off as <code>1</code> then are modified following the residuals derived from the most recent regression model.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-13_7b57a3140cf8d5889ffc191b5dccc8bc">
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-16_c70a75f3fef1561cb7ed8a2201a63220">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="768"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="768"></p>
 </div>
 </div>
 <p>There are different weighing strategies that can be implemented. One such implementation is presented next.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-14_4124da55033e8b8e845ecac8930852dc">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the bisquare function</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>wt.bisquare <span class="ot">&lt;-</span> <span class="cf">function</span>(u, <span class="at">c =</span> <span class="dv">6</span>) {</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ifelse</span>( <span class="fu">abs</span>(u<span class="sc">/</span>c) <span class="sc">&lt;</span> <span class="dv">1</span>, (<span class="dv">1</span><span class="sc">-</span>(u<span class="sc">/</span>c)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span>, <span class="dv">0</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign an equal weight to all points</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(x))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the regression, then assign weights based on residual values</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>){</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  dat.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x ,<span class="at">weights=</span>wt)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  wt <span class="ot">&lt;-</span> <span class="fu">wt.bisquare</span>( dat.lm<span class="sc">$</span>res<span class="sc">/</span> <span class="fu">median</span>(<span class="fu">abs</span>(dat.lm<span class="sc">$</span>res)), <span class="at">c =</span> <span class="dv">6</span> )</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the data and the resulting line</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x, y, <span class="at">pch =</span> <span class="dv">20</span>)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(dat.lm, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-17_2a05749d67b8200d4ea3d0f35a10d198">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the bisquare function</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>wt.bisquare <span class="ot">&lt;-</span> <span class="cf">function</span>(u, <span class="at">c =</span> <span class="dv">6</span>) {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ifelse</span>( <span class="fu">abs</span>(u<span class="sc">/</span>c) <span class="sc">&lt;</span> <span class="dv">1</span>, (<span class="dv">1</span><span class="sc">-</span>(u<span class="sc">/</span>c)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span>, <span class="dv">0</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign an equal weight to all points</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>wt <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(x))</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the regression, then assign weights based on residual values</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>){</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  dat.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x ,<span class="at">weights=</span>wt)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  wt <span class="ot">&lt;-</span> <span class="fu">wt.bisquare</span>( dat.lm<span class="sc">$</span>res<span class="sc">/</span> <span class="fu">median</span>(<span class="fu">abs</span>(dat.lm<span class="sc">$</span>res)), <span class="at">c =</span> <span class="dv">6</span> )</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the data and the resulting line</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x, y, <span class="at">pch =</span> <span class="dv">20</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(dat.lm, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="288"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>In the above example, the bisquare method does a great job in eliminating the outlier’s influence.</p>
 <section id="built-in-implementation-of-the-bisquare" class="level4" data-number="25.2.2.1">
 <h4 data-number="25.2.2.1" class="anchored" data-anchor-id="built-in-implementation-of-the-bisquare"><span class="header-section-number">25.2.2.1</span> Built-in implementation of the bisquare</h4>
 <p>The <code>MASS</code> package has a robust linear modeling function called <code>rlm</code> that will implement a variation of the aforementioned bisquare estimation technique. Its results may differ slightly from those presented here, but the difference will be insignificant for the most part.</p>
-<p>Note that if you make use of <code>dplyr</code> in a work flow, loading <code>MASS</code> after <code>dplyr</code> will mask dplyr’s <code>select</code> function. This can be problematic. So you either want to load <code>MASS</code> before <code>dplyr</code>, or you can call the function via <code>MASS::rlm</code>. An example of its use follows.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-15_c180a638ed4acbabcd7964f64ea49214">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(x,y)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>M   <span class="ot">&lt;-</span> <span class="fu">lm</span>( y <span class="sc">~</span> x, <span class="at">dat=</span>dat)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>Mr  <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">rlm</span>( y <span class="sc">~</span> x, <span class="at">dat=</span>dat, <span class="at">psi=</span><span class="st">"psi.bisquare"</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x,dat, <span class="at">pch=</span><span class="dv">16</span>, <span class="at">col=</span><span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.2</span>))</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the robust line</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( Mr, <span class="at">col=</span><span class="st">"red"</span>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the default regression line</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( M , <span class="at">col=</span><span class="st">"grey50"</span>, <span class="at">lty=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note that if you make use of <code>dplyr</code> in a workflow, loading <code>MASS</code> after <code>dplyr</code> will mask dplyr’s <code>select</code> function. This can be problematic. So you either want to load <code>MASS</code> before <code>dplyr</code>, or you can call the function via <code>MASS::rlm</code>. An example of its use follows. The default regression model is added as a dashed line for reference.</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-18_98214ea5eb9efd2489658138170116af">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(x,y)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>M   <span class="ot">&lt;-</span> <span class="fu">lm</span>( y <span class="sc">~</span> x, <span class="at">dat=</span>dat)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>Mr  <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">rlm</span>( y <span class="sc">~</span> x, <span class="at">dat=</span>dat, <span class="at">psi=</span><span class="st">"psi.bisquare"</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x,dat, <span class="at">pch=</span><span class="dv">16</span>, <span class="at">col=</span><span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.2</span>))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the robust line</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( Mr, <span class="at">col=</span><span class="st">"red"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the default regression line</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( M , <span class="at">col=</span><span class="st">"grey50"</span>, <span class="at">lty=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="288"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>The function <code>rlm</code> can also be called directly from within <code>ggplot</code>.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-16_28f635eb50422284d334983a32cea839">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="st">"grey50"</span>, <span class="at">lty =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">stat_smooth</span>(<span class="at">method =</span> MASS<span class="sc">::</span>rlm, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="st">"red"</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">psi =</span> <span class="st">"psi.bisquare"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-19_5736d0c7f23d2dcbe1a6a29ebaca245d">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="st">"grey50"</span>, <span class="at">lty =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">stat_smooth</span>(<span class="at">method =</span> MASS<span class="sc">::</span>rlm, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="st">"red"</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">psi =</span> <span class="st">"psi.bisquare"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="288"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>&nbsp;&nbsp;</p>
@@ -678,36 +712,37 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="robust-loess" class="level2" data-number="25.3">
 <h2 data-number="25.3" class="anchored" data-anchor-id="robust-loess"><span class="header-section-number">25.3</span> Robust loess</h2>
 <p>The bisquare estimation method can also be extended to the loess smoothing function by passing the <code>"symmetric"</code> option to the <code>family</code> parameter.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-17_1172ec9bf08ed5987bf8e6c433ec5ac6">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit a regular loess model</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>lo <span class="ot">&lt;-</span> <span class="fu">loess</span>(y <span class="sc">~</span> x, dat)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit a robust loess model</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>lor <span class="ot">&lt;-</span> <span class="fu">loess</span>(y <span class="sc">~</span> x, dat, <span class="at">family =</span> <span class="st">"symmetric"</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the data</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, dat, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.2</span>))</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the default loess</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(dat<span class="sc">$</span>x, <span class="fu">predict</span>(lo), <span class="at">col =</span> <span class="st">"grey50"</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the robust loess</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(dat<span class="sc">$</span>x, <span class="fu">predict</span>(lor), <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-20_a9b9ab144bdaec92a590b3ee3b197474">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit a regular loess model</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>lo <span class="ot">&lt;-</span> <span class="fu">loess</span>(y <span class="sc">~</span> x, dat)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit a robust loess model</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>lor <span class="ot">&lt;-</span> <span class="fu">loess</span>(y <span class="sc">~</span> x, dat, <span class="at">family =</span> <span class="st">"symmetric"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the data</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, dat, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.2</span>))</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the default loess</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(dat<span class="sc">$</span>x, <span class="fu">predict</span>(lo), <span class="at">col =</span> <span class="st">"grey50"</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the robust loess</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(dat<span class="sc">$</span>x, <span class="fu">predict</span>(lor), <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="288"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
-<p>The R base <code>loess</code> function can be implemented in <code>ggplot2</code>’s <code>stat_smooth</code> function as follows:</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-18_e9e988199394c92c5cfb9cd882121fbd">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>          <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>,                       <span class="co"># Regular loess </span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">se=</span><span class="cn">FALSE</span>, <span class="at">col=</span><span class="st">"grey50"</span>, <span class="at">lty=</span><span class="dv">2</span>)  <span class="sc">+</span>    </span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, </span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family=</span><span class="st">"symmetric"</span>), <span class="co"># Robust loess</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">se=</span><span class="cn">FALSE</span>,  <span class="at">col=</span><span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The default loess fit is added as a dashed line for reference.</p>
+<p>The robust <code>loess</code> can be implemented in <code>ggplot2</code>’s <code>stat_smooth</code> function as follows:</p>
+<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-21_f34299528a71404319578f2d9f21372b">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>,                       <span class="co"># Regular loess </span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">se=</span><span class="cn">FALSE</span>, <span class="at">col=</span><span class="st">"grey50"</span>, <span class="at">lty=</span><span class="dv">2</span>)  <span class="sc">+</span>    </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family=</span><span class="st">"symmetric"</span>), <span class="co"># Robust loess</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">se=</span><span class="cn">FALSE</span>,  <span class="at">col=</span><span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="288"></p>
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="288"></p>
 </div>
 </div>
 <p>The loess parameters are passed to the <code>loess</code> function via the call to <code>method.args</code>. The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.</p>
