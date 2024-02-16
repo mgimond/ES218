@@ -165,7 +165,7 @@ head(dat.overwrite, 3)
 tail(dat.overwrite, 3)
 ```
 
-### `mutate_at`: Creating and/or calculating values across muliple columns 
+### `mutate` across muliple columns 
 
 You might find yourself wanting to apply a same set of *mutate* operations across multiple variables. For example, given the following sample dataset,
 
@@ -179,20 +179,19 @@ met
 where the value `99` is a placeholder for a missing value for the variables `Wind` and `Prec` but a valid value for `Dir`, we want to replace all missing values with `NA`. We could either create two mutate operations as in,
 
 ```{r}
-met2 <- mutate( met, Wind = ifelse(Wind == 99, NA, Wind),
-                     Prec = ifelse(Prec == 99, NA, Prec))
-met2
+met %>%  mutate(Wind = ifelse(Wind == 99, NA, Wind),
+                Prec = ifelse(Prec == 99, NA, Prec))
 ```
 
 or, we could reduce the separate `mutate` operations into a single `mutate_at` operation,
 
 ```{r}
-met2 <- mutate_at( met, vars(Wind, Prec),
-                        list(~ ifelse( . == 99, NA, .)))
-met2
+met %>% mutate(across( c(Wind, Prec),
+                       ~ ifelse( . == 99, NA, .)))
+
 ```
 
-The dot `.` is a placeholder for each column listed in the `vars()` function. 
+Here, the dot `.` is a placeholder for each column listed in `across`'s first argument.
 
 ### `summarise`: Summarize columns
 
