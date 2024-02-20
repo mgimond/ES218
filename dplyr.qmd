@@ -109,6 +109,7 @@ range(dat.query3$Year)
 
 Note the use of the AND Boolean operator (`&`) instead of the OR operator (`|`) for the `Year` query. We want the `Year` value to satisfy two criteria simultaneously: *greater than or equal to 2005* **AND** *less than or equal to 2010*. Had we used the `|` operator, R would have returned all years since all year values satisfy at least one of the two critera.
 
+
 ### `arrange`: Sort rows by column value
 
 You can sort a table based on a column's values using the `arrange` function. For example, to sort `dat` by crop name type:
@@ -250,6 +251,57 @@ There are, however, a few subtle differences between the two. A deeper dive in h
 In this course, we'll stick with the `%>%` operator given that `|>` is  new and is not yet as widely adopted as `%>%`.
 
 &nbsp;&nbsp;
+
+
+### Updating a factor's levels in a dataframe
+
+Subsetting a dataframe by row might result in a factor losing all values associated with a level. You learned in section `3.3.1.2` that the `droplevels` function can be used to remove any levels no longer present in the factor.  `droplevels` can also be used in a piping operation, however, the function will drop levels for *all* factors in the dataframe--this might not be the intended goal.
+
+If you want to selectively drop the levels for a specific set of factors in a dataframe, you might want to make use of the `fct_drop` function from the `forcats` package. For example, let's first create a subset of the built-in `mtcars` dataset and create factors from a couple of its variables. We'll use the base methods to tackle this task.
+
+```{r}
+mt <- mtcars[ , c("cyl", "gear")]
+mt$cyl  <- factor(mtcars$cyl)
+mt$gear <- factor(mtcars$gear)
+```
+
+Now, let's filter by `cyl`.
+
+```{r}
+mt_sub <- mt %>% 
+   filter(cyl == 8)
+```
+
+Exploring `mt_sub`'s summary, we see that some levels have no matching values in the factors:
+
+```{r}
+summary(mt_sub)
+```
+
+Applying `droplevels` to the dataframe will remove those levels from *both* factors;
+
+```{r}
+mt_sub <- mt %>% 
+   filter(cyl == 8) %>% 
+   droplevels()
+
+summary(mt_sub)
+```
+
+Using `fct_drop` controls which factor(s) you want to clean up the levels for. Note, however, that `fct_drop` must be used inside of a `mutate` function.
+
+```{r}
+library(forcats) 
+
+mt_sub <- mt %>% 
+   filter(cyl == 8) %>% 
+   mutate( cyl = fct_drop(cyl))
+
+summary(mt_sub)
+```
+
+
+
 
 ## Conditional statements
 &nbsp;&nbsp;
