@@ -276,12 +276,12 @@ x <- as.factor( c("apple", "banana", "banana", "pear", "apple"))
 ifelse(x == "pear", "apple", x)
 ```
 
-The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e. `apple` =1, `banana`=2, etc...). Likewise, if you wish to replace an erroneous date with a missing value you will get:
+The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e. `apple` =1, `banana`=2, etc...). Likewise, if you wish to replace an erroneous date you will get:
 
 ```{r}
 library(lubridate)
 y <- mdy("1/23/2016", "3/2/2016", "12/1/1901", "11/23/2016")
-ifelse( year(y) != 2016, NA, y)
+ifelse( y == mdy("12/1/1901"), mdy("12/1/2016"), y)
 ```
 
 Here, `ifelse` converts the date object to its internal numeric representation as number of days since 1970. 
@@ -289,49 +289,36 @@ Here, `ifelse` converts the date object to its internal numeric representation a
 
 ### `dplyr`'s `if_else`
 
-`ifelse` does not preserve the attributes that might be present in a vector. In other words, it will strip away the vector's `class`. If you want to ensure that the vector's `class` is preserved, a safer alternative is to use `dplyr`'s `if_else` function.
+`ifelse` does not preserve the attributes that might be present in a vector. In other words, it will strip away the vector's `class`. A safer alternative is to use `dplyr`'s `if_else` function.
 
 Reworking the above examples: 
 
 ```{r}
-if_else( year(y) != 2016, NA, y)
+if_else( y == mdy("12/1/1901"), mdy("12/1/2016"), y)
 ```
+
+The date class is preserved. Now let's check the output of a factor.
 
 ```{r error=TRUE}
 if_else(x == "pear", "apple", x)
 ```
 
-Note that when working with factors, however, `if_else` will strip the `factor` class of an input factor. `dplyr` offers a `recode` function for this purpose however, this function is being superseded according to the documentation as of version `1.1.4`. The workaround is to convert the `if_else` output to a factor.
+Note that when working with factors, however, `if_else` will strip the `factor` class of an input factor. But, instead of returning the factor's underlying integer values, it outputs the associated levels as a `character` data type.
+
+The workaround is to convert the `if_else` output to a factor.
 
 ```{r error=TRUE}
-as.factor(if_else(x == "pear", "apple", x))
+factor(if_else(x == "pear", "apple", x))
 ```
 
-#### Note on replacing NA factor levels
+If you need to explicitly define the levels, add the `levels = c("pear",...)`.
 
-One operation you cannot perform with `if_else` is converting an `NA` level to another factor level. For example, let's add an `NA` value to the `x` factor:
+NOTE: `dplyr` offers the `recode` function that preserves factors however, this function is being superseded according to the documentation as of version `1.1.4`.
 
-```{r}
-x[2] <- NA
-x
-```
-
-If we want to replace `NA` with `banana` the following will generate an unexpected output.
-
-
-```{r}
-if_else( x == NA, "banana", x)
-```
-
-To evaluate if a value is `NA`, use the `is.na()` function as in:
-
-```{r}
-if_else( is.na(x), "banana", x)
-```
 
 ### Changing values based on multiple conditions: `case_when`
 
-`ifelse` and `if_else` work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.
+`ifelse` and `if_else` work great when a single set of conditions is to be satisfied. But, if multiple sets of conditions are to be evaluated, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.
 
 ```{r}
 unit <- c("F","F","C", "K")
@@ -359,7 +346,7 @@ case_when(unit == "F" ~ temp,
           TRUE ~ (temp - 273.15) * 9/5 + 32)
 ```
 
-The last parameter, `TRUE ~ `, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return `NA` values).
+The last argument, `TRUE ~ `, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return `NA` values by default). You only need to add a `TRUE ~` condition if you know that all previously listed conditions may not cover all possible outcomes. Here, we know that some observations are associated with `unit == "K"` yet that condition is not explicitly defined in the `case_when` arguments. We could have, of course, added the `unit == "K"` condition to the above code chunk thus alleviating the need for the `TRUE ~` condition.
 
 Note that the order in which these conditions are listed matters since evaluation stops at the first `TRUE` outcome encountered. So, had the last condition been moved to the top of the stack, all `temp` values would be assigned the first conversion option.
 
@@ -387,7 +374,7 @@ head(dat1)
 
 ## Replacing values with `NA`
 
-You can replace a specific set of values (numeric or character) using the `na_if()` function. For example, to replace `-999` with `NA`:
+So far, we've used the `ifelse` or `if_else` functions to replace certain values with `NA`. `dplyr` offers the `na_if()` function to simplify the syntax. For example, to replace `-999` with `NA`:
 
 ```{r}
 val <- c(-999, 6, -1, -999)
@@ -401,12 +388,20 @@ val <- c("ab", "", "A b", "  ")
 na_if( val , "" )
 ```
 
-Note that `na_if()` will return the datatype passed to its first argument and not necessarily that of the parent vector. For example, if you use `stringr`'s  `str_length()` function to identify zero length vectors in a character vector, you get a numeric output.
+`na_if` will also preserve the object's class. For example:
 
 ```{r}
-library(stringr)
-val <- c("ab", "", "A b", "  ")
-na_if( str_length(val) , 0 )
+x <- as.factor( c("apple", "walnut", "banana", "pear", "apple"))
+na_if(x , "walnut")
+```
+
+But, note that it does not automatically drop the level being replaced with `NA`.
+
+`na_if` also works with dates, but don't forget to evaluate a date object with a date value. For example, to replace dates of `12/1/1901` with `NA`, we need to make a date object of that value. Here, we'll make use of the `mdy()` function as in `mdy("12/1/1901")`.
+
+```{r}
+y <- mdy("1/23/2016", "3/2/2016", "12/1/1901", "11/23/2016")
+na_if(y, mdy("12/1/1901"))
 ```
 
 To use `na_if()` in a piping operation, it needs to be embedded in a `mutate()` function. For example, to replace `"Calculated data"` with `NA` in the `dat` dataframe, type:
@@ -422,7 +417,7 @@ unique(dat1$Source)
 
 ## Outputting a vector instead of a table using `pull`
 
-Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:
+Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a dataframe:
 
 ```{r}
 oats <- dat %>% 
@@ -433,7 +428,7 @@ oats
 class(oats)
 ```
 
-There may be times when you want to output as a vector element and not a data table. To output a vector, use the `pull()` function.
+There may be times when you want to output a vector element and not a dataframe. To output a vector, use the `pull()` function.
 
 ```{r}
 oats <- dat %>% 
@@ -446,7 +441,7 @@ oats
 class(oats)
 ```
 
-The `pull` function can also be used explicitly define the column to extract. For example, to extract the `Value` column type:
+The `pull` function can also be used to explicitly define the column to extract. For example, to extract the `Value` column type:
 
 
 ```{r}
@@ -455,8 +450,10 @@ yield <- dat %>%
   filter(Crop == "Oats",
          Information == "Yield (Hg/Ha)") %>% 
   pull(Value)
+```
 
+```{r}
 head(yield)
-
 class(yield)
 ```
+

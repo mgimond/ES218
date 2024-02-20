@@ -942,119 +942,97 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <pre><code>[1] "1"     "2"     "2"     "apple" "1"    </code></pre>
 </div>
 </div>
-<p>The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e.&nbsp;<code>apple</code> =1, <code>banana</code>=2, etc…). Likewise, if you wish to replace an erroneous date with a missing value you will get:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-29_0f202011f488ca11f660ae78566050e9">
+<p>The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e.&nbsp;<code>apple</code> =1, <code>banana</code>=2, etc…). Likewise, if you wish to replace an erroneous date you will get:</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-29_91b267ecfb4302c8f57e3ca23fefdf2e">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">mdy</span>(<span class="st">"1/23/2016"</span>, <span class="st">"3/2/2016"</span>, <span class="st">"12/1/1901"</span>, <span class="st">"11/23/2016"</span>)</span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>( <span class="fu">year</span>(y) <span class="sc">!=</span> <span class="dv">2016</span>, <span class="cn">NA</span>, y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>( y <span class="sc">==</span> <span class="fu">mdy</span>(<span class="st">"12/1/1901"</span>), <span class="fu">mdy</span>(<span class="st">"12/1/2016"</span>), y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 16823 16862    NA 17128</code></pre>
+<pre><code>[1] 16823 16862 17136 17128</code></pre>
 </div>
 </div>
 <p>Here, <code>ifelse</code> converts the date object to its internal numeric representation as number of days since 1970.</p>
 </section>
 <section id="dplyrs-if_else" class="level3" data-number="9.3.2">
 <h3 data-number="9.3.2" class="anchored" data-anchor-id="dplyrs-if_else"><span class="header-section-number">9.3.2</span> <code>dplyr</code>’s <code>if_else</code></h3>
-<p><code>ifelse</code> does not preserve the attributes that might be present in a vector. In other words, it will strip away the vector’s <code>class</code>. If you want to ensure that the vector’s <code>class</code> is preserved, a safer alternative is to use <code>dplyr</code>’s <code>if_else</code> function.</p>
+<p><code>ifelse</code> does not preserve the attributes that might be present in a vector. In other words, it will strip away the vector’s <code>class</code>. A safer alternative is to use <code>dplyr</code>’s <code>if_else</code> function.</p>
 <p>Reworking the above examples:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-30_6ab83f1178b9567a59708d7591c62fc7">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( <span class="fu">year</span>(y) <span class="sc">!=</span> <span class="dv">2016</span>, <span class="cn">NA</span>, y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-30_88fce4081d0023fd191b22812da98908">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( y <span class="sc">==</span> <span class="fu">mdy</span>(<span class="st">"12/1/1901"</span>), <span class="fu">mdy</span>(<span class="st">"12/1/2016"</span>), y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "2016-01-23" "2016-03-02" NA           "2016-11-23"</code></pre>
+<pre><code>[1] "2016-01-23" "2016-03-02" "2016-12-01" "2016-11-23"</code></pre>
 </div>
 </div>
+<p>The date class is preserved. Now let’s check the output of a factor.</p>
 <div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-31_14b42914c48e727eb861f2c03e69223d">
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>(x <span class="sc">==</span> <span class="st">"pear"</span>, <span class="st">"apple"</span>, x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "apple"  "banana" "banana" "apple"  "apple" </code></pre>
 </div>
 </div>
-<p>Note that when working with factors, however, <code>if_else</code> will strip the <code>factor</code> class of an input factor. <code>dplyr</code> offers a <code>recode</code> function for this purpose however, this function is being superseded according to the documentation as of version <code>1.1.4</code>. The workaround is to convert the <code>if_else</code> output to a factor.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-32_542c991653d2ab5f557711a5155af152">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.factor</span>(<span class="fu">if_else</span>(x <span class="sc">==</span> <span class="st">"pear"</span>, <span class="st">"apple"</span>, x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note that when working with factors, however, <code>if_else</code> will strip the <code>factor</code> class of an input factor. But, instead of returning the factor’s underlying integer values, it outputs the associated levels as a <code>character</code> data type.</p>
+<p>The workaround is to convert the <code>if_else</code> output to a factor.</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-32_75d7cd0c71e983d298e7e15a5651b06d">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">factor</span>(<span class="fu">if_else</span>(x <span class="sc">==</span> <span class="st">"pear"</span>, <span class="st">"apple"</span>, x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] apple  banana banana apple  apple 
 Levels: apple banana</code></pre>
 </div>
 </div>
-<section id="note-on-replacing-na-factor-levels" class="level4" data-number="9.3.2.1">
-<h4 data-number="9.3.2.1" class="anchored" data-anchor-id="note-on-replacing-na-factor-levels"><span class="header-section-number">9.3.2.1</span> Note on replacing NA factor levels</h4>
-<p>One operation you cannot perform with <code>if_else</code> is converting an <code>NA</code> level to another factor level. For example, let’s add an <code>NA</code> value to the <code>x</code> factor:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-33_797e052f1d95d03d9a77fbeeeb55f944">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>x[<span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] apple  &lt;NA&gt;   banana pear   apple 
-Levels: apple banana pear</code></pre>
-</div>
-</div>
-<p>If we want to replace <code>NA</code> with <code>banana</code> the following will generate an unexpected output.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-34_fa52c92e47b0b39d13644cdae65b4cf4">
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( x <span class="sc">==</span> <span class="cn">NA</span>, <span class="st">"banana"</span>, x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] NA NA NA NA NA</code></pre>
-</div>
-</div>
-<p>To evaluate if a value is <code>NA</code>, use the <code>is.na()</code> function as in:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-35_8f84bd215e652fa25e72ceb025034415">
-<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( <span class="fu">is.na</span>(x), <span class="st">"banana"</span>, x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "apple"  "banana" "banana" "pear"   "apple" </code></pre>
-</div>
-</div>
-</section>
+<p>If you need to explicitly define the levels, add the <code>levels = c("pear",...)</code>.</p>
+<p>NOTE: <code>dplyr</code> offers the <code>recode</code> function that preserves factors however, this function is being superseded according to the documentation as of version <code>1.1.4</code>.</p>
 </section>
 <section id="changing-values-based-on-multiple-conditions-case_when" class="level3" data-number="9.3.3">
 <h3 data-number="9.3.3" class="anchored" data-anchor-id="changing-values-based-on-multiple-conditions-case_when"><span class="header-section-number">9.3.3</span> Changing values based on multiple conditions: <code>case_when</code></h3>
-<p><code>ifelse</code> and <code>if_else</code> work great when a single set of conditions is to be satisfied. But if multiple sets of conditions are to be tested, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-36_104258c1a17d4c84f440af570c45db9d">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>unit <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"F"</span>,<span class="st">"F"</span>,<span class="st">"C"</span>, <span class="st">"K"</span>)</span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( unit <span class="sc">==</span> <span class="st">"C"</span>, <span class="st">"Celsius"</span>, <span class="fu">if_else</span>(unit <span class="sc">==</span> <span class="st">"F"</span>, <span class="st">"Fahrenheit"</span>, <span class="st">"Kelvin"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>ifelse</code> and <code>if_else</code> work great when a single set of conditions is to be satisfied. But, if multiple sets of conditions are to be evaluated, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-33_18fd5f391499178d28d1c77cf1f909f0">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>unit <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"F"</span>,<span class="st">"F"</span>,<span class="st">"C"</span>, <span class="st">"K"</span>)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( unit <span class="sc">==</span> <span class="st">"C"</span>, <span class="st">"Celsius"</span>, <span class="fu">if_else</span>(unit <span class="sc">==</span> <span class="st">"F"</span>, <span class="st">"Fahrenheit"</span>, <span class="st">"Kelvin"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Fahrenheit" "Fahrenheit" "Celsius"    "Kelvin"    </code></pre>
 </div>
 </div>
 <p>A simpler solution is to use the <code>case_when</code> function.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-37_3aeb8a2149a450beeeacf2a941532d4b">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> <span class="st">"Celsius"</span>,</span>
-<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> <span class="st">"Fahrenheit"</span>,</span>
-<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"K"</span> <span class="sc">~</span> <span class="st">"Kelvin"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-34_c2d0667f5ab3b61b13791fc7e8308400">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> <span class="st">"Celsius"</span>,</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> <span class="st">"Fahrenheit"</span>,</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"K"</span> <span class="sc">~</span> <span class="st">"Kelvin"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Fahrenheit" "Fahrenheit" "Celsius"    "Kelvin"    </code></pre>
 </div>
 </div>
 <p><code>case_when</code> can aso be used for more complex operations. For example, given two vectors, <code>unit</code> and <code>temp</code>, we would like to convert all <code>temp</code> values to Fahrenheit by applying a temperature conversion dependent on the <code>unit</code> value.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-38_03c292ecfd557b498e6a1fa72980c48c">
-<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">45.2</span>, <span class="fl">56.3</span>, <span class="fl">11.0</span>, <span class="dv">285</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-35_bf98f13826aa0f4320e322e3d85f05f4">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">45.2</span>, <span class="fl">56.3</span>, <span class="fl">11.0</span>, <span class="dv">285</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-39_231631f9e42d0389f6ee62b2e3c7b3c6">
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> temp,</span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> (temp <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>) <span class="sc">+</span> <span class="dv">32</span>,</span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-36_4e4430a719e5be5bbf712d9f669d0bfb">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> temp,</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> (temp <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>) <span class="sc">+</span> <span class="dv">32</span>,</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 45.20 56.30 51.80 53.33</code></pre>
 </div>
 </div>
-<p>The last parameter, <code>TRUE ~</code>, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return <code>NA</code> values).</p>
+<p>The last argument, <code>TRUE ~</code>, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return <code>NA</code> values by default). You only need to add a <code>TRUE ~</code> condition if you know that all previously listed conditions may not cover all possible outcomes. Here, we know that some observations are associated with <code>unit == "K"</code> yet that condition is not explicitly defined in the <code>case_when</code> arguments. We could have, of course, added the <code>unit == "K"</code> condition to the above code chunk thus alleviating the need for the <code>TRUE ~</code> condition.</p>
 <p>Note that the order in which these conditions are listed matters since evaluation stops at the first <code>TRUE</code> outcome encountered. So, had the last condition been moved to the top of the stack, all <code>temp</code> values would be assigned the first conversion option.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-40_4622a437ccb16e69a968089c5b9b434c">
-<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What not to do ...</span></span>
-<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(<span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>,</span>
-<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> temp,</span>
-<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> (temp <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>) <span class="sc">+</span> <span class="dv">32</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-37_655a4ddd3d0cc846225b52070f0d0d59">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What not to do ...</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(<span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>,</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> temp,</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> (temp <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>) <span class="sc">+</span> <span class="dv">32</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] -378.31 -358.33 -439.87   53.33</code></pre>
 </div>
 </div>
 <p>Note that <code>case_when</code> can also be used inside of a <code>mutate</code> function. For example, to replace <code>Canada</code> and <code>United States of America</code> in variable <code>Country</code> with <code>CAN</code> and <code>USA</code> respectively and to create a new variable called <code>Type</code> which will take on the values of <code>1</code>, <code>2</code> or <code>3</code> depending on the values in variable <code>Source</code>, type the following:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-41_6e4c3ee0b265a5108b80b977ed8b6ffd">
-<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Country =</span> <span class="fu">case_when</span>(Country <span class="sc">==</span> <span class="st">"Canada"</span> <span class="sc">~</span> <span class="st">"CAN"</span>,</span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>                             Country <span class="sc">==</span> <span class="st">"United States of America"</span> <span class="sc">~</span> <span class="st">"USA"</span>),</span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">Type =</span> <span class="fu">case_when</span>(Source <span class="sc">==</span> <span class="st">"Calculated data"</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>                          Source <span class="sc">==</span> <span class="st">"Official data"</span> <span class="sc">~</span> <span class="dv">2</span>,</span>
-<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">3</span>)) </span>
-<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1)   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-38_9d6c65603d6280fcee7310e3a57a3e2b">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Country =</span> <span class="fu">case_when</span>(Country <span class="sc">==</span> <span class="st">"Canada"</span> <span class="sc">~</span> <span class="st">"CAN"</span>,</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>                             Country <span class="sc">==</span> <span class="st">"United States of America"</span> <span class="sc">~</span> <span class="st">"USA"</span>),</span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">Type =</span> <span class="fu">case_when</span>(Source <span class="sc">==</span> <span class="st">"Calculated data"</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>                          Source <span class="sc">==</span> <span class="st">"Official data"</span> <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">3</span>)) </span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat1)   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  Country         Crop         Information Year      Value          Source Type
 1     CAN       Barley Area harvested (Ha) 2012 2060000.00   Official data    2
@@ -1070,38 +1048,47 @@ Levels: apple banana pear</code></pre>
 </section>
 <section id="replacing-values-with-na" class="level2" data-number="9.4">
 <h2 data-number="9.4" class="anchored" data-anchor-id="replacing-values-with-na"><span class="header-section-number">9.4</span> Replacing values with <code>NA</code></h2>
-<p>You can replace a specific set of values (numeric or character) using the <code>na_if()</code> function. For example, to replace <code>-999</code> with <code>NA</code>:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-42_7261d725df4c17cb509f77a364f3aaf5">
-<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">999</span>, <span class="dv">6</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">999</span>)</span>
-<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>( val , <span class="sc">-</span><span class="dv">999</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>So far, we’ve used the <code>ifelse</code> or <code>if_else</code> functions to replace certain values with <code>NA</code>. <code>dplyr</code> offers the <code>na_if()</code> function to simplify the syntax. For example, to replace <code>-999</code> with <code>NA</code>:</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-39_413916200d38f207d13cdeadb1fd8d5c">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">999</span>, <span class="dv">6</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">999</span>)</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>( val , <span class="sc">-</span><span class="dv">999</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] NA  6 -1 NA</code></pre>
 </div>
 </div>
 <p>Likewise, to replace all empty character values:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-43_66984b16591f46b405e9424816614f55">
-<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ab"</span>, <span class="st">""</span>, <span class="st">"A b"</span>, <span class="st">"  "</span>)</span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>( val , <span class="st">""</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-40_dc836df1ca7c88ec29f2075dc1e8e9d9">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ab"</span>, <span class="st">""</span>, <span class="st">"A b"</span>, <span class="st">"  "</span>)</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>( val , <span class="st">""</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "ab"  NA    "A b" "  " </code></pre>
 </div>
 </div>
-<p>Note that <code>na_if()</code> will return the datatype passed to its first argument and not necessarily that of the parent vector. For example, if you use <code>stringr</code>’s <code>str_length()</code> function to identify zero length vectors in a character vector, you get a numeric output.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-44_8a78a6457fd0c64010d0dee308d28e49">
-<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ab"</span>, <span class="st">""</span>, <span class="st">"A b"</span>, <span class="st">"  "</span>)</span>
-<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>( <span class="fu">str_length</span>(val) , <span class="dv">0</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>na_if</code> will also preserve the object’s class. For example:</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-41_1fe48bea4b2203163cc5754f7c8dd3c4">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.factor</span>( <span class="fu">c</span>(<span class="st">"apple"</span>, <span class="st">"walnut"</span>, <span class="st">"banana"</span>, <span class="st">"pear"</span>, <span class="st">"apple"</span>))</span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>(x , <span class="st">"walnut"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1]  2 NA  3  2</code></pre>
+<pre><code>[1] apple  &lt;NA&gt;   banana pear   apple 
+Levels: apple banana pear walnut</code></pre>
+</div>
+</div>
+<p>But, note that it does not automatically drop the level being replaced with <code>NA</code>.</p>
+<p><code>na_if</code> also works with dates, but don’t forget to evaluate a date object with a date value. For example, to replace dates of <code>12/1/1901</code> with <code>NA</code>, we need to make a date object of that value. Here, we’ll make use of the <code>mdy()</code> function as in <code>mdy("12/1/1901")</code>.</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-42_6a414460c5987192871617ff047e29bd">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">mdy</span>(<span class="st">"1/23/2016"</span>, <span class="st">"3/2/2016"</span>, <span class="st">"12/1/1901"</span>, <span class="st">"11/23/2016"</span>)</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>(y, <span class="fu">mdy</span>(<span class="st">"12/1/1901"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "2016-01-23" "2016-03-02" NA           "2016-11-23"</code></pre>
 </div>
 </div>
 <p>To use <code>na_if()</code> in a piping operation, it needs to be embedded in a <code>mutate()</code> function. For example, to replace <code>"Calculated data"</code> with <code>NA</code> in the <code>dat</code> dataframe, type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-45_85222b7196fcd91519de44d6aead42df">
-<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
-<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Source =</span> <span class="fu">na_if</span>(Source, <span class="st">"Calculated data"</span> ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-43_e2e72107e42c3009109e09c33c29cd9b">
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Source =</span> <span class="fu">na_if</span>(Source, <span class="st">"Calculated data"</span> ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-46_38ae921b81ec14e10ba468a5f2394c20">
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(dat1<span class="sc">$</span>Source)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-44_f2796ae43cdcb603a836e3907d08d22a">
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(dat1<span class="sc">$</span>Source)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Official data"                           
 [2] NA                                        
@@ -1112,51 +1099,52 @@ Levels: apple banana pear</code></pre>
 </section>
 <section id="outputting-a-vector-instead-of-a-table-using-pull" class="level2" data-number="9.5">
 <h2 data-number="9.5" class="anchored" data-anchor-id="outputting-a-vector-instead-of-a-table-using-pull"><span class="header-section-number">9.5</span> Outputting a vector instead of a table using <code>pull</code></h2>
-<p>Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a data table:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-47_903914cfe19387a66b91afc035d4c5fe">
-<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
-<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
-<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Oats_sum =</span> <span class="fu">sum</span>(Value))</span>
-<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>oats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a dataframe:</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-45_aba2095b8bbf3a5f5fb04fd4d70ea5de">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Oats_sum =</span> <span class="fu">sum</span>(Value))</span>
+<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>oats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  Oats_sum
 1  2169334</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(oats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(oats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "data.frame"</code></pre>
 </div>
 </div>
-<p>There may be times when you want to output as a vector element and not a data table. To output a vector, use the <code>pull()</code> function.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-48_928d1569b85ec61fb6859fdf39f77269">
-<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
-<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
-<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Oats_sum =</span> <span class="fu">sum</span>(Value)) <span class="sc">%&gt;%</span> </span>
-<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>()</span>
-<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>oats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>There may be times when you want to output a vector element and not a dataframe. To output a vector, use the <code>pull()</code> function.</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-46_9297849a799bbf9f594b08d47d857bef">
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Oats_sum =</span> <span class="fu">sum</span>(Value)) <span class="sc">%&gt;%</span> </span>
+<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>()</span>
+<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a>oats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2169334</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(oats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(oats)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "numeric"</code></pre>
 </div>
 </div>
-<p>The <code>pull</code> function can also be used explicitly define the column to extract. For example, to extract the <code>Value</code> column type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-49_c9fc63cbeb534e1f4921e18f8781c9df">
-<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This outputs a multi-element vector</span></span>
-<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>yield <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
-<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
-<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(Value)</span>
-<span id="cb100-6"><a href="#cb100-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb100-7"><a href="#cb100-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(yield)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>pull</code> function can also be used to explicitly define the column to extract. For example, to extract the <code>Value</code> column type:</p>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-47_75551c4593e8eca9ef546d365ed6fee6">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This outputs a multi-element vector</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>yield <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(Value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-48_aee6e46984a1b347428576a3ca4bef76">
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(yield)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 24954.79 21974.70 29109.36 20492.37 27364.53 23056.62</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(yield)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(yield)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "numeric"</code></pre>
 </div>
