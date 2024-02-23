@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Tidying/reshaping tables with `tidyr`
 
 ```{r echo=FALSE}
@@ -225,7 +230,7 @@ The `tidyr` package offers other functions not directly tied to pivoting. Some o
 
 ### Separating elements in one column into separate columns
 
-To split a column into two or more columns based on a existing column's delimited value, use the `separate()` function.
+To split a column into two or more columns based on a existing column's delimited value, use the `separate_wider_delim()` function.
 
 Let's first create a delimited table.
 
@@ -240,19 +245,21 @@ We can now split `var1` into its two components that we'll name `sex` and `work`
 
 ```{r}
 
-df2.sep <- separate(df2.long, 
-                    col = var1, 
-                    sep = "_", 
-                    into = c("sex", "work"))
+df2.sep <- separate_wider_delim(df2.long, 
+                    cols = var1, 
+                    delim = "_", 
+                    names = c("sex", "work"))
 df2.sep
 ```
 
 ### Splitting rows into multiple rows based on delimited values
 
-To split delimited values across rows, use the `separate_rows` function.
+Instead of splitting one column into two columns, you might want to split the delimited variable into multiple rows. For example, to split `df2.long` into rows based on the `var1` variable, use the `separate_longer_delim` function.
 
 ```{r}
-separate_rows(df2.long, var1, sep = "_")
+separate_longer_delim(df2.long, 
+                      cols = var1, 
+                      delim = "_")
 ```
 
 Here, instead of splitting `var1` into two columns, we simply add a new line for each observation. Note that this results in duplicate `income` values.
