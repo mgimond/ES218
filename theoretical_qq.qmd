@@ -68,22 +68,21 @@ Constructing the above q-q plot requires that we extract the mean and standard d
 
 ```{r echo=FALSE, fig.height=3.2, fig.width=3, results='hide'}
 `unit normal` <- qnorm((1:length(x) - 0.5) / length(x), mean=0, sd=1)
-eda_qq(`unit normal`, x, show.par = FALSE, q = FALSE) 
+eda_qq(`unit normal`, x, show.par = FALSE, q = FALSE, xlab=expression(italic(q)["0,1"](italic(f)))) 
 ```
 
 You'll note both the additive and multiplicative offsets. The additive offset is nothing more that the sample mean, $\mu$, and the multiplicative offset is nothing more than the sample standard deviation, $\sigma$. 
 
-We know that if two batches differ only by their offsets, and not their overall shape, then we expect the points to follow a straight line. Knowing this, we can modify the q-q plot by plotting $x$ against the unit normal quantile, $q_{0,1}(f)$. The $x=y$ slope used in the empirical q-q plot no longer applies here given that the $x$ and $q_{0,1}(f)$ scales will not necessarily match (the $q_{0,1}(f)$ will usually range from -2 to 2). Instead, we fit a line to the points to help gauge the pattern's *straightness*. This gives us the **normal q-q plot**.
+We know that if two batches differ only by their offsets, and not their overall shape, then we expect the points to follow a straight line. Knowing this, we can modify the q-q plot by plotting $x$ against the unit normal quantile, $q_{0,1}(f)$. The $x=y$ slope used in the empirical q-q plot no longer applies here given that the $x$ and $q_{0,1}(f)$ scales will not necessarily match (the $q_{0,1}(f)$ will usually range from -2 to 2). Instead, we fit a line to the points to help gauge the pattern's *straightness*. This gives us the **unit normal q-q plot**. Note that the word "unit" is often dropped from the plot name and is therefore often labeled as the **normal q-q plot**.
 
 
-```{r echo=FALSE, fig.height=3, fig.width=3, results='hide'}
-eda_qq(x, norm=T, show.par = FALSE, q = FALSE)
+```{r echo=FALSE, fig.height=3.2, fig.width=3, results='hide'}
+eda_qq(x, norm=T, show.par = FALSE, q = FALSE, xlab = "Unit normal quantile")
 ```
 
 The x-axis can help identify the tails of the distribution by noting that roughly 68% of the values fall between `-1` and `1` standard deviations and that roughly 95% of the values fall between `-2` and `2` standard deviations.
 
-We'll first learn how to generate this plot using the built-in R function, then we'll do the same with `ggplot2`.
-
+We'll first learn how to generate this plot using the built-in R function, then we'll do the same with the `ggplot2` package, and then using the `tukeyedar` package.
 
 ### Using R’s built-in functions
 
@@ -104,16 +103,16 @@ Note that `alto` is a single vector element. We'll use two built-in functions to
 ```{r fig.height=3, fig.width=3, echo=2:3, results='hold'}
 OP <-par(mar=c(4,4,1,1))
 qqnorm(alto)
-qqline(alto, qtype = 5)
+qqline(alto)
 par(OP)
 ```
 
-There are many ways one can fit a line to the data, Here, we opt to fit a line to the first and third quartiles (IQR) of the q-q plot. We are also adopting the [f-value type of `5`](univariate_plots.html#computing-the-f-quantile) by setting `qtype = 5` in the call to `qqline`. But note that in most cases, the choice of quantile type will have little importance in discerning the straightness of the point pattern.
+There are many ways one can fit a line to the data, Here, we opt to fit a line to the first and third quartiles (IQR) of the q-q plot. Note that the `qqline` function is defaulting to an  [f-value type of 7](univariate_plots.html#computing-the-f-quantile). This can be changed via the `qtype` argument. But note that in practice, the choice of quantile type will have little importance in discerning the straightness of the point pattern.
 
 
 ### Using the ggplot2 plotting environment
 
-To generate the theoretical q-q plot, we first use the `stat_qq` function to generate the point plot, then we call the `stat_qq_line` function to generate the IQR fit. Here, we are passing a single vector object instead of a dataframe to `ggplot()`.
+To generate the theoretical q-q plot in `ggplot`, we first use the `stat_qq` function to generate the point plot, then we call the `stat_qq_line` function to generate the IQR fit. Here, we are passing a single vector object instead of a dataframe to `ggplot()`.
 
 ```{r, fig.height=3, fig.width=3}
 library(ggplot2)
@@ -126,9 +125,22 @@ ggplot() + aes(sample = alto) + stat_qq(distribution = qnorm) +
 
 Note the slight difference in syntax used with `ggplot` when passing a vector instead of a dataframe to the function. Here, we take the `aes()` function outside of the `ggplot()` function. This is done to render a cleaner syntax. The alternative, `ggplot(,aes(sample = alto))`, would make it difficult to notice the comma just before `aes()`, thus increasing the chance for a typo.
 
-The `stat_qq_line` function uses the built-in `quantile` function and, as such, will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This differs from our approach to computing the f-value. This explains the slight difference in the fitted line between the `ggplot` method and the base method we used earlier where we set `qtype` to `5`. This setting cannot be changed in `stat_qq_line`. However, the difference in methods has little to no impact in our assessment of the "straightness" of the points.
+The `stat_qq_line` function uses the built-in `quantile` function and, as such, will adopt the default quantile type `7` (i.e. it computes the f-value as $(i - 1)/(n - 1))$. This setting cannot be changed in `stat_qq_line`. 
 
 Note that `geom_qq` and  `geom_qq_line` functions are identical to `stat_qq`and `stat_qq_line`.
+
+### Using the custom `eda_qq` function
+
+You were introduced to the `eda_qq` custom function in the previous chapter. This function can also be used to generate normal q-q plots by setting `norm` to `TRUE`. In such a case, the function takes as input a single vector of values.
+
+```{r  class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
+library(tukeyedar)
+eda_qq(alto, norm=TRUE) 
+```
+
+The function defaults to the quantile type `5`. To adopt the default quantile type used in `ggplot2`, set `q.type = 7`.
+
+Note that when the `eda_qq` function is used to generate a normal q-q plot, the light dashed lines highlight the standard deviation for both sets of values. This differs from the mid 75% representation of values adopted by the function when generating an empirical q-q plot.
 
 ## How normal is my dataset?
 
@@ -226,15 +238,4 @@ par(OP)
 
 ```
 
-## The `eda_qq` function
 
-You were introduced to the `eda_qq` custom function in the previous chapter. This function can also be used to generate normal q-q plots by setting `norm` to `TRUE`. In such a case, the function takes as input a single vector of values.
-
-```{r  class.source="eda", fig.height=3, fig.width=2.5, results='hide'}
-library(tukeyedar)
-eda_qq(alto, norm=TRUE) 
-```
-
-The function defaults to the quantile type `5`. To adopt the default quantile type used in `ggplot2`, set `q.type = 7`.
-
-Note that when the `eda_qq` function is used to generate a normal q-q plot, the light dashed lines highlight the standard deviation for both sets of values. This differs from the mid 75% representation of values adopted by the function when generating an empirical q-q plot.
