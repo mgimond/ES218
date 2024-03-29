@@ -49,17 +49,36 @@ The theoretical quantile-quantile plot is a tool to explore how a batch of numbe
 
 ## The normal q-q plot
 
-The *normal q-q plot* is just a special case of the *empirical q-q plot* we've covered in the previous chapter, the difference being that we assign the empirical quantiles to the y-axis and the matching normal quantiles to the x-axis. The x-axis units are standard deviations.
+If we wish to assess whether a batch of values follows the shape of a normal distribution, we can compare it to its matching *normal* quantile function,$q_{\mu,\sigma}(f)$. For example, given a batch of values $x$, we can generate the matching normal quantile using $x$'s mean, $\mu$ and standard deviation, $\sigma$. The following figure shows the overlapping density plots (left plot) and q-q plot (right plot).
 
-
-```{r echo=FALSE, fig.height=3, fig.width=3}
+```{r echo=FALSE, fig.height=3.2, fig.width=8, results='hide'}
 library(tukeyedar)
 set.seed(121)
 x <- rnorm(30) * 2 + 32
-eda_qq(x, norm=T, show.par = FALSE, q = FALSE)
+normal <- qnorm((1:length(x) - 0.5) / length(x), mean=mean(x), sd=sd(x))
+OP <- par(mfrow = c(1,2))
+ eda_dens(x, normal, show.par = FALSE, q = FALSE)
+ eda_qq(normal, x , show.par = FALSE, q = FALSE)
+par(OP)
 ```
 
-When comparing a batch of numbers to a theoretical distribution on a q-q plot, we are looking for significant deviation from a straight line. To make it easier to judge straightness, we can fit a line to the points. Note that we are **not** creating a 45&deg; (x=y) slope as was done with the empirical q-q plot--the range of values between both sets of numbers do not match. Here, we are only seeking the **straightness** of the point pattern.
+The traditional "bell" shape of the normal distribution (red density plot) is apparent in the left plot. You will seldomly expect any set of observational data to follow a normal distribution exactly. Our interest is in knowing how *close* a batch of values comes to a normal distribution.
+
+Constructing the above q-q plot requires that we extract the mean and standard deviation from $x$. This can be avoided by noting that the normal quantile, $q_{\mu,\sigma}(f)$, can be decomposed into its mean an standard deviation components $\mu + \sigma q_{0,1}(f)$ where $q_{0,1}(f)$ is the unit normal quantile (i.e. a normal quantile whose mean is $0$ and standard deviation is $1$ unit). So, if we compare $x$ to a unit normal quantile we get the following q-q plot:
+
+```{r echo=FALSE, fig.height=3.2, fig.width=3, results='hide'}
+`unit normal` <- qnorm((1:length(x) - 0.5) / length(x), mean=0, sd=1)
+eda_qq(`unit normal`, x, show.par = FALSE, q = FALSE) 
+```
+
+You'll note both the additive and multiplicative offsets. The additive offset is nothing more that the sample mean, $\mu$, and the multiplicative offset is nothing more than the sample standard deviation, $\sigma$. 
+
+We know that if two batches differ only by their offsets, and not their overall shape, then we expect the points to follow a straight line. Knowing this, we can modify the q-q plot by plotting $x$ against the unit normal quantile, $q_{0,1}(f)$. The $x=y$ slope used in the empirical q-q plot no longer applies here given that the $x$ and $q_{0,1}(f)$ scales will not necessarily match (the $q_{0,1}(f)$ will usually range from -2 to 2). Instead, we fit a line to the points to help gauge the pattern's *straightness*. This gives us the **normal q-q plot**.
+
+
+```{r echo=FALSE, fig.height=3, fig.width=3, results='hide'}
+eda_qq(x, norm=T, show.par = FALSE, q = FALSE)
+```
 
 The x-axis can help identify the tails of the distribution by noting that roughly 68% of the values fall between `-1` and `1` standard deviations and that roughly 95% of the values fall between `-2` and `2` standard deviations.
 
@@ -89,7 +108,7 @@ qqline(alto, qtype = 5)
 par(OP)
 ```
 
-There are many ways one can fit a line to the data, Here, we opt to fit a line to the first and third quartiles (IQR) of the q-q plot. We are also adopting the [f-value type of `5`](univariate_plots.html#computing-the-f-quantile) by setting `qtype = 5` in the call to `qqline`. 
+There are many ways one can fit a line to the data, Here, we opt to fit a line to the first and third quartiles (IQR) of the q-q plot. We are also adopting the [f-value type of `5`](univariate_plots.html#computing-the-f-quantile) by setting `qtype = 5` in the call to `qqline`. But note that in most cases, the choice of quantile type will have little importance in discerning the straightness of the point pattern.
 
 
 ### Using the ggplot2 plotting environment
@@ -115,7 +134,7 @@ Note that `geom_qq` and  `geom_qq_line` functions are identical to `stat_qq`and 
 
 The `alto` batch of values seem to do a good job in following a normal distribution given how well they follow a straight line. The stair-step pattern in the points is simply a byproduct of the rounding of height values to the nearest inch. A few observations at the tail ends of the distribution deviate from normal, but this is to be expected given that tail ends of distributions tend to be noisy.
 
-So how do the other singer groups compare to a normal distribution? We'll make use of ggplot's faceting function to generate all eight normal q-q plots.
+So, how do the other singer groups compare to a normal distribution? We'll make use of ggplot's faceting function to generate all eight normal q-q plots.
 
 ```{r fig.height=2.3, fig.width=8}
 ggplot(df, aes(sample=height)) + stat_qq(distribution=qnorm) +
