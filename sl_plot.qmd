@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Spread-level plots
+# Univariate spread-level plot
 
 
 ```{r echo=FALSE}
@@ -18,11 +18,11 @@ pkg_ver(c("dplyr", "ggplot2"))
 
 ## Introduction
 
-Some batches of data may show a systematic change in spread vs. location. In other words, the variability in each batch may be dependent on that batches median value. Such dependency is often undesirable (e.g. in an ANOVA for instance) and preferably removed in an analysis. A plot well suited for visualizing this dependency is the **spread-level** plot, **s-l** (or **spread-location** plot as Cleveland calls it).
+In chapter 19, we highlighted the importance of a homogeneous spread when comparing fitted values across groups. A situation that can lead to a non-homogeneous spread is one where the dataset exhibits a systematic change in spread as a function of location. In other words, the variability in each batch may be dependent on the batches' location value such as its mean or median. Such dependency is often undesirable (e.g. in an ANOVA for instance) and preferably removed in an analysis. A plot well suited for visualizing this dependency is the **spread-level** plot, **s-l** (you may sometimes see it referred to as the **spread-location** plot). Note that the s-l plot presented here is that for *univariate* data. A bivariate version of the s-l plot is covered in chapter 24.
 
-## Constructing the s-l plot
+## Constructing the (univariate) s-l plot
 
-The s-l plot compares a measure of the spread's residual to the location (usually the median) for each batch of data. The spread is usually distilled down to its residual (what remains after subtracting each batch value by the batch median) then it's transformed by taking the square root of its absolute value. The following block walks you through the steps needed to create an s-l plot.
+The s-l plot compares a measure of the spread's residual to the location (usually the median given its robustness to outliers) for each batch of data. The spread is usually distilled down to its residual (what remains after subtracting each batch value by the batch fitted location) then it's transformed by taking the square root of its absolute value. The following block of code walks you through the steps needed to create an s-l plot.
 
 ```{r, fig.height=2.5,fig.width=5}
 library(dplyr)
@@ -40,11 +40,11 @@ ggplot(res.sq, aes(x=Median, y=Residual)) +
   geom_text(aes(x = Median, y = 3.3, label = voice.part))
 ```
 
-The red line in the plot helps identify the type of relationship between spread and location. If the line increases monotonically upward, there is an increasing spread as a function of increasing location; if the line decreases monotonically downward, there is a decreasing spread as a function of increasing location; and if line is neither increasing nor decreasing monotonically, there is no change in spread as a function of location.
+The red line in the plot helps identify the type of relationship between spread and location. If the line increases *monotonically upward*, there is an increasing spread as a function of increasing location; if the line decreases *monotonically downward*, there is a decreasing spread as a function of increasing location; and if the line is neither increasing nor decreasing monotonically, there is no change in spread as a function of location.
 
 > Note that if you are to rescale the y-axis when using the `stat_summary()` function, you should use the `coord_cartesian(ylim = c( .. , .. ))` function instead of the `ylim()` function. The latter will mask the values above its maximum range from the `stat_summary()` function, the former will not.
 
-The singer dataset does not seem to exhibit any dependence between a voice part's spread and its median value.
+In the above example, the singer dataset does not seem to exhibit any dependence between a voice part's spread and its median value.
 
 Next, we'll look at an example of a dataset that *does* exhibit a dependence between spread and fitted values.
 
@@ -68,20 +68,19 @@ R has a built-in dataset called `iris` that provide measurements of sepal and pe
  
 ```
 
-A monotonic spread is apparent in this dataset too, i.e. as the median length of the Petal increases, so does the spread.
+A monotonic spread is apparent in this dataset, i.e. as the median of the Petal length increases, so does the spread.
 
 ## How can we stabilize spreads in a dataset?
 
-A technique used to help reduce or eliminate monotonic variations in the spreads as a function of fitted values is to **re-express** the original values. Re-expression, which involves transforming values via a pwoer transformation, will be covered in the next chapter. However, in the next section, we learn of a variation of the s-l plot that can identify a power transformation that can help stabilize spread. 
+A technique used to help reduce or eliminate monotonic variations in the spreads as a function of fitted values is to **re-express** the original values. Re-expression, which involves transforming values via a power transformation, will be covered in the next chapter. However, in the section that follows, we learn of a variation of the s-l plot that can identify a power transformation that can help stabilize spread. 
 
+### A variation of the s-l plot
 
-### Variations of the S-L plot
+Another version of the s-l plot pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be greater than 0).  
 
-Another version of the S-L plot (and one that seems to be more mainstream) pits the log of the inter-quartile spread vs the log of the median. This approach only works for positive values (this may require that values be adjusted so that the minimum value be no less than or equal to 0).  
+This approach is appealing in that the slope of the best fit line can guide us to a power transformation via **power = 1 - slope**.
 
-This approach is appealing in that the slope of the best fit line can be used to come up with a power transformation (a topic covered in next week's lecture) via **power = 1 - slope**.
-
-This variant of the s-l plot can be computed in R as follows (we will use the food web data as an example).
+This variant of the s-l plot can be computed in R as follows (we will use the `iris` dataset as an example).
 
 ```{r fig.height=2.8, fig.width=2.8}
 sl <- iris %>%
@@ -98,13 +97,13 @@ ggplot(sl, aes(x = level, y = spread)) + geom_point() +
 
 Note how this plot differs from our earlier s-l plot in that we are only displaying each batch's median spread value and we are *fitting* a straight line to the medians instead of *connecting* them.
 
-The slope suggests a monotonic increase in spread vs location. We can extract the slope value from a regression model. Here, we'll adopt a robust bivariate model (bivariate analysis is covered later in this course).
+The slope suggests a monotonic increase in spread vs location. We can extract the slope value from a regression model. Here, we'll adopt a robust bivariate model (resistant line is covered in chapter 25).
 
 ```{r}
 coefficients(MASS::rlm(spread ~ level, sl))
 ```
 
-The slope is the second coefficient in the above output. The computed slope value is `1.14`. This suggests a power transformation of `1 - 1.14` (or about `-0.14`). You will learn in the next chapter that as a power transformation value approaches `0`, when can opt to use the `log` transformation instead. We'll try this next.
+The slope is the second coefficient in the above output. The computed slope value is `1.14`. This suggests a power transformation of `1 - 1.14` (or about `-0.14`). You will learn in the next chapter that as a power transformation value approaches `0`, one can opt to use the `log` transformation instead. We'll therefore apply a log transformation to `Petal.Length`.
 
 ```{r, fig.height=3,fig.width=3.5}
 # Create two new columns: group median and group residuals
