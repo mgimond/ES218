@@ -24,7 +24,7 @@ In chapter 19, we highlighted the importance of a homogeneous spread when compar
 
 The s-l plot compares a measure of the spread's residual to the location (usually the median given its robustness to outliers) for each batch of data. The spread is usually distilled down to its residual (what remains after subtracting each batch value by the batch fitted location) then it's transformed by taking the square root of its absolute value. The following block of code walks you through the steps needed to create an s-l plot.
 
-```{r, fig.height=2.5,fig.width=5}
+```{r, fig.height=2.5,fig.width=6}
 library(dplyr)
 library(ggplot2)
 
@@ -34,13 +34,13 @@ res.sq <-  singer %>% group_by(voice.part) %>%
                              Residual = sqrt(abs(height - Median)))
 
 ggplot(res.sq, aes(x=Median, y=Residual)) + 
-  geom_jitter(alpha=0.4,width=0.2) +
+  geom_jitter(alpha=0.4, width=0.05, height=0) +
   stat_summary(fun = median, geom = "line", col = "red") +
   ylab(expression(sqrt(abs(" Residuals ")))) +
   geom_text(aes(x = Median, y = 3.3, label = voice.part))
 ```
 
-The red line in the plot helps identify the type of relationship between spread and location. If the line increases *monotonically upward*, there is an increasing spread as a function of increasing location; if the line decreases *monotonically downward*, there is a decreasing spread as a function of increasing location; and if the line is neither increasing nor decreasing monotonically, there is no change in spread as a function of location.
+The red line in the plot connects the median values of each batch of residuals. It helps identify the type of relationship between spread and location. If the line increases *monotonically upward*, there is an increasing spread as a function of increasing location; if the line decreases *monotonically downward*, there is a decreasing spread as a function of increasing location; and if the line is neither increasing nor decreasing monotonically, there is no change in spread as a function of location.
 
 > Note that if you are to rescale the y-axis when using the `stat_summary()` function, you should use the `coord_cartesian(ylim = c( .. , .. ))` function instead of the `ylim()` function. The latter will mask the values above its maximum range from the `stat_summary()` function, the former will not.
 
