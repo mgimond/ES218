@@ -277,7 +277,6 @@ The plot suggests a monotonic relationship between spread and median. Next, we'l
 ```{r fig.height=2, fig.width=2.2, echo=3:4}
 OP <- par(mar=c(2.4,2.4,0,1), cex.axis=0.8, mgp=c(1.3,0.5,0))
 plot(spread ~ level, df.sl, pch = 16)
-
 M <- MASS::rlm(spread ~ level, df.sl)
 abline(M, col = "red")
 par(OP)
@@ -334,20 +333,30 @@ The `tukeyedar` package offers a re-expression function that implements both the
 
 For a Tukey transformation:
 
-```{r  class.source="eda", fig.width=3, fig.height=1, echo=2:3}
+```{r  class.source="eda", fig.width=3, fig.height=1, echo=2:4}
 OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
 library(tukeyedar)
-boxplot( eda_re(mtcars$mpg, p=-0.25), horizontal = TRUE)
+mpg_re <- eda_re(mtcars$mpg, p=-0.25)
+boxplot(mpg_re, horizontal = TRUE)
 par(OP)
 ```
 
 For a Box-Cox transformation:
 
 
-```{r  class.source="eda", fig.width=3, fig.height=1, echo=2}
+```{r  class.source="eda", fig.width=3, fig.height=1, echo=2:3}
 OP <- par(mar=c(2,2,0,1), bty='n', cex.axis=0.8, mgp=c(1.5,0.5,0))
-boxplot( eda_re(mtcars$mpg, p=-0.25, tukey = FALSE), horizontal = TRUE)
+mpg_re <- eda_re(mtcars$mpg, p=-0.25, tukey = FALSE)
+boxplot(mpg_re, horizontal = TRUE)
 par(OP)
+```
+
+## Built-in re-expressions for many `tukeyedar` functions
+
+Many `tukeyedar` functions have a built-in argument `p` that will take as argument a power transformation that will be applied to the data. For example, the following  normal q-q plot function will apply a log transformation (`p = 0`) to `a`.
+
+```{r  class.source="eda", fig.width=2.5, fig.height=3, echo=2:3}
+eda_qq(a, norm = TRUE, p = 0)
 ```
 
 ## The `eda_unipow` function
