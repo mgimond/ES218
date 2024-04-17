@@ -118,7 +118,7 @@ Non-parametric fit applies to the family of fitting strategies that *do not* imp
 
 #### Loess
 
-A flexible curve fitting option is the **loess**  curve (short for **lo**cal regr**ess**ion; also known as the *local weighted regression*). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the *smooth* curve. The range of x-values that contribute to each localized regression lines is defined by the $\alpha$ parameter which usually ranges from 0.2 to 1. The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a loess curve is $\lambda$: it defines the polynomial order of the localized regression line. This is usually set to 1 (though `ggplot2`'s implementation of the loess defaults to a 2^nd^ order polynomial).
+A flexible curve fitting option is the **loess**  curve (short for **lo**cal regr**ess**ion; also known as the *local weighted regression*). Unlike the parametric approach to fitting a curve, the loess does **not** impose a structure on the data. The loess curve fits small segments of a regression lines across the range of x-values, then links the mid-points of these regression lines to generate the *smooth* curve. The range of x-values that contribute to each localized regression lines is defined by the **span** parameter,  $\alpha$,  which usually ranges from 0.2 to 1 (but, it can be greater than 1 for smaller datasets). The larger the $\alpha$ value, the smoother the curve. The other parameter that defines a loess curve is $\lambda$: it defines the **polynomial order** of the localized regression line. This is usually set to 1 (though `ggplot2`'s implementation of the loess defaults to a 2^nd^ order polynomial).
 
 ```{r echo=FALSE}
 library(dplyr)
@@ -297,7 +297,7 @@ ggplot(df, aes(x = area, y = residuals)) + geom_point() +
 
 ```
 
-We are interested in identifying any pattern in the residuals. If the model does a good job in fitting the data, the points should be uniformly distributed across the plot and the loess fit should approximate a horizontal line. With the linear model `M`, we observe a convex pattern in the residuals suggesting that the linear model is not a good fit. We say that the residuals show *dependence* on the x values. 
+We are interested in identifying any pattern in the residuals. **If the model does a good job in fitting the data, the points should be uniformly distributed across the plot** and the loess fit should approximate a horizontal line. With the linear model `M`, we observe a convex pattern in the residuals suggesting that the linear model is not a good fit. We say that the residuals show *dependence* on the x values. 
 
 Next, we'll look at the residuals from the second order polynomial model `M2`.
 
@@ -334,7 +334,7 @@ where $\varepsilon$ is a constant that does not vary as a function of varying $x
 
 ### Spread-location plot
 
-The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that the residuals do not show a dependence with *fitted* y-values. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across categories. Here we will compare residuals to the fitted `cp.ratio` values (for a univariate analogy, think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot.
+The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that **the residuals do not show a dependence with *fitted* y-values**. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across categories. Here we will compare residuals to the fitted `cp.ratio` values (for a univariate analogy, think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 sl2 <- data.frame( std.res = sqrt(abs(residuals(M2))), 
@@ -345,12 +345,12 @@ ggplot(sl2, aes(x = fit, y  =std.res)) + geom_point() +
                           method.args = list(degree = 1) )
 ```
 
-The function `predict()` extracts the y-values from the fitted model `M2` and is plotted along the x-axis. It's clear from this plot that the residuals are not homogeneous; they increase as a function of increasing *fitted* CP ratio. The "bend" observed in the loess curve is most likely due to a single point at the far (right) end of the fitted range. Given that we have a small batch of numbers, a loess can be easily influenced by an outlier. We may want to increase the loess span.
+The function `predict()` extracts the y-values from the fitted model `M2` and is plotted along the x-axis. It's clear from this plot that the residuals are not homogeneous; they increase as a function of increasing *fitted* CP ratio. The "bend" observed in the loess curve is most likely due to a single point at the far (right) end of the fitted range. Given that we have a small batch of numbers, a loess can be easily influenced by an outlier. We may therefore want to increase the loess span by setting `span = 2`.
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 ggplot(sl2, aes(x = fit, y = std.res)) + geom_point() +
-              stat_smooth(method = "loess", se = FALSE, span = 1.5, 
+              stat_smooth(method = "loess", se = FALSE, span = 2, 
                           method.args = list(degree = 1) )
 ```
 
