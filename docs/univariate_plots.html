@@ -567,154 +567,109 @@ window.Quarto = {
 </div>
 <section id="introduction" class="level2" data-number="16.1">
 <h2 data-number="16.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">16.1</span> Introduction</h2>
-<p>Univariate data consist of a single measurement type that is often broken up into categories.</p>
-<p>Let’s take two batches of values that measure a same variable. We’ll label these batches <code>a</code> and <code>b</code>.</p>
-<p>How do the two batches differ?</p>
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="384"></p>
-<p>If the difference wasn’t obvious from the table view we can create a <em>jittered</em> point plot from the data. (The jitter plot spreads the values randomly about their group label to limit the overlapping of points).</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="288"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>It’s clear that both batches differ by their uniform values: batch <code>a</code> is made up of identical values, <code>12</code>, and batch <code>b</code> is made up of a different set of identical values, <code>15</code>.</p>
-<p>Now let’s compare a heterogeneous batch of values.</p>
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="384"></p>
-<p>Comparing the values using a jitter plot gives us:</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="288"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>So how do these batches differ? This time, the difference is not so obvious. However, they <em>seem</em> to differ by their central value. For example, each batch’s mean is:</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 2
-  Group  mean
-  &lt;chr&gt; &lt;dbl&gt;
-1 a        10
-2 b        17</code></pre>
-</div>
-</div>
-<p>The center value (aka <strong>location</strong>), is one summary statistic we can use to compare batches. Another property of a batch that we might also want to compare is its distribution (aka <strong>spread</strong>). For example, does the <strong>spread</strong> between the two batches differ as well? It’s difficult to tell from the above plot given that the batches are offset, so we’ll <strong>level</strong> the batches by subtracting the means from their respective batches.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="384"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Removing the <em>location</em> (or mean in our example) from each value facilitates our comparison of both spreads. From our working example we can, at best, say that the batches differ in range (i.e.&nbsp;their minimum and maximum values). However, a spread can be characterized in many more ways than by its range. Next, we’ll focus on four exploratory tools that will help us explore and quantify a dataset’s spread. These are the <strong>histogram</strong>, the <strong>boxplot</strong>, the <strong>density plot</strong> and the <strong>quantile plot</strong>.</p>
+<p><strong>Univariate</strong> data consist of measurements or observations of a single characteristic or attribute of a subject or phenomenon. Structurally, we can think of univariate as consisting of a single variable in a dataset. In this course, we will limit the variable to a <em>continuous</em> one. Examples include a vehicle’s miles-per-gallon performance, PFAS concentrations in municipal water, or the average distance between trees in a plot.</p>
+<p>Analyzing data benefits from characterizing its statistical properties, such as measures of central tendency and dispersion. Measures of central tendency, often reduced to single values, provide a concise summary of a dataset’s typical value. While summary statistics like standard deviation and interquartile range offer insights into a batch’s dispersion, they cannot fully capture the intricacies of its distribution. Visualization techniques are better suited to reveal these nuances. This chapter will introduce you to graphs designed to explore a batch’s distribution. The choice of graphing technique will depend on the specific aspects of the distribution you wish to emphasize.</p>
+<p>Going forward, we will use the terms <strong>location</strong>, <strong>spread</strong>, and <strong>shape</strong> to describe a batch of values. Location refers to a measure of central tendency, spread to a measure of variability, and shape to the overall form of the distribution.</p>
 </section>
 <section id="histograms" class="level2" data-number="16.2">
 <h2 data-number="16.2" class="anchored" data-anchor-id="histograms"><span class="header-section-number">16.2</span> Histograms</h2>
-<p>A histogram <strong>bins</strong> the values (usually in equal sized bins) and plots the frequency in which each <em>bin</em> is filled. For example, to create a histogram of batch <code>b</code> where each bin size covers <strong>one</strong> unit, we type:</p>
+<p>A histogram is one of the more ubiquitous tools for visualizing a batch’s distribution. It divides the range of values into intervals, or bins, and then counts the number of observations that fall within each bin. By plotting the frequency of observations in each bin, histograms reveal the a distribution’s <em>shape.</em>” For example, to create a histogram of batch <code>b</code> where each bin size covers <strong>one</strong> unit along the x-axis, we type:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate some random numbers</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>a   <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">60</span>, <span class="dv">5</span>, <span class="dv">15</span>))</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>b   <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">10</span>, <span class="dv">20</span>))</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>df  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Value =</span> <span class="fu">c</span>(a,b), <span class="at">Group =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"a"</span>,<span class="dv">6</span>), <span class="fu">rep</span>(<span class="st">"b"</span>,<span class="dv">10</span>))) <span class="co"># Long form</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the histogram for batch a</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">9.5</span>,<span class="fl">20.5</span>, <span class="at">by =</span> <span class="dv">1</span>), <span class="at">color =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate two random variables</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>a   <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">50</span>, <span class="dv">10</span>, <span class="dv">20</span>))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>b   <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">10</span>, <span class="dv">20</span>))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>df  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Group =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"a"</span>, <span class="dv">50</span>), <span class="fu">rep</span>(<span class="st">"b"</span>,<span class="dv">100</span>)), <span class="at">Value =</span> <span class="fu">c</span>(a,b))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the histogram for batch b (note the use of b as a vector)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="cn">NULL</span> , <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">9.5</span>,<span class="fl">20.5</span>, <span class="at">by =</span> <span class="dv">1</span>), <span class="at">color =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>(Note that <code>b</code> does not need to be passed as a dataframe, however, a <code>NULL</code> needs to be added prior to the comma as a placeholder for <em>no dataframe</em>).</p>
+<p>In the above example, we are explicitly defining the bin width as 1 unit, and the range as 9.5 to 20.5 via the parameter <code>breaks = seq(9.5,20.5, by = 1)</code>. The <code>color</code> argument specifies the <em>outline</em> color. To change the fill color use the <code>fill</code> argument.</p>
+<p>In our example, we have three values that fall in the first bin (bin ranging from 9.5 to 10.5), fourteen values that fall in the second bin (bin value ranging from 10.5 to 11.5) and so on up to the last bin which has four values falling in it (bin covering the range 19.5 to 20.5).</p>
+<p>We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">9.5</span>,<span class="fl">20.5</span>,<span class="at">by =</span> <span class="dv">2</span>), </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                                                      <span class="at">colour =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>You’ll note that changing bin widths can alter the <em>look</em> of the histogram, this is particularly true when plotting large batches of values.</p>
+<p>You can also opt to have the function determine the bin width by simply specifying the <em>number</em> of bins using the <code>bins =</code> parameter. For example, to display 12 bins, type:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">12</span>, <span class="at">colour =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that if a bin has no values falling in it, an empty space in the plot is used as an *empty bin” placeholder.</p>
+<p>So far, we had the histogram display the total number of observations falling in each bin on the y-axis. This may be easy to interpret, but it may make it difficult to compare batches of values having different total number of observations. To demonstrate this, let’s plot both batches <code>a</code> (which has 50 observations) and <code>b</code> (which has 100 observations) side-by-side.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> Value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> Group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The differences in batch sizes results in differing bar heights. This has for effect of <em>squeezing</em> the bars downward in the plot for batch <code>a</code> because of it smaller batch size. This can make it difficult to compare distributions between batches. To resolve this issue, we can convert counts to density whereby the areas covered by each bin sum to <code>1</code>. Each bin’s density value is computed from:</p>
+<p><span class="math display">\[
+density = \frac{count}{bin\ width * total\ observations}
+\]</span></p>
+<p>In <code>ggplot2</code> we will map the <code>after_stat(density)</code> aesthetic to the y-axis to have ggplot compute density values.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> Value, <span class="at">y=</span><span class="fu">after_stat</span>(density))) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="sc">+</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This makes for a more appropriate comparison between batches.</p>
+</section>
+<section id="density-plots" class="level2" data-number="16.3">
+<h2 data-number="16.3" class="anchored" data-anchor-id="density-plots"><span class="header-section-number">16.3</span> Density plots</h2>
+<p>One limitation with a histogram is its sensitivity to the number of bins chosen (as demonstrated in the above examples). It also suffers from discontinuities in its bins. Let’s start with a small set of values <code>a</code>.</p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="384"></p>
+<p>In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The red marks along the x-axis show the location of each <code>a</code> observation. Note that some observations overlap.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The second histogram suggests a possibly skewed shape to the distribution while the one on the left suggests a more uniform shape.</p>
+<p>One workaround to the histogram’s limitations is to compute density values on <em>overlapping</em> bins. For example, let’s take the first bin and have it count the number of values between 5 and 9 (exclusive) in <code>a</code>, then divide that number by the total number of values times the bin width–this gives us two observations falling in the bin and thus a density value of <code>2 / (10 * 4) = 0.05</code>. The following plot shows the bin. An orange dot is also added to represent the bin’s midpoint.</p>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="432"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>(Note that because <code>ggplot</code> requires a dataframe as input, we have to create a dataframe from vector <code>b</code>.)</p>
-<p>Here, we are explicitly defining the bin width as 1 unit, and the range as 6.5 to 16.5 via the parameter <code>breaks = seq(6.5,16.5,by=1)</code>. The <code>color</code> parameter specifies the <em>outline</em> color. To change the fill color use the <code>fill</code> parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range.</p>
-<p>We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">9.5</span>,<span class="fl">20.5</span>,<span class="at">by =</span> <span class="dv">2</span>), </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                                                      <span class="at">colour =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="432"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>You’ll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.</p>
-<p>You can also opt to have the function determine the bin width by simply specifying the <em>number</em> of bins using the <code>bins =</code> parameter:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">12</span>, <span class="at">colour =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="432"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>You’ll note that the function will map the total number of observations falling in each bin to the y-axis. This may be easy to interpret, but it may make it difficult to compare batches of values having different number of observations. To demonstrate this, let’s plot both batches side-by-side.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> Value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> Group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="576"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>The differences in batch sizes results in differing bar heights. To resolve this issue, we can convert counts to density whereby the areas covered by each bin sum to <code>1</code>. Each bin’s density value is computed from:</p>
-<p><span class="math display">\[
-density = \frac{count}{bin\ width * total\ observations}
-\]</span> To see an example of this, let’s revert back to the earlier dataset to facilitate a manual calculation of the density values. Here, we’ll map the <code>after_stat(density)</code> aesthetic to the y-axis to have ggplot compute density values.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> Value, <span class="at">y=</span><span class="fu">after_stat</span>(density))) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="sc">+</span> </span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="576"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>This makes for a more appropriate comparison.</p>
-</section>
-<section id="density-plots" class="level2" data-number="16.3">
-<h2 data-number="16.3" class="anchored" data-anchor-id="density-plots"><span class="header-section-number">16.3</span> Density plots</h2>
-<p>The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. Let’s revert back to the orignal set of values for <code>a</code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>a  <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">15</span>))</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>df   <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the <code>a</code> values. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="768"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>One workaround to the histogram’s limitations is to compute density values on <em>overlapping</em> bins. For example, let’s take the first bin and have it count the number of values between 5 and 9 (exclusive), then divide that number by the total number of values times the bin width–this gives us two observations falling in the bin thus a density value of <code>2 / (10 * 4) = 0.05</code>. The following plot shows the bin. An orange dot is also added to represent the bin’s midpoint.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
@@ -724,7 +679,7 @@ density = \frac{count}{bin\ width * total\ observations}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
@@ -734,7 +689,7 @@ density = \frac{count}{bin\ width * total\ observations}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
@@ -744,7 +699,7 @@ density = \frac{count}{bin\ width * total\ observations}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
@@ -754,30 +709,33 @@ density = \frac{count}{bin\ width * total\ observations}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>A property associated with the density trace is that the area under the curve sums to one since each density value represents the <em>local</em> density at <code>x</code>.</p>
-<p>So far, when we computed the density values, we assigned an equal weight to each point within their assigned bin–regardless how far the values were to the bin’s midpoint. This resulted in some <em>raggedness</em> to the plot. To smooth out the plot, we can apply different weights to each point such that points closest to the bin’s midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weights assigned to any point falling within the first bin whose range covers the interval 4 to 8 centered on 6.</p>
+<p>In the above example, we assigned an equal weight to each point within its assigned bin–regardless how far the that point is to the bin’s midpoint. This resulted in some <em>raggedness</em> to the plot. To smooth out the plot, we can apply different weights to each point such that points closest to the bin’s midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate such weights. The following figure depicts the difference in weights assigned to a point based on its distance to the bin center of <code>6</code> (highlighted with a red mark in the plots).</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>With the rectangular weight, all points within a bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. <code>ggplot</code>’s density function defaults to the Gaussian weighting strategy. The weight type is referred to as a <strong>kernel</strong>.</p>
+<p>With the rectangular weight (left plot), <em>all</em> points within the bin width are assigned <em>equal</em> weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. <code>ggplot</code>’s density function defaults to the Gaussian weighting strategy. The weight type is referred to as a <strong>kernel</strong>.</p>
 <p>You can generate a density plot of the data using the <code>geom_density</code> function.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>a  <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">15</span>)))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="cn">NULL</span>, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
@@ -786,11 +744,11 @@ density = \frac{count}{bin\ width * total\ observations}
 <p>The function adopts the <code>gaussian</code> weight function and will automatically define the bandwidth (analogous in concept to the bin width).</p>
 <p>To adopt a rectangular weight, set the <code>kernel</code> parameter to <code>"rectangular"</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>, <span class="at">kernel =</span> <span class="st">"rectangular"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>, <span class="at">kernel =</span> <span class="st">"rectangular"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
@@ -798,11 +756,11 @@ density = \frac{count}{bin\ width * total\ observations}
 <p>Note the raggedness in the plot.</p>
 <p>You can modify the <em>smoothness</em> of the density plot by adjusting its bandwidth argument <code>bw</code>. Here, the bandwidth defines the standard deviation of the Gaussian function.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>, <span class="at">bw =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>, <span class="at">bw =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="432"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="432"></p>
 </figure>
 </div>
 </div>
@@ -810,20 +768,21 @@ density = \frac{count}{bin\ width * total\ observations}
 </section>
 <section id="boxplots" class="level2" data-number="16.4">
 <h2 data-number="16.4" class="anchored" data-anchor-id="boxplots"><span class="header-section-number">16.4</span> Boxplots</h2>
-<p>A boxplot is another popular plot used to explore distributions. In <code>ggplot2</code> we use the <code>geom_boxplot()</code> function as in,</p>
+<p>A boxplot is another popular plot used to explore distributions. It emphasizes a measure of location (typically the median), and two measures of spread–the interquartile range and the overall range (excluding any outliers).</p>
+<p>In <code>ggplot2</code> we can use the <code>geom_boxplot()</code> function. For example,</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> </span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>          <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(), </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>          <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="624"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>The <code>geom_boxplot</code> function can map the values to the x-axis or to the y-axis. Traditionally, it’s mapped to the y-axis. Here, we choose to map it to the x-axis. You’ll note the extra functions <code>xlab(NULL) + theme(axis.text.y=element_blank(), ... )</code>; these are added to suppress labels and values/tics along the y-axis given that their default values do not serve a purpose here.</p>
+<p>The <code>geom_boxplot</code> function can map the values to the x-axis or to the y-axis. Traditionally, it’s mapped to the y-axis. Here, we choose to map it to the x-axis. You’ll note the optional functions <code>xlab(NULL) + theme(axis.text.y=element_blank(), ... )</code> added to the code chunk; these are added to suppress labels and values/tics along the y-axis given that their default values do not serve a purpose here.</p>
 <p>The following figure describes the anatomy of a boxplot.</p>
 <p><img src="./img/Boxplot.png" class="img-fluid"></p>
 <p>The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the <strong>interquartile</strong> range (or <strong>IQR</strong> for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. For example, our batch only has four data points falling within the interquartile range (instead of five) because of tied values in the upper end of the distribution.</p>
@@ -831,40 +790,40 @@ density = \frac{count}{bin\ width * total\ observations}
 <p>Sometimes, you will encounter values that fall outside of the lower and/or upper adjacent values; such values are often referred to as <strong>outliers</strong>.</p>
 <section id="not-all-boxplots-are-created-equal" class="level3" data-number="16.4.1">
 <h3 data-number="16.4.1" class="anchored" data-anchor-id="not-all-boxplots-are-created-equal"><span class="header-section-number">16.4.1</span> Not all boxplots are created equal!</h3>
-<p>Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, some will compute a quantile as <span class="math inline">\(( i - 0.5) / n\)</span> where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. This is the method implemented by Bill Cleveland and we will refer to this method as <em>Cleveland’s quantile method</em>. This also happens to be the method implemented by the base’s <code>boxplot</code> function; this explains its different boxplot output compared to <code>geom_boxplot</code> in our working example:</p>
+<p>Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, some will compute a quantile as <span class="math inline">\(( i - 0.5) / n\)</span> where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. This is the method implemented by the base R’s <code>boxplot</code> function; this explains its different boxplot output compared to <code>geom_boxplot</code> in our working example:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="624"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="624"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>The upper and lower quartiles differ from those of <code>ggplot</code> since the three upper values values, <code>15</code>, end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers. In most cases, however, the difference will not matter as long as you <em>adopt the same boxplot procedure when comparing batches</em>. Also, the difference between the plots become insignificant with larger batch size.</p>
+<p>The upper and lower quartiles differ from those of <code>ggplot</code> since the three upper values values, <code>15</code>, end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers. In most cases, however, the difference will not matter as long as you <em>adopt the same boxplot procedure when comparing batches</em>. Also, the difference between the plots become insignificant with larger batch sizes.</p>
 </section>
 <section id="implementing-different-quantile-types-in-geom_boxplot" class="level3" data-number="16.4.2">
 <h3 data-number="16.4.2" class="anchored" data-anchor-id="implementing-different-quantile-types-in-geom_boxplot"><span class="header-section-number">16.4.2</span> Implementing different quantile types in <code>geom_boxplot</code></h3>
-<p>If you wish to implement different quantile methods in <code>ggplot</code>, you will need to create a custom function. For example, if you wish to adopt Cleveland’s quantile method (<code>type = 5</code> in the <code>quantile</code> function) type the following:</p>
+<p>If you wish to implement different quantile methods in <code>ggplot</code>, you will need to create a custom function. For example, if you wish to adopt quantile method referenced in the last section, (<code>type = 5</code> in the <code>quantile</code> function) type the following:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to extract quantiles given an f-value type (type = 5 in this example)</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>qtl.bxp <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">type =</span> <span class="dv">5</span>) {</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  qtl <span class="ot">&lt;-</span> <span class="fu">quantile</span>(x, <span class="at">type =</span> type)</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>   df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">ymin  =</span> qtl[<span class="dv">1</span>], <span class="at">ymax =</span> qtl[<span class="dv">5</span>], </span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">upper =</span> qtl[<span class="dv">4</span>], <span class="at">lower =</span> qtl[<span class="dv">2</span>], <span class="at">middle =</span> qtl[<span class="dv">3</span>])</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the boxplot</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> a)) <span class="sc">+</span> </span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun.data =</span> qtl.bxp, <span class="at">fun.args =</span> <span class="fu">list</span>(<span class="at">type =</span> <span class="dv">5</span>),</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">geom =</span> <span class="st">'boxplot'</span>) <span class="sc">+</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to extract quantiles given an f-value type (type = 5 in this example)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>qtl.bxp <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">type =</span> <span class="dv">5</span>) {</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  qtl <span class="ot">&lt;-</span> <span class="fu">quantile</span>(x, <span class="at">type =</span> type)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>   df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">ymin  =</span> qtl[<span class="dv">1</span>], <span class="at">ymax =</span> qtl[<span class="dv">5</span>], </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">upper =</span> qtl[<span class="dv">4</span>], <span class="at">lower =</span> qtl[<span class="dv">2</span>], <span class="at">middle =</span> qtl[<span class="dv">3</span>])</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the boxplot</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> a)) <span class="sc">+</span> </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun.data =</span> qtl.bxp, <span class="at">fun.args =</span> <span class="fu">list</span>(<span class="at">type =</span> <span class="dv">5</span>),</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">geom =</span> <span class="st">'boxplot'</span>) <span class="sc">+</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="624"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="624"></p>
 </figure>
 </div>
 </div>
@@ -881,8 +840,8 @@ density = \frac{count}{bin\ width * total\ observations}
 <h3 data-number="16.5.1" class="anchored" data-anchor-id="computing-the-f-quantile"><span class="header-section-number">16.5.1</span> Computing the <span class="math inline">\(f\)</span>-quantile</h3>
 <p>Computing <span class="math inline">\(f\)</span> requires that the batch of numbers be ordered from smallest to largest.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>a.o <span class="ot">&lt;-</span> <span class="fu">sort</span>(a)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>a.o</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>a.o <span class="ot">&lt;-</span> <span class="fu">sort</span>(a)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>a.o</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1]  7  8  9 11 12 13 13 15 15 15</code></pre>
 </div>
@@ -894,9 +853,9 @@ f_i = \frac{i - 0.5}{n}
 <p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section of this chapter, there are many ways one can compute a quantile, however, the differences may not matter much when working with large batches of values.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)          <span class="co"># Create indices</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>f.val <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(a)  <span class="co"># Compute the f-value</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val) <span class="co"># Create dataframe of sorted values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)          <span class="co"># Create indices</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>f.val <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(a)  <span class="co"># Compute the f-value</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val) <span class="co"># Create dataframe of sorted values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that in the last line of code, we are appending the ordered representation of <code>a</code> to <code>f.val</code> given that <code>f.val</code> assumes an ordered dataset. The data frame <code>a.fi</code> should look like this:</p>
 <table class="caption-top table">
@@ -955,7 +914,7 @@ f_i = \frac{i - 0.5}{n}
 </table>
 <p>It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in <code>a</code> associated with a quantile of <span class="math inline">\(0.5\)</span>; this is because we have an even number of values in our dataset. The solution is to interpolate a value based on a desired quantile. The <code>quantile()</code> function does just that. For example, to find the value associated with a quantile of <span class="math inline">\(0.5\)</span>, type:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 50% 
 12.5 </code></pre>
@@ -963,7 +922,7 @@ f_i = \frac{i - 0.5}{n}
 </div>
 <p>If we want to get quantile values for multiple fractions, simply wrap the fractions with the <code>c()</code> function:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 25%  50%  75% 
  9.5 12.5 14.5 </code></pre>
@@ -971,7 +930,7 @@ f_i = \frac{i - 0.5}{n}
 </div>
 <p>The <code>quantile</code> function is designed to accept different quantile methods. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 25%  50%  75% 
  9.0 12.5 15.0 </code></pre>
@@ -983,11 +942,11 @@ f_i = \frac{i - 0.5}{n}
 <h3 data-number="16.5.2" class="anchored" data-anchor-id="creating-a-quantile-plot"><span class="header-section-number">16.5.2</span> Creating a quantile plot</h3>
 <p>A batch’s quantile is best viewed as a plot where we plot the values as a function of the <span class="math inline">\(f\)</span>-values:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="288"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="288"></p>
 </figure>
 </div>
 </div>
@@ -996,11 +955,11 @@ f_i = \frac{i - 0.5}{n}
 <h4 data-number="16.5.2.1" class="anchored" data-anchor-id="using-ggplots-qq-geom"><span class="header-section-number">16.5.2.1</span> Using ggplot’s <code>qq</code> geom</h4>
 <p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values and the dataframe <code>a.fi</code>, you could simply call the function <code>stat_qq()</code> as in:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid figure-img" width="288"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="288"></p>
 </figure>
 </div>
 </div>
@@ -1017,7 +976,7 @@ f_i = \frac{i - 0.5}{n}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid figure-img" width="864"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="864"></p>
 </figure>
 </div>
 </div>
