@@ -36,15 +36,17 @@ b.df <- gridExtra::tableGrob(t(b), rows=NULL)
 gridExtra::grid.arrange(a.df, b.df, nrow = 2, ncol = 1 ,newpage = FALSE)
 ```
 
-If the difference wasn't obvious from the table view we can create a *jittered* point plot from the data. (The jitter plot spreads the values randomly about their group label to prevent the points from overlapping.)
+If the difference wasn't obvious from the table view we can create a *jittered* point plot from the data. (The jitter plot spreads the values randomly about their group label to limit the overlapping of points).
 
 ```{r fig.height=3, fig.width=3, echo=FALSE}
 # To plot across categories, we need the data in a long (tidy) form
-library(tidyr)
-library(ggplot2)
+# library(tidyr)
+# library(ggplot2)
+library(tukeyedar)
+eda_jitter(df, Value, Group, show.stat = F, show.par = FALSE, jitter = 0.3, ylim = c(11,16))
 
-ggplot(df,  aes(y = Value, x = Group, col = Group)) + 
-             geom_jitter(position = position_jitter(height = 0, width=0.3))
+# ggplot(df,  aes(y = Value, x = Group, col = Group)) + 
+#              geom_jitter(position = position_jitter(height = 0, width=0.3))
 ```
 
 It's clear that both batches differ by their uniform values: batch `a` is made up of  identical values, `12`, and batch `b` is made up of a different set of identical values, `15`.
@@ -71,10 +73,11 @@ gridExtra::grid.arrange(a.df, b.df, nrow = 2, ncol = 1 ,newpage = FALSE)
 
 Comparing the values using a jitter plot gives us:
 
-```{r fig.height=3, fig.width=4, echo=FALSE}
+```{r fig.height=3, fig.width=3, echo=FALSE}
 set.seed(14)
-ggplot(df, aes(y = Value, x = Group, col = Group)) + 
-            geom_jitter(position = position_jitter(height = 0, width = 0.2))
+eda_jitter(df, Value, Group, show.stat = F, show.par = FALSE, jitter = 0.1)
+# ggplot(df, aes(y = Value, x = Group, col = Group)) + 
+#             geom_jitter(position = position_jitter(height = 0, width = 0.2))
 ```
 
 So how do these batches differ? This time, the difference is not so obvious. However, they *seem* to differ by their central value. For example, each batch's mean is:

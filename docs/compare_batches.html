@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 17&nbsp; Comparing distributions: The q-q plot</title>
+<title>17&nbsp; Comparing distributions: The q-q plot – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -90,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -104,30 +111,57 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </script>
-
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="libs/style.css">
 </head>
 
 <body class="nav-sidebar docked">
 
-
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./compare_batches.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing distributions: The q-q plot</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./compare_batches.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing distributions: The q-q plot</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -136,7 +170,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./"></a> 
@@ -164,9 +198,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Intro</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -187,9 +221,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Data manipulation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -258,9 +292,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Plots</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -287,9 +321,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Univariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -321,7 +355,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Spread-level plots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -346,9 +380,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Bivariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -381,9 +415,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Two-way tables</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -398,9 +432,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Miscellaneous</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -428,7 +462,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -459,7 +493,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./compare_batches.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing distributions: The q-q plot</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing distributions: The q-q plot</span></h1>
 </div>
@@ -474,11 +508,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-2_1dd8647c36453b1d38ad1d69360fc9e3">
-<div class="cell-output-display">
 
+<div class="cell">
+<div class="cell-output-display">
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
  <thead>
   <tr>
@@ -527,21 +562,21 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 3.4.4 </td>
+             border-radius: 5px;"> 3.5.1 </td>
    <td style="text-align:left;color: darkred !important;background-color: rgba(250, 232, 232, 255) !important;text-align: center;border: 1px solid white;
              font-family: 'Open Sans', Arial;
              padding:1px !important;
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 0.22.5 </td>
+             border-radius: 5px;"> 0.22.6 </td>
    <td style="text-align:left;color: darkred !important;background-color: rgba(250, 232, 232, 255) !important;text-align: center;border: 1px solid white;
              font-family: 'Open Sans', Arial;
              padding:1px !important;
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 0.2.3 </td>
+             border-radius: 5px;"> 0.3.0 </td>
   </tr>
 </tbody>
 </table>
@@ -549,7 +584,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Let’s begin by comparing singer heights between two voice part groups: bassists and tenors. We will work off of a subset of the <code>singer</code> dataset which can be found in the <code>lattice</code> package.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-3_9f5a78a6660672343ced5825171ac3ee">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -558,16 +593,20 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">mutate</span>(<span class="at">voice.part =</span> <span class="fu">droplevels</span>(voice.part))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s plot both datasets side-by-side. We will jitter the points about their category groups to expose overlapping values.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-4_e1860b6b39c748ba5fe6f2d13eca6288">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2, <span class="fu">aes</span>(<span class="at">y=</span>height, <span class="at">x=</span>voice.part, <span class="at">col=</span>voice.part)) <span class="sc">+</span> </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>            <span class="fu">geom_jitter</span>(<span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">width =</span> .<span class="dv">1</span>, <span class="at">height=</span><span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="384"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="384"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Comparing two batches of values in their entirety might prove difficult, especially if their values do not appear to differ by a whole lot–at least not visually when presented as side-by-side jitter plots. For this reason, we might find it helpful to reduce the batches down to summary statistics such as the mean or median. Doing so allows for a more objective comparison between two batches.</p>
 <p>For example, let’s compute the median values for both batches.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-5_bf58de5279187f1d9317712e60920c0d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(voice.part) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">median =</span> <span class="fu">median</span>(height))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
@@ -583,14 +622,18 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="boxplots" class="level2" data-number="17.1">
 <h2 data-number="17.1" class="anchored" data-anchor-id="boxplots"><span class="header-section-number">17.1</span> Boxplots</h2>
 <p>A boxplot gives us additional handles by which to compare batches of values.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-6_982a67a0ff650edebc9f18175cfe89f5">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df2) <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x =</span> voice.part, <span class="at">y =</span> height) <span class="sc">+</span> <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>In addition to providing us with the median, it also allows us to compare the lower and upper quartiles. Here, the bassists are taller than the tenors by all three measures. But note that the difference in height values is not consistent.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-7_ea18ce55d7ff1d6f4aba9f00e3353661">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(voice.part) <span class="sc">%&gt;%</span> </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">upper =</span> <span class="fu">quantile</span>(height,<span class="fl">0.75</span>), </span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">mid =</span> <span class="fu">quantile</span>(height,<span class="fl">0.5</span>),</span>
@@ -617,7 +660,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>For example, in the above graph, you’ll note that the <code>Tenor 1</code> height value of <code>68</code> is associated with an <span class="math inline">\(f\)</span>-value of <code>0.5</code>, however, there is no singer height value associated with an <span class="math inline">\(f\)</span>-value of <code>0.5</code> in the <code>Bass 2</code> batch.</p>
 <p>To overcome the problem of batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the <em>smallest</em> sized batch (21 in our working example). This requires that we find matching singer height values to the set of <span class="math inline">\(f\)</span>-values associated with a batch of 21 values. There are a few ways this can be accomplished in R. The easiest way is to make use of the built-in <code>qqplot</code> function.</p>
 <p><code>qqplot</code> is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects. It also offers the option to output the q-q plot interpolated values as a <strong>list</strong> by setting the parameter <code>plot.it = FALSE</code>. We then convert this list object to a dataframe using <code>as.data.frame</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-8_36b30fd7c11122861d37f8bbee4cc3de">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Tenor <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Tenor 1"</span>) <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>Bass  <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Bass 2"</span>)  <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -630,7 +673,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>Also note that the <code>qqplot</code> function will default to <code>qtype = 7</code> which references the quantile algortihm used in the <code>quantile</code> function.</p>
 <p>The <code>qqplot</code> function will name the output columns <code>x</code> and <code>y</code>. We therefore need to reassign the voice part names to the dataframe columns in the same order that they were passed to in the <code>qqplot</code> function.</p>
 <p>We can now generate the q-q plot using <code>ggplot</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-9_ace5383e8f324027e0c3e525e7287841">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the x and y limits</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>xylim <span class="ot">&lt;-</span> <span class="fu">range</span>( <span class="fu">c</span>(qq.out<span class="sc">$</span>Tenor, qq.out<span class="sc">$</span>Bass) )</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -640,15 +683,23 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>               <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>               <span class="fu">coord_fixed</span>(<span class="at">ratio =</span> <span class="dv">1</span>, <span class="at">xlim=</span>xylim, <span class="at">ylim =</span> xylim) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>But note that the <code>qqplot</code> function can also generate a base plot with fewer lines of code.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-10_20431f050c9349fbd42c4d90acebf04b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qqplot</span>(<span class="at">x=</span>Tenor, <span class="at">y=</span>Bass, <span class="at">asp=</span><span class="dv">1</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -662,16 +713,24 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h3 data-number="17.4.1" class="anchored" data-anchor-id="additive-offset"><span class="header-section-number">17.4.1</span> Additive offset</h3>
 <p>A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e.&nbsp;all the points of a q-q plot fall on the 45° line) then we could characterize the relationship as <code>batch1 = batch2</code>.</p>
 <p>If the points follow a pattern mimicking a line parallel to the 45° line as in the following plot, then we say that there is an <strong>additive shift</strong> between <code>batch1</code> and <code>batch2</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-11_e48aad87922245c6055b8cd42c8a0609">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>An additive shift between batches results in an offset in density distributions with matching shape as shown in the the figure on the right.</p>
 <p>The shift can usually be eyeballed from the plot. In this example, the shift is around 2 units or <code>batch2 =  batch1 + 2</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-12_43f872d6657cd8e7fc08048afe98b124">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Adding 2 to <code>batch1</code> lines the points up along the 45° line. This translates to overlapping the density plots as shown on the right.</p>
@@ -679,16 +738,24 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="multiplicative-offset" class="level3" data-number="17.4.2">
 <h3 data-number="17.4.2" class="anchored" data-anchor-id="multiplicative-offset"><span class="header-section-number">17.4.2</span> Multiplicative offset</h3>
 <p>When the points follow a line at an angle to the 45° line as in the following plot, then we say that there is a <strong>multiplicative shift</strong> between the batches.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-13_00ec191a10781f50b5bec76d10367f36">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>A multiplicative shift between the batches results in a change in density shapes with one batch’s density being shorter and wider (<code>batch2</code> in this example) than that of the other batch (<code>batch1</code> in this example).</p>
 <p>The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, after some experimenting, we arrive at a multiplier of 2 which seems to do a good job in aligning the q-q points along the 45° line. We thus define a relationship of <code>batch2 = batch1 * 2</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-14_786e11133ed71e781526de96f6ffd5b0">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Notice how applying a multiplier not only re-aligns the shape of both densities, but it also corrects the offset observed between both density distributions in the previous figure.</p>
@@ -697,34 +764,50 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="additive-and-multiplicative-offsets" class="level2" data-number="17.5">
 <h2 data-number="17.5" class="anchored" data-anchor-id="additive-and-multiplicative-offsets"><span class="header-section-number">17.5</span> Additive and multiplicative offsets</h2>
 <p>Sometimes, you might encounter a relationship that is both additive <em>and</em> multiplicative in which case you should first resolve the multiplicative part of the pattern until the points are close to being parallel with the 45° line. Once the multiplicative component is taken care of, you then resolve the additive offset.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-15_f1a5e957687d24af015553d2b8cb03df">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The above dataset can be decomposed into its multiplicative component (multiply <code>batch1</code> by ~ 1.5),</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-16_9c25583d533799f61ca193e556adfa98">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Once you align the points parallel to the 45° line, you tackle its additive component (here, we’ll try and additive offset of 4):</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-17_f1d0700a84e59d8b34c7ed32fcb21c2d">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The relationship between both batches can thus be defined by <code>batch2 = batch1 * 1.5 + 4</code>.</p>
 <section id="is-the-relationship-between-tenor-and-bass-additive-or-multiplicative" class="level3" data-number="17.5.1">
 <h3 data-number="17.5.1" class="anchored" data-anchor-id="is-the-relationship-between-tenor-and-bass-additive-or-multiplicative"><span class="header-section-number">17.5.1</span> Is the relationship between tenor and bass additive or multiplicative?</h3>
 <p>Turning back to our voice part dataset, an additive shift is apparent, but a multiplicative shift not as much. To check, we’ll add 2.5 to the <code>Bass</code> value.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-18_711506606626a461dfe2d2ec3e5fb810">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(qq.out, <span class="fu">aes</span>( <span class="at">x=</span> Tenor <span class="sc">+</span> <span class="fl">2.5</span>, <span class="at">y =</span> Bass)) <span class="sc">+</span> </span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>             <span class="fu">geom_abline</span>( <span class="at">intercept=</span><span class="dv">0</span>, <span class="at">slope=</span><span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>             <span class="fu">coord_fixed</span>(<span class="at">ratio =</span> <span class="dv">1</span>, <span class="at">xlim=</span><span class="fu">c</span>(<span class="dv">65</span>,<span class="dv">80</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">65</span>,<span class="dv">80</span>)) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Tenor + 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The bulk of the data appears to follow an additive shift except for one or two outliers at the upper end of the distribution. These outliers should not mislead us into assuming that a multiplicative offset is warranted here.</p>
@@ -742,7 +825,7 @@ X = \frac{Bass + Tenor}{2}
 <section id="generating-a-tukey-m-d-plot-using-ggplot" class="level3" data-number="17.6.1">
 <h3 data-number="17.6.1" class="anchored" data-anchor-id="generating-a-tukey-m-d-plot-using-ggplot"><span class="header-section-number">17.6.1</span> Generating a Tukey m-d plot using <code>ggplot</code></h3>
 <p>We will continue with the <code>qq.out</code> dataset generated from the <code>qqplot</code> function.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-19_28f32b8e839c6457c787f2543bf62187">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>md.y  <span class="ot">&lt;-</span> (qq.out<span class="sc">$</span>Bass <span class="sc">-</span> qq.out<span class="sc">$</span>Tenor) </span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>md.x  <span class="ot">&lt;-</span> (qq.out<span class="sc">$</span>Bass <span class="sc">+</span> qq.out<span class="sc">$</span>Tenor) <span class="sc">*</span> <span class="fl">0.5</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df.md <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(md.x, md.y)</span>
@@ -750,12 +833,16 @@ X = \frac{Bass + Tenor}{2}
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df.md,  <span class="fu">aes</span>(<span class="at">x =</span> md.x, <span class="at">y =</span> md.y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_abline</span>( <span class="at">slope=</span><span class="dv">0</span> ) <span class="sc">+</span></span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>               <span class="fu">xlab</span>(<span class="st">"Mean height (in)"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Difference in height (in)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The units on both axes are in inches. It’s clear from this plot that differences in heights are pretty much consistent across the quantiles with an additive shift of about 2.5 inches, except near the higher quantiles for a few lone points.</p>
 <p>We can leverage this plot to help fine tune the additive offset by computing the median value from the height difference values.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-20_530b2f84147c145024c9d71f7de10af2">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>md.offset <span class="ot">&lt;-</span> <span class="fu">median</span>(md.y)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>md.offset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -769,25 +856,33 @@ X = \frac{Bass + Tenor}{2}
 <h2 data-number="17.7" class="anchored" data-anchor-id="the-eda_qq-function"><span class="header-section-number">17.7</span> The <code>eda_qq</code> function</h2>
 <p>The <code>tukeyedar</code> package offers an improved version of the q-q plot function that you will be encouraged to use in this course. Some of its features that you may find helpful are highlighted next.</p>
 <p>The function can take two separate vector elements as input:</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-21_d21e0467369d1b283ac492253b12d2c6">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>It can also take a dataframe in long form as input. Note that the batch assigned to the y-axis will be the first one listed in the group’s levels. To view the levels order associated with the <code>voice.part</code> variable, type:</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-22_0b7f7705f494969c768ca475bc36ccc5">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(df2<span class="sc">$</span>voice.part)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Bass 2"  "Tenor 1"</code></pre>
 </div>
 </div>
 <p>Here, <code>Bass 2</code> will be mapped to the y-axis since it appears first in the levels elements.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-23_ff6d35669042dce38e7dd85277799699">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(df2, height, voice.part) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The plot includes the following features:</p>
@@ -798,45 +893,65 @@ X = \frac{Bass + Tenor}{2}
 <li>The power transformation applied to both batches shown in the upper right-hand corner of the plot. Power transformations will be covered later in this course.</li>
 </ul>
 <p>To add the offset to the x-axis, pass <code>"x + 2.5"</code> to the <code>fx</code> argument.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-24_6fb2b48fef77dfd811efe216b60fe5e7">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">fx =</span> <span class="st">"x + 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>If you want to apply an offset to the y-axis, use the <code>fy</code> argument. Recall from basic alegbra that <span class="math inline">\(y = ax + b \Leftrightarrow x = (y - b) / a\)</span>. Don’t forget to reference the <code>y</code> variable instead of the <code>x</code> variable in the formula.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-25_831637cb66ad6e0711cc6a76fe6b40b4">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">fy =</span> <span class="st">"y - 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>You’ll note that the function returns a “suggested” offset in the console. For example, the above code chunks returned the following suggested offset:</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-26_91d4766f864f97a24283c267ffad0030">
+<div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Suggested offsets:y = x * 0.8571 + (12.4286)"</code></pre>
 </div>
 </div>
 <p>When applied to the x-axis variable, we get:</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-27_dd2077401f308bdcb970e2638397015d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">fx =</span> <span class="st">" x * 0.8571 + 12.4286 "</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This seems to improve little over the simpler <code>x + 2</code> offset expression. Always seek a parsimonious relationship between batches when possible.</p>
 <p>This function will also generate the Tukey mean-difference plot by setting <code>md</code> to <code>TRUE</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-28_623484c437b1bd4d0981f9cffed0664c">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">md =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Note that the offset arguments <code>fx</code> and <code>fy</code> can also be applied to the mean-difference plot.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-29_776c7fb968bb4c22ee43cbc49ef21d07">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor, Bass, <span class="at">md =</span> <span class="cn">TRUE</span>, <span class="at">fx =</span> <span class="st">"x + 2.5"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>To learn more about the <code>eda_qq</code> function, see <a href="https://mgimond.github.io/tukeyedar/articles/qq.html">here</a>.</p>
@@ -844,7 +959,7 @@ X = \frac{Bass + Tenor}{2}
 <section id="so-how-do-the-batches-of-singer-heights-compare" class="level2" data-number="17.8">
 <h2 data-number="17.8" class="anchored" data-anchor-id="so-how-do-the-batches-of-singer-heights-compare"><span class="header-section-number">17.8</span> So how do the batches of singer heights compare?</h2>
 <p>We’ve learned that the <code>Tenor 1</code> and <code>Bass 2</code> batches differ only by location (i.e.&nbsp;central value) and not by spread (i.e.&nbsp;shape of their distribution). How do the other singer groups compare? This requires making <span class="math inline">\(8 * (8-1) /2 = 28\)</span> comparisons, something that is best done by generating a plot matrix.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-30_8d7a29804e2981f7f13d708b3d84afd7">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find smallest batch size</span></span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>min_size <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">tapply</span>(df<span class="sc">$</span>height, df<span class="sc">$</span>voice.part, length)) </span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -868,23 +983,35 @@ X = \frac{Bass + Tenor}{2}
 <span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="fu">pairs</span>(qq_df, <span class="at">upper.panel=</span><span class="cn">NULL</span>, <span class="at">panel =</span> plotfun, <span class="at">xlim =</span> rng, <span class="at">ylim=</span>rng)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>With a few exceptions, the singer height distributions differ mostly by an additive offset given that most points are parallel to the 45° line. There is one notable exception: the <code>Tenor 1</code> and <code>Tenor 2</code> q-q plot which seems to show a prominent multiplicative offset. We can explore this pair in greater detail. We’ll make use of our custom q-q plot function:</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-31_02e7a14f06893d780d7351fb2e05926b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>Tenor1 <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Tenor 1"</span>) <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>Tenor2 <span class="ot">&lt;-</span> <span class="fu">filter</span>(df, voice.part <span class="sc">==</span> <span class="st">"Tenor 2"</span>) <span class="sc">%&gt;%</span>  <span class="fu">pull</span>(height)</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Tenor2, Tenor1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="240"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="240"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>It may help to understand how these batches differ by comparing their density distributions. Here, we’ll make use of another custom function, <code>eda_dens</code>.</p>
-<div class="cell" data-hash="compare_batches_cache/html/unnamed-chunk-32_f0bbc3e9f2a79fadd7a533d485a10630">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_dens</span>(Tenor2, Tenor1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="compare_batches_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="compare_batches_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The differences in shape between both distributions explains the multiplicative offset observed in the q-q plot. The distribution of height values is wider for the <code>Tenor 1</code> group than it is for the <code>Tenor 2</code> group. This suggests greater variability in height values for <code>Tenor 1</code>.</p>
@@ -928,18 +1055,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -971,11 +1087,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -985,8 +1140,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -998,7 +1162,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1042,6 +1329,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1067,6 +1355,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1128,12 +1442,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./univariate_plots.html" class="pagination-link">
+      <a href="./univariate_plots.html" class="pagination-link" aria-label="Visualizing univariate distributions">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Visualizing univariate distributions</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./theoretical_qq.html" class="pagination-link">
+      <a href="./theoretical_qq.html" class="pagination-link" aria-label="The theoretical q-q plot">
         <span class="nav-page-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">The theoretical q-q plot</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1141,7 +1455,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></div>   
+    <div class="nav-footer-left">
+<p>Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -1150,6 +1466,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 

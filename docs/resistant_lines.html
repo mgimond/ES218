@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 25&nbsp; Resistant lines</title>
+<title>25&nbsp; Resistant lines – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -90,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -104,30 +111,57 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </script>
-
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="libs/style.css">
 </head>
 
 <body class="nav-sidebar docked">
 
-
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./bivariate.html">Bivariate</a></li><li class="breadcrumb-item"><a href="./resistant_lines.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Resistant lines</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./bivariate.html">Bivariate</a></li><li class="breadcrumb-item"><a href="./resistant_lines.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Resistant lines</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -136,7 +170,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./"></a> 
@@ -164,9 +198,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Intro</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -187,9 +221,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Data manipulation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -258,9 +292,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Plots</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -287,9 +321,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Univariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -321,7 +355,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Spread-level plots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -346,9 +380,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Bivariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -381,9 +415,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Two-way tables</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -398,9 +432,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Miscellaneous</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -428,7 +462,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -448,7 +482,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./bivariate.html">Bivariate</a></li><li class="breadcrumb-item"><a href="./resistant_lines.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Resistant lines</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Resistant lines</span></h1>
 </div>
@@ -463,11 +497,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-2_fe5120f1633224257ee4d0dcff357d33">
-<div class="cell-output-display">
 
+<div class="cell">
+<div class="cell-output-display">
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
  <thead>
   <tr>
@@ -509,14 +544,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 3.4.4 </td>
+             border-radius: 5px;"> 3.5.1 </td>
    <td style="text-align:left;color: darkred !important;background-color: rgba(250, 232, 232, 255) !important;text-align: center;border: 1px solid white;
              font-family: 'Open Sans', Arial;
              padding:1px !important;
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 7.3.60 </td>
+             border-radius: 5px;"> 7.3.60.2 </td>
   </tr>
 </tbody>
 </table>
@@ -526,18 +561,22 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="introduction" class="level2" data-number="25.1">
 <h2 data-number="25.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">25.1</span> Introduction</h2>
 <p>Ordinary least squares regression lines (those created with the <code>lm()</code> function) suffer from sensitivity to outliers. Because <code>lm</code>’s best fit line makes use of the mean (which is not a robust measure of location), its breakdown point is <span class="math inline">\(1/n\)</span>, meaning that all it takes is for one data point to behave differently from the rest of the points to significantly alter the slope and intercept of the best fit line. For example, let’s start with a well behaved dataset where all points are perfectly aligned, and fit this batch with a regression line:</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-3_13afcb547db239b5d1b99b3857d50cf4">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">5</span> <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> x</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, <span class="at">pch =</span> <span class="dv">20</span>)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( M , <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>As expected, we have a perfect fit. And the regression model’s coefficients match those used to create the data.</p>
-<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-4_c2243c2389fc216e9606b1251b8e93b3">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(Intercept)           x 
@@ -545,17 +584,21 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Now, what if one of the points is re-positioned in the plot, what happens to the regression line?</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-5_d9b7a0c5315b1f106b4ad3fbd25d7fbc">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>y[<span class="dv">11</span>] <span class="ot">&lt;-</span> <span class="dv">2</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, <span class="at">pch =</span> <span class="dv">20</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x)</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( M , <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Note the significant change in the line’s characteristics, its intercept and slope are now:</p>
-<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-6_c84d7281debbc6e551b0e213dec21b4f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(Intercept)           x 
@@ -573,15 +616,23 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h3 data-number="25.2.1" class="anchored" data-anchor-id="tukeys-resistant-line"><span class="header-section-number">25.2.1</span> Tukey’s resistant line</h3>
 <p>The idea is simple in concept. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. The batches’ median values are then used to compute the slope and intercept. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables.</p>
 <p>Let’s look at an example of its implementation. We’ll continue with the example used in the previous section. First, we divide the plot into three approximately equal batches.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-7_b8f03c002c624a936661d3fc72e36a2d">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Next, we compute the median x and y values within each section.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-8_3f38d7ceef20e0dfcde207f1ab4a141e">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The x median values are 2.5, 6, 9.5 and the y median values are 10, 17, 22 respectively.</p>
@@ -594,51 +645,75 @@ b = \frac{y_r - y_l}{x_r-x_l}
 median(y_{l,m,r} - b * x_{l,m,r})
 \]</span></p>
 <p>where <span class="math inline">\((x,y)_{l,m,r}\)</span> are the median x and y values for each batch.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-9_9171072a0f5a32f9ece384613639f70e">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This is not bad for a first iteration. But the outlier’s influence is still present given that the line is not passing through all nine points. Recall that the goal is to <em>not</em> allow one lone observation from influencing a fitted line.</p>
 <p>From this first iteration, we can extract the residuals. A line is then fitted to the residuals following the same procedure outlined above.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-10_41f87f969de578f7dc1e7a8ba640d2b3">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The initial model intercept and slope are 6.429 and 1.714 respectively and the residual’s slope and intercept are -1.224 and 0.245 respectively. The residual slope is then added to the first computed slope giving us an updated slope of 1.959 and the process is again repeated thus generating the following tweaked slope and updated residuals:</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-11_7e538dd616e025fe6922c952147b2533">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The second set of residuals is added to the previously computed slope giving us an updated slope of 1.994. The iteration continues until the slope residuals stabilize. Each successive iteration is shown in the following plot with the final line in dark red. This took three iterations giving us the final fitted line whose intercept and slope are 5.03 and 1.99 respectively–very close to the actual relationship between the two variables.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-12_e85a23ab58acc055ba33325b3854ece6">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Tukey’s resistant line can be computed using the R built-in <code>line()</code> function. You specify the maximum number of iterations via the <code>iter</code> argument. Usually, five iterations will be enough. But, the iteration will stop before the maximum number of iterations is reached if the residual slope stabilizes before then.</p>
-<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-13_be2f218c284612df28118901bdba9dea">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>r.fit <span class="ot">&lt;-</span> <span class="fu">line</span>(x,y, <span class="at">iter =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>You can add the resistant line to a base plot as follows:</p>
-<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-14_613f81c207e185507c6d409afd4aae11">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x, df)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(r.fit, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>You can also add the line to a <code>ggplot</code>:</p>
-<div class="cell" data-hash="resistant_lines_cache/html/unnamed-chunk-15_c9fad914b2da127567b8036becee7f07">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(x,y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> r.fit<span class="sc">$</span>coefficients[<span class="dv">1</span>], </span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">slope =</span> r.fit<span class="sc">$</span>coefficients[<span class="dv">2</span>],</span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -646,13 +721,17 @@ median(y_{l,m,r} - b * x_{l,m,r})
 <h3 data-number="25.2.2" class="anchored" data-anchor-id="bisquare"><span class="header-section-number">25.2.2</span> Bisquare</h3>
 <p>A bisquare fitting strategy makes use of a non-parametric model that assigns <em>weights</em> to observations based on their proximity to the center of the distribution. The closer an observation is to that center, the greater its weight.</p>
 <p>The first step is to run a linear regression model on the data. The next step is to extract its residuals. Next, a weighting scheme is fitted to the residuals such that the points associated with extreme residuals are assigned the smallest weight and the points associated with the smaller residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals stabilize. The following figure shows three iterations of the bisquare function whereby the weights (shown as grey text next to each point) start off as <code>1</code> then are modified following the residuals derived from the most recent regression model.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-16_c70a75f3fef1561cb7ed8a2201a63220">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>There are different weighing strategies that can be implemented. One such implementation is presented next.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-17_2a05749d67b8200d4ea3d0f35a10d198">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the bisquare function</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>wt.bisquare <span class="ot">&lt;-</span> <span class="cf">function</span>(u, <span class="at">c =</span> <span class="dv">6</span>) {</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ifelse</span>( <span class="fu">abs</span>(u<span class="sc">/</span>c) <span class="sc">&lt;</span> <span class="dv">1</span>, (<span class="dv">1</span><span class="sc">-</span>(u<span class="sc">/</span>c)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span>, <span class="dv">0</span>)</span>
@@ -671,7 +750,11 @@ median(y_{l,m,r} - b * x_{l,m,r})
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x, y, <span class="at">pch =</span> <span class="dv">20</span>)</span>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(dat.lm, <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="fl">0.3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>In the above example, the bisquare method does a great job in eliminating the outlier’s influence.</p>
@@ -679,7 +762,7 @@ median(y_{l,m,r} - b * x_{l,m,r})
 <h4 data-number="25.2.2.1" class="anchored" data-anchor-id="built-in-implementation-of-the-bisquare"><span class="header-section-number">25.2.2.1</span> Built-in implementation of the bisquare</h4>
 <p>The <code>MASS</code> package has a robust linear modeling function called <code>rlm</code> that will implement a variation of the aforementioned bisquare estimation technique. Its results may differ slightly from those presented above, but the difference will be insignificant for the most part.</p>
 <p>Note that if you make use of <code>dplyr</code> in a workflow, loading <code>MASS</code> after <code>dplyr</code> will mask dplyr’s <code>select</code> function. This can be problematic. So you either want to load <code>MASS</code> before <code>dplyr</code>, or you can call the function via <code>MASS::rlm</code>. An example of its use follows.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-18_bd557fbeb46fffce48702dba906e7707">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(x,y)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>M   <span class="ot">&lt;-</span> <span class="fu">lm</span>( y <span class="sc">~</span> x, <span class="at">dat=</span>dat)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>Mr  <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">rlm</span>( y <span class="sc">~</span> x, <span class="at">dat=</span>dat, <span class="at">psi=</span><span class="st">"psi.bisquare"</span>)</span>
@@ -691,18 +774,26 @@ median(y_{l,m,r} - b * x_{l,m,r})
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the default regression line for reference</span></span>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>( M , <span class="at">col=</span><span class="st">"grey50"</span>, <span class="at">lty=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The default regression model is added as a dashed line for reference.</p>
 <p>The function <code>rlm</code> can also be called directly from within <code>ggplot</code>.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-19_48588591ed562775d36db603ab76dc0a">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">stat_smooth</span>(<span class="at">method =</span> MASS<span class="sc">::</span>rlm, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">col =</span> <span class="st">"red"</span>,</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">psi =</span> <span class="st">"psi.bisquare"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>&nbsp;&nbsp;</p>
@@ -712,7 +803,7 @@ median(y_{l,m,r} - b * x_{l,m,r})
 <section id="robust-loess" class="level2" data-number="25.3">
 <h2 data-number="25.3" class="anchored" data-anchor-id="robust-loess"><span class="header-section-number">25.3</span> Robust loess</h2>
 <p>The loess fit is also not immune to outliers. The bisquare estimation method can be extended to the loess smoothing function by passing the <code>"symmetric"</code> option to the <code>family</code> argument.</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-20_a9b9ab144bdaec92a590b3ee3b197474">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit a regular loess model</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>lo <span class="ot">&lt;-</span> <span class="fu">loess</span>(y <span class="sc">~</span> x, dat)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -728,19 +819,27 @@ median(y_{l,m,r} - b * x_{l,m,r})
 <span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the robust loess</span></span>
 <span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(dat<span class="sc">$</span>x, <span class="fu">predict</span>(lor), <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The robust loess is in red, the default loess fit is added as a dashed line for reference.</p>
 <p>The robust <code>loess</code> can be implemented in <code>ggplot2</code>’s <code>stat_smooth</code> function as follows:</p>
-<div class="cell" data-small.mar="true" data-hash="resistant_lines_cache/html/unnamed-chunk-21_0a271fc46f5b247bd6ee9b36c233b494">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, </span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">family=</span><span class="st">"symmetric"</span>), </span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">se=</span><span class="cn">FALSE</span>,  <span class="at">col=</span><span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="resistant_lines_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="resistant_lines_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The loess parameters are passed to the <code>loess</code> function via the call to <code>method.args</code>. The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.</p>
@@ -784,18 +883,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -827,11 +915,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -841,8 +968,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -854,7 +990,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -898,6 +1157,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -923,6 +1183,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -984,12 +1270,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./bivariate.html" class="pagination-link">
+      <a href="./bivariate.html" class="pagination-link" aria-label="Fits and residuals">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Fits and residuals</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./example.html" class="pagination-link">
+      <a href="./example.html" class="pagination-link" aria-label="The third R of EDA: Residuals">
         <span class="nav-page-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">The third R of EDA: Residuals</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -997,7 +1283,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></div>   
+    <div class="nav-footer-left">
+<p>Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -1006,6 +1294,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 

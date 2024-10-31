@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 6&nbsp; Working with string objects</title>
+<title>6&nbsp; Working with string objects – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -90,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -104,9 +111,10 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </script>
-
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 
 
 <link rel="stylesheet" href="libs/style.css">
@@ -114,18 +122,17 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 <body class="nav-sidebar docked">
 
-
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./strings.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with string objects</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./strings.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with string objects</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -134,7 +141,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./"></a> 
@@ -162,9 +169,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Intro</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -185,9 +192,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Data manipulation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -256,9 +263,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Plots</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -285,9 +292,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Univariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -319,7 +326,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Spread-level plots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -344,9 +351,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Bivariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -379,9 +386,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Two-way tables</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -396,9 +403,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Miscellaneous</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -426,7 +433,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -462,7 +469,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./strings.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with string objects</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with string objects</span></h1>
 </div>
@@ -477,15 +484,16 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-2_f8b2317ce21ff8829fd5bc245ca994eb">
-<div class="cell-output-display">
 
+<div class="cell">
+<div class="cell-output-display">
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
  <thead>
   <tr>
-   <th style="text-align:left;color: #555555 !important;background-color: #dddddd !important;text-align: center;border: 1px solid white !important;
+   <th style="text-align:left;color: rgba(85, 85, 85, 255) !important;background-color: rgba(221, 221, 221, 255) !important;text-align: center;border: 1px solid white !important;
              font-family: 'Source Code Pro', 'Open Sans';
              padding:1px !important;
              padding-left:4px !important;
@@ -496,7 +504,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;color: darkred !important;background-color: #FAE8E8 !important;text-align: center;border: 1px solid white;
+   <td style="text-align:left;color: darkred !important;background-color: rgba(250, 232, 232, 255) !important;text-align: center;border: 1px solid white;
              font-family: 'Open Sans', Arial;
              padding:1px !important;
              padding-left:4px !important;
@@ -518,7 +526,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h3 data-number="6.1.1" class="anchored" data-anchor-id="checking-for-an-exact-string-match"><span class="header-section-number">6.1.1</span> Checking for an exact string match</h3>
 <p>This is the simplest string operation one can perform. It involves assessing if a variable is equal (or not) to a complete text string.</p>
 <p>We’ve already seen how the conditional statements can be used to check whether a variable is equal to, less than or greater than a number. We can use conditional statements to evaluate if a variable matches an exact string. For example, the following chunk of code returns <code>TRUE</code> since the strings match exactly.</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-3_5bac4532fb83cee40715e928ebcea0ee">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="st">"Abc def"</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>a <span class="sc">==</span> <span class="st">"Abc def"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -526,7 +534,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>However, note that <strong>R differentiates cases</strong> so that the following query, returns <code>FALSE</code> since the first character does not match in case (i.e.&nbsp;upper case <code>A</code> vs.&nbsp;lower case <code>a</code>).</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-4_61d5116ba99f43f760692c2146c0cca3">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>a <span class="sc">==</span> <span class="st">"abc def"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE</code></pre>
@@ -535,7 +543,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="how-to-ignore-case-sensitivity" class="level4" data-number="6.1.1.1">
 <h4 data-number="6.1.1.1" class="anchored" data-anchor-id="how-to-ignore-case-sensitivity"><span class="header-section-number">6.1.1.1</span> How to ignore case sensitivity?</h4>
 <p>If you want R to ignore cases in any string operations, simply force all variables to a lower case and define the pattern being compared against in lower case. For example:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-5_9721d5506fc3ad0c1c075e6e8c186683">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tolower</span>(a) <span class="sc">==</span> <span class="st">"abc def"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
@@ -548,7 +556,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="matching-anywhere-in-the-string" class="level4" data-number="6.1.2.1">
 <h4 data-number="6.1.2.1" class="anchored" data-anchor-id="matching-anywhere-in-the-string"><span class="header-section-number">6.1.2.1</span> Matching anywhere in the string</h4>
 <p>To check if object <code>a</code> has the pattern <code>"c d"</code> (note the space in between the letters) anywhere in its string, use <code>stringr</code>’s <code>str_detect</code> function as follows:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-6_a48acb3c1a99baa16154738e0dc0fa85">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(a, <span class="st">"c d"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -556,7 +564,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>The following example compares the string to <code>"cd"</code> (note the omission of the space):</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-7_3b3e3c076390a2b033e99d6de6c3c35a">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(a, <span class="st">"cd"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE</code></pre>
@@ -566,7 +574,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="matching-the-begining-of-the-string" class="level4" data-number="6.1.2.2">
 <h4 data-number="6.1.2.2" class="anchored" data-anchor-id="matching-the-begining-of-the-string"><span class="header-section-number">6.1.2.2</span> Matching the begining of the string</h4>
 <p>To check if object <code>a</code> <em>starts</em> with the pattern <code>"c d"</code> add the carat character <code>^</code> in front of the pattern as in:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-8_b5195d643b3aa5bddffed4951fcb06cb">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(a, <span class="st">"^c d"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE</code></pre>
@@ -576,7 +584,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="matching-the-end-of-the-sring" class="level4" data-number="6.1.2.3">
 <h4 data-number="6.1.2.3" class="anchored" data-anchor-id="matching-the-end-of-the-sring"><span class="header-section-number">6.1.2.3</span> Matching the end of the sring</h4>
 <p>To check if object <code>a</code> <em>ends</em> with the pattern <code>"Abc"</code> add the dollar character <code>$</code> to the end of the pattern as in:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-9_0b196bae1cc8d11d5971022cb16a8fe6">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(a, <span class="st">"Abc$"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE</code></pre>
@@ -587,7 +595,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="matching-against-a-list-of-characters" class="level3" data-number="6.1.3">
 <h3 data-number="6.1.3" class="anchored" data-anchor-id="matching-against-a-list-of-characters"><span class="header-section-number">6.1.3</span> Matching against a list of characters</h3>
 <p>If you want to match against a list of characters, you may want to make use of the matching, <code>%in%</code>, operator. This is a built-in function and thus not part of the <code>stringr</code> package. For example, to check if any of the characters <code>"Jun"</code> or <code>"Sep"</code> exist in object <code>b</code>, type:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-10_891cc4212da4e890ed4877b7a00e606b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Jan"</span>, <span class="st">"Feb"</span>, <span class="st">"Jun"</span>, <span class="st">"Oct"</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>b <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Jun"</span>, <span class="st">"Sep"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -600,7 +608,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="locating-the-position-of-a-pattern-in-a-string" class="level3" data-number="6.1.4">
 <h3 data-number="6.1.4" class="anchored" data-anchor-id="locating-the-position-of-a-pattern-in-a-string"><span class="header-section-number">6.1.4</span> Locating the position of a pattern in a string</h3>
 <p>If you want to find <em>where</em> a particular pattern lies in a string, use the <code>str_locate</code> function. For example, to find where the pattern <code>"c d"</code> occurs in object <code>a</code> type:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-11_04e39e49a446ad7f88af171c65211683">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_locate</span>(a, <span class="st">"c d"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     start end
@@ -609,7 +617,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>The function returns two values: the position in the string where the pattern <strong>starts</strong> (e.g.&nbsp;position 3) and the position where the pattern ends (e.g.&nbsp;position 5 )</p>
 <p>Note that if the pattern is not found, <code>str_locate</code> returns <code>NA</code>’s:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-12_abbed369a12dc3189debc712a07b23a3">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_locate</span>(a, <span class="st">"cd"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     start end
@@ -617,7 +625,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Note too that the <code>str_locate</code> function only returns the position of the first occurrence. For example, the following chunk will only return the start/end positions of the first occurrence of <code>Ab</code>.</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-13_910c7648fe5539c13c889af4de65d6b0">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="st">"Abc def Abg"</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str_locate</span>(b, <span class="st">"Ab"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -626,7 +634,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>To find <em>all</em> occurrences, use the <code>str_locate_all()</code> function as in:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-14_40b4a5d07362bf21420031c5faf82aad">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_locate_all</span>(b,<span class="st">"Ab"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
@@ -636,7 +644,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>The function returns a <code>list</code> object. To extract the position values into a dateframe, simply wrap the function in a call to <code>as.data.frame</code>, for example:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-15_1a7ed9f19fa4ab692c926149ba4d9c0d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>str.pos <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">str_locate_all</span>(b,<span class="st">"Ab"</span>))</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>str.pos</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -646,7 +654,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>The reason <code>str_locate_all</code> returns a list and not a matrix or a data frame can be understood in the following example:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-16_defc0f184d9c57f3bb2fc9043275d04b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 5 element string vector</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Abc"</span>, <span class="st">"Def "</span>, <span class="st">"Abc Def Ab"</span>, <span class="st">" bc "</span>, <span class="st">"ef "</span>)</span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -677,14 +685,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="finding-the-length-of-a-string" class="level3" data-number="6.1.5">
 <h3 data-number="6.1.5" class="anchored" data-anchor-id="finding-the-length-of-a-string"><span class="header-section-number">6.1.5</span> Finding the length of a string</h3>
 <p>A natural extension to finding the positions of patterns in a text is to find the string’s total length. This can be accomplished with the <code>str_length()</code> function:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-17_924d9dea227c91af6531c25c7a9db322">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_length</span>(b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 11</code></pre>
 </div>
 </div>
 <p>For a multi-element vector, the output looks like this:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-18_4605f0242a74396fa5b7dac2d10dce7d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_length</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]  3  4 10  4  3</code></pre>
@@ -694,7 +702,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="finding-a-patterns-frequency" class="level3" data-number="6.1.6">
 <h3 data-number="6.1.6" class="anchored" data-anchor-id="finding-a-patterns-frequency"><span class="header-section-number">6.1.6</span> Finding a pattern’s frequency</h3>
 <p>To find out how often the pattern <code>Ab</code> occurs in each element of object <code>d</code>, use the <code>str_count()</code> function.</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-19_e3bc66d0bb1bfe8fedc1a7df774164ed">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_count</span>(d, <span class="st">"Ab"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1 0 2 0 0</code></pre>
@@ -707,28 +715,28 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h2 data-number="6.2" class="anchored" data-anchor-id="searching-for-non-alphanumeric-strings"><span class="header-section-number">6.2</span> Searching for non alphanumeric strings</h2>
 <p>&nbsp;&nbsp;</p>
 <p>The following characters need specialized syntax when sought in a regular expression: <code>.</code> , <code>+</code> , <code>*</code> , <code>?</code> , <code>^</code> , <code>$</code> , <code>(</code> , <code>)</code> , <code>[</code> , <code>]</code> , <code>{</code> , <code>}</code> , <code>|</code> , <code>\</code> . For example, when searching for a parenthesis <code>(</code> in a string, the following code will generate an error:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-20_9a8409bdc4e1d4fb442cf19cee46d803">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(<span class="st">"Some text (with parenthesis)"</span>, <span class="st">"(with"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
 <pre><code>Error in stri_detect_regex(string, pattern, negate = negate, opts_regex = opts(pattern)): Incorrectly nested parentheses in regex pattern. (U_REGEX_MISMATCHED_PAREN, context=`(with`)</code></pre>
 </div>
 </div>
 <p>To resolve this, you need to precede the special character with the escape characters <code>\\</code> (two backslashes) as in:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-21_042247de86277a006333571ce313e754">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(<span class="st">"Some text (with parenthesis)"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">(with"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
 </div>
 <p>Likewise, when searching for an asterisk, <code>*</code>, type:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-22_08bf0d4581fad98ccad8e78a754e35ee">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(<span class="st">"x * y"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">*"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
 </div>
 <p>Note that not all special characters will generate an error. For example, if you are looking for a period <code>.</code> in a string, the following will not generate the desired outcome:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-23_3293a589b757d6e1494702829886b525">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(<span class="st">"x * y"</span>, <span class="st">"."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
@@ -736,7 +744,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>This should have outputted <code>FALSE</code> given that no period is present in the string. The dot has a special role in a regular expression in that it seeks out any one character in the string–hence the reason it returned <code>TRUE</code> given that we had at least one character in the string <code>x * y</code>.</p>
 <p>To generate the desired outcome, add <code>\\</code>:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-24_116708f5b2b8446319842a57490751a6">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_detect</span>(<span class="st">"x * y"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE</code></pre>
@@ -751,7 +759,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="padding-numbers-with-leading-zeros" class="level3" data-number="6.3.1">
 <h3 data-number="6.3.1" class="anchored" data-anchor-id="padding-numbers-with-leading-zeros"><span class="header-section-number">6.3.1</span> Padding numbers with leading zeros</h3>
 <p>The <code>str_pad()</code> function can be used to pad numbers with leading zeros. Note that in doing so, you are creating a character object from a numeric object.</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-25_c62e17adea19455a330b1641ad6c4a08">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">12</span>, <span class="dv">2</span>, <span class="dv">503</span>, <span class="dv">20</span>, <span class="dv">0</span>)</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str_pad</span>(e, <span class="at">width=</span><span class="dv">3</span>, <span class="at">side=</span><span class="st">"left"</span>, <span class="at">pad =</span> <span class="st">"0"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -762,7 +770,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="appending-text-to-strings" class="level3" data-number="6.3.2">
 <h3 data-number="6.3.2" class="anchored" data-anchor-id="appending-text-to-strings"><span class="header-section-number">6.3.2</span> Appending text to strings</h3>
 <p>You can append strings with custom text using the <code>str_c()</code> functions. For example, to add the string length at the end of each vector element in <code>b</code> type,</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-26_f0130fad798ce66d19138b51b29e3cd1">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_c</span>(d, <span class="st">" has "</span>, <span class="fu">str_length</span>(d), <span class="st">" characters"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Abc has 3 characters"         "Def  has 4 characters"        "Abc Def Ab has 10 characters"
@@ -773,11 +781,11 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="removing-white-spaces" class="level3" data-number="6.3.3">
 <h3 data-number="6.3.3" class="anchored" data-anchor-id="removing-white-spaces"><span class="header-section-number">6.3.3</span> Removing white spaces</h3>
 <p>You can remove leading or ending (or both) white spaces from a string. For example, to remove leading white spaces from object <code>d</code> type,</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-27_c4bb15a6bd543e897557e8bc7a32971e">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>d.left.trim <span class="ot">&lt;-</span> <span class="fu">str_trim</span>(d, <span class="at">side=</span><span class="st">"left"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now let’s compare the original to the left-trimmed version:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-28_0311b8567b4f15e61fd1459802a237b0">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_length</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]  3  4 10  4  3</code></pre>
@@ -792,7 +800,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="replacing-elements-of-a-string" class="level3" data-number="6.3.4">
 <h3 data-number="6.3.4" class="anchored" data-anchor-id="replacing-elements-of-a-string"><span class="header-section-number">6.3.4</span> Replacing elements of a string</h3>
 <p>To replace all instances of a specified set of characters in a string with another set of characters, use the <code>str_replace_all()</code> function. For example, to replace all <em>spaces</em> in object <code>b</code> with <em>dashes</em>, type:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-29_21dc115228b08a8fa16fcdf8df2648d2">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_replace_all</span>(b, <span class="st">" "</span>, <span class="st">"-"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Abc-def-Abg"</code></pre>
@@ -807,7 +815,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="extracting-elements-of-a-string-given-start-and-end-positions" class="level3" data-number="6.4.1">
 <h3 data-number="6.4.1" class="anchored" data-anchor-id="extracting-elements-of-a-string-given-start-and-end-positions"><span class="header-section-number">6.4.1</span> Extracting elements of a string given start and end positions</h3>
 <p>To find the character elements of a vector at a given position of a given string, use the <code>str_sub()</code> function. For example, to find the characters between positions two and five (inclusive) type:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-30_4e89d69f92e8a20e1402b8a36ab9ec88">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_sub</span>(b, <span class="at">start=</span><span class="dv">2</span>, <span class="at">end=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "bc d"</code></pre>
@@ -818,7 +826,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="splitting-a-string-by-a-character" class="level3" data-number="6.4.2">
 <h3 data-number="6.4.2" class="anchored" data-anchor-id="splitting-a-string-by-a-character"><span class="header-section-number">6.4.2</span> Splitting a string by a character</h3>
 <p>If you want to break a string up into individual components based on a character delimiter, use the <code>str_split()</code> function. For example, to split the following string into separate elements by comma, type the following:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-31_c7ba74fdc7da038df8135a7e0328e4ac">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="st">"Year:2000, Month:Jan, Day:23"</span></span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str_split</span>(g, <span class="st">","</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -828,21 +836,21 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>The output is a one component list. If object <code>g</code> consists of more than one element, the output will be a list of as many components as there are <code>g</code> elements.</p>
 <p>Depending on your workflow, you may need to convert the <code>str_split</code> output to an atomic vector. For example, if you want to find an element in the above <code>str_split</code> output that matches the string <code>Year:2000</code>, the following will return <code>FALSE</code> and not <code>TRUE</code> as one would expect:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-32_1c777fb309f4be96b8f55764f92dfd44">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="st">"Year:2000"</span> <span class="sc">%in%</span> <span class="fu">str_split</span>(g, <span class="st">","</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE</code></pre>
 </div>
 </div>
 <p>The workaround is to convert the right-hand output to a single vector using the <code>unlist</code> function:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-33_2600a5f25748e5912467a123dfd6617e">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="st">"Year:2000"</span> <span class="sc">%in%</span> <span class="fu">unlist</span>(<span class="fu">str_split</span>(g, <span class="st">","</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
 </div>
 <p>If you are applying the split function to a column of data from a dataframe, you will want to use the function <code>str_split_fixed</code> instead. This function assumes that the number of components to be extracted via the split will be the same for each vector element. For example, the following vector, <code>T1</code>, has <strong>two</strong> time components that need to be extracted. The separator is a dash, <code>-</code>.</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-34_c5e9ea06f48d51fa028cac97d1539c97">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>T1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"9:30am-10:45am"</span>, <span class="st">"9:00am- 9:50am"</span>, <span class="st">"1:00pm- 2:15pm"</span>)</span>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>T1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -857,7 +865,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>The third parameter in the <code>str_split_fixed</code> function is the number of elements to return which also defines the output dimension (here, a three row and two column table). If you want to extract both times to separate vectors, reference the columns by index number:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-35_f7eb43c3f66721dce193070999aa37b9">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>T1.start <span class="ot">&lt;-</span> <span class="fu">str_split_fixed</span>(T1, <span class="st">"-"</span>, <span class="dv">2</span>)[ ,<span class="dv">1</span>]</span>
 <span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>T1.start</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -870,7 +878,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>You will want to use the indexes if you are extracting strings in a data frame. For example:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-36_55c32b35e63a81c92afbbea9fb079308">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">Time =</span> <span class="fu">c</span>(<span class="st">"9:30am-10:45am"</span>, <span class="st">"9:00am-9:50am"</span>, <span class="st">"1:00pm-2:15pm"</span>))</span>
 <span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>dat<span class="sc">$</span>Start_time <span class="ot">&lt;-</span> <span class="fu">str_split_fixed</span>(dat<span class="sc">$</span>Time, <span class="st">"-"</span>, <span class="dv">2</span>)[ , <span class="dv">1</span>]</span>
 <span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>dat<span class="sc">$</span>End_time   <span class="ot">&lt;-</span> <span class="fu">str_split_fixed</span>(dat<span class="sc">$</span>Time, <span class="st">"-"</span>, <span class="dv">2</span>)[ , <span class="dv">2</span>]</span>
@@ -886,7 +894,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="extracting-parts-of-a-string-that-follow-a-pattern" class="level3" data-number="6.4.3">
 <h3 data-number="6.4.3" class="anchored" data-anchor-id="extracting-parts-of-a-string-that-follow-a-pattern"><span class="header-section-number">6.4.3</span> Extracting parts of a string that follow a pattern</h3>
 <p>To extract the three letter months from object <code>g</code> (defined in the last example), you can use a combination of <code>stringr</code> functions as in:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-37_ad8ce75fe78c0dd113238cb0d4308b21">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>loc <span class="ot">&lt;-</span> <span class="fu">str_locate</span>(g, <span class="st">"Month:"</span>)</span>
 <span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str_sub</span>(g, <span class="at">start =</span> loc[,<span class="st">"end"</span>] <span class="sc">+</span> <span class="dv">1</span>, <span class="at">end =</span> loc[,<span class="st">"end"</span>]<span class="sc">+</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -895,7 +903,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>The above chunk of code first identifies the position of the <code>Month:</code> string and passes its output to the object <code>loc</code> (a matrix). It then uses the <code>loc</code>’s <code>end</code> position in the call to <code>str_sub</code> to extract the three characters making up the month abbreviation. The value <code>1</code> is added to the <code>start</code> parameter in <code>str_sub</code> to omit the last character of <code>Month:</code> (recall that the <code>str_locate</code> positions are inclusive).</p>
 <p>This can be extend to multi-element vectors as follows:</p>
-<div class="cell" data-hash="strings_cache/html/unnamed-chunk-38_f9c005c513acbebd3ac0f423d485f0f1">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note the differences in spaces and string lenghts between the vector</span></span>
 <span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="co"># elements.</span></span>
 <span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>gs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Year:2000, Month:Jan, Day:23"</span>,</span>
@@ -950,18 +958,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -993,11 +990,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1007,8 +1043,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1020,7 +1065,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1064,6 +1232,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1089,6 +1258,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1150,12 +1345,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./date_objects.html" class="pagination-link">
+      <a href="./date_objects.html" class="pagination-link" aria-label="Working with Dates">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Dates</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./boolean.html" class="pagination-link">
+      <a href="./boolean.html" class="pagination-link" aria-label="Relational and boolean operations">
         <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Relational and boolean operations</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1163,7 +1358,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></div>   
+    <div class="nav-footer-left">
+<p>Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -1172,6 +1369,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 

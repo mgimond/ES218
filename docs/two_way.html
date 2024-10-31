@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 28&nbsp; Analyzing two-way tables: The median polish</title>
+<title>28&nbsp; Analyzing two-way tables: The median polish – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -90,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -104,30 +111,57 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </script>
-
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="libs/style.css">
 </head>
 
 <body class="nav-sidebar docked">
 
-
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./two_way.html">Two-way tables</a></li><li class="breadcrumb-item"><a href="./two_way.html"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Analyzing two-way tables: The median polish</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./two_way.html">Two-way tables</a></li><li class="breadcrumb-item"><a href="./two_way.html"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Analyzing two-way tables: The median polish</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -136,7 +170,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./"></a> 
@@ -164,9 +198,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Intro</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -187,9 +221,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Data manipulation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -258,9 +292,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Plots</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -287,9 +321,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Univariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -321,7 +355,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Spread-level plots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -346,9 +380,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Bivariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -381,9 +415,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Two-way tables</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -398,9 +432,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Miscellaneous</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -428,7 +462,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -461,7 +495,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./two_way.html">Two-way tables</a></li><li class="breadcrumb-item"><a href="./two_way.html"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Analyzing two-way tables: The median polish</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Analyzing two-way tables: The median polish</span></h1>
 </div>
@@ -476,11 +510,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-2_d6b817bd2dc7f751b645b175972dbeb2">
-<div class="cell-output-display">
 
+<div class="cell">
+<div class="cell-output-display">
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
  <thead>
   <tr>
@@ -529,7 +564,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 0.2.1 </td>
+             border-radius: 5px;"> 0.3.0 </td>
   </tr>
 </tbody>
 </table>
@@ -539,11 +574,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="introduction" class="level2" data-number="28.1">
 <h2 data-number="28.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">28.1</span> Introduction</h2>
 <p>Before tackling two-way tables, let’s explore a simpler one-way table. The following dataset shows mean annual income by occupation for the year 2014 (<em>src: <a href="http://www.bls.gov/oes/#tables">Bureau of Labor Statistics</a></em>)</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-3_bb5971ce07d8d8c0b8943589b38c4d73">
-
-<!-- html table generated in R 4.3.2 by xtable 1.8-4 package -->
-<!-- Mon Feb  5 09:05:50 2024 -->
-
+<!-- html table generated in R 4.4.1 by xtable 1.8-4 package -->
+<!-- Wed Oct 30 19:43:53 2024 -->
 <table border="1">
 <tbody><tr>
 <th>
@@ -728,13 +760,15 @@ Transportation and Material Moving
 34460
 </td>
 </tr>
-
 </tbody></table>
-</div>
 <p>So, what can we glean from this dataset other than the raw values associated with each occupation type? For starters, we may be interested in coming up with a summary of income values such as the median, or $45265 in our working example. This is a single value that can be used to characterize the overall income value. However, the income values in our batch are not all equal to $45265–they vary above or below this median value. A good way to measure the variability about the median is to subtract the median income value from each occupation income value. We can do this in a table, but will choose a dotplot chart instead to facilitate comparison.</p>
-<div class="cell" data-small.mar="true" data-hash="two_way_cache/html/unnamed-chunk-4_934225ecb0f6ab68fb9c7c5da7f21f3a">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>We have separated the income values into two parts: an <strong>overall</strong> value and the difference between each value and the overall–i.e.&nbsp;the <strong>residuals</strong>. This can be written in the following algebraic form:</p>
@@ -743,9 +777,13 @@ Income_{Occupation} = Income_{median} + Income_{residual}
 \]</span></p>
 <p>For example, ‘Healthcare Support’ average income of $43980 can be separated into the median, $45265, and its residual, $-1285.</p>
 <p>So, in addition to gleaning a median income value from this batch of values, we have also devised a way to facilitate the comparison of the income values to one another. Alternatively, we could have assigned colors to each cell of the table reflecting their values <em>relative</em> to the overall median.</p>
-<div class="cell" data-small.mar="true" data-hash="two_way_cache/html/unnamed-chunk-5_4a4743b3e9246aea859a9b3f2be216dc">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="384"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="384"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The income value can be thought of as the <strong>response</strong> to the occupation type (also known as a <strong>factor</strong>). In other words, the factor determines the value in our table. We can re-write the last equation in a more formal way:</p>
@@ -775,7 +813,7 @@ y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 <section id="analysis-workflow" class="level2" data-number="28.3">
 <h2 data-number="28.3" class="anchored" data-anchor-id="analysis-workflow"><span class="header-section-number">28.3</span> Analysis workflow</h2>
 <p>Let’s first create the dataframe.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-6_f5a826f622c2f91a29ff02f720232988">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">row.names =</span> <span class="fu">c</span>(<span class="st">"NE"</span>,<span class="st">"NC"</span>,<span class="st">"S"</span>,<span class="st">"W"</span>),</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">ed8       =</span> <span class="fu">c</span>(<span class="fl">25.3</span>,<span class="fl">32.1</span>,<span class="fl">38.8</span>,<span class="fl">25.4</span>), </span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">ed9to11   =</span> <span class="fu">c</span>(<span class="fl">25.3</span>,<span class="dv">29</span>,<span class="dv">31</span>,<span class="fl">21.1</span>),</span>
@@ -788,23 +826,31 @@ y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 <h3 data-number="28.3.1" class="anchored" data-anchor-id="visualizing-the-data"><span class="header-section-number">28.3.1</span> Visualizing the data</h3>
 <p>It’s often easier to look at a graphical representation of the data than a tabular one. Even a table as small as this can benefit from a plot.</p>
 <p>We will adopt Bill Cleveland’s dotplot for this purpose. R has a built-in dotplot function called <code>dotchart</code>. It requires that the table be stored as a matrix instead of a dataframe; we will therefore convert <code>df</code> to a matrix by wrapping it with the <code>as.matrix()</code> function.</p>
-<div class="cell" data-small.mar="true" data-hash="two_way_cache/html/unnamed-chunk-7_14d1690872167f9cd651a876a342ea16">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dotchart</span>( <span class="fu">as.matrix</span>(df), <span class="at">cex=</span><span class="fl">0.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The plot helps visualize any differences in mortality rates across different father educational attainment levels. There seems to be a gradual decrease in child mortality with increasing father educational attainment.</p>
 <p>But the plot does not help spot differences across regions (except for the <code>ed12</code> group). We can generate another plot where region becomes the main grouping factor. We do this by wrapping the matrix with the transpose function <code>t()</code>.</p>
-<div class="cell" data-small.mar="true" data-hash="two_way_cache/html/unnamed-chunk-8_5a724aeed8ecace6e93a367317113d23">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dotchart</span>( <span class="fu">t</span>(<span class="fu">as.matrix</span>(df)), <span class="at">cex=</span><span class="fl">0.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>At first glance, there seems to be higher death rates for the <code>NC</code> and <code>S</code> regions and relatively lower rates for the <code>W</code> and <code>NE</code> regions. But our eyes may be fooled by outliers in the data.</p>
 <p>Next, we’ll generate side-by-side boxplots to compare the effects between both categories. Note that we’ll need to create a <em>long</em> version of the table using the <code>tidyr</code> package.</p>
-<div class="cell" data-small.mar="true" data-hash="two_way_cache/html/unnamed-chunk-9_42f9c831a6011131f3d0a7e6519ebf81">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -818,7 +864,11 @@ y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Deaths <span class="sc">~</span> Region <span class="sc">+</span> Edu, df.l)</span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(OP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>So at this point the plots suggest that there may be a father’s educational attainment effect as well as a regional effect on infant mortality with the former effect being possibly more important.</p>
@@ -874,9 +924,13 @@ y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 <p>The final version of the table (along with the column and row values) is shown below:</p>
 <p><img src="img/twoway_09.jpg" class="img-fluid"></p>
 <p>A progression of each iteration is shown side-by-side in the next figure. The left-most table is the original data showing death rates. The second table shows the outcome of the first round of polishing (including the initial overall median value of 20.2). The third and forth table show the second and third iterations of the smoothing operations. Additional iterations are not deemed necessary given that little more can be extracted from the residuals.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-10_90374ca398847c87af3318ada6e07f19">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="1056"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="1056"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>A few takeway observations from the analysis follow:</p>
@@ -903,9 +957,13 @@ y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 <section id="test-for-non-additivity" class="level3" data-number="28.3.4">
 <h3 data-number="28.3.4" class="anchored" data-anchor-id="test-for-non-additivity"><span class="header-section-number">28.3.4</span> Test for non-additivity</h3>
 <p>Thus far, we have assumed an additive relationship between the effects (factors). But this additive model may not be the best fit for our data. A good way to test this is by generating a <strong>Tukey Additivity Plot</strong> where we plot residuals vs.&nbsp;the <strong>comparison value</strong>, <span class="math inline">\(cv_{ij}\)</span>, defined as <span class="math inline">\(\alpha_i \beta_j / \mu\)</span>. If the plot is devoid of any obvious trend or pattern we can conclude that our dataset is consistent with an additive model. Such seems to be the case with our working example as shown in the following plot.</p>
-<div class="cell" data-small.mar="true" data-hash="two_way_cache/html/unnamed-chunk-11_6f79697b4742d5b385ec14dff0682485">
+<div class="cell" data-small.mar="true">
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>If the diagnostic plot revealed a trend, its shape–or more specifically, its slope–could be used in helping define an appropriate transformation for the data. A rule of thumb is to apply a <span class="math inline">\((1 – slope)\)</span> power transformation to the original data. If the resulting power is not appropriate for the dataset then the <span class="math inline">\(cv_{ij}\)</span> can be added to the additive model as follows:</p>
@@ -919,7 +977,7 @@ y_{ij} = \mu + \alpha_i + \beta_j + k(\alpha_i \beta_j / \mu)  + \epsilon_{ij}
 <section id="using-base-rs-medpolish" class="level3" data-number="28.4.1">
 <h3 data-number="28.4.1" class="anchored" data-anchor-id="using-base-rs-medpolish"><span class="header-section-number">28.4.1</span> Using base R’s <code>medpolish</code></h3>
 <p>The steps outlined in the previous section can be easily implemented using pen and paper or a spreadsheet environment for larger datasets. R has a built-in function called <code>medpolish()</code> which does this for us. We can define the maximum number of iterations by setting the <code>maxiter=</code> parameter but note that <code>medpolish</code> will, by default, automatically estimate the best number of iterations for us.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-12_b33d0905705eb525559f39c2bdc77e3f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df.med <span class="ot">&lt;-</span> <span class="fu">medpolish</span>( df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>1: 47.1
@@ -930,7 +988,7 @@ Final: 42.25</code></pre>
 </div>
 <p>The median polish ran through 4 iterations–one more than was run in our step-by-step example.</p>
 <p>The four values printed to the console gives us the sum of absolute residuals at each iteration. The output from the model is stored in the <code>df.med</code> object. To see its contents , simply type it at the command line.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-13_32619a5000872bc3f93103779d81e8c4">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.med</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -956,10 +1014,14 @@ W  -3.200  -5.950  0.2875    2.800  0.000</code></pre>
 </div>
 <p>All three effects are displayed as well as the residuals (note that the precision returned is greater than that used in our earlier analysis).</p>
 <p>To generate the Tukey additivity plot, simply wrap the median polish object with the <code>plot</code> command as in:</p>
-<div class="cell" data-small.mar="true" data-hash="two_way_cache/html/unnamed-chunk-14_09c5df91ce09cbcd4b168d3429c6f89a">
+<div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>( df.med )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -967,7 +1029,7 @@ W  -3.200  -5.950  0.2875    2.800  0.000</code></pre>
 <h3 data-number="28.4.2" class="anchored" data-anchor-id="using-eda_pol"><span class="header-section-number">28.4.2</span> Using <code>eda_pol</code></h3>
 <p>The <code>tukeyedar</code> package has a custom function called <code>eda_pol</code> that will output the polished table as a graphic element.</p>
 <p>Unlike the base <code>medpolish</code> function, <code>eda_pol</code> requires that the data be in long form. In creating the long form version of the data, we’ll explicitly set the levels for educational attainment and region.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-15_d311464cbe1865576659f04c00e2fe0b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>grd <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ed8"</span>, <span class="st">"ed9-11"</span>, <span class="st">"ed12"</span>, <span class="st">"ed13-15"</span>, <span class="st">"ed16"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>reg <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"NE"</span>, <span class="st">"NC"</span>, <span class="st">"S"</span>, <span class="st">"W"</span>)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>dfl <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Region =</span>  <span class="fu">factor</span>(<span class="fu">rep</span>( <span class="fu">c</span>(<span class="st">"NE"</span>, <span class="st">"NC"</span>, <span class="st">"S"</span>, <span class="st">"W"</span>), <span class="at">each =</span> <span class="dv">5</span>),</span>
@@ -978,28 +1040,36 @@ W  -3.200  -5.950  0.2875    2.800  0.000</code></pre>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                          <span class="fl">21.1</span>, <span class="fl">20.3</span>, <span class="dv">24</span>, <span class="fl">17.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code>eda_pol</code> requires that you specify which variables will be mapped to the row and column effects.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-16_e9e1b42d5c1c6d97e0de8cc86a753169">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df.pol <span class="ot">&lt;-</span> <span class="fu">eda_pol</span>(dfl, <span class="at">row =</span> Region, <span class="at">col =</span> Education , <span class="at">val =</span> Deaths )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-17_0485061db5138b5f8809db9973d13722">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="412"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="412"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Here, the <code>eda_pol</code> function required five iterations which explains the slight difference in values from those generated with the <code>medpolish</code> function. You can control the maximum number of iterations in <code>eda_pol</code> with the <code>maxiter</code> argument.</p>
 <p>By default, the column and row values are listed in the same order as they are presented in the input data frame (either defined alphabetically or defined by their levels). You can have the function sort the values by their effect size using the <code>sort</code> argument.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-18_a75fa6025b012257c3f986da05c23b65">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df.pol <span class="ot">&lt;-</span> <span class="fu">eda_pol</span>(dfl, <span class="at">row =</span> Region, <span class="at">col =</span> Education, <span class="at">val =</span> Deaths, <span class="at">sort =</span> <span class="cn">TRUE</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-19_a4c8ef0614833d803082b2ce2a30b5b3">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="412"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="412"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The <code>df.pol</code> object is a list that stores output values such as the common, row and column effects.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-20_c867fa9dd2b6b52aafdcfef896e2312d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df.pol<span class="sc">$</span>global</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 20.85</code></pre>
@@ -1023,7 +1093,7 @@ W  -3.200  -5.950  0.2875    2.800  0.000</code></pre>
 </div>
 </div>
 <p>The <code>eda_pol</code> will also output a diagnostic plot.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-21_da3b4d2d15c439468dd98d9b3e10f4db">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(df.pol, <span class="at">type =</span> <span class="st">"diagnostic"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$slope
@@ -1031,7 +1101,11 @@ W  -3.200  -5.950  0.2875    2.800  0.000</code></pre>
 1.3688 </code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>In addition to generating the plot, the function will also return the slope of the fitted line in the console.</p>
@@ -1049,7 +1123,7 @@ W  -3.200  -5.950  0.2875    2.800  0.000</code></pre>
 <p>A two-way ANOVA assesses whether the factors (categories) have a significant effect on the outcome. Its implementation can be conceptualized as a regression analysis where each row and column level is treated as a dummy variable. The computed regression coefficients are the same as the levels computed using the “mean” polish outlined in the previous step except for one notable difference: the ANOVA adds one of the column level values and one of the row level values to the grand mean. It then subtracts those values from their respective row/column effects.</p>
 <p><img src="img/twoway_12.png" class="img-fluid"></p>
 <p>The resulting row/column levels are the regression coefficients:</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-22_9857b00948e76646f2b42871c3c01715">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">lm</span>(Deaths <span class="sc">~</span> Education <span class="sc">+</span> Region, dfl)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1076,7 +1150,7 @@ Deaths &amp;= 32.21 - 3.8(0) -11.25(0) -9.83(0) -13(0)&amp;&amp; \\
 \end{split}
 \]</span></p>
 <p>To assess if any of the factors have a significant effect on the <code>Death</code> variables, simply wrap the regression with an <code>anova()</code> function.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-23_ce64700903bec89d35ce4c76b73761d0">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Analysis of Variance Table
@@ -1095,12 +1169,16 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <section id="visualizing-a-two-way-anova-as-a-table" class="level3" data-number="28.5.2">
 <h3 data-number="28.5.2" class="anchored" data-anchor-id="visualizing-a-two-way-anova-as-a-table"><span class="header-section-number">28.5.2</span> Visualizing a two-way ANOVA as a table</h3>
 <p>You can view the output of a two-way ANOVA as a “mean polish” table using the <code>eda_pol</code> function. Simply set the <code>stat</code> argument to <code>mean</code>.</p>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-24_53efb0f64413d89e047d527343fced23">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df.ano <span class="ot">&lt;-</span> <span class="fu">eda_pol</span>(dfl, <span class="at">row =</span> Region, <span class="at">col =</span> Education, <span class="at">val =</span> Deaths, <span class="at">stat =</span> mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="two_way_cache/html/unnamed-chunk-25_b9389ebf43a5cb11a94361e7db6b0a52">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="two_way_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="412"></p>
+<div>
+<figure class="figure">
+<p><img src="two_way_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="412"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
@@ -1148,18 +1226,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1191,11 +1258,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1205,8 +1311,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1218,7 +1333,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1262,6 +1500,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1287,6 +1526,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1348,12 +1613,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./discontinuity.html" class="pagination-link">
+      <a href="./discontinuity.html" class="pagination-link" aria-label="Slicing data">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Slicing data</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./rmarkdown.html" class="pagination-link">
+      <a href="./rmarkdown.html" class="pagination-link" aria-label="R markdown document">
         <span class="nav-page-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">R markdown document</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1361,7 +1626,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></div>   
+    <div class="nav-footer-left">
+<p>Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -1370,6 +1637,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 

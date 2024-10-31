@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 16&nbsp; Visualizing univariate distributions</title>
+<title>16&nbsp; Visualizing univariate distributions – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -90,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -104,30 +111,57 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </script>
-
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="libs/style.css">
 </head>
 
 <body class="nav-sidebar docked">
 
-
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./univariate_plots.html"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Visualizing univariate distributions</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./univariate_plots.html"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Visualizing univariate distributions</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -136,7 +170,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./"></a> 
@@ -164,9 +198,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Intro</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -187,9 +221,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Data manipulation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -258,9 +292,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Plots</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -287,9 +321,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Univariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -321,7 +355,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Spread-level plots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -346,9 +380,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Bivariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -381,9 +415,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Two-way tables</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -398,9 +432,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Miscellaneous</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -428,7 +462,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -455,7 +489,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./univariate_plots.html"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Visualizing univariate distributions</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Visualizing univariate distributions</span></h1>
 </div>
@@ -470,11 +504,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-2_6c8b48e6232228f69be1f8e206bbbc25">
-<div class="cell-output-display">
 
+<div class="cell">
+<div class="cell-output-display">
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
  <thead>
   <tr>
@@ -516,7 +551,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 3.4.4 </td>
+             border-radius: 5px;"> 3.5.1 </td>
    <td style="text-align:left;color: darkred !important;background-color: rgba(250, 232, 232, 255) !important;text-align: center;border: 1px solid white;
              font-family: 'Open Sans', Arial;
              padding:1px !important;
@@ -535,28 +570,32 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>Univariate data consist of a single measurement type that is often broken up into categories.</p>
 <p>Let’s take two batches of values that measure a same variable. We’ll label these batches <code>a</code> and <code>b</code>.</p>
 <p>How do the two batches differ?</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-4_f3d07ad662187c31514a2f2ad4f9ace9">
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="384"></p>
-</div>
-<p>If the difference wasn’t obvious from the table view we can create a <em>jittered</em> point plot from the data. (The jitter plot spreads the values randomly about their group label to prevent the points from overlapping.)</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-5_a747d3f993857e31e095265380f3f03c">
+<p>If the difference wasn’t obvious from the table view we can create a <em>jittered</em> point plot from the data. (The jitter plot spreads the values randomly about their group label to limit the overlapping of points).</p>
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>It’s clear that both batches differ by their uniform values: batch <code>a</code> is made up of identical values, <code>12</code>, and batch <code>b</code> is made up of a different set of identical values, <code>15</code>.</p>
 <p>Now let’s compare a heterogeneous batch of values.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-7_e171af2320851f99a6f551f26514d64d">
 <p><img src="univariate_plots_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="384"></p>
-</div>
 <p>Comparing the values using a jitter plot gives us:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-8_e0dbfe4e5f001aa158410bf8331be1de">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="384"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>So how do these batches differ? This time, the difference is not so obvious. However, they <em>seem</em> to differ by their central value. For example, each batch’s mean is:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-9_80f559ebe2a231bbea9e9f803b89b494">
+<div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
   Group  mean
@@ -566,9 +605,13 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>The center value (aka <strong>location</strong>), is one summary statistic we can use to compare batches. Another property of a batch that we might also want to compare is its distribution (aka <strong>spread</strong>). For example, does the <strong>spread</strong> between the two batches differ as well? It’s difficult to tell from the above plot given that the batches are offset, so we’ll <strong>level</strong> the batches by subtracting the means from their respective batches.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-10_e54bc53686815e547c70f942ebfda5ad">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="384"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="384"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Removing the <em>location</em> (or mean in our example) from each value facilitates our comparison of both spreads. From our working example we can, at best, say that the batches differ in range (i.e.&nbsp;their minimum and maximum values). However, a spread can be characterized in many more ways than by its range. Next, we’ll focus on four exploratory tools that will help us explore and quantify a dataset’s spread. These are the <strong>histogram</strong>, the <strong>boxplot</strong>, the <strong>density plot</strong> and the <strong>quantile plot</strong>.</p>
@@ -576,7 +619,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="histograms" class="level2" data-number="16.2">
 <h2 data-number="16.2" class="anchored" data-anchor-id="histograms"><span class="header-section-number">16.2</span> Histograms</h2>
 <p>A histogram <strong>bins</strong> the values (usually in equal sized bins) and plots the frequency in which each <em>bin</em> is filled. For example, to create a histogram of batch <code>b</code> where each bin size covers <strong>one</strong> unit, we type:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-11_3c01601c565e96ba19378566f4f8f416">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate some random numbers</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>a   <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">60</span>, <span class="dv">5</span>, <span class="dv">15</span>))</span>
@@ -587,43 +630,63 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">9.5</span>,<span class="fl">20.5</span>, <span class="at">by =</span> <span class="dv">1</span>), <span class="at">color =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>(Note that because <code>ggplot</code> requires a dataframe as input, we have to create a dataframe from vector <code>b</code>.)</p>
 <p>Here, we are explicitly defining the bin width as 1 unit, and the range as 6.5 to 16.5 via the parameter <code>breaks = seq(6.5,16.5,by=1)</code>. The <code>color</code> parameter specifies the <em>outline</em> color. To change the fill color use the <code>fill</code> parameter instead. In our example, we have one value that falls in the first bin (bin ranging from 6.5 to 7.5), another value that falls in the second bin (bin value ranging from 7.5 to 8.5) and so on up to the second to last bin which has 3 values falling in it (bin covering the range 14.5 to 15.5). No values fall in the 15.5 to 16.5 bin range.</p>
 <p>We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-12_4b70ffecb5428ff168f1859f4bfa151b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">9.5</span>,<span class="fl">20.5</span>,<span class="at">by =</span> <span class="dv">2</span>), </span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                                                      <span class="at">colour =</span> <span class="st">"white"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>You’ll note that changing bin widths can alter the look of the histogram, this is particularly true when plotting large batches of values.</p>
 <p>You can also opt to have the function determine the bin width by simply specifying the <em>number</em> of bins using the <code>bins =</code> parameter:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-13_ea090388db9db037f19aaaba76799243">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">as.data.frame</span>(b), <span class="fu">aes</span>(<span class="at">x =</span> b)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">12</span>, <span class="at">colour =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>You’ll note that the function will map the total number of observations falling in each bin to the y-axis. This may be easy to interpret, but it may make it difficult to compare batches of values having different number of observations. To demonstrate this, let’s plot both batches side-by-side.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-14_10b98bd148fbf023af37ad34e293fa81">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> Value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span> Group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The differences in batch sizes results in differing bar heights. To resolve this issue, we can convert counts to density whereby the areas covered by each bin sum to <code>1</code>. Each bin’s density value is computed from:</p>
 <p><span class="math display">\[
 density = \frac{count}{bin\ width * total\ observations}
 \]</span> To see an example of this, let’s revert back to the earlier dataset to facilitate a manual calculation of the density values. Here, we’ll map the <code>after_stat(density)</code> aesthetic to the y-axis to have ggplot compute density values.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-15_fcfd4b08ae60c3f2c73f650b856d615d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> Value, <span class="at">y=</span><span class="fu">after_stat</span>(density))) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="sc">+</span> </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This makes for a more appropriate comparison.</p>
@@ -631,89 +694,133 @@ density = \frac{count}{bin\ width * total\ observations}
 <section id="density-plots" class="level2" data-number="16.3">
 <h2 data-number="16.3" class="anchored" data-anchor-id="density-plots"><span class="header-section-number">16.3</span> Density plots</h2>
 <p>The histogram is not only sensitive to bin sizes, but it also suffers from discontinuities in its bins. Let’s revert back to the orignal set of values for <code>a</code>.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-16_ebb8fb0cf4974f076d26e577ed0d7959">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>a  <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">15</span>))</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>df   <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>In the following example, two histograms are generated using the same bin sizes and counts but with different starting x values. The orange marks along the x-axis show the location of the <code>a</code> values. The second histogram suggests a slightly bimodal (two peak) distribution while the one on the left suggests a unimodal distribution.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-17_85b661e3bd297ff201b0e3a27a194f22">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>One workaround to the histogram’s limitations is to compute density values on <em>overlapping</em> bins. For example, let’s take the first bin and have it count the number of values between 5 and 9 (exclusive), then divide that number by the total number of values times the bin width–this gives us two observations falling in the bin thus a density value of <code>2 / (10 * 4) = 0.05</code>. The following plot shows the bin. An orange dot is also added to represent the bin’s midpoint.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-18_f3a0f39cc21a3435b7df3708807a8a7e">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Next, we shift the bin over by one unit, then we calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps partially with the first bin.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-19_b6addeef9e0ac39e513586226defe0ec">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The same process is repeated for the third bin.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-20_c3316d0e55d9c33f77887f050a4bf1e8">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The process is repeated for each bin until the last bin is reached. (Note that some of the <code>a</code> values are duplicates such as <code>13</code> and <code>15</code>–hence the high density values for the upper range).</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-21_f94db101a5c2283684c31f517a0b255d">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>If we remove the bins and connect the dots, we end up with a <strong>density trace</strong>.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-22_1d97f674e48c70df88fc9c1248bc4bbc">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>A property associated with the density trace is that the area under the curve sums to one since each density value represents the <em>local</em> density at <code>x</code>.</p>
 <p>So far, when we computed the density values, we assigned an equal weight to each point within their assigned bin–regardless how far the values were to the bin’s midpoint. This resulted in some <em>raggedness</em> to the plot. To smooth out the plot, we can apply different weights to each point such that points closest to the bin’s midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate the weights. The following figure depicts the difference in weights assigned to any point falling within the first bin whose range covers the interval 4 to 8 centered on 6.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-23_ea5273b2982753856ae8f9fbe792dae6">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>With the rectangular weight, all points within a bin width are assigned equal weight. With the Gaussian weight, points closest to the bin center are assigned greater weight than those furthest from the center. <code>ggplot</code>’s density function defaults to the Gaussian weighting strategy. The weight type is referred to as a <strong>kernel</strong>.</p>
 <p>You can generate a density plot of the data using the <code>geom_density</code> function.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-24_7c6bf5f325d2a8a906e19b12b88c4316">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This plot appears much smoother than the one created in the above demonstration. This is because the density function generates 512 points for its density trace as opposed to the seven points used in the above demonstration.</p>
 <p>The function adopts the <code>gaussian</code> weight function and will automatically define the bandwidth (analogous in concept to the bin width).</p>
 <p>To adopt a rectangular weight, set the <code>kernel</code> parameter to <code>"rectangular"</code>.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-25_17430040920383f632c3b83cf867104f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>, <span class="at">kernel =</span> <span class="st">"rectangular"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Note the raggedness in the plot.</p>
 <p>You can modify the <em>smoothness</em> of the density plot by adjusting its bandwidth argument <code>bw</code>. Here, the bandwidth defines the standard deviation of the Gaussian function.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-26_dc2b1de3422f03bbd50927364785de13">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"grey60"</span>, <span class="at">bw =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="432"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="432"></p>
+</figure>
+</div>
 </div>
 </div>
 </section>
 <section id="boxplots" class="level2" data-number="16.4">
 <h2 data-number="16.4" class="anchored" data-anchor-id="boxplots"><span class="header-section-number">16.4</span> Boxplots</h2>
 <p>A boxplot is another popular plot used to explore distributions. In <code>ggplot2</code> we use the <code>geom_boxplot()</code> function as in,</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-27_6a003896472c7d866918bdc56986c911">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> a)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> </span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>          <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(), </span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="624"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The <code>geom_boxplot</code> function can map the values to the x-axis or to the y-axis. Traditionally, it’s mapped to the y-axis. Here, we choose to map it to the x-axis. You’ll note the extra functions <code>xlab(NULL) + theme(axis.text.y=element_blank(), ... )</code>; these are added to suppress labels and values/tics along the y-axis given that their default values do not serve a purpose here.</p>
@@ -725,10 +832,14 @@ density = \frac{count}{bin\ width * total\ observations}
 <section id="not-all-boxplots-are-created-equal" class="level3" data-number="16.4.1">
 <h3 data-number="16.4.1" class="anchored" data-anchor-id="not-all-boxplots-are-created-equal"><span class="header-section-number">16.4.1</span> Not all boxplots are created equal!</h3>
 <p>Not all boxplots are created equal. There are many different ways in which quantiles can be defined. For example, some will compute a quantile as <span class="math inline">\(( i - 0.5) / n\)</span> where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. This is the method implemented by Bill Cleveland and we will refer to this method as <em>Cleveland’s quantile method</em>. This also happens to be the method implemented by the base’s <code>boxplot</code> function; this explains its different boxplot output compared to <code>geom_boxplot</code> in our working example:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-28_04fd6e6158419793aa8f9a5c5b0e7b65">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(a, <span class="at">horizontal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="624"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The upper and lower quartiles differ from those of <code>ggplot</code> since the three upper values values, <code>15</code>, end up falling inside the interquartile range following the aforementioned quantile definition. This eliminates any upper whiskers. In most cases, however, the difference will not matter as long as you <em>adopt the same boxplot procedure when comparing batches</em>. Also, the difference between the plots become insignificant with larger batch size.</p>
@@ -736,7 +847,7 @@ density = \frac{count}{bin\ width * total\ observations}
 <section id="implementing-different-quantile-types-in-geom_boxplot" class="level3" data-number="16.4.2">
 <h3 data-number="16.4.2" class="anchored" data-anchor-id="implementing-different-quantile-types-in-geom_boxplot"><span class="header-section-number">16.4.2</span> Implementing different quantile types in <code>geom_boxplot</code></h3>
 <p>If you wish to implement different quantile methods in <code>ggplot</code>, you will need to create a custom function. For example, if you wish to adopt Cleveland’s quantile method (<code>type = 5</code> in the <code>quantile</code> function) type the following:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-29_cf476d5dfe471df05ab2c40181fa229f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to extract quantiles given an f-value type (type = 5 in this example)</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>qtl.bxp <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">type =</span> <span class="dv">5</span>) {</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  qtl <span class="ot">&lt;-</span> <span class="fu">quantile</span>(x, <span class="at">type =</span> type)</span>
@@ -751,7 +862,11 @@ density = \frac{count}{bin\ width * total\ observations}
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.y =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
 <span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="624"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="624"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Note the use of <code>stat_summary</code> instead of <code>geom_boxplot</code>.</p>
@@ -765,7 +880,7 @@ density = \frac{count}{bin\ width * total\ observations}
 <section id="computing-the-f-quantile" class="level3" data-number="16.5.1">
 <h3 data-number="16.5.1" class="anchored" data-anchor-id="computing-the-f-quantile"><span class="header-section-number">16.5.1</span> Computing the <span class="math inline">\(f\)</span>-quantile</h3>
 <p>Computing <span class="math inline">\(f\)</span> requires that the batch of numbers be ordered from smallest to largest.</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-30_566c38002dc9efeacb46e256e785e8d4">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>a.o <span class="ot">&lt;-</span> <span class="fu">sort</span>(a)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>a.o</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -778,14 +893,13 @@ f_i = \frac{i - 0.5}{n}
 \]</span></p>
 <p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section of this chapter, there are many ways one can compute a quantile, however, the differences may not matter much when working with large batches of values.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-31_d4bb95f37a91802288930bc42561f55f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)          <span class="co"># Create indices</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>f.val <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(a)  <span class="co"># Compute the f-value</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val) <span class="co"># Create dataframe of sorted values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that in the last line of code, we are appending the ordered representation of <code>a</code> to <code>f.val</code> given that <code>f.val</code> assumes an ordered dataset. The data frame <code>a.fi</code> should look like this:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-32_5e90fb3398465e1b75c11c0db764a948">
-<table class="table table-sm table-striped small">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 8%">
 <col style="width: 11%">
@@ -839,9 +953,8 @@ f_i = \frac{i - 0.5}{n}
 </tr>
 </tbody>
 </table>
-</div>
 <p>It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in <code>a</code> associated with a quantile of <span class="math inline">\(0.5\)</span>; this is because we have an even number of values in our dataset. The solution is to interpolate a value based on a desired quantile. The <code>quantile()</code> function does just that. For example, to find the value associated with a quantile of <span class="math inline">\(0.5\)</span>, type:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-33_adf4931c46109b72ff81c523dae19bb6">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 50% 
@@ -849,7 +962,7 @@ f_i = \frac{i - 0.5}{n}
 </div>
 </div>
 <p>If we want to get quantile values for multiple fractions, simply wrap the fractions with the <code>c()</code> function:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-34_f890e5e415cf70e9fb8f65cad1dd28fa">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 25%  50%  75% 
@@ -857,7 +970,7 @@ f_i = \frac{i - 0.5}{n}
 </div>
 </div>
 <p>The <code>quantile</code> function is designed to accept different quantile methods. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-35_727d7666aa377d0a1ab6b46adafe3635">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 25%  50%  75% 
@@ -869,19 +982,27 @@ f_i = \frac{i - 0.5}{n}
 <section id="creating-a-quantile-plot" class="level3" data-number="16.5.2">
 <h3 data-number="16.5.2" class="anchored" data-anchor-id="creating-a-quantile-plot"><span class="header-section-number">16.5.2</span> Creating a quantile plot</h3>
 <p>A batch’s quantile is best viewed as a plot where we plot the values as a function of the <span class="math inline">\(f\)</span>-values:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-36_89f10be697cb1db435f058c537641573">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <section id="using-ggplots-qq-geom" class="level4" data-number="16.5.2.1">
 <h4 data-number="16.5.2.1" class="anchored" data-anchor-id="using-ggplots-qq-geom"><span class="header-section-number">16.5.2.1</span> Using ggplot’s <code>qq</code> geom</h4>
 <p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values and the dataframe <code>a.fi</code>, you could simply call the function <code>stat_qq()</code> as in:</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-37_6e5dd4ecbb2d9e6f1e2112e6770efeae">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>However, ggplot’s <code>stat_qq</code> function does not adopt Cleveland’s <span class="math inline">\(f\)</span>-value calculation. Hence, you’ll notice a slight offset in position along the x-axis. For example, the third-to-last point has an <span class="math inline">\(f\)</span>-value of <code>0.744</code> instead of an <span class="math inline">\(f\)</span>-value of <code>0.75</code> as calculated using Cleveland’s method.</p>
@@ -892,9 +1013,13 @@ f_i = \frac{i - 0.5}{n}
 <section id="how-quantile-plots-behave-in-the-face-of-skewed-data" class="level2" data-number="16.6">
 <h2 data-number="16.6" class="anchored" data-anchor-id="how-quantile-plots-behave-in-the-face-of-skewed-data"><span class="header-section-number">16.6</span> How quantile plots behave in the face of skewed data</h2>
 <p>It can be helpful to simulate distributions of difference skewness to see how a quantile plot may behave. In the following figure, the top row shows the different density distribution plots and the bottom row shows the <strong>quantile plots</strong> for each distribution (note that the x-axis maps the f-values).</p>
-<div class="cell" data-hash="univariate_plots_cache/html/unnamed-chunk-38_39adbc8cde4458e0be181ed0b218c986">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid" width="864"></p>
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
 </div>
 </div>
 
@@ -937,18 +1062,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -980,11 +1094,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -994,8 +1147,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1007,7 +1169,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1051,6 +1336,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1076,6 +1362,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1137,12 +1449,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./ggplot2.html" class="pagination-link">
+      <a href="./ggplot2.html" class="pagination-link" aria-label="ggplot2 plotting environment">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">ggplot2 plotting environment</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./compare_batches.html" class="pagination-link">
+      <a href="./compare_batches.html" class="pagination-link" aria-label="Comparing distributions: The q-q plot">
         <span class="nav-page-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Comparing distributions: The q-q plot</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1150,7 +1462,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></div>   
+    <div class="nav-footer-left">
+<p>Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -1159,6 +1473,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 

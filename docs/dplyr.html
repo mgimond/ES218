@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 9&nbsp; Manipulating data tables with dplyr</title>
+<title>9&nbsp; Manipulating data tables with dplyr – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -90,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -104,9 +111,10 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </script>
-
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 
 
 <link rel="stylesheet" href="libs/style.css">
@@ -114,18 +122,17 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 <body class="nav-sidebar docked">
 
-
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./dplyr.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Manipulating data tables with `dplyr`</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./dplyr.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Manipulating data tables with <code>dplyr</code></span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -134,7 +141,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./"></a> 
@@ -162,9 +169,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Intro</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -185,9 +192,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Data manipulation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -256,9 +263,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Plots</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -285,9 +292,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Univariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -319,7 +326,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Spread-level plots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -344,9 +351,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Bivariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -379,9 +386,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Two-way tables</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -396,9 +403,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Miscellaneous</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -426,7 +433,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -461,7 +468,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data_objects.html">Data manipulation</a></li><li class="breadcrumb-item"><a href="./dplyr.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Manipulating data tables with <code>dplyr</code></span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Manipulating data tables with <code>dplyr</code></span></h1>
 </div>
@@ -476,11 +483,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-2_cd865d8d1ac8a3f1ea6152390c61ddc5">
-<div class="cell-output-display">
 
+<div class="cell">
+<div class="cell-output-display">
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
  <thead>
   <tr>
@@ -552,17 +560,17 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014.</p>
 <p>Run the following line to load the FAO data file into your current R session.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-3_36f0f2aca6c2d1f9570bb13369f153b1">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv"</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Before tackling the examples that follow, make sure to load the <code>dplyr</code> package.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-4_474877655e6f71ef87ce89729e3bca45">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="the-dplyr-basics" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="the-dplyr-basics"><span class="header-section-number">9.1</span> The dplyr basics</h2>
 <p>The basic set of R tools can accomplish many data table queries, but the syntax can be overwhelming and verbose. The <code>dplyr</code> package offers some nifty and simple querying functions. Some of <code>dplyr</code>’s key data manipulation functions are summarized in the following table:</p>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th><code>dplyr</code> function</th>
@@ -594,25 +602,25 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </table>
 <p>Note that all of these functions take as first argument the data table name except when used in a piping operation (pipes are discussed later in this chapter). For example:</p>
 <p>When used alone, dataframe <code>dat</code> is the first argument <strong>inside</strong> the <code>dplyr</code> function.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-5_93b35a326359db6f0ffd004c9168bc60">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">select</span>(dat, Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>When used in a pipe, dataframe <code>dat</code> is <strong>outside</strong> of the <code>dplyr</code> function.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-6_c83016c66cc18effdb3fdb0c54fe7a51">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> <span class="fu">select</span>(Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you are using R 4.1 or greater, you can make use of the native pipe.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-7_8af0e0f1984791dabdd261b484d5ad31">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">|&gt;</span> <span class="fu">select</span>(Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="filter-subset-by-rows" class="level3" data-number="9.1.1">
 <h3 data-number="9.1.1" class="anchored" data-anchor-id="filter-subset-by-rows"><span class="header-section-number">9.1.1</span> <code>filter</code>: Subset by rows</h3>
 <p>Tables can be subsetted by rows based on column values. For example, we may wish to grab all rows associated with the value <code>Oats</code> in the <code>Crop</code> column:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-8_5515ee40f3789e1a32b71783490aeee7">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat.query1 <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Crop <span class="sc">==</span> <span class="st">"Oats"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can use the <code>unique()</code> function to identify all unique values in the <code>Crop</code> column. This should return a single unique value: <code>Oats</code>.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-9_d608f0a2a37a84df8af2929404fa9154">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(dat.query1<span class="sc">$</span>Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Oats"</code></pre>
@@ -620,11 +628,11 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>Note that R is case sensitive, so make sure that you respect each letter’s case (i.e.&nbsp;upper or lower).</p>
 <p>We can expand our query by including both <code>Oats</code>, <code>Buckwheat</code> and limiting the <code>Country</code> column to <code>Canada</code>.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-10_ac1f40255745632a3647cc4fc3016ccf">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dat.query2 <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Crop <span class="sc">==</span> <span class="st">"Oats"</span> <span class="sc">|</span> Crop <span class="sc">==</span> <span class="st">"Buckwheat"</span>, </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                          Country <span class="sc">==</span> <span class="st">"Canada"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-11_9cdeb0bd1c021ac4f18f2507dc858d7b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(dat.query1<span class="sc">$</span>Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Oats"</code></pre>
@@ -636,12 +644,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>The character <code>|</code> is the Boolean operator <em>OR</em>. So in our example, the query can be read as “… crop equals oats <em>OR</em> crop equals buckwheat”. Had we used the AND operator, <code>&amp;</code> as in <code>Crop == "Oats" &amp; Crop == "Buckwheat"</code>, the output would have returned zero rows since a <code>Crop</code> value cannot be both <code>Oats</code> AND <code>Buckwheat</code>.</p>
 <p>We can expand this query by limiting our output to the years 2005 to 2010</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-12_076baf42fb859667f237d7d462f1717a">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat.query3 <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Crop <span class="sc">==</span> <span class="st">"Oats"</span> <span class="sc">|</span> Crop <span class="sc">==</span> <span class="st">"Buckwheat"</span>, </span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                          Country <span class="sc">==</span> <span class="st">"Canada"</span>, </span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                          Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span> <span class="dv">2010</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-13_b3a2808a6f1369bfe14c68d4d9f68ed3">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(dat.query3<span class="sc">$</span>Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Oats"      "Buckwheat"</code></pre>
@@ -660,7 +668,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="arrange-sort-rows-by-column-value" class="level3" data-number="9.1.2">
 <h3 data-number="9.1.2" class="anchored" data-anchor-id="arrange-sort-rows-by-column-value"><span class="header-section-number">9.1.2</span> <code>arrange</code>: Sort rows by column value</h3>
 <p>You can sort a table based on a column’s values using the <code>arrange</code> function. For example, to sort <code>dat</code> by crop name type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-14_3e44f57dd438c6c0db6d32f143ec969d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>dat.sort1 <span class="ot">&lt;-</span> <span class="fu">arrange</span>(dat, Crop)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.sort1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -698,7 +706,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>By default, <code>arrange</code> sorts by ascending order. To sort by descending order, wrap the column name with the function <code>desc()</code>. For example, to sort the table by <code>Crop</code> in ascending order, then by <code>Year</code> in descending order, type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-15_fdbe2b7c4de5fcb046e30ecb5ff6511c">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>dat.sort2 <span class="ot">&lt;-</span> <span class="fu">arrange</span>(dat, Crop, <span class="fu">desc</span>(Year))</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.sort2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -739,7 +747,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="select-subset-by-column" class="level3" data-number="9.1.3">
 <h3 data-number="9.1.3" class="anchored" data-anchor-id="select-subset-by-column"><span class="header-section-number">9.1.3</span> <code>select</code>: Subset by column</h3>
 <p>You can subset a table by column(s) using the <code>select</code> function. To extract the columns <code>Crop</code>, <code>Year</code> and <code>Value</code>, type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-16_48b611ba06d7870a79d0bb35b04df49e">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>dat.subcol <span class="ot">&lt;-</span> <span class="fu">select</span>(dat, Crop, Year, Value)</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.subcol, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -749,7 +757,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>If you want all columns <em>other</em> than <code>Crop</code>, <code>Year</code> and <code>Value</code>, add the negative <code>-</code> symbol before the column name:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-17_38dc544b6fc6ba759e8fa3e2c1545bf2">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>dat.subcol <span class="ot">&lt;-</span> <span class="fu">select</span>(dat, <span class="sc">-</span>Crop, <span class="sc">-</span>Year, <span class="sc">-</span>Value)</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.subcol, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -762,7 +770,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="mutate-creating-andor-calculating-column-values" class="level3" data-number="9.1.4">
 <h3 data-number="9.1.4" class="anchored" data-anchor-id="mutate-creating-andor-calculating-column-values"><span class="header-section-number">9.1.4</span> <code>mutate</code>: Creating and/or calculating column values</h3>
 <p>You can add columns (and compute their values) using the <code>mutate</code> function. For example, to add a column <code>Ctr_abbr</code> and assign it the abbreviated values <code>CAN</code> for Canada and <code>USA</code> for the United States of America based on the values in column <code>Country</code> type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-18_3ba0cb1d362fe77ef032afdeeabfeb81">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>dat.extended <span class="ot">&lt;-</span> <span class="fu">mutate</span>(dat, <span class="at">Ctr_abbr =</span> <span class="fu">ifelse</span>(Country <span class="sc">==</span> <span class="st">"Canada"</span>, <span class="st">"CAN"</span>, <span class="st">"USA"</span>))</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.extended,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -790,7 +798,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>Here, we make use of an embedded function, <code>ifelse</code>, which performs a conditional operation: if the <code>Country</code> value is <code>Canada</code> return <code>CAN</code> if not, return <code>USA</code>. <code>ifelse</code> is covered in section 9.3.</p>
 <p>Note that if you wish to <em>rename</em> a column, you can use the <code>rename()</code> function instead of <code>mutate</code>.</p>
 <p>You can also use <code>mutate</code> to recompute column values. For example, to replace the <code>Country</code> column values with <code>CAN</code> or <code>USA</code> type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-19_48cd4be62cfadb2b87f781e441d0e2ae">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>dat.overwrite <span class="ot">&lt;-</span> <span class="fu">mutate</span>(dat, <span class="at">Country =</span> <span class="fu">ifelse</span>(Country <span class="sc">==</span> <span class="st">"Canada"</span>, <span class="st">"CAN"</span>, <span class="st">"USA"</span>))</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat.overwrite, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -811,7 +819,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="mutate-across-muliple-columns" class="level3" data-number="9.1.5">
 <h3 data-number="9.1.5" class="anchored" data-anchor-id="mutate-across-muliple-columns"><span class="header-section-number">9.1.5</span> <code>mutate</code> across muliple columns</h3>
 <p>You might find yourself wanting to apply a same set of <em>mutate</em> operations across multiple variables. For example, given the following sample dataset,</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-20_a640c66831780824f1c78c149201b315">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>met <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Wind =</span> <span class="fu">c</span>(<span class="fl">3.4</span>, <span class="fl">5.0</span>, <span class="dv">99</span>, <span class="fl">4.1</span>, <span class="fl">1.5</span>),</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">Dir  =</span> <span class="fu">c</span>(<span class="dv">181</span>, <span class="dv">220</span>, <span class="dv">15</span>,  <span class="dv">15</span>,  <span class="dv">99</span> ),</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">Prec =</span> <span class="fu">c</span>(<span class="dv">99</span> , <span class="fl">0.5</span>,  <span class="dv">0</span>,  <span class="dv">99</span>,  <span class="dv">99</span>))</span>
@@ -826,7 +834,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>where the value <code>99</code> is a placeholder for a missing value for the variables <code>Wind</code> and <code>Prec</code> but a valid value for <code>Dir</code>, we want to replace all missing values with <code>NA</code>. We could either create two mutate operations as in,</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-21_587f6e2b9213bd613386f649e1f1f64e">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>met <span class="sc">%&gt;%</span>  <span class="fu">mutate</span>(<span class="at">Wind =</span> <span class="fu">ifelse</span>(Wind <span class="sc">==</span> <span class="dv">99</span>, <span class="cn">NA</span>, Wind),</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">Prec =</span> <span class="fu">ifelse</span>(Prec <span class="sc">==</span> <span class="dv">99</span>, <span class="cn">NA</span>, Prec))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -839,7 +847,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>or, we could reduce the separate <code>mutate</code> operations into a single operation by adding an <code>across()</code> function to its argument.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-22_0a56e1f86e345910c15658f659696060">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>met <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>( <span class="fu">c</span>(Wind, Prec),</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>                       <span class="sc">~</span> <span class="fu">ifelse</span>( . <span class="sc">==</span> <span class="dv">99</span>, <span class="cn">NA</span>, .)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -856,7 +864,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="summarise-summarize-columns" class="level3" data-number="9.1.6">
 <h3 data-number="9.1.6" class="anchored" data-anchor-id="summarise-summarize-columns"><span class="header-section-number">9.1.6</span> <code>summarise</code>: Summarize columns</h3>
 <p>You can summarize (or “collapse”) one or more columns using the <code>summarise</code> function. For instance, to get the minimum and maximum years from the <code>Year</code> column, type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-23_74dd066433add56990bb622e805e0f9f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(dat, <span class="at">yr_min =</span> <span class="fu">min</span>(Year), <span class="at">yr_max=</span><span class="fu">max</span>(Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  yr_min yr_max
@@ -868,7 +876,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="sec-pipe" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="sec-pipe"><span class="header-section-number">9.2</span> Combining data manipulation functions using the pipe <code>%&gt;%</code></h2>
 <p>In most cases, you will find yourself wanting to combine several of <code>dplyr</code>’s data manipulation functions. For example,</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-24_c624e409075c7fa1cc3b88d7ec01e332">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>dat.yield  <span class="ot">&lt;-</span> <span class="fu">filter</span>(dat, Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                          Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                          Year <span class="sc">==</span> <span class="dv">2012</span>)</span>
@@ -884,7 +892,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>The downside to this approach is the creation of several intermediate objects (e.g.&nbsp;<code>dat.yield</code> and <code>dat.rename</code>). This can make the workflow difficult to follow and clutter your R session with needless intermediate objects.</p>
 <p>Another approach to combining <code>dplyr</code> operations is to use the <strong>piping operator</strong> ,<code>%&gt;%</code>, which daisy chains <code>dplyr</code> operations. So our previous workflow could look like:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-25_4ac045394a51038688e56ee533c7c97a">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>dat.final <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>         Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
@@ -903,7 +911,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="r-has-a-native-pipe-too" class="level3" data-number="9.2.1">
 <h3 data-number="9.2.1" class="anchored" data-anchor-id="r-has-a-native-pipe-too"><span class="header-section-number">9.2.1</span> R has a native pipe too</h3>
 <p>R has recently (as of version <code>4.1</code>) added its own native pipe to its base function. Its infix operator is written as <code>|&gt;</code>. In most code chunks covered in these tutorials, you can substitute <code>%&gt;%</code> with <code>|&gt;</code>. For example, you can write the previous code chunk as:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-26_8bf53730a503e5b6bf757c3afd1bc13e">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>dat.final <span class="ot">&lt;-</span> dat  <span class="sc">|&gt;</span> </span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>         Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
@@ -919,18 +927,18 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h3 data-number="9.2.2" class="anchored" data-anchor-id="updating-a-factors-levels-in-a-dataframe"><span class="header-section-number">9.2.2</span> Updating a factor’s levels in a dataframe</h3>
 <p>Subsetting a dataframe by row might result in a factor losing all values associated with a level. You learned in section <code>3.3.1.2</code> that the <code>droplevels</code> function can be used to remove any levels no longer present in the factor. <code>droplevels</code> can also be used in a piping operation, however, the function will drop levels for <em>all</em> factors in the dataframe–this might not be the intended goal.</p>
 <p>If you want to selectively drop the levels for a specific set of factors in a dataframe, you might want to make use of the <code>fct_drop</code> function from the <code>forcats</code> package. For example, let’s first create a subset of the built-in <code>mtcars</code> dataset and create factors from a couple of its variables. We’ll use the base methods to tackle this task.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-27_a76c6e477a8b38e44498801df8aa622f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>mt <span class="ot">&lt;-</span> mtcars[ , <span class="fu">c</span>(<span class="st">"cyl"</span>, <span class="st">"gear"</span>)]</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>mt<span class="sc">$</span>cyl  <span class="ot">&lt;-</span> <span class="fu">factor</span>(mtcars<span class="sc">$</span>cyl)</span>
 <span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>mt<span class="sc">$</span>gear <span class="ot">&lt;-</span> <span class="fu">factor</span>(mtcars<span class="sc">$</span>gear)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now, let’s filter by <code>cyl</code>.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-28_55a45e4b8088b1244b0caec13ea8e10d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>mt_sub <span class="ot">&lt;-</span> mt <span class="sc">%&gt;%</span> </span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">filter</span>(cyl <span class="sc">==</span> <span class="dv">8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Exploring <code>mt_sub</code>’s summary, we see that some levels have no matching values in the factors:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-29_bfe11d7cae3e5a30a9a977c181973463">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mt_sub)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> cyl    gear  
@@ -940,7 +948,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Applying <code>droplevels</code> to the dataframe will remove those levels from <em>both</em> factors;</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-30_0cc21469ce50e6efac0eaf47e60dd12d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>mt_sub <span class="ot">&lt;-</span> mt <span class="sc">%&gt;%</span> </span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">filter</span>(cyl <span class="sc">==</span> <span class="dv">8</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">droplevels</span>()</span>
@@ -953,7 +961,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>Using <code>fct_drop</code> controls which factor(s) you want to clean up the levels for. Note, however, that <code>fct_drop</code> must be used inside of a <code>mutate</code> function.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-31_85f4b087a9b04de960ff48621dd90150">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forcats) </span>
 <span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>mt_sub <span class="ot">&lt;-</span> mt <span class="sc">%&gt;%</span> </span>
@@ -976,7 +984,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="the-base-ifelse" class="level3" data-number="9.3.1">
 <h3 data-number="9.3.1" class="anchored" data-anchor-id="the-base-ifelse"><span class="header-section-number">9.3.1</span> The base <code>ifelse</code></h3>
 <p>Conditional statements are used when you want to create an output value that is conditioned on an evaluation. For example, if you want to output a value of <code>1</code> <em>if</em> an input value is less than <code>23</code> and a value of <code>0</code> otherwise, you can make use of the <code>ifelse</code> function as follows:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-32_b75b7b0b6d081ad3e1034ad529e94432">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">12</span>,<span class="dv">102</span>, <span class="dv">43</span>, <span class="dv">20</span>, <span class="dv">90</span>, <span class="dv">0</span>, <span class="dv">12</span>, <span class="dv">6</span>)</span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>(x <span class="sc">&lt;</span> <span class="dv">23</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -990,7 +998,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <li>The value to output if the condition is <code>FALSE</code> (<code>0</code> in our example).</li>
 </ul>
 <p>The base <code>ifelse</code> function works as expected when the input/output values are numeric or character, but it does not work as expected when applied to factors or dates. For example, if you wish to replace one factor level with another, the following example will not return the expected output.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-33_e56d37aff0fc71929067d0e5cf057f8c">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.factor</span>( <span class="fu">c</span>(<span class="st">"apple"</span>, <span class="st">"banana"</span>, <span class="st">"banana"</span>, <span class="st">"pear"</span>, <span class="st">"apple"</span>))</span>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>(x <span class="sc">==</span> <span class="st">"pear"</span>, <span class="st">"apple"</span>, x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -998,7 +1006,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 <p>The output is a character representation of the level number (recall that factors encode level values as numbers behind the scenes, i.e.&nbsp;<code>apple</code> =1, <code>banana</code>=2, etc…). Likewise, if you wish to replace an erroneous date you will get:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-34_3af31058a2b5700ea84ea66c39d53915">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">mdy</span>(<span class="st">"1/23/2016"</span>, <span class="st">"3/2/2016"</span>, <span class="st">"12/1/1901"</span>, <span class="st">"11/23/2016"</span>)</span>
 <span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>( y <span class="sc">==</span> <span class="fu">mdy</span>(<span class="st">"12/1/1901"</span>), <span class="fu">mdy</span>(<span class="st">"12/1/2016"</span>), y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1012,14 +1020,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h3 data-number="9.3.2" class="anchored" data-anchor-id="dplyrs-if_else"><span class="header-section-number">9.3.2</span> <code>dplyr</code>’s <code>if_else</code></h3>
 <p><code>ifelse</code> does not preserve the attributes that might be present in a vector. In other words, it will strip away the vector’s <code>class</code>. A safer alternative is to use <code>dplyr</code>’s <code>if_else</code> function.</p>
 <p>Reworking the above examples:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-35_9027861629548cb823a28744eca4bd18">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( y <span class="sc">==</span> <span class="fu">mdy</span>(<span class="st">"12/1/1901"</span>), <span class="fu">mdy</span>(<span class="st">"12/1/2016"</span>), y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "2016-01-23" "2016-03-02" "2016-12-01" "2016-11-23"</code></pre>
 </div>
 </div>
 <p>The date class is preserved. Now let’s check the output of a factor.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-36_da08d4f852797dc00ec57d1f2e089a0b">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>(x <span class="sc">==</span> <span class="st">"pear"</span>, <span class="st">"apple"</span>, x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "apple"  "banana" "banana" "apple"  "apple" </code></pre>
@@ -1027,7 +1035,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>Note that when working with factors, however, <code>if_else</code> will strip the <code>factor</code> class of an input factor. But, instead of returning the factor’s underlying integer values, it outputs the associated levels as a <code>character</code> data type.</p>
 <p>The workaround is to convert the <code>if_else</code> output to a factor.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-37_dc92f10ab3fdb9575c56a7603a648e72">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">factor</span>(<span class="fu">if_else</span>(x <span class="sc">==</span> <span class="st">"pear"</span>, <span class="st">"apple"</span>, x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] apple  banana banana apple  apple 
@@ -1040,7 +1048,7 @@ Levels: apple banana</code></pre>
 <section id="changing-values-based-on-multiple-conditions-case_when" class="level3" data-number="9.3.3">
 <h3 data-number="9.3.3" class="anchored" data-anchor-id="changing-values-based-on-multiple-conditions-case_when"><span class="header-section-number">9.3.3</span> Changing values based on multiple conditions: <code>case_when</code></h3>
 <p><code>ifelse</code> and <code>if_else</code> work great when a single set of conditions is to be satisfied. But, if multiple sets of conditions are to be evaluated, nested if/else statements become cumbersome and are prone to clerical error. The following code highlights an example of nested if/else statements.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-38_37930f6add5a9ed98425bf4d65cea1b3">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>unit <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"F"</span>,<span class="st">"F"</span>,<span class="st">"C"</span>, <span class="st">"K"</span>)</span>
 <span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="fu">if_else</span>( unit <span class="sc">==</span> <span class="st">"C"</span>, <span class="st">"Celsius"</span>, <span class="fu">if_else</span>(unit <span class="sc">==</span> <span class="st">"F"</span>, <span class="st">"Fahrenheit"</span>, <span class="st">"Kelvin"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1048,7 +1056,7 @@ Levels: apple banana</code></pre>
 </div>
 </div>
 <p>A simpler solution is to use the <code>case_when</code> function.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-39_2626c9c4a172fdbd958a26d287fc1841">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> <span class="st">"Celsius"</span>,</span>
 <span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> <span class="st">"Fahrenheit"</span>,</span>
 <span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"K"</span> <span class="sc">~</span> <span class="st">"Kelvin"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1057,10 +1065,10 @@ Levels: apple banana</code></pre>
 </div>
 </div>
 <p><code>case_when</code> can aso be used for more complex operations. For example, given two vectors, <code>unit</code> and <code>temp</code>, we would like to convert all <code>temp</code> values to Fahrenheit by applying a temperature conversion dependent on the <code>unit</code> value.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-40_4075bb0300da226e0caa90e80d1ce5b0">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">45.2</span>, <span class="fl">56.3</span>, <span class="fl">11.0</span>, <span class="dv">285</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-41_e3206fb0d0e1ec107ac0cc3812be647c">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> temp,</span>
 <span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> (temp <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>) <span class="sc">+</span> <span class="dv">32</span>,</span>
 <span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1070,7 +1078,7 @@ Levels: apple banana</code></pre>
 </div>
 <p>The last argument, <code>TRUE ~</code>, applies to all conditions not satisfied by the previous two conditions (otherwise, not doing so would return <code>NA</code> values by default). You only need to add a <code>TRUE ~</code> condition if you know that all previously listed conditions may not cover all possible outcomes. Here, we know that some observations are associated with <code>unit == "K"</code> yet that condition is not explicitly defined in the <code>case_when</code> arguments. We could have, of course, added the <code>unit == "K"</code> condition to the above code chunk thus alleviating the need for the <code>TRUE ~</code> condition.</p>
 <p>Note that the order in which these conditions are listed matters since evaluation stops at the first <code>TRUE</code> outcome encountered. So, had the last condition been moved to the top of the stack, all <code>temp</code> values would be assigned the first conversion option.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-42_96b20ebb90a31d02f401b9f3ea1d382f">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What not to do ...</span></span>
 <span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="fu">case_when</span>(<span class="cn">TRUE</span> <span class="sc">~</span> (temp <span class="sc">-</span> <span class="fl">273.15</span>) <span class="sc">*</span> <span class="dv">9</span><span class="sc">/</span><span class="dv">5</span> <span class="sc">+</span> <span class="dv">32</span>,</span>
 <span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>          unit <span class="sc">==</span> <span class="st">"F"</span> <span class="sc">~</span> temp,</span>
@@ -1080,7 +1088,7 @@ Levels: apple banana</code></pre>
 </div>
 </div>
 <p>Note that <code>case_when</code> can also be used inside of a <code>mutate</code> function. For example, to replace <code>Canada</code> and <code>United States of America</code> in variable <code>Country</code> with <code>CAN</code> and <code>USA</code> respectively and to create a new variable called <code>Type</code> which will take on the values of <code>1</code>, <code>2</code> or <code>3</code> depending on the values in variable <code>Source</code>, type the following:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-43_224d6f8b7cc37b06a1431aa1bc477daa">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
 <span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Country =</span> <span class="fu">case_when</span>(Country <span class="sc">==</span> <span class="st">"Canada"</span> <span class="sc">~</span> <span class="st">"CAN"</span>,</span>
 <span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>                             Country <span class="sc">==</span> <span class="st">"United States of America"</span> <span class="sc">~</span> <span class="st">"USA"</span>),</span>
@@ -1104,7 +1112,7 @@ Levels: apple banana</code></pre>
 <section id="replacing-values-with-na" class="level2" data-number="9.4">
 <h2 data-number="9.4" class="anchored" data-anchor-id="replacing-values-with-na"><span class="header-section-number">9.4</span> Replacing values with <code>NA</code></h2>
 <p>So far, we’ve used the <code>ifelse</code> or <code>if_else</code> functions to replace certain values with <code>NA</code>. <code>dplyr</code> offers the <code>na_if()</code> function to simplify the syntax. For example, to replace <code>-999</code> with <code>NA</code>:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-44_be65e8ab1da4cdacff4b7eedc00ea166">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">999</span>, <span class="dv">6</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">999</span>)</span>
 <span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>( val , <span class="sc">-</span><span class="dv">999</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1112,7 +1120,7 @@ Levels: apple banana</code></pre>
 </div>
 </div>
 <p>Likewise, to replace all empty character values:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-45_29e81b60073412e6a88ee858c4914eb3">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ab"</span>, <span class="st">""</span>, <span class="st">"A b"</span>, <span class="st">"  "</span>)</span>
 <span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>( val , <span class="st">""</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1120,7 +1128,7 @@ Levels: apple banana</code></pre>
 </div>
 </div>
 <p><code>na_if</code> will also preserve the object’s class. For example:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-46_f76ad8ca4b4f72f86054c4f29022d94a">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.factor</span>( <span class="fu">c</span>(<span class="st">"apple"</span>, <span class="st">"walnut"</span>, <span class="st">"banana"</span>, <span class="st">"pear"</span>, <span class="st">"apple"</span>))</span>
 <span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>(x , <span class="st">"walnut"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1130,7 +1138,7 @@ Levels: apple banana pear walnut</code></pre>
 </div>
 <p>But, note that it does not automatically drop the level being replaced with <code>NA</code>.</p>
 <p><code>na_if</code> also works with dates, but don’t forget to evaluate a date object with a date value. For example, to replace dates of <code>12/1/1901</code> with <code>NA</code>, we need to make a date object of that value. Here, we’ll make use of the <code>mdy()</code> function as in <code>mdy("12/1/1901")</code>.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-47_75fef37f982b12b5075cbe3df0bfe0c6">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">mdy</span>(<span class="st">"1/23/2016"</span>, <span class="st">"3/2/2016"</span>, <span class="st">"12/1/1901"</span>, <span class="st">"11/23/2016"</span>)</span>
 <span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a><span class="fu">na_if</span>(y, <span class="fu">mdy</span>(<span class="st">"12/1/1901"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1138,11 +1146,11 @@ Levels: apple banana pear walnut</code></pre>
 </div>
 </div>
 <p>To use <code>na_if()</code> in a piping operation, it needs to be embedded in a <code>mutate()</code> function. For example, to replace <code>"Calculated data"</code> with <code>NA</code> in the <code>dat</code> dataframe, type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-48_10c18a00ed627a4f28327c46faeaeeb8">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
 <span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Source =</span> <span class="fu">na_if</span>(Source, <span class="st">"Calculated data"</span> ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-49_f530c499c8fb46b97c40e0b083085626">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(dat1<span class="sc">$</span>Source)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Official data"                           
@@ -1155,7 +1163,7 @@ Levels: apple banana pear walnut</code></pre>
 <section id="outputting-a-vector-instead-of-a-table-using-pull" class="level2" data-number="9.5">
 <h2 data-number="9.5" class="anchored" data-anchor-id="outputting-a-vector-instead-of-a-table-using-pull"><span class="header-section-number">9.5</span> Outputting a vector instead of a table using <code>pull</code></h2>
 <p>Piping operations will output a table, even if a single value is returned. For example, the following summarization operation returns the total oats yield as a dataframe:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-50_e89ead123b4d82f0d04a709f9d6a67eb">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
 <span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
 <span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
@@ -1171,7 +1179,7 @@ Levels: apple banana pear walnut</code></pre>
 </div>
 </div>
 <p>There may be times when you want to output a vector element and not a dataframe. To output a vector, use the <code>pull()</code> function.</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-51_898cc4ad10b3673c090855e3c71f4270">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>oats <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
 <span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
 <span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
@@ -1187,14 +1195,14 @@ Levels: apple banana pear walnut</code></pre>
 </div>
 </div>
 <p>The <code>pull</code> function can also be used to explicitly define the column to extract. For example, to extract the <code>Value</code> column type:</p>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-52_6a99a606c99ceff62104763b31a84cff">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This outputs a multi-element vector</span></span>
 <span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a>yield <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
 <span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Crop <span class="sc">==</span> <span class="st">"Oats"</span>,</span>
 <span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a>         Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(Value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="dplyr_cache/html/unnamed-chunk-53_b30c6e982abf59513b5117a7882f770e">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(yield)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 24954.79 21974.70 29109.36 20492.37 27364.53 23056.62</code></pre>
@@ -1244,18 +1252,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -1287,11 +1284,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1301,8 +1337,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1314,7 +1359,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1358,6 +1526,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1383,6 +1552,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1442,15 +1637,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script>
-
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./subset_base.html" class="pagination-link">
+      <a href="./subset_base.html" class="pagination-link" aria-label="Manipulating data tables using base functions">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Manipulating data tables using base functions</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./group_by.html" class="pagination-link">
+      <a href="./group_by.html" class="pagination-link" aria-label="Grouping and summarizing">
         <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Grouping and summarizing</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1458,7 +1652,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></div>   
+    <div class="nav-footer-left">
+<p>Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -1467,6 +1663,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 

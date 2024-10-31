@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Exploratory Data Analysis in R - 23&nbsp; A working example: t-tests and re-expression</title>
+<title>23&nbsp; A working example: t-tests and re-expression – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +33,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -90,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -104,9 +111,10 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </script>
-
 <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
 <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 
 
 <link rel="stylesheet" href="libs/style.css">
@@ -114,18 +122,17 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 <body class="nav-sidebar docked">
 
-
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./case_study.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./case_study.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -134,7 +141,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./"></a> 
@@ -162,9 +169,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Intro</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -185,9 +192,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Data manipulation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -256,9 +263,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
  <span class="menu-text">Plots</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -285,9 +292,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
  <span class="menu-text">Univariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -319,7 +326,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Spread-level plots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -344,9 +351,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Bivariate</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -379,9 +386,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Two-way tables</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -396,9 +403,9 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
  <span class="menu-text">Miscellaneous</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
@@ -426,7 +433,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -445,7 +452,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./case_study.html"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">A working example: t-tests and re-expression</span></h1>
 </div>
@@ -460,11 +467,12 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-2_c80f742344de76063a1cbf73c1f371c1">
-<div class="cell-output-display">
 
+<div class="cell">
+<div class="cell-output-display">
 <table data-quarto-disable-processing="true" class="table" style="width: auto !important; ">
  <thead>
   <tr>
@@ -506,14 +514,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 3.4.4 </td>
+             border-radius: 5px;"> 3.5.1 </td>
    <td style="text-align:left;color: darkred !important;background-color: rgba(250, 232, 232, 255) !important;text-align: center;border: 1px solid white;
              font-family: 'Open Sans', Arial;
              padding:1px !important;
              padding-left:4px !important;
              padding-right:4px !important;
              font-size: 0.8em;
-             border-radius: 5px;"> 0.2.1 </td>
+             border-radius: 5px;"> 0.3.0 </td>
   </tr>
 </tbody>
 </table>
@@ -523,7 +531,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <section id="introduction" class="level2" data-number="23.1">
 <h2 data-number="23.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">23.1</span> Introduction</h2>
 <p>The following data represent 1,2,3,4-tetrachlorobenzene (TCB) concentrations (in units of ppb) for two site locations: a reference site free of external contaminants and a contaminated site that went through remediation (dataset from Millard <em>et al.</em>, p.&nbsp;416-417).</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-3_f09cd9ea0795dde4bab834d256292ef7">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the two data objects (TCB concentrations for reference and contaminated sites)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>Ref <span class="ot">&lt;-</span>  <span class="fu">c</span>(<span class="fl">0.22</span>,<span class="fl">0.23</span>,<span class="fl">0.26</span>,<span class="fl">0.27</span>,<span class="fl">0.28</span>,<span class="fl">0.28</span>,<span class="fl">0.29</span>,<span class="fl">0.33</span>,<span class="fl">0.34</span>,<span class="fl">0.35</span>,<span class="fl">0.38</span>,<span class="fl">0.39</span>,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>          <span class="fl">0.39</span>,<span class="fl">0.42</span>,<span class="fl">0.42</span>,<span class="fl">0.43</span>,<span class="fl">0.45</span>,<span class="fl">0.46</span>,<span class="fl">0.48</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.51</span>,<span class="fl">0.52</span>,<span class="fl">0.54</span>,</span>
@@ -548,7 +556,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <h2 data-number="23.2" class="anchored" data-anchor-id="a-typical-statistical-approach-the-two-sample-t-test"><span class="header-section-number">23.2</span> A typical statistical approach: the two sample t-Test</h2>
 <p>We are interested in answering the question: <em>“Did the cleanup at the contaminated site reduce the concentration of TCB down to background (reference) levels?”</em>. If the question being addressed is part of a decision making process such as “Should we continue with the remediation?” we might want to assess if the difference in TCBs between both sites is “significant” enough to conclude that the TCBs are higher than would be expected if chance alone was the process at play.</p>
 <p>A popular statistical procedure used to help address this question is the two sample <a href="https://mgimond.github.io/Stats-in-R/z_t_tests.html#t-test-with-two-samples-small-sample-sizes">t-Test</a>. The test is used to assess whether or not the mean concentration between both batches of values are significantly different from one another. The test can be framed in one of three ways: We can see if the batches are similar, if one batch is greater than the other batch, or if one batch is smaller than the other batch. In our case, we will assess if the <code>Cont</code> batch is greater than the <code>Ref</code> batch (this is the <em>alternative</em> hypothesis). We’ll make use of the <code>t.test</code> function and set the parameter <code>alt</code> to <code>"greater"</code>.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-4_eb3d8983c7e5306221de01fd9719858d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(Cont, Ref, <span class="at">alt=</span><span class="st">"greater"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -568,31 +576,47 @@ mean of x mean of y
 <p>Many ancillary data analysts may stop here and proceed with the decision making process. This is not good practice. To see why, let’s deconstruct the t-test.</p>
 <p>First, we need to find out how the test is <em>characterizing</em> the batches of numbers. The t-test characterizes the <em>location</em> of the batch using the <strong>mean</strong>, and the <em>spread</em> using the <strong>standard deviation</strong>. In essence, the test is reducing the complexity of the batches down to two numbers.</p>
 <p>The t-test uses these numbers to reconstruct, then compare the distributions. For example, here’s how the t-test is characterizing the distribution of value for the reference site, <code>Ref</code>:</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-5_25e357ba1eea325e36b0a51c26cc4e6c">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The right side of the plot is the fitted <em>Normal</em> distribution computed from the sample’s standard deviation–this is how the t-test is characterizing the <code>Ref</code> distribution. The left side of the plot is the density distribution showing the <em>actual</em> shape of the distribution. The points in between both plot halves are the actual values. Note the skew towards higher concentrations. For the <code>Ref</code> data, one might argue that the <em>Normal</em> fit is doing a reasonably good job in characterizing the distribution of values though the outliers may be exaggerating the width of the Normal distribution.</p>
 <p>Now, let’s see how well the <em>Normal</em> fit characterizes the distribution of the contaminated site values, <code>Cont</code>.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-6_7b260d6afab3c9d31b16bf1fdec810ef">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The <em>Normal</em> fit is on the right. The density plot is barely noticeable on the left side of the plot! You’ll note the tight cluster of points near the center of the Normal distribution. There are just a few points that extend beyond the tight cluster. These outliers are disproportionately inflating the standard deviation which, in turn, leads to the disproportionately large Normal distribution that is adopted in the t-test.</p>
 <p>Since the t-test adopts a Normal characterization of the spread, it would behoove us to check the assumption of normality using the <em>normal q-q plot</em>. Here, we’ll compare the <code>Cont</code> values to a Normal distribution.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-7_d8aa22237756d87928d91f49b6bdbdf7">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This is a textbook example of a batch of values that does <strong>not</strong> conform to a <em>Normal</em> distribution. At least four values (which represent ~5% of the data) seem to contribute to the strong skew and to a much distorted representation of location and spread. The mean and standard deviation are <strong>not robust</strong> to extreme values. In essence, all it takes is one single outlier to heavily distort the representation of location and spread in our data. The mean and standard deviation have a breakdown point of <code>1/n</code> where <code>n</code> is the sample size.</p>
 <p>The median and interquartile range are less sensitive to extreme values. In fact, the median has a breakdown point of <code>n/2</code>. In other words, half of the values would have to be modified to alter the median.</p>
 <p>The boxplot makes use of these robust measures of location and spread; let’s compare the batches with and without the extreme (outlier) values.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-8_c3da65b568335d16fbc304660c409e65">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Note that because of the robust nature of the median and interquartile range, the boxplot helps us spot the outliers. In fact, the boxplot has a breakdown point of <code>n/4</code> (i.e.&nbsp;25% of the values must be extreme before we see any masking of extreme values). The standard deviation, on the other hand, can be inflated by <em>one</em> extreme value thus <em>masking</em> the potentially problematic values.</p>
@@ -602,20 +626,28 @@ mean of x mean of y
 <section id="re-expression" class="level2" data-number="23.3">
 <h2 data-number="23.3" class="anchored" data-anchor-id="re-expression"><span class="header-section-number">23.3</span> Re-expression</h2>
 <p>If we are to use the t-test, we need to make sure that the distributional requirements are met. Even Welch’s modification has one requirement about the distribution: <strong>both spreads must follow a normal distribution</strong>. Let’s compare both batches to a normal distribution via a normal q-q plot. We’ll make use of the custom <code>eda_qq</code> function:</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-9_cfc1196fd52ddf19b2688b75e4f9df6d">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm=</span><span class="cn">TRUE</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>These batches do not follow the straight line. This suggests skewness in the distribution (as was observed with the boxplots). A workaround to this problem is to re-express the batches of values in such a way to render them as close to normal as possible. However, in doing so, we must make sure that both batches are re-expressed in an equal way to facilitate comparison. A popular re-expression used with observational data that exhibit skewness towards higher values is the log transformation. The <code>eda_qq</code> function has an argument, <code>p=</code>, that takes as input a re-expression that will be applied to the values. The function will also allow us to choose between a Tukey (<code>tukey=TRUE</code>) or Box-Cox (<code>tukey=FALSE</code>) method. The default is set to <code>tukey=FALSE</code>. To apply a log transformation, we set <code>p</code> to <code>0</code>.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-10_7e634f704d19efd81b102754f58bf356">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm=</span><span class="cn">TRUE</span>, <span class="at">p =</span> <span class="dv">0</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm=</span><span class="cn">TRUE</span>, <span class="at">p =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="576"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The log transformed data is an improvement, but a skew in both batches is still apparent. We’ll need to explore other powers next.</p>
@@ -624,28 +656,36 @@ mean of x mean of y
 <h2 data-number="23.4" class="anchored" data-anchor-id="fine-tuning-the-re-expression"><span class="header-section-number">23.4</span> Fine-tuning the re-expression</h2>
 <p>The log transformation is one of many re-expressions that can be applied to the data. Let’s explore the skewness across different “depths” of the <code>Cont</code> values to see if the skewness is systematic. We’ll use letter value summary plots to help guide us to a reasonable re-expression. We’ll make use of the custom <code>eda_lsum</code> function to generate the table and <code>ggplot2</code> to generate the plot.</p>
 <p>First, we’ll look at the raw contaminated site data:</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-11_207910f65bebd680f850ad7126b58a95">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>Cont.lsum <span class="ot">&lt;-</span> <span class="fu">eda_lsum</span>(Cont, <span class="at">l=</span><span class="dv">7</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Cont.lsum) <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span><span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The data become strongly skewed for 1/32<sup>th</sup> of the data (depth letter <code>C</code>). Let’s now look at the reference site.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-12_d121f8bbcacbd5ba1ba307a6be00359a">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Ref.lsum <span class="ot">&lt;-</span> <span class="fu">eda_lsum</span>(Ref, <span class="at">l=</span><span class="dv">7</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Ref.lsum) <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span><span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>A skew is also prominent here but a bit more consistent across the depths with a slight drop between depths <code>D</code> and <code>C</code> (16<sup>th</sup> and 32<sup>nd</sup> extreme values).</p>
 <p>Next, we will find a power function that re-expresses the values to satisfy the t-test distribution requirement. We’ll first look at the log transformation implemented in the last section. Note that we are using the custom <code>eda_re</code> function to transform the data. We’ll also make use of some <em>advanced</em> coding to reduce the code chunk size.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-13_2d0f50f3087eed7f5126c0e6012e6e20">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
@@ -654,49 +694,69 @@ mean of x mean of y
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(.<span class="sc">~</span>Site)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="480"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The log transformation seems to work well with the reference site, but it’s not aggressive enough for the contaminated site. Recall that to ensure symmetry across <em>all</em> levels of the batches, the letter values must follow a straight (horizontal) line. Let’s try a power of <code>-0.5</code>. Given that the negative power will reverse the order of the values if we adopt the Tukey transformation, we’ll use the default Box-Cox method.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-14_4de506c53080a4b733dcd35706bc24e6">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Site) <span class="sc">%&gt;%</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>(<span class="fu">eda_lsum</span>( <span class="fu">eda_re</span>(.<span class="sc">$</span>TCB,<span class="sc">-</span><span class="fl">0.5</span>, <span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="at">l=</span><span class="dv">7</span>) ) <span class="sc">%&gt;%</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(.<span class="sc">~</span>Site)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="480"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This seems to be too aggressive. We are facing a situation where attempting to normalize one batch distorts the other batch. Let’s try a compromise and use <code>-.35</code>.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-15_4366d39af6860dca9c4e536dfde1277c">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df  <span class="sc">%&gt;%</span> </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Site) <span class="sc">%&gt;%</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>(<span class="fu">eda_lsum</span>( <span class="fu">eda_re</span>(.<span class="sc">$</span>TCB,<span class="sc">-</span><span class="fl">0.35</span>, <span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="at">l=</span><span class="dv">7</span>) ) <span class="sc">%&gt;%</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">aes</span>(<span class="at">x=</span>depth, <span class="at">y=</span>mid, <span class="at">label=</span>letter) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_reverse</span>() <span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">vjust=</span><span class="sc">-</span>.<span class="dv">5</span>, <span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span> <span class="fu">facet_grid</span>(.<span class="sc">~</span>Site)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="480"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>This seems to be a bit better. It’s obvious that we will not find a power transformation that will satisfy both batches, so we will need to make a judgement call and work with a power of -.35 for now.</p>
 <p>Let’s compare the re-expressed batches with a normal distribution.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-16_9a098596c9a733d312371135704208d5">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Cont, <span class="at">norm =</span> <span class="cn">TRUE</span>, <span class="at">p =</span> <span class="sc">-</span><span class="fl">0.35</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_qq</span>(Ref, <span class="at">norm =</span> <span class="cn">TRUE</span>, <span class="at">p =</span> <span class="sc">-</span><span class="fl">0.35</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="480"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>The distributions look quite good when viewed in a normal q-q plot. Let’s now compare the re-expressed batches using a density/normal fit plot.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-17_bf7d287d16a3b2a15229ad57ab205aa2">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="case_study_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="288"></p>
+<div>
+<figure class="figure">
+<p><img src="case_study_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
 </div>
 </div>
 <p>Recall that the right half is the <em>Normal</em> fit to the data and the left half is the density plot. There is far greater agreement between the normal fits and their accompanying density distributions for both sites. You’ll also note that the mean concentration is now smaller at the contaminated site than it is a the reference site–this is in agreement with what we observed in the boxplots.</p>
 <p>So, how much impact did the skewed distributions have on the t-test? Now that we have normally distributed values, let’s rerun the t-test using the re-expressed values. Note that because the power is negative, we will adopt the Box-Cox transformation to preserve order by setting <code>tukey=FALSE</code> to the <code>eda_re</code> function.</p>
-<div class="cell" data-hash="case_study_cache/html/unnamed-chunk-18_f7ca6b4313170bc239c0668b16702787">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(<span class="fu">eda_re</span>(Cont,<span class="sc">-</span><span class="fl">0.35</span>, <span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="fu">eda_re</span>(Ref,<span class="sc">-</span><span class="fl">0.35</span>,<span class="at">tukey=</span><span class="cn">FALSE</span>), <span class="at">alt=</span><span class="st">"greater"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -761,18 +821,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -804,11 +853,50 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
-  function tippyHover(el, contentFn) {
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -818,8 +906,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -831,7 +928,130 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -875,6 +1095,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -900,6 +1121,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -961,12 +1208,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./letter_values.html" class="pagination-link">
+      <a href="./letter_values.html" class="pagination-link" aria-label="Letter value summaries">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Letter value summaries</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./bivariate.html" class="pagination-link">
+      <a href="./bivariate.html" class="pagination-link" aria-label="Fits and residuals">
         <span class="nav-page-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Fits and residuals</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -974,7 +1221,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></div>   
+    <div class="nav-footer-left">
+<p>Manny Gimond, Creative Commons License <a href="https://creativecommons.org/licenses/by-nc/4.0/"><img src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" class="img-fluid"></a></p>
+</div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
@@ -983,6 +1232,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 
