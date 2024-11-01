@@ -318,11 +318,11 @@ Note the use of `stat_summary` instead of `geom_boxplot`.
 
 ## Quantile plots
 
-A **quantile** is a value that divides a set of data into two parts such that a specified fraction, $f-value$, of the data falls below that value, and the remaining fraction falls above it. 
+A **quantile** is a value that divides a set of data into two parts such that a specified fraction, the f-value, of the data falls below that value, and the remaining fraction falls above it. 
 
-The x-axis in a quantile plot shows the $f-values$--the full range of probability *fractions*. $f$ maye be used as a shorthand for the $f-value$. In other texts, you may see the fraction symbolized by $p$ for *probability*. The y-axis is the $f-quantile$, $q(f)$, which gives us the value that is equal to or less than the associated $f$-value fraction. For example, the $f$-value of 0.25 (~the 25^th^ percentile) is associated with the $q(f)$ value of 9 meaning that 25% of the values in the dataset have values of 9 or less. 
+The x-axis in a quantile plot shows the **f-values**--the full range of probability *fractions*. The notation $f$ may be used as a shorthand for the f-value. In other texts, you may see the fraction symbolized by $p$ for *probability*. The y-axis is the f-quantile, $q(f)$, which gives us the value in the batch that is equal to or less than the associated $f$ fraction. For example, the f-value of 0.25 (~the 25^th^ percentile) is associated with the $q(f)$ value of 9 meaning that 25% of the values in the dataset have values of 9 or less. 
 
-```{r fig.height=3, fig.width = 3, echo=FALSE}
+```{r fig.height=3, fig.width = 3, echo=FALSE, results = FALSE}
 i     <- 1 : length(a)          # Create indices
 f.val <- (i - 0.5) / length(a)  # Compute the f-value
 dfa <- data.frame( f.val, a = sort(a) )
@@ -335,11 +335,15 @@ OP <- par(mar=c(0,0,0,0))
 par(OP)
 ```
 
-The quantile need not be limited to existing values in a batch. The quantile function is continuous within the batch's range.  Continuing with the working example, we can find the matching quantile for an $f-value$ of 0.5 by interpolating between the two nearest points in `a`. This results with a quantile value of 12.5.
+Note that the y-axis can be labeled with $q(f)$ or with the variable name.
 
-```{r fig.height=3, fig.width = 3, echo=FALSE}
+The quantile need not be limited to existing values in a batch. The relationship between the  quantile $q(f)$ and the fraction $f$ is a continuous function--we refer to this relationship as the quantile function. As such, one can extract a quantile value for any fraction between 0 and 1.  Continuing with the working example, we can find the matching quantile for an $f$ = 0.5 by interpolating between the two nearest points in `a`. This results with a quantile value of 12.5.
+
+```{r fig.height=3, fig.width = 3, echo=FALSE, results=FALSE}
 eda_lm(dfa, f.val, a, xlab = "f-value", show.par = F, mean.l = F, sd=F, reg=F)
 OP <- par(mar=c(0,0,0,0))
+  segments(x0 = f.val[1:length(a)-1], x1 = f.val[-1], 
+            y0 = a[1:length(a)-1], y1 = a[-1], col = "grey" )
   segments(x0=0.5, y0=6.7, x1 =0.5, y1=12.0, lty = 3, col = "red", lwd = 3)
   segments(x0=0, y0=12.5, x1 =0.47, y1=12.5, lty = 3, col = "red", lwd = 3)
   points(x=0.5, y=12.5, pch = 1, cex = 3, col = "red", lwd=3)
@@ -347,26 +351,53 @@ OP <- par(mar=c(0,0,0,0))
 par(OP)
 ```
 
-The boxplot covered in the last section is a special case of the $f$-quantile function in that it only returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. The $f$-quantile returns the *full* range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest.  The following figure describes the anatomy of a quantile plot. 
+### The boxplot is a spatial case of a quantile function
 
-![](./img/Quantile.png)
+The boxplot covered in the last section is a special case of $q(f)$ in that it only returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. 
 
-### Computing the $f$-quantile
+![](./img/Quantile.png){width=400}
 
- Computing $f$ requires that the batch of numbers be ordered from smallest to largest.
+
+### Computing the $q(f)$
+
+Computing the quantile first requires the $f$ value for which the quantile is to be compted. The $f$ value is computed by first sorting the bacth of values from smallest to largest.
 
 ```{r}
 a.o <- sort(a)
 a.o
 ```
 
-With the numbers sorted, we can proceed with the computation of $f$ following *Cleveland's* method:
+With the numbers sorted, we can proceed with the computation of $f$. As noted in the Boxplot section of this chapter, there are many different ways in which $f$ can be computed. In this course, we adopt *William Cleveland's* method:
 
 $$
 f_i = \frac{i - 0.5}{n} 
 $$
 
-where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. As noted in the Boxplots section of this chapter, there are many ways one can compute a quantile, however, the differences may not matter much when working with large batches of values.
+where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. Examples of other forms of the $f$ value expression include:
+
+:::: {.columns}
+
+::: {.column width="33%"}
+$$
+f_i = \frac{i - 1/3}{n + 1/3} 
+$$
+:::
+
+::: {.column width="33%"}
+$$
+f_i = \frac{i}{n+1} 
+$$
+:::
+
+::: {.column width="33%"}
+$$
+f_i = \frac{i - 1}{n - 1} 
+$$
+:::
+
+::::
+
+Being consistent with your choice of  an $f$ expression is probably more important than which one you chose.
 
 For each value in `a`, the $f$ value is thus:
 
@@ -382,29 +413,27 @@ Note that in the last line of code, we are appending the ordered representation 
 pander::pandoc.table(a.fi, justify = 'left')
 ```
 
-It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in `a` associated with a quantile of $0.5$; this is because we have an even number of values in our dataset. The solution is to interpolate a value based on a desired quantile. The `quantile()` function does just that. For example, to find the value associated with a quantile of $0.5$, type:
+When seeking a quantile that might not necessarily match an exact value in the batch, use the `quantile()` function. For example, to find the value associated with a quantile of $0.5$, type:
 
 ```{r}
 quantile(a, 0.5)
 ```
 
-If we want to get quantile values for multiple fractions, simply wrap the fractions with the `c()` function:
+To get quantile values for multiple fractions, simply wrap the fractions with the `c()` function:
 
 ```{r}
 quantile(a, c(0.25, 0.5, 0.75))
 ```
 
-The `quantile` function is designed to accept different quantile methods. To see the list of algorithm options, type `?quantile` at a command prompt. By default, R adopts algorithm `type = 7`. To adopt Cleveland's algorithm, set `type = 5`. E.g.:
+The `quantile` function is designed to accept different $f$ value expressions. To see the list of algorithm options, type `?quantile` at a command prompt. By default, R adopts algorithm `type = 7` which is $(i-1)/(n-1)$. To adopt Cleveland's algorithm, set `type = 5`. E.g.:
 
 ```{r}
 quantile(a, c(0.25, 0.5, 0.75), type = 5)
 ```
 
-Note the difference in the upper quartile value compared to the default `type = 7`.
+Note the difference in the upper quartile value when compared to the default `type = 7` option of the `quantile()` function.
 
-### Creating a quantile plot
-
-A batch's quantile is best viewed as a plot where we plot the values as a function of the $f$-values:
+The `a.fi` data frame can be inputed into any plotting function to generate the quantile plot. For example, using `ggplot`'s function, we get:
 
 ```{r fig.height=3, fig.width=3}
 ggplot(a.fi, aes(x = f.val, y = a.o)) + geom_point() + xlab("f-value")
@@ -415,12 +444,12 @@ ggplot(a.fi, aes(x = f.val, y = a.o)) + geom_point() + xlab("f-value")
 If you did not want to go through the trouble of computing the $f$-values and the dataframe `a.fi`, you could simply call the function `stat_qq()` as in:
 
 ```{r fig.height=3, fig.width=3}
-ggplot(df, aes(sample = a)) + stat_qq(distribution = qunif) + xlab("f-value")
+ggplot(NULL, aes(sample = a)) + stat_qq(distribution = qunif) + xlab("f-value")
 ```
 
-However, ggplot's `stat_qq` function does not adopt Cleveland's $f$-value calculation. Hence, you'll notice a slight offset in position along the x-axis. For example, the third-to-last point has an $f$-value of `0.744` instead of an $f$-value of `0.75` as calculated using Cleveland's method.
+However, ggplot's `stat_qq` function does not adopt Cleveland's $f$-value calculation. Hence, you'll notice a very slight offset in position along the x-axis. For example, the third-to-last point has an $f$-value of `0.744` instead of an $f$-value of `0.75` as calculated using Cleveland's method.
 
-Also note the change in mapping parameter: `sample = a`. We are no longer specifying the axis to map to. Instead, we are passing the **sample** to the `stat_qq` function which then chooses to map the sorted `a` values to the y-axis.
+Also note the change in mapping parameter: `sample = a`. We are no longer specifying the axis to map to. Instead, we are passing the **sample** to the `stat_qq` function which generates the x and y axes values from the sample.
 
 ## How quantile plots behave in the face of skewed data
 

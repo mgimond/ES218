@@ -479,8 +479,8 @@ window.Quarto = {
   </ul></li>
   <li><a href="#quantile-plots" id="toc-quantile-plots" class="nav-link" data-scroll-target="#quantile-plots"><span class="header-section-number">16.5</span> Quantile plots</a>
   <ul class="collapse">
-  <li><a href="#computing-the-f-quantile" id="toc-computing-the-f-quantile" class="nav-link" data-scroll-target="#computing-the-f-quantile"><span class="header-section-number">16.5.1</span> Computing the <span class="math inline">\(f\)</span>-quantile</a></li>
-  <li><a href="#creating-a-quantile-plot" id="toc-creating-a-quantile-plot" class="nav-link" data-scroll-target="#creating-a-quantile-plot"><span class="header-section-number">16.5.2</span> Creating a quantile plot</a></li>
+  <li><a href="#the-boxplot-is-a-spatial-case-of-a-quantile-function" id="toc-the-boxplot-is-a-spatial-case-of-a-quantile-function" class="nav-link" data-scroll-target="#the-boxplot-is-a-spatial-case-of-a-quantile-function"><span class="header-section-number">16.5.1</span> The boxplot is a spatial case of a quantile function</a></li>
+  <li><a href="#computing-the-qf" id="toc-computing-the-qf" class="nav-link" data-scroll-target="#computing-the-qf"><span class="header-section-number">16.5.2</span> Computing the <span class="math inline">\(q(f)\)</span></a></li>
   </ul></li>
   <li><a href="#how-quantile-plots-behave-in-the-face-of-skewed-data" id="toc-how-quantile-plots-behave-in-the-face-of-skewed-data" class="nav-link" data-scroll-target="#how-quantile-plots-behave-in-the-face-of-skewed-data"><span class="header-section-number">16.6</span> How quantile plots behave in the face of skewed data</a></li>
   </ul>
@@ -833,12 +833,36 @@ density = \frac{count}{bin\ width * total\ observations}
 </section>
 <section id="quantile-plots" class="level2" data-number="16.5">
 <h2 data-number="16.5" class="anchored" data-anchor-id="quantile-plots"><span class="header-section-number">16.5</span> Quantile plots</h2>
-<p>A quantile plot generates a point plot that joins the quantile to each value in a batch. The boxplot covered in the last section is a special case of the <span class="math inline">\(f\)</span>-quantile function in that it only returns the 1<sup>st</sup>, 2<sup>nd</sup> (median) and 3<sup>rd</sup> quartiles. The <span class="math inline">\(f\)</span>-quantile returns the <em>full</em> range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest. The following figure describes the anatomy of a quantile plot.</p>
-<p><img src="./img/Quantile.png" class="img-fluid"></p>
-<p>The x-axis shows the <strong><span class="math inline">\(f\)</span>-values</strong>: the full range of probability <em>fractions</em> (note that in practice, you may see this fraction symbolized as <span class="math inline">\(p\)</span> for <em>probability</em>). The y-axis is the <strong><span class="math inline">\(f\)</span>-quantile</strong>, <span class="math inline">\(q(f)\)</span>, which gives us the value that is equal to or less than the associated <span class="math inline">\(f\)</span>-value fraction. For example, the <span class="math inline">\(f\)</span>-value of 0.25 (~the 25<sup>th</sup> percentile) is associated with the <span class="math inline">\(q(f)\)</span> value of 9 meaning that 25% of the values in the dataset have values of 9 or less. Likewise, the <span class="math inline">\(f\)</span>-value of 0.5 (the median) is associated with a <span class="math inline">\(q(f)\)</span> value of 12.5 implying that half of the dataset’s values are 12.5 or less. The boxplot is shown alongside the quantile plot to highlight the analogy.</p>
-<section id="computing-the-f-quantile" class="level3" data-number="16.5.1">
-<h3 data-number="16.5.1" class="anchored" data-anchor-id="computing-the-f-quantile"><span class="header-section-number">16.5.1</span> Computing the <span class="math inline">\(f\)</span>-quantile</h3>
-<p>Computing <span class="math inline">\(f\)</span> requires that the batch of numbers be ordered from smallest to largest.</p>
+<p>A <strong>quantile</strong> is a value that divides a set of data into two parts such that a specified fraction, the f-value, of the data falls below that value, and the remaining fraction falls above it.</p>
+<p>The x-axis in a quantile plot shows the <strong>f-values</strong>–the full range of probability <em>fractions</em>. The notation <span class="math inline">\(f\)</span> may be used as a shorthand for the f-value. In other texts, you may see the fraction symbolized by <span class="math inline">\(p\)</span> for <em>probability</em>. The y-axis is the f-quantile, <span class="math inline">\(q(f)\)</span>, which gives us the value in the batch that is equal to or less than the associated <span class="math inline">\(f\)</span> fraction. For example, the f-value of 0.25 (~the 25<sup>th</sup> percentile) is associated with the <span class="math inline">\(q(f)\)</span> value of 9 meaning that 25% of the values in the dataset have values of 9 or less.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that the y-axis can be labeled with <span class="math inline">\(q(f)\)</span> or with the variable name.</p>
+<p>The quantile need not be limited to existing values in a batch. The relationship between the quantile <span class="math inline">\(q(f)\)</span> and the fraction <span class="math inline">\(f\)</span> is a continuous function–we refer to this relationship as the quantile function. As such, one can extract a quantile value for any fraction between 0 and 1. Continuing with the working example, we can find the matching quantile for an <span class="math inline">\(f\)</span> = 0.5 by interpolating between the two nearest points in <code>a</code>. This results with a quantile value of 12.5.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="the-boxplot-is-a-spatial-case-of-a-quantile-function" class="level3" data-number="16.5.1">
+<h3 data-number="16.5.1" class="anchored" data-anchor-id="the-boxplot-is-a-spatial-case-of-a-quantile-function"><span class="header-section-number">16.5.1</span> The boxplot is a spatial case of a quantile function</h3>
+<p>The boxplot covered in the last section is a special case of <span class="math inline">\(q(f)\)</span> in that it only returns the 1<sup>st</sup>, 2<sup>nd</sup> (median) and 3<sup>rd</sup> quartiles.</p>
+<p><img src="./img/Quantile.png" class="img-fluid" width="400"></p>
+</section>
+<section id="computing-the-qf" class="level3" data-number="16.5.2">
+<h3 data-number="16.5.2" class="anchored" data-anchor-id="computing-the-qf"><span class="header-section-number">16.5.2</span> Computing the <span class="math inline">\(q(f)\)</span></h3>
+<p>Computing the quantile first requires the <span class="math inline">\(f\)</span> value for which the quantile is to be compted. The <span class="math inline">\(f\)</span> value is computed by first sorting the bacth of values from smallest to largest.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>a.o <span class="ot">&lt;-</span> <span class="fu">sort</span>(a)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>a.o</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -846,11 +870,27 @@ density = \frac{count}{bin\ width * total\ observations}
 <pre><code> [1]  7  8  9 11 12 13 13 15 15 15</code></pre>
 </div>
 </div>
-<p>With the numbers sorted, we can proceed with the computation of <span class="math inline">\(f\)</span> following <em>Cleveland’s</em> method:</p>
+<p>With the numbers sorted, we can proceed with the computation of <span class="math inline">\(f\)</span>. As noted in the Boxplot section of this chapter, there are many different ways in which <span class="math inline">\(f\)</span> can be computed. In this course, we adopt <em>William Cleveland’s</em> method:</p>
 <p><span class="math display">\[
 f_i = \frac{i - 0.5}{n}
 \]</span></p>
-<p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. As noted in the Boxplots section of this chapter, there are many ways one can compute a quantile, however, the differences may not matter much when working with large batches of values.</p>
+<p>where <span class="math inline">\(i\)</span> is the n<sup>th</sup> element of the batch of data and <span class="math inline">\(n\)</span> is the total number of elements in that batch. Examples of other forms of the <span class="math inline">\(f\)</span> value expression include:</p>
+<div class="columns">
+<div class="column" style="width:33%;">
+<p><span class="math display">\[
+f_i = \frac{i - 1/3}{n + 1/3}
+\]</span></p>
+</div><div class="column" style="width:33%;">
+<p><span class="math display">\[
+f_i = \frac{i}{n+1}
+\]</span></p>
+</div><div class="column" style="width:33%;">
+<p><span class="math display">\[
+f_i = \frac{i - 1}{n - 1}
+\]</span></p>
+</div>
+</div>
+<p>Being consistent with your choice of an <span class="math inline">\(f\)</span> expression is probably more important than which one you chose.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)          <span class="co"># Create indices</span></span>
@@ -912,7 +952,7 @@ f_i = \frac{i - 0.5}{n}
 </tr>
 </tbody>
 </table>
-<p>It may be desirable at times to find a value associated with a quantile that might not necessarily match an exact value in our batch. For example, there is no value in <code>a</code> associated with a quantile of <span class="math inline">\(0.5\)</span>; this is because we have an even number of values in our dataset. The solution is to interpolate a value based on a desired quantile. The <code>quantile()</code> function does just that. For example, to find the value associated with a quantile of <span class="math inline">\(0.5\)</span>, type:</p>
+<p>When seeking a quantile that might not necessarily match an exact value in the batch, use the <code>quantile()</code> function. For example, to find the value associated with a quantile of <span class="math inline">\(0.5\)</span>, type:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -920,7 +960,7 @@ f_i = \frac{i - 0.5}{n}
 12.5 </code></pre>
 </div>
 </div>
-<p>If we want to get quantile values for multiple fractions, simply wrap the fractions with the <code>c()</code> function:</p>
+<p>To get quantile values for multiple fractions, simply wrap the fractions with the <code>c()</code> function:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -928,7 +968,7 @@ f_i = \frac{i - 0.5}{n}
  9.5 12.5 14.5 </code></pre>
 </div>
 </div>
-<p>The <code>quantile</code> function is designed to accept different quantile methods. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
+<p>The <code>quantile</code> function is designed to accept different <span class="math inline">\(f\)</span> value expressions. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code> which is <span class="math inline">\((i-1)/(n-1)\)</span>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -936,17 +976,14 @@ f_i = \frac{i - 0.5}{n}
  9.0 12.5 15.0 </code></pre>
 </div>
 </div>
-<p>Note the difference in the upper quartile value compared to the default <code>type = 7</code>.</p>
-</section>
-<section id="creating-a-quantile-plot" class="level3" data-number="16.5.2">
-<h3 data-number="16.5.2" class="anchored" data-anchor-id="creating-a-quantile-plot"><span class="header-section-number">16.5.2</span> Creating a quantile plot</h3>
-<p>A batch’s quantile is best viewed as a plot where we plot the values as a function of the <span class="math inline">\(f\)</span>-values:</p>
+<p>Note the difference in the upper quartile value when compared to the default <code>type = 7</code> option of the <code>quantile()</code> function.</p>
+<p>The <code>a.fi</code> data frame can be inputed into any plotting function to generate the quantile plot. For example, using <code>ggplot</code>’s function, we get:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="288"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="288"></p>
 </figure>
 </div>
 </div>
@@ -955,17 +992,17 @@ f_i = \frac{i - 0.5}{n}
 <h4 data-number="16.5.2.1" class="anchored" data-anchor-id="using-ggplots-qq-geom"><span class="header-section-number">16.5.2.1</span> Using ggplot’s <code>qq</code> geom</h4>
 <p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values and the dataframe <code>a.fi</code>, you could simply call the function <code>stat_qq()</code> as in:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="cn">NULL</span>, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="288"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="288"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>However, ggplot’s <code>stat_qq</code> function does not adopt Cleveland’s <span class="math inline">\(f\)</span>-value calculation. Hence, you’ll notice a slight offset in position along the x-axis. For example, the third-to-last point has an <span class="math inline">\(f\)</span>-value of <code>0.744</code> instead of an <span class="math inline">\(f\)</span>-value of <code>0.75</code> as calculated using Cleveland’s method.</p>
-<p>Also note the change in mapping parameter: <code>sample = a</code>. We are no longer specifying the axis to map to. Instead, we are passing the <strong>sample</strong> to the <code>stat_qq</code> function which then chooses to map the sorted <code>a</code> values to the y-axis.</p>
+<p>However, ggplot’s <code>stat_qq</code> function does not adopt Cleveland’s <span class="math inline">\(f\)</span>-value calculation. Hence, you’ll notice a very slight offset in position along the x-axis. For example, the third-to-last point has an <span class="math inline">\(f\)</span>-value of <code>0.744</code> instead of an <span class="math inline">\(f\)</span>-value of <code>0.75</code> as calculated using Cleveland’s method.</p>
+<p>Also note the change in mapping parameter: <code>sample = a</code>. We are no longer specifying the axis to map to. Instead, we are passing the <strong>sample</strong> to the <code>stat_qq</code> function which generates the x and y axes values from the sample.</p>
 </section>
 </section>
 </section>
@@ -976,7 +1013,7 @@ f_i = \frac{i - 0.5}{n}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="864"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid figure-img" width="864"></p>
 </figure>
 </div>
 </div>
