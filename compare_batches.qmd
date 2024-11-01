@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Comparing distributions: The q-q plot
+# Comparing distributions: The QQ plot
 
 ```{r echo=FALSE, message=FALSE}
 source("libs/Common.R")
@@ -15,9 +15,24 @@ library(gridExtra)
 pkg_ver(c("dplyr", "ggplot2", "lattice", "tukeyedar" )) 
 ```
 
+In the previous chapter, we explored various plots to visualize and understand the distribution of a single variable. However, we frequently seek to compare the distributions of *two or more* variables. For instance, we might want to compare the distribution of a contaminant in a polluted site to that of an unpolluted site. Additionally, we may wish to assess how well a variable's distribution aligns with a theoretical one, a topic we'll delve into in the next chapter.
 
+While histograms and density plots can provide a general overview of distributions, their comparative power is limited. **Empirical quantile-quantile plots**, on the other hand, offer a more precise and informative comparison by plotting the quantiles of one distribution against the quantiles of another. This allows us to identify systematic differences in shape, scale, and tail behavior, making QQ plots a powerful tool for understanding distributional relationships.
 
-Let's begin by comparing singer heights between two voice part groups: bassists and tenors. We will work off of a subset of the `singer` dataset which can be found in the `lattice` package.
+Let's begin by comparing singer heights using density plots between two voice part groups: bassists and tenors. We will work off of a subset of the `singer` dataset which can be found in the `lattice` package.
+
+```{r message=FALSE, echo = FALSE, fig.width = 3.5, fig.height = 3.5}
+library(dplyr)
+library(tukeyedar)
+
+df  <- lattice::singer
+bass2 <- subset(df, voice.part == "Bass 2", select = height, drop = TRUE )
+tenor1 <- subset(df, voice.part == "Tenor 1", select = height, drop = TRUE )
+
+eda_dens(bass2, tenor1, voice.part, show.par = FALSE, xaxis = "Height", )
+```
+
+The overlapping density plots suggest that the `Bass2` group's height distribution is shifted towards higher values, but it's difficult to quantify this offset reducing the comparison to a qualitative one. 
 
 ```{r message=FALSE}
 library(dplyr)
@@ -28,55 +43,9 @@ df2 <- filter(df, voice.part == "Bass 2" | voice.part=="Tenor 1") %>%
        mutate(voice.part = droplevels(voice.part))
 ```
 
-Let's plot both datasets side-by-side. We will jitter the points about their category groups to expose overlapping values.
+## The empirical quantile-quantile (QQ) plot
 
-```{r fig.height=3, fig.width=4}
-ggplot(df2, aes(y=height, x=voice.part, col=voice.part)) + 
-            geom_jitter(position = position_jitter(width = .1, height=0))
-```
-
-Comparing two batches of values in their entirety might prove difficult, especially if their values do not appear to differ by a whole lot--at least not visually when presented as side-by-side jitter plots. For this reason, we might find it helpful to reduce the batches down to summary statistics such as the mean or median. Doing so allows for a more objective comparison between two batches. 
-
-For example, let's compute the median values for both batches.
-
-```{r}
-df2 %>% group_by(voice.part) %>% summarise(median = median(height))
-```
-
-The bassists tend to be slightly taller than the tenors when compared using their median values.
-
-This is one way to compare the batches. But is the median (or any measure of centrality) the only way to compare batches? Why not compare the top tenth percentile of values or the lower quartile of values? Will such a summary lead to a similar conclusion? We expand on this question next.
-
-&nbsp;&nbsp;
-
-## Boxplots
-
-A boxplot gives us additional handles by which to compare batches of values.
-
-```{r fig.height=3, fig.width=3}
-ggplot(df2) + aes(x = voice.part, y = height) + geom_boxplot()
-```
-
-In addition to providing us with the median, it also allows us to compare the lower and upper quartiles. Here, the bassists are taller than the tenors by all three measures. But note that the difference in height values is not consistent. 
-
-```{r}
-df2 %>% group_by(voice.part) %>% 
-  summarise(upper = quantile(height,0.75), 
-            mid = quantile(height,0.5),
-            lower = quantile(height,0.25))
-```
-
-We see that the singer heights differ by 3 inches when comparing the upper quartiles, and by 4 inches when comparing the medians and lower quartiles.  
-
-When comparing the minimum values, (these values can be extracted from the lower ends of the whiskers), we see that the difference is just 2 inches. And, interestingly, the tallest bassist is taller than the tallest tenor! So the offset between singer heights when paired up by their ordered height values is not consistent in size and in direction.
-
-As you can see from this example, there is more than one way to compare batches of values and yet, we've limited our comparisons to just 5 values. So, how can we compare *all* values in both datasets? Answer: By comparing their quantile functions. 
-
-
-
-## The empirical quantile-quantile (q-q) plot
-
-An **empirical quantile-quantile** plot (or **q-q plot** for short) combines two separate [quantile functions](univariate_plots.html#quantile-plots) from different batches of values by pairing their quantile values with their common $f$-value covered in the last chapter. The word *empirical* implies that we are comparing observational values. This serves to differentiate it from the *theoretical* q-q plot that will be covered in the next chapter.
+An **empirical quantile-quantile** plot (or **QQ plot** for short) combines two separate [quantile functions](univariate_plots.html#quantile-plots) from different batches of values by pairing their quantile values with their common $f$-value covered in the last chapter. The word *empirical* implies that we are comparing observational values. This serves to differentiate it from the *theoretical* QQ plot that will be covered in the next chapter.
 
 ![](img/QQ_plot.png)
 
@@ -88,9 +57,9 @@ If, on the other hand, the two batches differ in size (as is the case with our e
 
 For example, in the above graph, you'll note that the `Tenor 1` height value of `68` is associated with an $f$-value of `0.5`, however, there is no singer height value associated with an $f$-value of `0.5` in the `Bass 2` batch. 
 
-To overcome the problem of batch size mismatch, we limit the number of points in the q-q plot to the number of values associated with the *smallest* sized batch (21 in our working example). This requires that we find matching singer height values to the set of $f$-values associated with a batch of 21 values. There are a few ways this can be accomplished in R. The easiest way is to make use of the built-in `qqplot` function.
+To overcome the problem of batch size mismatch, we limit the number of points in the QQ plot to the number of values associated with the *smallest* sized batch (21 in our working example). This requires that we find matching singer height values to the set of $f$-values associated with a batch of 21 values. There are a few ways this can be accomplished in R. The easiest way is to make use of the built-in `qqplot` function.
 
-`qqplot` is a base package that will generate a q-q plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects. It also offers the option to output the q-q plot interpolated values as a **list**  by setting the parameter `plot.it = FALSE`. We then convert this list object to a dataframe using `as.data.frame`. 
+`qqplot` is a base package that will generate a QQ plot using the base plotting environment. It requires that the two batches be loaded as separate vector objects. It also offers the option to output the QQ plot interpolated values as a **list**  by setting the parameter `plot.it = FALSE`. We then convert this list object to a dataframe using `as.data.frame`. 
 
 ```{r}
 Tenor <- filter(df, voice.part == "Tenor 1") %>%  pull(height)
@@ -108,7 +77,7 @@ Also note that the `qqplot` function will default to `qtype = 7` which reference
 
 The `qqplot` function will name the output columns `x` and `y`. We therefore need to reassign the voice part names to the dataframe columns in the same order that they were passed to in the `qqplot` function.
 
-We can now generate the q-q plot using `ggplot`.
+We can now generate the QQ plot using `ggplot`.
 
 ```{r fig.height=3, fig.width=3}
 # Set the x and y limits
@@ -131,16 +100,16 @@ par(OP)
 ```
 
 
-## q-q plots vs. bivariate scatter plots
+## QQ plots vs. bivariate scatter plots
 
-It's important to note the difference between a quantile-quantile plot and a *traditional* [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot). With the latter, the pairing of values between variables is explicitly defined  (for example average male and female income values may be paired by county). The singer data does not assume any pairing of observations (e.g. the height measurement for a singer in `Bass` is independent for that of a singer in `Tenor 2`).  This is made more evident with our working example which has unequal number of singers in both groups being compared. The pairing of values in a q-q plot is constructed from the *ordering* of values in each batch and nothing more.
+It's important to note the difference between a quantile-quantile plot and a *traditional* [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot). With the latter, the pairing of values between variables is explicitly defined  (for example average male and female income values may be paired by county). The singer data does not assume any pairing of observations (e.g. the height measurement for a singer in `Bass` is independent for that of a singer in `Tenor 2`).  This is made more evident with our working example which has unequal number of singers in both groups being compared. The pairing of values in a QQ plot is constructed from the *ordering* of values in each batch and nothing more.
 
-## What can we learn from a q-q plot?
+## What can we learn from a QQ plot?
 
 
 ### Additive offset
 
-A valuable by-product of an empirical q-q plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e. all the points of a q-q plot fall on the 45&deg; line) then we could characterize the relationship as `batch1 = batch2`. 
+A valuable by-product of an empirical QQ plot is the mathematical relationship between the batches of values. If the distributions are identical (i.e. all the points of a QQ plot fall on the 45&deg; line) then we could characterize the relationship as `batch1 = batch2`. 
 
 If the points follow a pattern mimicking a line parallel to the 45&deg; line as in the following plot, then we say that there is an **additive shift** between `batch1` and `batch2`.
 
@@ -185,7 +154,7 @@ par(OP)
 
 A multiplicative shift between the batches results in a change in density shapes with one batch's density being shorter and wider (`batch2` in this example) than that of the other batch  (`batch1` in this example).
 
-The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, after some experimenting, we arrive at a multiplier of 2 which seems to do a good job in aligning the q-q points along the 45&deg; line. We thus define a relationship of `batch2 = batch1 * 2`.
+The multiplier can be a bit difficult to glean graphically so trial and error may be the best approach whereby we multiply one of the batches by a multiplier. For example, after some experimenting, we arrive at a multiplier of 2 which seems to do a good job in aligning the QQ points along the 45&deg; line. We thus define a relationship of `batch2 = batch1 * 2`.
  
 ```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
 OP <- par(mfrow=c(1,2))
@@ -286,7 +255,7 @@ The value of `r md.offset` is in agreement with what we eyeballed earlier.
 
 ## The `eda_qq` function
 
-The `tukeyedar` package offers an improved version of the q-q plot function that you will be encouraged to use in this course. Some of its features that you may find helpful are highlighted next.
+The `tukeyedar` package offers an improved version of the QQ plot function that you will be encouraged to use in this course. Some of its features that you may find helpful are highlighted next.
 
 The function can take two separate vector elements as input:
 
@@ -384,7 +353,7 @@ points(x,y,pch=18)
 pairs(qq_df, upper.panel=NULL, panel = plotfun, xlim = rng, ylim=rng)  
 ```
 
-With a few exceptions, the singer height distributions differ mostly by an additive offset given that most points are parallel to the 45&deg; line. There is one notable exception: the `Tenor 1` and `Tenor 2` q-q plot which seems to show a prominent multiplicative offset. We can explore this pair in greater detail. We'll make use of our custom q-q plot function:
+With a few exceptions, the singer height distributions differ mostly by an additive offset given that most points are parallel to the 45&deg; line. There is one notable exception: the `Tenor 1` and `Tenor 2` QQ plot which seems to show a prominent multiplicative offset. We can explore this pair in greater detail. We'll make use of our custom QQ plot function:
 
 ```{r class.source="eda", fig.height=3.2, fig.width=2.5, results='hide'}
 Tenor1 <- filter(df, voice.part == "Tenor 1") %>%  pull(height)
@@ -398,7 +367,7 @@ It may help to understand how these batches differ by comparing their density di
 eda_dens(Tenor2, Tenor1)
 ```
 
-The differences in shape between both distributions explains the multiplicative offset observed in the q-q plot. The distribution of height values is wider for the `Tenor 1` group than it is for the `Tenor 2` group.  This suggests greater variability in height values for `Tenor 1`.
+The differences in shape between both distributions explains the multiplicative offset observed in the QQ plot. The distribution of height values is wider for the `Tenor 1` group than it is for the `Tenor 2` group.  This suggests greater variability in height values for `Tenor 1`.
 
 
 
