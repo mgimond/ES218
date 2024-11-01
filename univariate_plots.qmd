@@ -318,20 +318,38 @@ Note the use of `stat_summary` instead of `geom_boxplot`.
 
 ## Quantile plots
 
-A quantile plot generates a point plot that joins a value's quantile, $q(f)$ to its order in the sorted dataset, $f-value$. 
+A **quantile** is a value that divides a set of data into two parts such that a specified fraction, $f-value$, of the data falls below that value, and the remaining fraction falls above it. 
+
+The x-axis in a quantile plot shows the $f-values$--the full range of probability *fractions*. $f$ maye be used as a shorthand for the $f-value$. In other texts, you may see the fraction symbolized by $p$ for *probability*. The y-axis is the $f-quantile$, $q(f)$, which gives us the value that is equal to or less than the associated $f$-value fraction. For example, the $f$-value of 0.25 (~the 25^th^ percentile) is associated with the $q(f)$ value of 9 meaning that 25% of the values in the dataset have values of 9 or less. 
 
 ```{r fig.height=3, fig.width = 3, echo=FALSE}
 i     <- 1 : length(a)          # Create indices
 f.val <- (i - 0.5) / length(a)  # Compute the f-value
 dfa <- data.frame( f.val, a = sort(a) )
-eda_lm(dfa, f.val, a, xlab = "f-value")
+eda_lm(dfa, f.val, a, xlab = "f-value", show.par = F, mean.l = F, sd=F, reg=F)
+OP <- par(mar=c(0,0,0,0))
+  segments(x0=0.25, y0=6.7, x1 =0.25, y1=8.5, lty = 3, col = "red", lwd = 3)
+  segments(x0=0, y0=9, x1 =0.22, y1=9, lty = 3, col = "red", lwd = 3)
+  points(x=0.25, y=9, pch = 1, cex = 3, col = "red", lwd=3)
+  grid()
+par(OP)
 ```
 
-In essence, a quantile gives us the upper limit of the batch's value, the **quantile function** $q(f)$, that is associated with that fraction's distribution (the fraction is defined here as the **f-value**).  The boxplot covered in the last section is a special case of the $f$-quantile function in that it only returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. The $f$-quantile returns the *full* range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest.  The following figure describes the anatomy of a quantile plot. 
+The quantile need not be limited to existing values in a batch. The quantile function is continuous within the batch's range.  Continuing with the working example, we can find the matching quantile for an $f-value$ of 0.5 by interpolating between the two nearest points in `a`. This results with a quantile value of 12.5.
+
+```{r fig.height=3, fig.width = 3, echo=FALSE}
+eda_lm(dfa, f.val, a, xlab = "f-value", show.par = F, mean.l = F, sd=F, reg=F)
+OP <- par(mar=c(0,0,0,0))
+  segments(x0=0.5, y0=6.7, x1 =0.5, y1=12.0, lty = 3, col = "red", lwd = 3)
+  segments(x0=0, y0=12.5, x1 =0.47, y1=12.5, lty = 3, col = "red", lwd = 3)
+  points(x=0.5, y=12.5, pch = 1, cex = 3, col = "red", lwd=3)
+  grid()
+par(OP)
+```
+
+The boxplot covered in the last section is a special case of the $f$-quantile function in that it only returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. The $f$-quantile returns the *full* range of quantile values. The quantile is directly related to the concept of a percentile: it identifies the fraction of the batch of numbers that is less than a value of interest.  The following figure describes the anatomy of a quantile plot. 
 
 ![](./img/Quantile.png)
-
-The x-axis shows the **$f$-values**: the full range of probability *fractions* (note that in practice, you may see this fraction symbolized as $p$ for *probability*). The y-axis is the **$f$-quantile**, $q(f)$, which gives us the value that is equal to or less than the associated $f$-value fraction. For example, the $f$-value of 0.25 (~the 25^th^ percentile) is associated with the $q(f)$ value of 9 meaning that 25% of the values in the dataset have values of 9 or less. Likewise, the $f$-value of 0.5 (the median) is associated with a $q(f)$ value of 12.5 implying that half of the dataset's values are 12.5 or less. The boxplot is shown alongside the quantile plot to highlight the analogy.
 
 ### Computing the $f$-quantile
 
