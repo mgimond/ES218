@@ -22,7 +22,11 @@ pkg_ver(c("dplyr", "ggplot2","tidyr"))
 
 Analyzing data benefits from characterizing its statistical properties, such as measures of central tendency and dispersion. Measures of central tendency, often reduced to single values, provide a concise summary of a dataset's typical value. While summary statistics like standard deviation and interquartile range offer insights into a batch's dispersion, they cannot fully capture the intricacies of its distribution. Visualization techniques are better suited to reveal these nuances. This chapter will introduce you to graphs designed to explore a batch's distribution. The choice of graphing technique will depend on the specific aspects of the distribution you wish to emphasize.
 
-Going forward, we will use the terms **location**, **spread**, and **shape** to describe a batch of values. Location refers to a measure of central tendency, spread to a measure of variability, and shape to the overall form of the distribution.
+Going forward, we will use the terms **location**, **shape** and **spread** to describe a batch of values. 
+
+ +  **Location** refers to a measure of central tendency, with the (arithmetic) mean and the median being the most popular measures of centrality;
+ + **shape** refers to the overall form of a distribution. For example, this can include characterization of skewness, peakedness or modality of a distribution;
+ +  **spread** is a more succinct characterization of a distribution. Examples include the standard deviation, minimum-maximum range or the interquartile range.
 
 ```{r echo = FALSE, results = 'asis', fig.width = 4, fig.height=1}
 # Uses table to generate a tabulated figure of a set of values.
@@ -38,7 +42,7 @@ Going forward, we will use the terms **location**, **spread**, and **shape** to 
 
 ## Histograms
 
-A histogram is one of the more ubiquitous tools for visualizing a batch's distribution. It divides the range of values into intervals, or bins, and then counts the number of observations that fall within each bin. By plotting the frequency of observations in each bin, histograms reveal the a distribution's *shape.*" For example, to create a histogram of batch `b` where each bin size covers **one** unit along the x-axis, we type:
+A histogram is one of the more ubiquitous tools for visualizing a batch's distribution. It divides the range of values into intervals, or bins, and then counts the number of observations that fall within each bin. By plotting the frequency of observations in each bin, histograms reveal a distribution's *shape*. For example, to create a histogram of batch `b` where each bin size covers **one** unit along the x-axis, we type:
 
 ```{r fig.height=2, fig.width=4.5}
 # Generate two random variables
@@ -81,7 +85,7 @@ So far, we had the histogram display the total number of observations falling in
 ggplot(df, aes(x = Value)) + geom_histogram(bins = 10) + facet_wrap(~ Group)
 ```
 
-The differences in batch sizes results in differing bar heights. This has for effect of *squeezing* the bars downward in the plot for batch `a` because of it smaller batch size. This can make it difficult to compare distributions between batches. To resolve this issue, we can convert counts to density whereby the areas covered by each bin sum to `1`. Each bin's density value is computed from:
+The differences in batch sizes results in differing bar heights. This has for effect of *squeezing* the bars downward in the plot for batch `a` because of its smaller batch size. This can make it difficult to compare distributions between batches. To resolve this issue, we can convert counts to density whereby the areas covered by each bin sum to `1`. Each bin's density value is computed from:
 
 $$
 density = \frac{count}{bin\ width * total\ observations}
@@ -206,7 +210,7 @@ ggplot() +
 
 A property associated with the density trace is that the area under the curve sums to one since each density value represents the *local* density at `x`.
 
-In the above example, we assigned an equal weight to each point within its assigned bin--regardless how far the that point is to the bin's midpoint. This resulted in some *raggedness* to the plot. To smooth out the plot, we can apply different weights to each point such that points closest to the bin's midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate such weights. The following figure depicts the difference in weights assigned to a point based on its distance to the bin center of `6` (highlighted with a red mark in the plots).
+In the above example, we assigned an equal weight to each point within its assigned bin--regardless how far the point is to the bin's midpoint. This resulted in some *raggedness* to the plot. To smooth out the plot, we can apply different weights to each point such that points closest to the bin's midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate such weights. The following figure depicts the difference in weights assigned to a point based on its distance to the bin center of `6` (highlighted with a red mark in the plots).
 
 ```{r fig.height=2, fig.width=4.5, echo = FALSE}
 
@@ -256,7 +260,7 @@ ggplot(df, aes(x = a)) + geom_density(fill = "grey60", bw = 1)
 
 ## Boxplots
 
-A boxplot is another popular plot used to explore distributions. It emphasizes a measure of location (typically the median), and two measures of spread--the interquartile range and the overall range (excluding any outliers). 
+A boxplot is another popular plot used to explore distributions. It emphasizes a measure of *location* (typically the median), and two measures of *spread*--the interquartile range and the overall range (excluding any outliers). 
 
 In `ggplot2` we can use the `geom_boxplot()` function. For example,
 
@@ -273,7 +277,7 @@ The following figure describes the anatomy of a boxplot.
 
 ![](./img/Boxplot.png)
 
-The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the median. It also tells us where the middle 50% of the values lie (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range (or **IQR** for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. For example, our batch only has four data points falling within the interquartile range (instead of five) because of tied values in the upper end of the distribution.
+The boxplot provides us with many meaningful pieces of information. For example, it gives us a center value: the **median**. It also tells us where the middle 50% of the values lie (in our example, approximately 50% of the values lie between 9.5 and 14.5). This range is referred to as the **interquartile** range (or **IQR** for short). Note that this is only an approximation given that some datasets may not lend themselves well to defining exactly 50% of their central values. For example, our batch only has four data points falling within the interquartile range (instead of five) because of tied values in the upper end of the distribution.
 
 The long narrow lines extending beyond the interquartile range are referred to as the **adjacent values**--you might also see them referred to as **whiskers**. They represent either 1.5 times the width between the median and the nearest interquartile value *or* the most extreme value, whichever is closest to the batch center.
 
@@ -295,7 +299,7 @@ The upper and lower quartiles differ from those of `ggplot` since the three uppe
 
 ### Implementing different quantile types in `geom_boxplot`
 
-If you wish to implement different quantile methods in `ggplot`, you will need to create a custom function. For example, if you wish to adopt quantile method referenced in the last section, (`type = 5` in the `quantile` function) type the following:
+If you wish to implement different quantile methods in `ggplot`, you will need to create a custom function. For example, if you wish to adopt quantile method referenced in the previous section, (`type = 5` in the `quantile` function) type the following:
 
 ```{r fig.height=1.2, fig.width=6.5}
 # Function to extract quantiles given an f-value type (type = 5 in this example)
@@ -399,7 +403,7 @@ $$
 
 ::::
 
-Being consistent with your choice of  an $f$ expression is probably more important than which one you chose.
+Being consistent with your choice of  an $f$ expression is probably more important than which one you choose.
 
 For each value in `a`, the $f$ value is thus:
 
@@ -441,9 +445,24 @@ The `a.fi` data frame can be inputed into any plotting function to generate the 
 ggplot(a.fi, aes(x = f.val, y = a.o)) + geom_point() + xlab("f-value")
 ```
 
+#### Computing the $f$-value using `eda_fval`
+
+This course's `tukeyedar` package has a function, `eda_fval`, that will generate $f$ values for a batch of values using different algorithms. By default, it adopts Cleveland's method. For example,
+
+```{r class.source="eda"}
+library(tukeyedar)
+eda_fval(a)
+```
+
+Other methods can be passed to the function via the `q.type` argument. TO see the list of methods available to `eda_fval` type `$eda_fval`. For example, to compute the $f$ value as implemented in the `quantile` function, type:
+
+```{r class.source="eda"}
+eda_fval(a, q.type = 7)
+```
+
 #### Using ggplot's `qq` geom
 
-If you did not want to go through the trouble of computing the $f$-values and the dataframe `a.fi`, you could simply call the function `stat_qq()` as in:
+If you did not want to go through the trouble of computing the $f$-values for a `ggplot` derived $Q(f)$ plot, you could simply call the function `stat_qq()` as in:
 
 ```{r fig.height=3, fig.width=3}
 ggplot(NULL, aes(sample = a)) + stat_qq(distribution = qunif) + xlab("f-value")
