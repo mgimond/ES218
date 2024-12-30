@@ -200,7 +200,7 @@ If we remove the bins and connect the dots, we end up with a **density trace**.
 
 ```{r fig.height=2, fig.width=4.5, echo=FALSE}
 ggplot() +
-  geom_rug( df, mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
   ylim(range(dens.bins[, 3:4])) +
     geom_line(dens.bins[1:9,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="black") +
   geom_point(dens.bins[1:9,], mapping=aes(x=(xmin + xmax)/2, y=ymax), col="orange", cex=2.5) +
@@ -247,7 +247,7 @@ The function adopts the `gaussian` weight function and will automatically define
 To adopt a rectangular weight, set the `kernel` parameter to `"rectangular"`.
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + geom_density(fill = "grey60", kernel = "rectangular")
+ggplot(data.frame(a), aes(x = a)) + geom_density(fill = "grey60", kernel = "rectangular")
 ```
 
 Note the raggedness in the plot.
@@ -255,7 +255,7 @@ Note the raggedness in the plot.
 You can modify the *smoothness* of the density plot by adjusting its bandwidth argument `bw`. Here, the bandwidth defines the standard deviation of the Gaussian function.
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(df, aes(x = a)) + geom_density(fill = "grey60", bw = 1)
+ggplot(data.frame(a), aes(x = a)) + geom_density(fill = "grey60", bw = 1)
 ```
 
 ## Boxplots
@@ -265,7 +265,7 @@ A boxplot is another popular plot used to explore distributions. It emphasizes a
 In `ggplot2` we can use the `geom_boxplot()` function. For example,
 
 ```{r fig.height=1.2, fig.width=6.5}
-ggplot(df, aes(x = a)) + geom_boxplot() + 
+ggplot(data.frame(a), aes(x = a)) + geom_boxplot() + 
           xlab(NULL) + theme(axis.text.y = element_blank(), 
                              axis.ticks.y = element_blank()) 
 ```
@@ -310,7 +310,7 @@ qtl.bxp <- function(x, type = 5) {
 }
 
 # Plot the boxplot
-ggplot(df, aes(x = "", y = a)) + 
+ggplot(data.frame(a), aes(x = "", y = a)) + 
   stat_summary(fun.data = qtl.bxp, fun.args = list(type = 5),
                geom = 'boxplot') +
   xlab(NULL) + theme(axis.text.y = element_blank()) +
@@ -327,6 +327,7 @@ A **quantile** is a value that divides a set of data into two parts such that a 
 The x-axis in a quantile plot shows the **f-values**--the full range of probability *fractions*. The notation $f$ may be used as a shorthand for the $f$-value. In other texts, you may see the fraction symbolized by $p$ for *probability*. The y-axis maps the $f$-quantile, $q(f)$, which gives us the value in the batch that is equal to or less than the associated $f$ fraction. For example, the $f$-value of 0.25 (~the 25^th^ percentile) is associated with the quantile value of 9 meaning that 25% of the values in the dataset have values of 9 or less. 
 
 ```{r fig.height=3, fig.width = 3, echo=FALSE, results = FALSE}
+library(tukeyedar)
 i     <- 1 : length(a)          # Create indices
 f.val <- (i - 0.5) / length(a)  # Compute the f-value
 dfa <- data.frame( f.val, a = sort(a) )

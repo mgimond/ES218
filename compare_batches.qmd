@@ -27,9 +27,9 @@ An **empirical quantile-quantile** plot (or **QQ plot** for short) combines [qua
 
 In the above figure, batches `a` and `b` have the same number of observations, 21 this example. As such, they have the same set of $f$-values. If the number of observations in both batches are equal, then the plotting process is straightforward: both batches are sorted from smallest value to largest value, then they are paired up by their common $f$-values generating the scatter plot shown on the right in the above figure. For example, for an $f$-value of 0.5 (i.e. the median), batch `a` has a quantile value of 69 and batch `b` has a quantile value of 68. These values are paired up and assigned a single point in the QQ plot. 
 
-You'll note the addition of a diagonal line to the plot. This line represents the part of the plot where $x$ = $y$. If the quantiles for $x$ and $y$ are equal for a given $f$-values, the point will fall on the $x$=$y$ line. Points falling under the line indicate that the $x$ value is *larger* than the $y$ value for a given $f$ fraction. Points falling above the line indicate that the $x$ value is *smaller* than the $y$ value for a given $f$ fraction.
+You'll note the addition of a diagonal line to the plot. This line represents the part of the plot where $x$ = $y$. If the quantiles for $x$ and $y$ are equal for a given $f$-value, the point will fall on the $x$=$y$ line. Points falling under the line indicate that the $x$ value is *larger* than the $y$ value for a given $f$-value. Points falling above the line indicate that the $x$ value is *smaller* than the $y$ value for a given $f$-value.
 
-Note that if there are ties in the quantile values, the QQ plot may not necessarily display the expected number of points. In the above example, there are 6 ties resulting in what appears to be just 15 points in the QQ plot when in fact, we are observing overlapping points. The above figure applies a transparency to the points. The points with a darker shade of grey are showing overlapping points. For example, batch `a` has 7 observations associated with a value of 69. These 7 observations are paired with 7 observations in batch `b` that also have ties--these are 66, 67 and 68. This results in two overlapping points in the QQ plot where `a` has a value of 69 and `b` a value of 66, another two overlapping points where `a` has a value of 69 and `b` a value of 67, and three overlapping points where `a` has a value of 69 and `b` a value of 68.
+Note that if there are ties in the quantile values, the QQ plot may not necessarily display the expected number of points. In the above example, there are 6 ties resulting in what appears to be just 15 points in the QQ plot when in fact, we are observing overlapping points. The above figure applies a transparency to the points. What may appear as a point with a darker shade of grey is actually overlapping points. For example, batch `a` has 7 observations associated with a value of 69. These 7 observations are paired with 7 observations in batch `b` that also have ties--these are 66, 67 and 68. This results in two overlapping points in the QQ plot where `a` has a value of 69 and `b` a value of 66, another two overlapping points where `a` has a value of 69 and `b` a value of 67, and three overlapping points where `a` has a value of 69 and `b` a value of 68.
 
 If the two batches differ in size (i.e. have different number of observations), we won't be able to match their sorted values from the outset because their $f$-values will not match (recall from the previous chapter that the computed $f$-value is a function of the number of observation in the batch).
 
@@ -43,20 +43,20 @@ It's worth recalling from chapter 16 that the quantile function is, as its name 
 
 ### QQ plots vs. bivariate scatter plots
 
-It's important to note the difference between a quantile-quantile plot and a *traditional* [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot). With the latter, the pairing of values between variables is explicitly defined  (for example average male and female income values may be paired by county) whereas in a QQ plot, the pairing is driven by the matching $f$ values.
+It's important to note the difference between a quantile-quantile plot and a *bivariate* [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot). With the latter, the pairing of values between variables is explicitly defined  (for example average male and female income values may be paired by county) whereas in a QQ plot, the pairing is driven by the matching $f$ values.
  
 ## The Tukey mean-difference plot
 
-Our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line. It can therefore be helpful to visually "rotate" the QQ plot 45&deg; so as to render what was a diagonal line a horizontal one. To tackle this requires that we subtract the x-value  (`a`) from the y-value (`b`), and compare this difference to the mean of the two values:
+Our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line. It can therefore be helpful to visually "rotate" the QQ plot 45&deg; so as to render what was a diagonal line a horizontal one. To tackle this requires that we subtract the x-value  (`a`) from the y-value (`b`), and compare this difference to the mean of the two values. The resulting $x$ and $y$ values are expressed as:
 
 $$
-Y = x - y 
+Y = y - x 
 $$
 $$
 X = \frac{x + y}{2}
 $$
 
-While the axes values change, the layout of the points relative to the line changes very little. Such a plot was first introduced by John Tukey--hence his surname in the plot name. However, you are more likely to see plot referenced simply as the *mean-difference* plot.
+While the axes values change, the layout of the points relative to the line changes very little. Such a plot was first introduced by John Tukey--hence his surname in the plot name. However, you are more likely to see the plot referenced simply as the *mean-difference* plot.
 
 A comparison of the QQ plot (left) and the mean-difference plot (right) are shown next.
 
@@ -101,7 +101,7 @@ s1 <- data.frame(batch1, batch2)
 
 OP <- par(mfrow=c(1,2))
 eda_qq(batch1, batch2, show.par = FALSE, q=FALSE)
-eda_dens(batch1, batch2, show.par = FALSE, bw=2)
+eda_dens(batch2, batch1, show.par = FALSE, bw=2)
 par(OP)
 ```
 
@@ -110,7 +110,8 @@ The offset from the $x=y$ line can usually be eyeballed in the plot. If we measu
 ```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
 OP <- par(mfrow=c(1,2))
 eda_qq(batch1, batch2,fx = "x + 2"  ,show.par = FALSE, q=FALSE, xlab = "batch1 + 2")
-eda_dens(batch1, batch2,fx = "x + 2", show.par = FALSE, bw = 2)
+eda_dens(batch2, batch1,fy = "y + 2", show.par = FALSE, bw = 2, 
+          ylab = "batch1+2")
 par(OP)
 ```
 
@@ -126,7 +127,7 @@ When the points follow a line at an angle to the $x=y$ line, then we say that th
 batch2  <- sort(batch1 * 2 + rnorm(length(batch1), 0,1))
 OP <- par( mfrow=c(1,2) )
 eda_qq(batch1, batch2 , show.par = FALSE, q=FALSE)
-eda_dens(batch1, batch2, show.par = FALSE, bw = 2)
+eda_dens(batch2, batch1, show.par = FALSE, bw = 2)
 par(OP)
 ```
 
@@ -134,8 +135,10 @@ The multiplier can be a bit difficult to glean graphically so trial and error ma
  
 ```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
 OP <- par(mfrow=c(1,2))
-eda_qq(batch1, batch2, fx = "x * 2", show.par = FALSE, q=FALSE, xlab = "batch1 * 2")
-eda_dens(batch1, batch2, fx = "x * 2", show.par = FALSE, bw = 2)
+eda_qq(batch1, batch2, fx = "x * 2", show.par = FALSE, q=FALSE, 
+       xlab = "batch1 * 2")
+eda_dens(batch2, batch1, fy = "y * 2", show.par = FALSE, bw = 2,
+        ylab = "batch1*2")
 par(OP)
 ```
 
@@ -154,7 +157,7 @@ batch2  <- sort(batch1 * 1.5 + 4 + rnorm(length(batch1), 0,1))
 
 OP <- par(mfrow=c(1,2))
 eda_qq(batch1, batch2 ,show.par = FALSE, q=FALSE)
-eda_dens(batch1, batch2, show.par = FALSE, bw = 3)
+eda_dens(batch2, batch1, show.par = FALSE, bw = 3)
 par(OP)
 ```        
 
@@ -162,8 +165,10 @@ We first decompose the offset into its multiplicative component. After some tria
 
 ```{r echo=FALSE, fig.width=7,fig.height=3.5, results = "hide"}
 OP <- par(mfrow=c(1,2))
-eda_qq(batch1, batch2 , fx = "x * 1.5", show.par = FALSE, q=FALSE, xlab = "batch1 * 1.5")
-eda_dens(batch1, batch2, fx = "x * 1.5", show.par = FALSE, bw =3 )
+eda_qq(batch1, batch2 , fx = "x * 1.5", show.par = FALSE, q=FALSE, 
+       xlab = "batch1 * 1.5")
+eda_dens(batch2, batch1, fy = "y*1.5", show.par = FALSE, bw =3,
+         ylab = "batch1*1.5") 
 par(OP)
 
 ``` 
@@ -174,7 +179,8 @@ With the multiplicative offset identified, we tackle its additive component. Whe
 OP <- par(mfrow=c(1,2))
  eda_qq(batch1, batch2 , fx = "x * 1.5 + 4", show.par = FALSE, q=FALSE, 
         xlab = "batch1 * 1.5 + 4")
- eda_dens(batch1, batch2, fx = "x * 1.5 + 4", show.par = FALSE, bw =3 )
+ eda_dens(batch2, batch1, fy = "y * 1.5 + 4", show.par = FALSE, bw =3 , 
+          ylab = "batch1*1.5+4")
 par(OP)
 
 ``` 
@@ -221,7 +227,7 @@ To create a Tukey mean-difference plot, simply add the argument `md = TRUE`.
 eda_qq(Tenor1, Bass2, med = FALSE, q = FALSE, show.par = FALSE, md = TRUE)
 ```
 
-The `eda_qq` function makes use of the `quantile` function behind the scenes. It adopts the `qtype = 5` option when computing the $f$ value. You can change the type via the `q.type` argument in `eda_qq`.
+The `eda_qq` function makes use of the `quantile` function behind the scenes. It adopts the `qtype = 5` option when computing the $f$-value. You can change the type via the `q.type` argument in `eda_qq`.
 
 To learn more about the `eda_qq` function, see [here](https://mgimond.github.io/tukeyedar/articles/qq.html).
 
@@ -230,7 +236,7 @@ To learn more about the `eda_qq` function, see [here](https://mgimond.github.io/
 Base R has a QQ plot function called `qqplot()`. This function will, however, not add the $x=y$ line requiring that we follow up with a call to `abline(0,1)`. For example:
 
 ```{r fig.height = 3, fig.width = 3, echo=2:3}
-OP <- par(mar = c(3,3,1,1))
+OP <- par(mar = c(3.9,3.9,1,1))
 qqplot(Tenor1, Bass2)
 abline(0,1)
 par(OP)
@@ -241,7 +247,7 @@ The `qqplot` function will default to `qtype = 7` in the `quantile` function.
 You'll note that the x and y axis ranges will not necessarily match (this explains why the $x=y$ line does not connect the two corners of the plot). You can equalize the axes ranges by adding the `xlim` and `ylim` arguments. For example:
 
 ```{r fig.height = 3, fig.width = 3, echo=2:4}
-OP <- par(mar=c(4,4,0,0))
+OP <- par(mar=c(3.9,3.9,1,1))
 rng <- range(Tenor1, Bass2)
 qqplot(Tenor1, Bass2, xlim = rng, ylim = rng, asp = 1)
 abline(0,1)
@@ -266,6 +272,7 @@ names(qq.out) <- c("Tenor1", "Bass2")  # Add batch names to output
 We can now generate the QQ plot using `ggplot`.
 
 ```{r fig.height=3, fig.width = 3}
+library(ggplot2)
 
 # Set the x and y limits
 xylim <- range( c(qq.out$Tenor1, qq.out$Bass2) )
@@ -374,5 +381,5 @@ eda_qq(Tenor2, Tenor1, fx = "x * 1.5 - 36", md = TRUE)
 par(OP)
 ```
 
-The multiplicative and additive offsets could benefit from some fine-tuning (the points appear to be at a slight angle to the reference line in both plots). How much time you choose to investing in fine-tuning the parameters will depend on the level of accuracy needed in quantifying the differences in distribution between both batch of values. 
+The multiplicative and additive offsets could benefit from some fine-tuning (the points appear to be at a slight angle to the reference line in both plots). How much time you choose to invest in fine-tuning the parameters will depend on the level of accuracy needed in quantifying the differences in distribution between both batch of values. 
 
