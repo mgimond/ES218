@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Spread-location plot
+# What else can we learn from the residuals?
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -23,11 +23,41 @@ Similarly, ensuring a *consistent* spread of residuals across the full range of 
 
 ## The spread-location plot
 
-While inconstancy in spread across the full range of dependent variables can be sometimes be observed in a residual-dependence plot, certain patterns in the data can make such an assessment more challenging in such a plot.
+While inconstancy in spread across the full range of dependent variables can be sometimes observed in a residual-dependence plot, certain patterns in the data can make such an assessment more challenging in such a plot.
 
-A **spread-location plot** (SL plot) is designed to explore patterns in changes in spreads as a function of increasing $x$ values. The plot pits an expression of spread as a function the fitted values. 
+A **spread-location plot** (SL plot) is designed to explore patterns in changes in spreads as a function of increasing $x$ values. The plot pits an expression of spread, typically the square root of the residuals' absolute value as a function of the fitted values. To help gauge the shape of this distribution, a non-parametric curve, such as the loess, is fitted to the data.
 
+An example of a *homoscedastic* set of residuals follows. The plot on the left is the regression model and the plot on the right is the resulting residuals SL plot.
 
+```{r fig.width = 7, fig.height = 3, echo = FALSE}
+set.seed(787)
+n <- 100
+x <- runif(n,1,10)
+y <- x*2 +rnorm(n,0,0.2)
+df <- data.frame(x,y)
+OP<-par(mfrow=c(1,2))
+ M <- eda_lm(df, x, y, show.par = FALSE, sd=FALSE, mean = FALSE)
+ eda_sl(M, ylab = expression(sqrt(abs(residuals))))
+par(OP)
+```
+
+Here, the residuals are constant across the full range of fitted values. This is confirmed by the loess fit which shows no significant deviation from a horizintal line.
+
+In this next example, an example of a model that generates a heteroscedastic set of residuals is shown.
+
+```{r fig.width = 7, fig.height = 3, echo = FALSE}
+set.seed(787)
+y <- x*2 +rnorm(n,0,abs(x)/3)
+df <- data.frame(x,y)
+OP<-par(mfrow=c(1,2))
+ M <- eda_lm(df, x, y, show.par = FALSE, sd=FALSE, mean = FALSE)
+ eda_sl(M, ylab = expression(sqrt(abs(residuals))))
+par(OP)
+```
+
+The increasing spread as a function of increasing fitted value is apparent in the SL plot (right-plot). It can also be observed in the $Y$ vs. $X$ plot (left plot). Note that the residual is the distance between the fitted line and each point when measured *parallel* to the $Y$ axis.
+
+## Generating 
 
 The `M2` and `lo` models do a good job in eliminating any dependence between residual and x-value. Next, we will check that **the residuals do not show a dependence with *fitted* y-values**. This is analogous to univariate analysis where we checked if residuals increased or decreased with increasing medians across categories. Here we will compare residuals to the fitted `cp.ratio` values (for a univariate analogy, think of the fitted line as representing a *level* across different segments along the x-axis). We'll generate a spread-level plot of model `M2`'s residuals (note that in the realm of regression analysis, such plot is often referred to as a **scale-location** plot). We'll also add a loess curve to help visualize any patterns in the plot.
 
