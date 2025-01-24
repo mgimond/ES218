@@ -16,7 +16,11 @@ pkg_ver(c("dplyr", "ggplot2", "MASS"))
 
 ## Introduction
 
-Ordinary least squares regression lines (those created with the `lm()` function) suffer from sensitivity to outliers. Because `lm`'s best fit line makes use of the mean (which is not a robust measure of location), its breakdown point is $1/n$,  meaning that all it takes is for one data point to behave differently from the rest of the points to significantly alter the slope and intercept of the best fit line. For example, let's start with a well behaved dataset where all points are perfectly aligned, and fit this batch with a regression line:
+Ordinary least squares regression lines (those created using the `lm()` function) are known to be highly sensitive to outliers. This sensitivity arises because OLS regression minimizes the sum of squared residuals, which gives disproportionate weight to data points with large deviations from the predicted line. Consequently, even a single outlier can significantly distort the slope and intercept of the best-fit line.
+
+This vulnerability is tied to the use of the mean, a central measure that is not robust to outliers. Specifically, the breakdown point of OLS regression is $1/n$, meaning that the presence of just one outlier in a dataset with $n$ points can greatly influence the regression results.
+
+To illustrate this, consider a simple dataset where all points are perfectly aligned along a line. By fitting this dataset with an OLS regression line, we can observe its behavior in an ideal scenario. Then, by introducing an outlier, we can see how drastically the line changes. This demonstrates the need for regression techniques that are more resistant to outliers.
 
 ```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
 x <- seq(1:11)
@@ -32,8 +36,7 @@ As expected, we have a perfect fit. And the regression model's coefficients matc
 coef(M)
 ```
 
-
-Now, what if one of the points is re-positioned in the plot, what happens to the regression line?
+Note what happens to the fitted line when a single point deviates significantly from the linear pattern.
 
 ```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
 y[11] <- 2
@@ -42,7 +45,7 @@ M <- lm(y ~ x)
 abline( M , col = "red")
 ```
 
-Note the significant change in the line's characteristics, its intercept and slope are now:
+The model's intercept and slope are now:
 
 ```{r}
 coef(M)
@@ -50,7 +53,9 @@ coef(M)
 
 The slope dropped from 2 to 0.86 because of a single point!
 
-If our goal is to explore what the *bulk* of the data has to say about the phenomena being investigated, we certainly don't want a few "maverick" values to hijack the analysis. We therefore need a set of fitting tools that minimize the influence of outliers. There are many options out there; most notable are  **Tukey's resistant line** and the **bisquare** robust estimation method.
+When our goal is to understand the trend of the data and what the majority of points reveal about the phenomenon under investigation, we cannot afford to let a few "maverick" values dominate the analysis. Outliers, while sometimes interesting, can distort results in ways that obscure the broader patterns. To address this, we need fitting tools that reduce or eliminate the undue influence of such outliers.
+
+Fortunately, several methods are available for this purpose. Among them, **Tukey's resistant line** and the **bisquare robust estimation** are alternatives to traditional regression techniques. These methods will be explored here to demonstrate their effectiveness in focusing on the "bulk" of the data while handling outliers gracefully.
 
 &nbsp;&nbsp;
 
@@ -60,7 +65,6 @@ If our goal is to explore what the *bulk* of the data has to say about the pheno
 ### Tukey's resistant line
 
 The idea is simple in concept. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. The batches’ median values are then used to compute the slope and intercept. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables. 
-
 Let's look at an example of its implementation. We'll continue with the example used in the previous section. First, we divide the plot into three approximately equal batches.
 
 
@@ -71,7 +75,7 @@ Mr <- eda_rline(df, x, y, maxiter=1)
 plot(Mr, model=F, pt3=F, fit = F)
 ```
 
-Next, we compute the median x and y values within each section. 
+Next, we compute the median x and y values for each batch. The medians are presented as red points in the following plot.
 
 ```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
 plot(Mr, model=F, pt3=T, fit = F)
@@ -102,7 +106,7 @@ abline(rl1, col="red")
 ```
 
 
-This is not bad for a first iteration. But the outlier's influence is still present given that the line is not passing through all nine points. Recall that the goal is to *not* allow one lone observation from influencing a fitted line.
+This is not bad for a first iteration. But the outlier's influence is still present given that the line is not passing through all nine points. Recall that the goal is to perevent a lone observation from influencing a fitted line.
 
 From this first iteration, we can extract the residuals. A line is then fitted to the residuals following the same procedure outlined above.
 
@@ -114,7 +118,7 @@ abline(rl1r,col="red")
 ```
 
 The initial model intercept and slope are `r round(rl1$coefficients[1],3)` and `r round(rl1$coefficients[2],3)` respectively and the residual's slope and intercept are `r round(rl1r$coefficients[1],3)` and `r round(rl1r$coefficients[2],3)` respectively.
-The residual slope is then added to the first computed slope giving us an updated slope of `r round(rl1$coefficients[2] + rl1r$coefficients[2] ,3)` and the process is again repeated thus generating the following tweaked slope and updated residuals:
+The residual slope is  added to the first computed slope giving us an updated slope of `r round(rl1$coefficients[2] + rl1r$coefficients[2] ,3)` and the process is again repeated thus generating the following tweaked slope and updated residuals:
 
 ```{r fig.height=3, fig.width=6,  small.mar=TRUE,echo=FALSE}
 OP <- par(mfrow = c(1, 2))
@@ -129,7 +133,7 @@ abline(rl2r,col="red")
 par(OP)
 ```
 
-The second set of residuals is added to the previously computed slope giving us an updated slope of `r round(rl2$coefficients[2] +  rl2r$coefficients[2],3)`. The iteration continues until the slope residuals stabilize. Each successive iteration is shown in the following plot with the final line in dark red. This took three iterations giving us the final fitted line whose intercept and slope are `r round(line(x,y,iter=3)$coefficients[1],2)` and `r round(line(x,y,iter=3)$coefficients[2],2)` respectively--very close to the actual relationship between the two variables.
+The second set of residuals is added to the previously computed slope giving us an updated slope of `r round(rl2$coefficients[2] +  rl2r$coefficients[2],3)`. The iteration continues until the fitted line's residuals stabilize. Each successive iteration is shown in the following plot with the final line in dark red. 
 
 ```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
 df$r1 <- residuals(rl1)
@@ -139,7 +143,9 @@ abline(line(x,y,iter=2),col="#FF8888")
 abline(line(x,y,iter=3),col="#FF0000")
 ```
 
-Tukey's resistant line can be computed using the R built-in `line()` function. You specify the maximum number of iterations via the `iter` argument. Usually, five iterations will be enough. But, the iteration will stop before the maximum number of iterations is reached if the residual slope stabilizes before then.
+Three iterations were required to stabilize the residuals giving us the final fitted line whose intercept and slope are `r round(line(x,y,iter=3)$coefficients[1],2)` and `r round(line(x,y,iter=3)$coefficients[2],2)` respectively--very close to the actual relationship between the two variables.
+
+Tukey's resistant line can be computed using the R built-in `line()` function. The maximum number of iterations is set with the `iter` argument. Usually, five iterations will be enough. 
 
 ```{r}
 r.fit <- line(x,y, iter = 5)
@@ -154,7 +160,7 @@ abline(r.fit, col = "red")
 par(OP)
 ```
 
-You can also add the line to a `ggplot`:
+You can also add the resistant line to a `ggplot` using the `geom_abline()` function:
 
 ```{r fig.height=3, fig.width=3}
 library(ggplot2)
@@ -167,9 +173,11 @@ ggplot(df, aes(x,y)) + geom_point() +
 
 ### Bisquare
 
-A bisquare fitting strategy makes use of a non-parametric model that assigns *weights* to observations based on their proximity to the center of the distribution. The closer an observation is to that center, the greater its weight. 
+The **bisquare** fitting strategy employs a robust regression technique that assigns weights to observations based on their residuals relative to the center of the data distribution. Observations closer to the center are given higher weights, while those farther away receive progressively smaller weights, reducing their influence on the model. 
 
-The first step is to run a linear regression model on the data. The next step is to extract its residuals. Next, a weighting scheme is fitted to the residuals such that the points associated with extreme residuals are assigned the smallest weight and the points associated with the smaller residual values are assigned the largest weight. The regression analysis is then re-run using those same weights thus minimizing the influence of the rogue points. This process is repeated several times until the residuals stabilize. The following figure shows three iterations of the bisquare function whereby the weights (shown as grey text next to each point) start off as `1` then are modified following the residuals derived from the most recent regression model.
+The process begins with an initial linear regression model fitted to the data. Residuals from this model are then computed, and a weighting scheme is applied: observations with smaller residuals are assigned larger weights, while those with larger residuals (indicating potential outliers) are assigned smaller weights. A new regression is then performed using these weights, effectively minimizing the influence of outliers on the fitted line.
+
+This iterative process is repeated, with weights recalculated after each regression until the residuals stabilize and no further significant changes are observed. The figure below illustrates three iterations of the bisquare function, showing how weights (displayed as grey text next to each point) evolve. Initially, all weights are set to 1, but they are progressively adjusted in response to the residuals derived from the most recent regression model.
 
 ```{r fig.height=2.5, fig.width=8, small.mar=TRUE, echo = FALSE}
 wt.bisquare <- function(u, c = 6) {
@@ -203,7 +211,6 @@ OP <- par(mfrow = c(1,3))
  par(OP)
 ```
 
-
 There are different weighing strategies that can be implemented. One such implementation is presented next.
 
 ```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
@@ -226,14 +233,12 @@ plot(x, y, pch = 20)
 abline(dat.lm, col = rgb(1,0,0,0.3))
 ```
 
-In the above example, the bisquare method does a great job in eliminating the outlier's influence. 
-
 
 #### Built-in implementation of the bisquare
 
-The `MASS` package has a robust linear modeling function called `rlm` that will implement a variation of the aforementioned bisquare estimation technique. Its results may differ slightly from those presented above, but the difference will be insignificant for the most part. 
+The `MASS` package has a robust linear modeling function,`rlm`, that implements a variation of the  bisquare estimation technique described in this chapter. Its results may differ slightly from those presented above, but the difference will be insignificant for the most part. 
 
-Note that if you make use of `dplyr` in a workflow, loading `MASS` after `dplyr` will mask dplyr's `select` function. This can be problematic. So you either want to load `MASS` before `dplyr`, or you can call the function via `MASS::rlm`. An example of its use follows. 
+Note that if you make use of `dplyr` in a workflow, loading `MASS` after `dplyr` will mask dplyr's `select` function. This can be problematic. You either want to load `MASS` before `dplyr`, or you can call the function via `MASS::rlm`. The latter option is adopted in the following code chunk.
 
 ```{r fig.height=2.5, fig.width=3,  small.mar=TRUE, fig.show='hold'}
 dat <- data.frame(x,y)
@@ -263,7 +268,7 @@ ggplot(dat, aes(x=x, y=y)) + geom_point() +
 
 ## Robust loess
 
-The loess fit is also not immune to outliers. The bisquare estimation method can be extended to the loess smoothing function by passing the `"symmetric"` option to the `family` argument.
+The loess fit can also be sensitive to outliers. The bisquare estimation method can be implemented in the loess smoothing function by passing the `"symmetric"` option to the `family` argument.
 
 
 ```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,  fig.show='hold'}
@@ -295,4 +300,4 @@ ggplot(dat, aes(x=x, y=y)) + geom_point() +
                       se=FALSE,  col="red") 
 ```
 
-The loess parameters are passed to the `loess` function via the call to `method.args`. The red curve is that of the robust loess and the grey dashed curve is that of the standard loess.
+The loess parameters are passed to the `loess` function via the `method.args` argument.

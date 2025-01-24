@@ -21,10 +21,9 @@ Residuals play an equally pivotal role in bivariate analysis. At their core, res
 
 In this chapter, we will explore ways residuals can help fine-tune the formulation and fitting of models.
 
-
 ## Residual-dependence plot
 
-Regardless of the type of model, it is uncommon for a model to fit every data point perfectly, even with non-parametric approaches like LOESS. In fact, achieving a perfect fit can be undesirable when the goal is to gain insights into the underlying process, as noise is often an inherent byproduct of measurements.
+Regardless of the type of model, it is uncommon for a model to fit every data point perfectly, even with non-parametric approaches like loess In fact, achieving a perfect fit can be undesirable when the goal is to gain insights into the underlying process, as noise is often an inherent byproduct of measurements.
 
 The residuals reflect the difference between the observed value ,$y_{observed}$, and what the model predicts, $y_{predicted}$ .
 
@@ -46,11 +45,11 @@ M1 <- lm(mpg ~ hp, mtcars)
 
 The `M1` model is a list that stores many model components including the residuals which can be extracted from the model using the `residuals()` function. The output is a numeric vector that can be added to the dataframe as follows:
 
-```{r, eval = FALSE}
+```{r}
 mtcars$residuals1 <- residuals(M1)
 ```
 
-The residuals can be explored in a **residual-dependence plot** (RD plot) where the residuals are mapped to the y-axis and the dependent variable is mapped to the x-axis. An example of the plot is  generated using `ggplot`. To help identify a pattern (in any), a loess is fitted to the residuals
+The residuals can be explored in a **residual-dependence plot** (R-D plot) where the residuals are mapped to the y-axis and the dependent variable is mapped to the x-axis. An example of the plot is  generated using `ggplot`. To help identify a pattern (in any), a loess is fitted to the residuals
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
@@ -84,12 +83,22 @@ The parabolic pattern observed in the first-order model residuals is no longer p
 
 ## Residual-fit plot
 
-A  **residual-fit plot** (RF plot) is a type of residual plot where the modeled (or *fitted*) values, $y_{predicted} $, are plotted on the x-axis, and the residuals, $\epsilon$,  are plotted on the y-axis. Similar to the residual-dependence plot, the RF plot visually conveys how closely the observed points align with the modeled relationship.
+A  **residual-fit plot** (R-F plot) is a type of residual plot where the modeled (or *fitted*) values, $y_{predicted}$, are plotted on the x-axis, and the residuals, $\epsilon$,  are plotted on the y-axis. Similar to the residual-dependence plot, the R-F plot visually conveys how closely the observed points align with the modeled relationship.
 
-The distinction between an RF plot and an RD plot is often minimal, especially when the fitted model is a first-order polynomial. For instance, if the modeled slope is positive, both plots will exhibit nearly identical point patterns. In the following plots, points are colored consistently across the three visualizations to highlight their alignment:
+```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
+mtcars$fit2 <- fitted(M2)
+
+ggplot(mtcars, aes(x = fit2, y = residuals2)) + geom_point() +
+               stat_smooth(method = "loess", se = FALSE, span = 1, 
+                           method.args = list(degree = 1) ) +
+               xlab("Fitted values")
+
+```
+
+The distinction between an R-F plot and an R-D plot is often minimal, especially when the fitted model is a first-order polynomial. For instance, if the modeled slope is positive, both plots will exhibit nearly identical point patterns. In the following plots, points are colored consistently across the three visualizations to highlight their alignment:
 
 
-```{r fig.width = 10, fig.height = 3, echo = FALSE}
+```{r fig.width = 10, fig.height = 3, echo = FALSE, results='hide'}
 library(tukeyedar)
 col <- colorRampPalette(c("#4575b4", "#d73027"))(20)
 
@@ -100,7 +109,7 @@ y <- 1 + x * 2 + rnorm(20, 0, 0.1)
 
 df <- data.frame(x,y)
 
-OP <- par(mfrow = c(1,3))
+OP <- par(mfrow = c(1,3),cex = 1)
 MM1 <- lm(y ~ x, df)
 df$residuals <- MM1$residuals
 df$fit <- predict(MM1)
@@ -117,14 +126,14 @@ par(OP)
 
 As shown, the point patterns in both residual plots are identical.
 
-If the modeled slope is negative, the point pattern in the RF plot becomes a mirror image of the RD plot. This is evident in the re-arrangement of the colored points in the RF plot:
+If the modeled slope is negative, the point pattern in the R-F plot becomes a mirror image of the R-D plot. This is evident in the re-arrangement of the colored points in the R-F plot:
 
-```{r fig.width = 10, fig.height = 3, echo = FALSE}
+```{r fig.width = 10, fig.height = 3, echo = FALSE, results='hide'}
 ## Negative slope
 set.seed(543)
 y <- 1 + - x * 2 + rnorm(20, 0, 0.1)
 df <- data.frame(x,y)
-OP <- par(mfrow = c(1,3))
+OP <- par(mfrow = c(1,3), cex = 1)
 MM1 <- lm(y ~ x, df)
 df$residuals <- MM1$residuals
 df$fit <- predict(MM1)
@@ -145,7 +154,7 @@ Despite the flipped orientation, the insights derived from either plot, such as 
 
 When the fitted model is curvilinear, however, the differences between the two residual plots become more pronounced and potentially meaningful. This is demonstrated in the following series of plots:
 
-```{r fig.width = 10, fig.height = 3, echo = FALSE}
+```{r fig.width = 10, fig.height = 3, echo = FALSE, results='hide'}
 ## Polynomial model
 
 set.seed(123)
@@ -156,7 +165,7 @@ y <- x + x^2 + residuals
 x <- x + 10
 df <- data.frame(x,y)
 
-OP <- par(mfrow = c(1,3))
+OP <- par(mfrow = c(1,3), cex = 1)
 MM1 <- lm(y ~ x + I(x^2), df)
 df$residuals <- MM1$residuals
 df$fit <- MM1$fitted.values
@@ -173,9 +182,9 @@ with(df, points(fit, residuals, col = col, pch =16))
 par(OP)
 ```
 
-Both residual plots suggest that the second-order polynomial model is a good fit for the data. However, the point patterns in the two plots differ significantly, as highlighted by the reorganization of the colored points in the RF plot.
+Both residual plots suggest that the second-order polynomial model is a good fit for the data. However, the point patterns in the two plots differ significantly, as highlighted by the reorganization of the colored points in the R-F plot.
 
-One notable difference is the clearer visibility of heteroskedasticity in the RD plot. Specifically, the increasing spread of residuals with larger $x$ values is more evident, while it is less noticeable in the RF plot. This phenomenon, known as heteroskedasticity, will be discussed in detail in the next chapter, along with techniques and plots designed to better identify and analyze it.
+One notable difference is the clearer visibility of heteroskedasticity in the R-D plot. Specifically, the increasing spread of residuals with larger $x$ values is more evident, while it is less noticeable in the R-F plot. This phenomenon, known as heteroskedasticity, will be discussed in detail in the next chapter, along with techniques and plots designed to better identify and analyze it.
 
 ## Were are the residuals, exactly?
 

@@ -15,18 +15,17 @@ source("libs/Common.R")
 pkg_ver(c("dplyr", "ggplot2","tidyr"))
 ```
 
-So far, we've assumed that the underlying process that relates the $x$ and $y$ variables is homogeneous across the full range of x-values. This assumption simplifies model fitting strategies. But sometimes, that assumption does not hold as we will see next.
-
+So far, we've assumed that the underlying process that relates the $X$ and $Y$ variables is homogeneous across the full range of $X$ values. This assumption simplifies model fitting strategies. But sometimes, that assumption does not hold as we will see next.
 
 ## Introduction
 
-Let's start off by downloading a dataset.
+This chapter will make use of a dataset housed on this course's website.
 
 ```{r}
 df <- read.csv("http://mgimond.github.io/ES218/Data/Sample1.csv")
 ```
 
-Next, we'll plot the data and fit a straight line.
+Next, a linear model is fitted to the data.
 
 ```{r fig.width=3.5, fig.height=2.5, small.mar=TRUE}
 library(ggplot2)
@@ -35,7 +34,9 @@ ggplot(df, aes(x = x,y = y)) + geom_point(alpha = 0.3) +
   stat_smooth(method = "lm", se = FALSE)
 ```
 
-The line seems to do a decent job in depicting the *overall* trend but the relationship does not appear perfectly linear. Let's check the residuals via a residual-dependence plot.
+The line seems to do a decent job in depicting the *overall* trend but the relationship does not appear perfectly linear.
+
+Let's check the residuals via a residual-dependence (R-D) plot.
 
 ```{r fig.width=3.5, fig.height=2.5, small.mar=TRUE}
 M1    <- lm( y ~ x, df)
@@ -48,7 +49,7 @@ ggplot(df, aes(x = x, y = residuals)) + geom_point(alpha = 0.3) +
 
 There appears to be a dip in residual values between ~95 and ~107 followed by an increase beyond ~107. The *kinks* in the residuals seem to delineate three perfectly straight line segment suggesting that the raw data may be modeled using three distinct lines (i.e. with differing slopes and intercepts). Note the use of a small loess span in the above code to reveal the kinks in the pattern.
 
-Sometimes, the data may represent outcomes from different processes given different ranges in independent (x) values. Since the residual plot seems to suggest that the kinks occur are `x=95` and `x=106`, we'll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled `1`, `2`, and `3` and will be assigned to a new column called `grp`. This new column will then be used to facet the scatter plots and associated loess curve. We'll use of the `case_when()` function to perform this task.
+Sometimes, the data may represent outcomes from different processes for different ranges of $X$. Since the residual plot seems to suggest that the kinks occur are `x=95` and `x=106`, we'll split the data into three groups: less than 95, between 95 and 106 and greater than 106. These groups will be labeled `1`, `2`, and `3` and will be assigned to a new column called `grp`. This new column will then be used to facet the scatter plots and associated loess curve. We'll use of the `case_when()` function to perform this task.
 
 
 ```{r fig.width=6, fig.height=2.5}
@@ -61,7 +62,7 @@ ggplot(df2, aes(x = x,y = y)) + geom_point(size = 0.5, alpha = 0.3) +
   stat_smooth(method = "loess", se = FALSE) + facet_grid(. ~ grp)
 ```
 
-The segmented plots seem to confirm our earlier suspicion that the data followed three separate linear processes. We can extract the slope and intercept for each segment using the following chunk of code:
+The segmented plots seem to confirm our earlier suspicion that the data followed three separate linear processes. We can extract the slope and intercept for each segment using the following code chunk:
 
 ```{r}
 library(tidyr)
@@ -73,13 +74,13 @@ df2  %>%
   select(-M1)
 ```
 
-So, three separate models were needed to capture, what we believed to be, three different underlying processes.  
+In the above example, three separate models were needed to capture (what we believed to be) three different underlying processes.  
 
-Exploring the residuals using the loess fit was pivotal in identifying the  breaks in the pattern. But, as we will learn in the next section, these breaks may not always be so obvious in a dataset.
+Exploring the residuals using the loess fit was pivotal in identifying the breaks in the pattern. But, as we will learn in the next section, these breaks may not always be so obvious in a dataset.
 
 ## Case study: Trends in daily temperature extremes
 
-> Disclaimer: the analysis presented here is only exploratory and does not mirror the complete analysis conducted by Vincent *et al.* nor the one conducted by Stone.
+> Disclaimer: the analysis presented here is only exploratory and does not mirror the complete analysis conducted by Vincent *et al.* (2005) nor the one conducted by Stone(2011).
 
 ### Original analysis
 
@@ -104,16 +105,16 @@ df2 <- data.frame(Year, PerC, PerH)
 df2.l <- pivot_longer(df2, names_to = "Temp", values_to = "Percent", -Year)
 ```
 
-Let's plot the data and fit a straight line to the points.
+Next, a straight line is fitted to the data.
 
 ```{r fig.width=4.5, fig.height=2.5}
 ggplot(df2.l, aes(x = Year, y = Percent)) + geom_point() +
   stat_smooth(method = "lm", se = FALSE) + facet_wrap(~ Temp, nrow = 1)
 ```
 
-The plot on the left shows percent cold nights and the one on the right shows percent hot nights. At first glance, the trends seem real and monotonic. 
+The plot on the left shows percent cold nights and the one on the right shows percent hot nights. At first glance, the trends appear to be significant and monotonic. 
 
-Next we'll fit a loess to see if the trends are indeed monotonic. To minimize the undue influence of end values in the plot, we'll implement loess' bisquare estimation method via the `family=symmetric` option. We'll also use a small span to help identify any "kinks" in the patterns.
+Next we'll fit a loess to see if the trends are indeed monotonic. To minimize the undue influence of tail-end values in the plot, we'll implement loess' bisquare estimation method via the `family=symmetric` option. We'll also use a small span to help identify any "kinks" in the patterns.
 
 ```{r fig.width=4.5, fig.height=2.5}
 ggplot(df2.l, aes(x = Year, y = Percent)) + geom_point() +
@@ -126,7 +127,7 @@ The patterns seem to be segmented around the 1975-1980 period for both plots sug
 
 ### Changepoint
 
-In a comment to *Vincent et al.*'s paper, R.J. Stone argues that the trend observed in the percent hot and cold dataset is not monotonic but segmented instead. In other words, there is an abrupt change in patterns for both datasets that make it *seem* as though a monotonic trend exists when in fact the data may follow relatively flat patterns for two different segments of time. He notes that the abrupt change (which he refers to as a **changepoint**) occurs around the 1976 and 1977 period. He suggests that this time period coincides with a change in the Pacific Decadal Oscillation (PDO)  pattern. PDO refers to an ocean/atmospheric weather pattern that spans multiple decades and that is believed to impact global climate. 
+In a comment to *Vincent et al.*'s paper, R.J. Stone argues that the trend observed in the percent hot and cold dataset is not monotonic but is segmented instead. In other words, there is an abrupt change in patterns for both datasets that make it *seem* as though a monotonic trend exists when in fact the data may follow relatively flat patterns for two different segments of time. He notes that the abrupt change (which he refers to as a **changepoint**) occurs around the 1976 and 1977 period. He suggests that this time period coincides with a change in the Pacific Decadal Oscillation (PDO)  pattern. PDO refers to an ocean/atmospheric weather pattern that spans multiple decades and that is believed to impact global climate. 
 
 The following chunk of code loads the PDO data, then summarizes the data by year before plotting the resulting dataset.
 
