@@ -14,12 +14,15 @@ source("libs/Common.R")
 pkg_ver(c("dplyr", "tidyr", "tukeyedar"))
 ```
 
+-------
+
+The median polish is an exploratory data analysis technique designed to extract the effects of row and column factors from a two-way table. It serves as a robust alternative to two-way ANOVA, with the goal of characterizing the contribution of each factor to the expected values in the table.
+
+Unlike traditional methods that rely on means, the median polish uses medians to iteratively adjust for row and column effects. This reliance on medians makes the technique less sensitive to outliers, providing a more robust summary of the data's structure. Median polish is particularly useful in situations where data contains extreme values.
 
 ## Introduction
 
 Before tackling two-way tables, let's explore a simpler one-way table. The following dataset shows mean annual income by occupation for the year 2014 (*src: [Bureau of Labor Statistics](http://www.bls.gov/oes/#tables)*)
-
-
 
 ```{r echo=FALSE, results='asis'}
 
@@ -44,8 +47,9 @@ print(xtable(df, digits=0),include.rownames=TRUE, type="html",
 
 ```
 
+What insights can we derive from this dataset beyond the raw income values for each occupation type? To begin, we might consider summarizing the income data with a central measure, such as the median. For instance, in our working example, the median income is `r sprintf("%i",median(df$Income))`. This single value provides a summary measure that represents the overall income distribution.
 
-So, what can we glean from this dataset other than the raw values associated with each occupation type? For starters, we may be interested in coming up with a summary of income values such as the median, or $`r sprintf("%i",median(df$Income))` in our working example. This is a single value that can be used to characterize the overall income value. However, the income values in our batch are not all equal to $`r sprintf("%i",median(df$Income))`--they vary above or below this median value. A good way to measure the variability about the median is to subtract the median income value from each occupation income value. We can do this in a table, but will choose a dotplot chart instead to facilitate comparison.
+However, not all income values in the dataset are equal to `r sprintf("%i",median(df$Income))`—they vary above or below the median. To capture this variability, we can compute deviations by subtracting the median income from each occupation's income value. While this information can be tabulated, a dotplot provides a more visual and intuitive means of comparing these deviations.
 
 ```{r small.mar=TRUE, fig.width=6,fig.height=4, echo=FALSE}
 options(scipen=3)
@@ -53,38 +57,17 @@ dotchart( as.matrix(df)- median(df$Income), pch=16,cex=0.6)
 abline(v = 0, col="red")
 ```
 
-We have separated the income values into two parts: an **overall** value and the difference between each value and the overall--i.e. the **residuals**. This can be written in the following algebraic form:
+We have separated the income values into two parts: an **overall** and its **residuals**. This can be written in the following algebraic form:
 
 $$
-Income_{Occupation} = Income_{median} + Income_{residual}
+Income_{occupation} = Median_{income} + \varepsilon_{occupation}
 $$
 
-For example, 'Healthcare Support' average income of  $`r sprintf("%i",df$Income[12])` can be separated into the median, $`r sprintf("%i",median(df$Income))`, and its residual, $`r sprintf("%i",df$Income[12]-median(df$Income))`. 
+For example, 'Healthcare Support' average income of  `r sprintf("%i",df$Income[12])` can be separated into the median, `r sprintf("%i",median(df$Income))`, and its residual, `r sprintf("%i",df$Income[12]-median(df$Income))`. 
 
-So, in addition to gleaning a median income value from this batch of values, we have also devised a way to facilitate the comparison of the income values to one another. Alternatively, we could have assigned colors to each cell of the table reflecting their values *relative* to the overall median.
+The income value can be thought of as the **response** to the occupation type (also known as a **factor**). In other words, the factor determines the value in our table.
 
-```{r small.mar=TRUE, fig.width=4,fig.height=5, echo=FALSE}
-library(RColorBrewer)
-library(ggplot2)
-cl <- brewer.pal(4, "RdYlGn")
-qtl <- quantile(df$Income)
-intv <- findInterval(df$Income, qtl[-1], rightmost.closed = TRUE) +1
-
-ggplot(df) + aes(x=rownames(df), y=1, fill=Income) +geom_tile(aes(fill=cl[intv])) + 
-  coord_flip() + scale_fill_identity(labels=sort(unique(intv)), breaks=cl) +
-  geom_text(aes( label = format(df$Income, decimal.mark = ",")), size=4) +
-  theme(axis.text.x=element_blank(), axis.title=element_blank(),
-        panel.background=element_blank(), axis.ticks=element_blank(),
-        text = element_text(size = 10))
-```
-
-The income value can be thought of as the **response** to the occupation type (also known as a **factor**). In other words, the factor determines the value in our table. We can re-write the last equation in a more formal way:
-
-$$
-y_{i} = \mu + \epsilon_i 
-$$
-
-where $y_{i}$  is the **response variable** (e.g. income) for **factor** $i$ (e.g. occupation), $\mu$ is the overall typical value (hereafter referred to as the **common value**) and is usually the mean or median, and $\epsilon_i$ is the **residual**. Next, we will see how the idea of separating the values into components can be expanded to **two-way** (aka **two-factor**) tables.
+Next, we will see how the idea of separating the values into components can be expanded to **two-way** (aka **two-factor**) tables.
 
 ## Anatomy of a two-way table
 
@@ -98,7 +81,7 @@ A two-way table is composed of three variables:
   * a **column factor** which has **five levels** in our working example: under 8, 9-11, 12, 13-15 and 16 and greater years of education,
   * **response variables** of which we have 4 (rows) x 5 (columns) = 20 all together.
 
-A two-way table is an extension to the one-way table described in the introduction where instead of grouping a continuous variable by a single factor category we explore the variable across **two** factor categories.
+A two-way table is an extension to the one-way table described in the introduction where, instead of grouping a continuous variable by a single factor category, we explore the variable across **two** factor categories.
 
 We can represent the relationship between the response variable, $y$, and the *two* factors as:
 
@@ -161,7 +144,7 @@ plot(Deaths ~ Region + Edu, df.l)
 par(OP)
 ```
 
-So at this point the plots suggest that there may be a father's educational attainment effect as well as a regional effect on infant mortality with the former effect being possibly more important. 
+The plots suggest that there may be a father's educational attainment effect as well as a regional effect on infant mortality with the former effect being possibly more important. 
 
 Next we will attempt to quantify these effects using Tukey's **median polish**.
 
@@ -233,7 +216,7 @@ The final version of the table (along with the column and row values) is shown b
 
 ![](img/twoway_09.jpg)
 
-A progression of each iteration is shown side-by-side in the next figure. The left-most table is the original data showing death rates. The second table shows the outcome of the first round of polishing (including the initial overall median value of 20.2). The third and forth table show the second and third iterations of the smoothing operations. Additional iterations are not deemed necessary given that little more can be extracted from the residuals.
+A progression of each iteration is shown side-by-side in the next figure. The left-most table is the original data showing death rates. The second table shows the outcome of the first round of polishing (including the initial overall median value of 20.2). The third and forth table show the second and third iterations of the smoothing operations.
 
 ```{r echo = FALSE, fig.width = 11, fig.height=2.5}
 library(tukeyedar)
@@ -261,8 +244,8 @@ par(OP)
 
 A few takeway observations from the analysis follow:
 
- * The *common factor* ends up contributing the largest effect. 
- * Between `Region` and `Education` effects, the latter explains more of the variability in deaths with a range of 7.43 - (-3.7) = 11.13 deaths per 1000 births. The `Region` effect explains about 2.3 - (-1.46) = 3.76 deaths per 1000 births of the variability in the data.
+ * The *common factor* of 20.6 ends up contributing the largest effect. 
+ * Between `Region` and `Education` effects, the latter explains more of the variability in deaths with a range of 7.58 - (-3.45) = 11.03 deaths per 1000 births. The `Region` effect explains about 2.55 - (-1.5) = 4.05 deaths per 1000 births of the variability in the data.
  * One abnormally high residual--10.97 deaths above the overall median deaths--is associated with the southern region and an 8^th^ grade education.
 
 ### Interpreting the median polish
@@ -273,7 +256,7 @@ $$
 y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 $$
 
-In our working example, $\mu$ = 20.6; $\alpha_i$ = -1.5, 2.6   -0.4, and 0.4 for $i$ = `NE`, `Nc`, `S` and `W` respectively; $\beta_j$ = 7.6, 6.0, -0.9, 0.2 and -3.5 for $j$ = `ed8`, `ed9to11`, `ed12`, `ed13to15` and `ed16` respectively.
+In our working example, $\mu$ = 20.6; $\alpha_i$ = -1.5, 2.6, -0.4, and 0.4 for $i$ = `NE`, `NC`, `S` and `W` respectively; $\beta_j$ = 7.6, 6.0, -0.9, 0.2 and -3.5 for $j$ = `ed8`, `ed9to11`, `ed12`, `ed13to15` and `ed16` respectively.
 
 The residuals represent the portion of the mortality rates that can't be explained by either factors. 
 
@@ -281,9 +264,9 @@ So the mortality rate in the upper left-hand cell from the original table can be
 
 ![](img/twoway_10.jpg)
 
-The examination of the table suggests that the infant mortality rate is greatest for fathers who did not attain more than 8 years of school (i.e. who has not completed high school) as noted by the high column effect value of 7.6. This is the rate of infant mortality **relative to the overall median** (i.e. on average, 20.6 infants per thousand die every year and the rate goes up to 7.6 + 20.6 for infants whose father has not passed the 8^th^ grade).  Infants whose father has completed more than 16 years of school (i.e. who has completed college) have a lower rate of mortality as indicated by the low effect value of -3.5 (i.e. 3.5 fewer depths than average). The effects from regions also show higher infant mortality rates for North Central and Western regions (with effect values of 2.6 and 0.4 respectively) and lower rates for the northeastern and southern regions; however the regional effect does not  appear to be as dominant as that of the father’s educational attainment. 
+The examination of the table suggests that the infant mortality rate is greatest for fathers who did not attain more than 8 years of school (i.e. who has not completed high school) as noted by the high column effect value of 7.6. This is the rate of infant mortality **relative to the overall median** (i.e. on average, 20.6 infants per thousand die every year and the rate goes up to 7.6 + 20.6 = 28.2 for infants whose father has not passed the 8^th^ grade).  Infants whose father has completed more than 16 years of school (i.e. who has completed college) have a lower rate of mortality as indicated by the low effect value of -3.5 (i.e. 3.5 fewer depths than average). The effects from regions also show higher infant mortality rates for North Central and Western regions (with effect values of 2.6 and 0.4 respectively) and lower rates for the northeastern and southern regions; however the regional effect does not  appear to be as dominant as that of the father’s educational attainment. 
 
-It’s also important to look at the distribution of the residual numbers across the two-way table. One should identify unusually high or low residuals in the table. Such residuals may warrant further investigation (e.g. the high southern region residual value of 10.8 may need further exploration).
+It’s also important to look at the distribution of the residuals across the two-way table. One should identify unusually high or low residuals in the table. Such residuals may warrant further investigation (e.g. the high southern region residual value of 10.97 may need further exploration).
 
 ### Test for non-additivity
 
@@ -291,7 +274,7 @@ Thus far, we have assumed an additive relationship between the effects (factors)
 
 ```{r fig.width=3, fig.height=3, echo=FALSE, small.mar=TRUE, message=FALSE, results='hide'}
 # plot( medpolish(df,maxiter=3), pch=20)
-plot(eda_pol(df.l, Region, Edu, Deaths, plot = F), type = "diagnostic")
+plot(eda_pol(df.l, Region, Edu, Deaths, plot = FALSE), type = "diagnostic")
 ```
 
 If the diagnostic plot revealed a trend, its shape--or more specifically, its slope--could be used in helping define an appropriate transformation for the data.  A rule of thumb is to apply a $(1 – slope)$ power transformation to the original data. If the resulting power is not appropriate for the dataset then the $cv_{ij}$ can be added to the additive model as follows:
@@ -360,7 +343,7 @@ df.pol <- eda_pol(dfl, row = Region, col = Education , val = Deaths,
                    res.size = 0.8, row.size = 0.8, col.size = 0.8)
 ```
 
-Here, the `eda_pol` function required five iterations which explains the slight difference in values from those generated with the `medpolish` function. You can control the maximum number of iterations in `eda_pol` with the `maxiter` argument.
+Here, the `eda_pol` function required five iterations which explains the slight difference in output from that generated with the `medpolish` function. You can control the maximum number of iterations in `eda_pol` with the `maxiter` argument.
 
 By default, the column and row values are listed in the same order as they are presented in the input data frame (either defined alphabetically or defined by their levels). You can have the function sort the values by their effect size using the `sort` argument.
 
@@ -387,7 +370,7 @@ The `eda_pol` will also output a diagnostic plot.
 plot(df.pol, type = "diagnostic")
 ```
 
-In addition to generating the plot, the function will also return the slope of the fitted line in the console.
+In addition to generating the plot, the function returns the slope of the fitted line in the console.
 
 For a comprehensive review of the median polish and the `eda_pol` function, see the `eda_pol` [vignette](https://mgimond.github.io/tukeyedar/articles/polish.html).
 
@@ -397,7 +380,7 @@ The procedure is similar with some notable differences. First, we compute the gl
 
 ![](img/twoway_11.png)
 
-The results differ slightly from those produced using the median polish. Recall that the mean is sensitive to outliers and medians are not. If a robust estimate of the effects is sought, stick with the median polish.
+The results differ slightly from those produced using the median polish. Recall that the mean is sensitive to outliers and medians are not. 
 
 So what can we gain from the "mean" polish? Well, as it turns out, it serves as the basis of the **two-way ANOVA**. 
 
@@ -423,7 +406,7 @@ Deaths = 32.21 - 3.8(ed9to11) -11.25(ed12) -9.83(ed13to15) -13(ed16) \\
 \end{split}
 $$
 
-So, for example, to compute the first value in the raw table (death rate = 25.3) from the formula, substitute the variables as follows:
+For example, to compute the first value in the raw table (death rate = 25.3) using the formula, substitute the variables as follows:
 
 $$
 \begin{split}

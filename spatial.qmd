@@ -9,6 +9,7 @@ source("libs/Common.R")
 pkg_ver(c("sf", "ggplot2", "tmap", "dplyr", "stringr", "maps"))
 ```
 
+-----
 
 Variables can be mapped in R using packages such as `ggplot2` and `tmap`. The focus of this tutorial will be on mapping polygon (aka areal) data. For more information on mapping spatial data (both vector and raster) visit the [GIS and Spatial Analysis pages](https://mgimond.github.io/Spatial/mapping-data-in-r.html).
 
@@ -33,7 +34,7 @@ dat <- read.csv("https://raw.githubusercontent.com/mgimond/ES218/gh-pages/Data/m
 
 ## Joining a table to a spatial object
 
-Many mapping operations require that the data table be joined to an already created spatial dataset. If your data are aggregated at some administrative boundary level, you can find boundary files for most countries (and at different aggregate levels) in an `sf` format at [https://gadm.org/](https://gadm.org/).
+Many mapping operations require that the data table be joined to an existing spatial dataset. If your data are aggregated at some administrative boundary level, you can find boundary files for most countries (and at different aggregate levels) in an `sf` format at [https://gadm.org/](https://gadm.org/).
 
 Here, we'll join the `dat` table to the `shp` spatial object using `Geo_FIPS` as the common key.
 
@@ -80,7 +81,7 @@ ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) +
         panel.background = element_rect(fill = "grey70"))
 ```
 
-Coordinate systems can play an important role in both analyzing and visualizing spatial data. If you want to control the coordinate system used in your map, add the `coord_sf` function. Here we'll adopt a *UTM NAD83 Zone 19N* coordinate system using its `EPSG` code of `26919`. Note that the grid axes will still adopt the lat/long designation.
+Coordinate systems can play an important role in both analyzing and visualizing spatial data. If you want to control the coordinate system used in your map, add the `coord_sf` function. Here we'll adopt a *UTM NAD83 Zone 19N* coordinate system using its `EPSG` code of `26919`. A list of `EPSG` defined reference systems can be found [here](https://spatialreference.org/ref/epsg/). Note that the grid axes will still adopt the lat/long designation.
 
 ```{r fig.height = 3}
 ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) + 
@@ -114,7 +115,7 @@ ggplot(shp2) + geom_sf(aes(fill = Commute), col = NA) +
 
 ### Mapping with `tmap`
 
-While `ggplot2` can handle basic mapping operations, it does not offer the ease and flexibility of the `tmap` package. Much like `ggplot2`, `tmap` adopts the same layering strategy. For example, to construct the above plot we first specify the layer to plot via the call to `tm_shape`, then the geometry to symbolize the spatial feature, `tm_fill()`.
+While `ggplot2` can handle basic mapping operations, it does not offer the ease and flexibility of the `tmap` package. Much like `ggplot2`, `tmap` adopts a layering strategy. For example, to construct the above plot, we first specify the layer to be plotted via the call to `tm_shape`, then add the geometry that symbolizes the spatial feature, `tm_fill()`.
 
 ```{r fig.width=5.5,fig.height=2.5}
 library(tmap)
@@ -122,7 +123,9 @@ library(tmap)
 tm_shape(shp2) +  tm_fill(col = "Commute")
 ```
 
-To change the projection, pass the PROJ4 string to the `projection` parameter. To move the legend box outside of the map, set `tm_legend(outside = TRUE)`.
+To change the projection, pass the EPSG projection number string to the `projection` parameter. 
+
+To move the legend box outside of the map, set `tm_legend(outside = TRUE)`.
 
 ```{r fig.width=5.5,fig.height=2.5}
 tm_shape(shp2, projection = 26919) + 
@@ -130,7 +133,7 @@ tm_shape(shp2, projection = 26919) +
   tm_legend(outside = TRUE)
 ```
 
-You can also modify the classification breaks and colors. For example, to break the values following quantiles, and assigning the same color scheme used with the ggplot output in an earlier code chunk, you would write:
+You can modify the classification breaks and colors. For example, to break the values following quantiles, and assign the same color scheme used with the ggplot output in an earlier code chunk, you would write:
 
 ```{r fig.width=5.5,fig.height=2.5}
 tm_shape(shp2, projection = 26919) + 
