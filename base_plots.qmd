@@ -408,6 +408,86 @@ par(OP)
 
 The string `\n` in the text `"Median\nIncome"` is interpreted in R as being a carriage return--i.e it forces the text that follows this string to be printed on the next line. The other parameters of interest are `pos` and `adj` that position and adjust the label location (type `?axis` for more information on axis parameters) and the parameter `xpd=TRUE` allows for the `text` function to display text outside of the plot region.
 
+## R colors
+
+R has built-in color palettes that can be used in your plotting functions. Note that the palettes are finite implying that if you have more unique categories than unique colors in a given palette, R will recycle the colors starting with the first color.
+
+The built-in palettes are listed below:
+
+```{r echo = FALSE, fig.width = 8, fig.height=5, message=FALSE}
+library(ggplot2)
+cols <- sapply(palette.pals(), palette.colors, n= NULL, recycle = FALSE)
+cols.df <- data.frame(ID = rep(names(cols), sapply(cols, length)),
+           Obs = unlist(cols))
+cols.df$ID <- factor(cols.df$ID,names(cols) )
+
+ggplot(cols.df) + aes(x=ID) + 
+  geom_dotplot(fill=cols.df$Obs,col=cols.df$Obs) + coord_flip() +
+  theme_classic() +
+  theme(axis.line = element_blank(), 
+        axis.title = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank())
+```
+
+The default palette is `R4`.
+
+For example, the following generates a point plot using the first 5 colors of `R4`.
+
+```{r fig.height = 1, fig.width = 3, echo = 2 }
+OP <- par(mar = c(1,1,0,0), fg = "grey")
+plot(1:5, rep(1,5), type = "p", pch = 16, cex = 3, col = 1:5)
+par(OP)
+```
+
+To change palette, you will need to pass the palette name as a parameter to the `palette()` function. For example, to color the points using the `Accent` palette, type:
+
+```{r fig.height = 1, fig.width = 3, echo = 2:3 }
+OP <- par(mar = c(1,1,0,0), fg = "grey")
+palette("Accent")
+plot(1:5, rep(1,5), type = "p", pch = 16, cex = 3, col = 1:5)
+par(OP)
+```
+
+To revert back to the default palette, reset the palette via the `palette("R4")` command.
+
+You can also create a continuous color scheme using R's built-in color ramp tools.
+
+A flexible color ramp function is `colorRampPalette`. It takes as arguments the desired sequence of colors and the number of unique color swatches. For example, to generate 20 color swatches that range from blue to white to red, type:
+
+```{r fig.height = 1, fig.width = 6, echo = 2:3 }
+OP <- par(mar = c(1,1,0,0), fg = "grey")
+col1 <- colorRampPalette(c("blue", "white", "red"))(20)
+plot(1:20, rep(1,20), type = "p", pch = 16, cex = 3, col = col1)
+par(OP)
+```
+
+You also have access to built-in color ramp functions. These include `terrain.colors`, `heat.colors`, `rainbow`, `cm.colors` and `topo.colors`. These functions take as arguments the number of colors to generate. For example, to generate 20 shades of `terrain.colors` type:
+
+```{r fig.height = 1, fig.width = 6, echo = 2:3 }
+OP <- par(mar = c(1,1,0,0), fg = "grey")
+col2 <- terrain.colors(20)
+plot(1:20, rep(1,20), type = "p", pch = 16, cex = 3, col = col2)
+par(OP)
+```
+
+You can also leverage the built-in perceptually-based HCL color schemes. These schemes include `qualitative`, `sequential` and `diverging`. For example, to list the color palettes associated with a divergent color scheme, type:
+
+```{r}
+hcl.pals("diverging")
+```
+
+You can then pass any one of the listed color palettes to the `hcl.colors` function. The function takes two arguments: the desired number of color swatches and the color palette name. For example, to create the `"Vik"` divergent color scheme (note the upper-case `V`), type:
+
+```{r fig.height = 1, fig.width = 6, echo = 2:3 }
+OP <- par(mar = c(1,1,0,0), fg = "grey")
+col2 <- hcl.colors(20, "Vik")
+plot(1:20, rep(1,20), type = "p", pch = 16, cex = 3, col = col2)
+par(OP)
+```
+
+
+
 ## Exporting plots to image file formats
 
 You might need to export your plots as standalone image files for publications. R will export to many different raster image file formats such as jpg, png, gif and tiff, and several vector file formats such as PostScript, svg and PDF. You can specify the image resolution (in dpi), the image height and width, and the size of the margins.
@@ -454,3 +534,5 @@ pdf(file = "fig1.pdf", width = 5, height = 6)
 
 dev.off()
 ```
+
+
