@@ -73,6 +73,49 @@ df2 %>%
 
 The following section demonstrates other  grouping/summarizing operations on a larger dataset.
 
+### Functions used in `summarise()`
+
+The `summarise()` function typically uses functions that **aggregate** or **extract** meaningful summaries from grouped data.
+
+#### **Numeric Aggregation Functions**
+
+- `sum(x)`: Computes the sum of values in `x`.
+- `mean(x)`: Computes the mean (average) of `x`.
+- `median(x)`: Computes the median of `x`.
+- `min(x)`: Finds the minimum value in `x`.
+- `max(x)`: Finds the maximum value in `x`.
+- `sd(x)`: Computes the standard deviation of `x`.
+- `var(x)`: Computes the variance of `x`.
+- `n()`: Counts the number of rows in each group.
+- `n_distinct(x)`: Counts the number of unique values in `x`.
+
+#### **Extracting Single Values from Groups**
+- `first(x)`: Retrieves the first value in `x`.
+- `last(x)`: Retrieves the last value in `x`.
+- `unique(x)`: Returns unique values (useful if all values in a group are identical).
+
+#### **Boolean and Logical Summaries**
+- `any(x)`: Returns `TRUE` if any value in `x` is `TRUE`.
+- `all(x)`: Returns `TRUE` if all values in `x` are `TRUE`.
+
+### Example
+
+```{r}
+dat <- data.frame(group = c("A", "A", "B", "B", "B"),
+                 x      = c(10, 20, 30, 40, 50),
+                 total  = c(30, 30, 120, 120, 120),
+                 stat   = c(FALSE, FALSE, FALSE, TRUE, FALSE))
+
+# Summarizing data
+dat %>%
+  group_by(group) %>%
+  summarise(sum_x = sum(x),
+            total = unique(total),  # Could have also used first() or last()
+            frac  = sum_x / total,  # Check that sum(x) == total
+            stat  = any(stat))
+```
+NOTE: In this example, `total` represents the sum of values within each group, so it should not be summed again. Since the rows are being collapsed, we need to explicitly tell `summarise()` how to retain a single value for the total column. Using `unique(total)` ensures we keep the intended group total, assuming it remains consistent within each group. Alternatively, `first(total)` or `last(total)` could also be used if the values are identical across rows.
+
 ## Other ways to use `group_by`
 
 The grouping operation does not always need to be followed by a summarization function. The `group_by()` function can also be used in conjunction with `mutate()` to perform calculations within each group while preserving the original number of rows.
