@@ -21,17 +21,17 @@ Data tables come in different sizes and shape; they can be a very simple two col
 
 For example, a median earnings data table downloaded from the U.S. census bureau's website might look something like this:
 
-![](img/Typical_table.png)
+<img src="img/Typical_table.png" style="width: 75%; height: auto;">
 
-We are conditioned to think of a table as consisting of three components: rows, columns and data values. Implicit in this paradigm is that each column represents a unique attribute. However, this may not always be the case. For example, in the above table, each column represents two distinct variables: gender and educational attainment (two distinct sets of attributes).
+We typically view a table as consisting of rows, columns, and data values implicitly assuming each column represents a unique variable. For example, in the above table, each column represents two distinct variables: gender and educational attainment (two distinct sets of attributes).
 
-![](img/Anatomy_of_a_census_table.png)
+<img src="img/Anatomy_of_a_census_table.png" style="width: 75%; height: auto;">
 
-Another way of describing a dataset is by defining its **variable(s)**, **values** and **observations**. In the above example, we have four variables: gender, education, region and income. Each variable consists of either categorical values (e.g. region, gender and education) or numerical values (income). 
+An alternative way to describe a dataset is by defining its **variables**, **values** and **observations**. In the above example, we have four variables: gender, education, region and income. Each variable consists of either categorical values (e.g. region, gender and education) or numerical values (income). 
 
 An observation consists of a **unique set** of attribute **values**. For example the values `West Region`, `Female`, `Graduate` and `$57,914` make up **one** observation: there is just one instance of these combined values in the data. This perspective affords us another option in presenting the dataset: we can assign each column its own variable, and each row its own observation.
 
-![](img/Tidy_census.png)
+<img src="img/Tidy_census.png" style="width: 50%; height: auto;">
 
 Note that each row of the table is part of a unique set of variable values. A dataset in this format may not be human "readable" (unlike its *wide* counterpart), but it's the format of choice for many data analysis and visualization operations and one that will be used extensively in this course.
 
@@ -94,7 +94,8 @@ head(df.long, 10)
 
 The following figure summarizes the wide to long conversion.
 
-![](img/Tidyr_wide2long.png)
+<img src="img/Tidyr_wide2long.png" style="width: 65%; height: auto;">
+
 
 ### Creating a wide table from a long table
 
@@ -117,7 +118,8 @@ df.wide
 
 The following figure summarizes the long to wide conversion.
 
-![](img/Tidyr_long2wide.png)
+<img src="img/Tidyr_long2wide.png" style="width: 65%; height: auto;">
+
 <p>
 
 Additional functionality in `pivot_longer` and `pivot_wider` are highlighted next.
@@ -163,7 +165,7 @@ df2.long
 
 ### Combining variable names when spreading 
 
-Continuing with the `df2.long` dataframe, we can spread the long table back to a wide table while combining the `sex` and `work` variables. We'll add the `names_sep` argument which defines the character to use to separate the two variable names. We'll use a dot `.` separator in this example.
+The `df2.long` dataframe can be spread to a *wide* table by combining the `sex` and `work` variables. This can be done using the `names_sep` argument which defines the character to use to separate the two variable names. We'll use a dot `.` separator in this example.
 
 ```{r}
 pivot_wider(df2.long, 
@@ -175,22 +177,23 @@ pivot_wider(df2.long,
 
 ### Spreading duplicate variable combinations
 
-If your long table has more than one unique combination of variables, `pivot_wider()` will return a list. Note that if you have used the older version of `tidyr` (version `<1.0`)  its  `spread()` function  would have returned an error.
+If your long table has more than one unique combination of variables, `pivot_wider()` will return a list. Note that if you use an older version of `tidyr` (version `<1.0`)  its  `spread()` function  will return an error.
 
 ```{r}
 df3 <- data.frame(var1 = c("a", "a", "b", "b"),
                   var2 = c("x", "x", "y", "y"),
-                  val  = c(5,3,1,4))
+                  val  = c(5, 3, 1, 4))
 df3
 ```
 
-Here, we have to `val` values for the combined values `a` an `x`--likewize for `b` and `y`, This will pose a problem when pivoting to w wide table since the intersection of `a` and `x` will result in two values.
+Here, we have two `val` values for the combinations of `a` & `x` and `b` & `y`. This creates a problem when pivoting to a wide format because the intersection of `a` and `x`, for example, would result in multiple values which cannot be directly represented in a single cell.
 
 ```{r error=TRUE}
 w1 <- pivot_wider(df3, names_from = var2, values_from = val)
 w1
 ```
-Since the intersections of `a`:`x`  and `b`:`y` each have two possible values, the function returns a *list* of values. For example, the intersection of column `x` and row `a` stores the values `5` and `3`.
+
+Since the intersections of `a` & `x`  and `b` & `y` each have two possible values, the function returns a *list* of values. For example, the intersection of column `x` and row `a` stores the values `5` and `3`.
 
 ```{r}
 unlist(w1[1,2])
@@ -200,23 +203,23 @@ Assuming that the duplicate records are not an erroneous entry, you will need to
 
 ```{r error=TRUE}
 pivot_wider(df3, 
-            names_from = var2, 
+            names_from  = var2, 
             values_from = val, 
-            values_fn =  max)
+            values_fn   = max)
 ```
 
-If instead of summarizing the multiple values you wish to combine them with commas, you can type:
+If, instead of summarizing the multiple values, you wish to combine them with commas, you can type:
 
 ```{r error=TRUE}
 pivot_wider(df3, 
-            names_from = var2, 
+            names_from  = var2, 
             values_from = val, 
-            values_fn =  \(x) paste(x, collapse=","))
+            values_fn   =  \(x) paste(x, collapse=","))
 ```
 
 `\(x)` is a shorthand for `function(x)` in R version `4.1` and greater.
 
-You'll note the empty cells resulting from there not being a valid combination for `a`:`y` and `b`:`x`. You can specify the missing values using the `values_fill` argument. For example, to replace `NA` with `0` type:
+You'll notice empty cells where no valid combination exists for `a` & `y` and `b` & `x`. You can fill in these missing values using the `values_fill` argument. For example, to replace `NA` with `0`, type:
 
 ```{r error=TRUE}
 pivot_wider(df3, names_from = var2, values_from = val, 
@@ -241,12 +244,12 @@ df2.long <- pivot_longer(df2, cols = -1,
 df2.long
 ```
 
-We can now split `var1` into its two components that we'll name `sex` and `work`.
+Next, we'll split `var1` into its two components that we'll name `sex` and `work`.
 
 ```{r}
 
 df2.sep <- separate_wider_delim(df2.long, 
-                    cols = var1, 
+                    cols  = var1, 
                     delim = "_", 
                     names = c("sex", "work"))
 df2.sep
@@ -258,7 +261,7 @@ Instead of splitting one column into two columns, you might want to split the de
 
 ```{r}
 separate_longer_delim(df2.long, 
-                      cols = var1, 
+                      cols  = var1, 
                       delim = "_")
 ```
 
@@ -269,8 +272,8 @@ Here, instead of splitting `var1` into two columns, we simply add a new line for
 You can expand rows based on a count column using the `uncount()` function. This is the opposite of a `group_by(...) %>% count()` operation that tallies up the observations based on a grouping variable. Here, we'll replicate rows based on the column `count` value.
 
 ```{r}
-df2b <- data.frame(var1 = c("a", "b"), 
-                   var2 = c("x", "y"), 
+df2b <- data.frame(var1  = c("a", "b"), 
+                   var2  = c("x", "y"), 
                    count = c(1, 3))
 
 df2b
@@ -301,11 +304,11 @@ df
 To combine the three time elements into a single column, type:
 
 ```{r}
-df2 <- unite(df,  col = Time, c(Hour, Min, Sec) , sep=":", remove =TRUE)
+df2 <- unite(df,  col = Time,  c(Hour, Min, Sec) , sep=":", remove =TRUE)
 df2
 ```
 
-The `col` parameter defines the new column name; the parameter `c(Hour, Min, Sec)` defines the columns to be combined into column `Time`; `sep=":"` tells the function what characters are to be used to separate the elements (here, we are separating the time elements using `:`); `remove=TRUE` tells the function to remove the original columns used to create the new `Time` column.
+The `col=` argument defines the new column name; the parameters `c(Hour, Min, Sec)` define the columns to be combined into column `Time`; the `sep=` argument tells the function what characters are to be used to separate the elements; `remove=TRUE` tells the function to remove the original columns used to create the new `Time` column.
 
 ### Creating unique combinations of variable values
 
@@ -375,12 +378,6 @@ To fill the missing dates between the minimum and maximum dates in `df.dt`, we f
 dates.all <- seq(min(df.dt$Date), max(df.dt$Date), by = "1 day")
 ```
 
-Next, we pass the complete set of dates, `dates.all` to the `complete` function. We'll assign `NA` to the missing `Value` values.
-
-```{r}
-df.dt.all <- complete(df.dt, Date = dates.all, fill = list(Value = NA))
-df.dt.all
-``` 
 The `seq` function used in this example has a special method for `Date` objects. As such, it accepts a unique set of incremental parameters (via the `by =` parameter). In the above example, we are asking the function to increment the date object by `1 day`. Other increments can be applied to a sequenced Date object as shown in the following table.
 
 +-----------------+------------------------------------------+
@@ -397,10 +394,18 @@ The `seq` function used in this example has a special method for `Date` objects.
 | `year`          | *X* number of **years** between dates    |
 +-----------------+------------------------------------------+
 
+Next, we pass the complete set of dates, `dates.all` to the `complete` function. We'll assign `NA` to the missing `Value` values.
+
+```{r}
+df.dt.all <- complete(df.dt, Date = dates.all, fill = list(Value = NA))
+df.dt.all
+``` 
 
 #### Example using a `Posix` object class
 
-Recall that if a time element is to be stored in a date, the date object becomes a `Posix` object class. This adds additional increment units to the `seq` function. In the following example, we create a new data frame (with a time value), then fill the table with date/times at 6 hour increments.
+Recall that when a time element is included in a date, the date object is stored as a `POSIX` class. This allows for additional time-based increments in the `seq` function.
+
+In the following example, we create a new data frame with a time column and then populate it with date-time values at 6-hour intervals.
 
 ```{r}
 df.tm <- data.frame( Date = as.POSIXct(c("2000-01-01 18:00 EST", 
@@ -417,7 +422,8 @@ pos.all <- seq(min(df.tm$Date), max(df.tm$Date), by = "6 hour")
 df.tm.all <- complete(df.tm, Date = pos.all, fill = list(Value = NA))
 df.tm.all
 ``` 
-In this example the `seq` method for the `Posix` object adds a few more increment units to those available with the `seq.Date` method shown in the previous table. These include: 
+
+In the above example the `seq` method for the `Posix` object adds time units to the date units available with the `seq.Date` method shown in the previous table. These include: 
 
 +-----------------+------------------------------------------------------------------------------------------------------------+
 | Increment units | Description                                                                                                |

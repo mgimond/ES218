@@ -481,7 +481,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <li><a href="#inner-join" id="toc-inner-join" class="nav-link" data-scroll-target="#inner-join"><span class="header-section-number">12.3</span> Inner join</a></li>
   <li><a href="#full-join" id="toc-full-join" class="nav-link" data-scroll-target="#full-join"><span class="header-section-number">12.4</span> Full join</a></li>
   <li><a href="#joins-in-a-piping-operation" id="toc-joins-in-a-piping-operation" class="nav-link" data-scroll-target="#joins-in-a-piping-operation"><span class="header-section-number">12.5</span> Joins in a piping operation</a></li>
-  <li><a href="#note1" id="toc-note1" class="nav-link" data-scroll-target="#note1"><span class="header-section-number">12.6</span> A note about column names</a></li>
+  <li><a href="#note1" id="toc-note1" class="nav-link" data-scroll-target="#note1"><span class="header-section-number">12.6</span> A note about shared key names</a></li>
   </ul>
 </nav>
     </div>
@@ -536,15 +536,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 </div>
 </div>
-<p>We can use <code>dplyr</code>’s join operations to join elements from one table to another table. Four such functions (with differing behaviors) are <code>left_join</code>, <code>right_join</code>, <code>inner_join</code>, and <code>full join</code>.</p>
-<p>To demonstrate these functions, we’ll be joining two dataframes: <code>df</code> and <code>dj</code>. Let’s first create the <code>df</code> dataframe.</p>
+<hr>
+<p><code>dplyr</code> provides functions for joining data from one table to another allowing you to combine information based on shared keys. Four joining functions, each with distinct behavior, are: <code>left_join</code>, <code>right_join</code>, <code>inner_join</code>, and <code>full join</code>.</p>
+<p>To demonstrate these functions, we’ll be joining two dataframes: <code>df</code> and <code>dj</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"a"</span>, <span class="st">"d"</span>),</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">23</span>, <span class="dv">4</span>, <span class="dv">43</span>, <span class="dv">2</span>, <span class="dv">17</span>),</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"a"</span>, <span class="st">"d"</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   x y
 1  1 a
@@ -555,7 +554,6 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 6 17 d</code></pre>
 </div>
 </div>
-<p>Next, let’s create the <code>dj</code> dataframe.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dj <span class="ot">&lt;-</span> <span class="fu">data.frame</span>( <span class="at">z =</span> <span class="fu">c</span>(<span class="st">"apple"</span>, <span class="st">"pear"</span>, <span class="st">"orange"</span>),</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>),</span>
@@ -568,12 +566,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 3 orange c</code></pre>
 </div>
 </div>
-<p>In the examples that follow, we will join both tables by the common column <code>y</code>. Note that the column names do not need to match (see <a href="#note1">note</a> at the bottom of this page).</p>
+<p>In the examples that follow, we will join both tables by the shared key <code>y</code>. A shared key is a column (or set of columns) that appears in both tables and is used to match rows when joining them. It acts like a common identifier that links related data together. Note that the column names do not need to match (see <a href="#note1">note</a> at the bottom of this page).</p>
 <section id="left-join" class="level2" data-number="12.1">
 <h2 data-number="12.1" class="anchored" data-anchor-id="left-join"><span class="header-section-number">12.1</span> Left join</h2>
 <p>In this example, if a join element in <code>df</code> does not exist in <code>dj</code>, <code>NA</code> will be assigned to column <code>z</code>. In other words, all elements in <code>df</code> will exist in the output regardless if a matching element is found in <code>dj</code>. Note that the output is sorted in the same order as <code>df</code> (the <em>left</em> table).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(df, dj, <span class="at">by=</span><span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(df, dj, <span class="at">by=</span><span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   x y     z
 1  1 a apple
@@ -584,15 +584,15 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 6 17 d  &lt;NA&gt;</code></pre>
 </div>
 </div>
-<p><img src="img/left_join.png" class="img-fluid"></p>
+<p><img src="img/left_join.png" style="width: 40%; height: auto;"></p>
 </section>
 <section id="right-join" class="level2" data-number="12.2">
 <h2 data-number="12.2" class="anchored" data-anchor-id="right-join"><span class="header-section-number">12.2</span> Right join</h2>
 <p>If a join element in <code>df</code> does not exist in <code>dj</code>, that element is removed from the output. A few additional important notes follow:</p>
 <ul>
-<li>All elements in <code>dj</code> appear at least once in the output (even if they don’t have a match in <code>df</code> in which case an <code>NA</code> value is added),</li>
-<li>The output table is sorted in the order in which the <code>y</code> elements appear in <code>dj</code>.</li>
-<li>Element <code>y</code> will appear as many times as there matching <code>y</code>s in <code>df</code>.</li>
+<li>All elements in <code>dj</code> appear at least once in the output (even if they don’t have a match in <code>df</code> in which case an <code>NA</code> value is added);</li>
+<li>The output table is sorted in the order in which the <code>y</code> elements appear in <code>dj</code>;</li>
+<li>Element <code>y</code> will appear as many times as there are matching <code>y</code>’s in <code>df</code>.</li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">right_join</span>(df, dj, <span class="at">by=</span><span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -606,7 +606,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 6 NA c orange</code></pre>
 </div>
 </div>
-<p><img src="img/right_join.png" class="img-fluid"></p>
+<p><img src="img/right_join.png" style="width: 40%; height: auto;"></p>
 </section>
 <section id="inner-join" class="level2" data-number="12.3">
 <h2 data-number="12.3" class="anchored" data-anchor-id="inner-join"><span class="header-section-number">12.3</span> Inner join</h2>
@@ -622,7 +622,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 5  2 a apple</code></pre>
 </div>
 </div>
-<p><img src="img/inner_join.png" class="img-fluid"></p>
+<p><img src="img/inner_join.png" style="width: 40%; height: auto;"></p>
 </section>
 <section id="full-join" class="level2" data-number="12.4">
 <h2 data-number="12.4" class="anchored" data-anchor-id="full-join"><span class="header-section-number">12.4</span> Full join</h2>
@@ -640,11 +640,11 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 7 NA c orange</code></pre>
 </div>
 </div>
-<p><img src="img/full_join.png" class="img-fluid"></p>
+<p><img src="img/full_join.png" style="width: 40%; height: auto;"></p>
 </section>
 <section id="joins-in-a-piping-operation" class="level2" data-number="12.5">
 <h2 data-number="12.5" class="anchored" data-anchor-id="joins-in-a-piping-operation"><span class="header-section-number">12.5</span> Joins in a piping operation</h2>
-<p>The afrementioned joining functions can be used with pipes. For example:</p>
+<p>The aforementioned joining functions can be used with pipes. For example:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(dj, <span class="at">by =</span> <span class="st">"y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -660,8 +660,8 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </section>
 <section id="note1" class="level2" data-number="12.6">
-<h2 data-number="12.6" class="anchored" data-anchor-id="note1"><span class="header-section-number">12.6</span> A note about column names</h2>
-<p>If the common columns in both tables have different names, you will need to modify the <code>by =</code> argument as <code>by = c("left_col" = "right_col")</code>. For example,</p>
+<h2 data-number="12.6" class="anchored" data-anchor-id="note1"><span class="header-section-number">12.6</span> A note about shared key names</h2>
+<p>If the shared keys have different names in each table, you need to specify the <code>by =</code> argument as <code>by = c("left_col" = "right_col")</code>. For example,</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>

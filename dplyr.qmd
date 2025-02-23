@@ -509,3 +509,23 @@ head(yield)
 class(yield)
 ```
 
+## A note about vectorized functions
+
+Vectorized functions in R operate on entire vectors, but **not all vectorized functions behave the same way in `mutate()`**. Some, like `+`, work **element-wise**, while others, like `sum()`, return a **single aggregated value**.
+
+For example, the following does **not** sum `x` and `y` row by row:
+
+```{r}
+df <- data.frame(x = 1:5, y = 11:15)
+df %>% mutate(z = sum(x,y))
+```
+
+The function `sum(x, y)` sums *all* values in x and y together returning a single number. Since `mutate()` expects a vector of the same length as the number of rows (five in this working example), it recycles that single number across all rows.
+
+Common aggregating vectorized functions include `sum()`, `mean()`, `min()`, `max()`, `median()`, `sd()`, `var()` and `IQR()`.
+
+If you want to apply an aggregating function row by row, use `rowwise()`:
+
+```{r}
+df %>% rowwise() %>% mutate(z = sum(x,y))
+```

@@ -498,6 +498,7 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#replacing-values-with-na" id="toc-replacing-values-with-na" class="nav-link" data-scroll-target="#replacing-values-with-na"><span class="header-section-number">9.4</span> Replacing values with <code>NA</code></a></li>
   <li><a href="#outputting-a-vector-instead-of-a-table-using-pull" id="toc-outputting-a-vector-instead-of-a-table-using-pull" class="nav-link" data-scroll-target="#outputting-a-vector-instead-of-a-table-using-pull"><span class="header-section-number">9.5</span> Outputting a vector instead of a table using <code>pull</code></a></li>
+  <li><a href="#a-note-about-vectorized-functions" id="toc-a-note-about-vectorized-functions" class="nav-link" data-scroll-target="#a-note-about-vectorized-functions"><span class="header-section-number">9.6</span> A note about vectorized functions</a></li>
   </ul>
 </nav>
     </div>
@@ -1246,6 +1247,40 @@ Levels: apple banana pear walnut</code></pre>
 <div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(yield)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "numeric"</code></pre>
+</div>
+</div>
+</section>
+<section id="a-note-about-vectorized-functions" class="level2" data-number="9.6">
+<h2 data-number="9.6" class="anchored" data-anchor-id="a-note-about-vectorized-functions"><span class="header-section-number">9.6</span> A note about vectorized functions</h2>
+<p>Vectorized functions in R operate on entire vectors, but <strong>not all vectorized functions behave the same way in <code>mutate()</code></strong>. Some, like <code>+</code>, work <strong>element-wise</strong>, while others, like <code>sum()</code>, return a <strong>single aggregated value</strong>.</p>
+<p>For example, the following does <strong>not</strong> sum <code>x</code> and <code>y</code> row by row:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">y =</span> <span class="dv">11</span><span class="sc">:</span><span class="dv">15</span>)</span>
+<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">z =</span> <span class="fu">sum</span>(x,y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  x  y  z
+1 1 11 80
+2 2 12 80
+3 3 13 80
+4 4 14 80
+5 5 15 80</code></pre>
+</div>
+</div>
+<p>The function <code>sum(x, y)</code> sums <em>all</em> values in x and y together returning a single number. Since <code>mutate()</code> expects a vector of the same length as the number of rows (five in this working example), it recycles that single number across all rows.</p>
+<p>Common aggregating vectorized functions include <code>sum()</code>, <code>mean()</code>, <code>min()</code>, <code>max()</code>, <code>median()</code>, <code>sd()</code>, <code>var()</code> and <code>IQR()</code>.</p>
+<p>If you want to apply an aggregating function row by row, use <code>rowwise()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">z =</span> <span class="fu">sum</span>(x,y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+# Rowwise: 
+      x     y     z
+  &lt;int&gt; &lt;int&gt; &lt;int&gt;
+1     1    11    12
+2     2    12    14
+3     3    13    16
+4     4    14    18
+5     5    15    20</code></pre>
 </div>
 </div>
 

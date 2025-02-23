@@ -480,13 +480,14 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#grouping-by-multiple-variables" id="toc-grouping-by-multiple-variables" class="nav-link" data-scroll-target="#grouping-by-multiple-variables"><span class="header-section-number">10.1.1</span> Grouping by multiple variables</a></li>
   </ul></li>
-  <li><a href="#a-working-example" id="toc-a-working-example" class="nav-link" data-scroll-target="#a-working-example"><span class="header-section-number">10.2</span> A working example</a>
+  <li><a href="#other-ways-to-use-group_by" id="toc-other-ways-to-use-group_by" class="nav-link" data-scroll-target="#other-ways-to-use-group_by"><span class="header-section-number">10.2</span> Other ways to use <code>group_by</code></a></li>
+  <li><a href="#a-working-example" id="toc-a-working-example" class="nav-link" data-scroll-target="#a-working-example"><span class="header-section-number">10.3</span> A working example</a>
   <ul class="collapse">
-  <li><a href="#summarizing-by-crop-type" id="toc-summarizing-by-crop-type" class="nav-link" data-scroll-target="#summarizing-by-crop-type"><span class="header-section-number">10.2.1</span> Summarizing by crop type</a></li>
-  <li><a href="#count-the-number-of-records-in-each-group" id="toc-count-the-number-of-records-in-each-group" class="nav-link" data-scroll-target="#count-the-number-of-records-in-each-group"><span class="header-section-number">10.2.2</span> Count the number of records in each group</a></li>
-  <li><a href="#summarize-by-mean-yield-and-year-range" id="toc-summarize-by-mean-yield-and-year-range" class="nav-link" data-scroll-target="#summarize-by-mean-yield-and-year-range"><span class="header-section-number">10.2.3</span> Summarize by mean yield and year range</a></li>
-  <li><a href="#normalizing-each-value-in-a-group-by-the-group-median" id="toc-normalizing-each-value-in-a-group-by-the-group-median" class="nav-link" data-scroll-target="#normalizing-each-value-in-a-group-by-the-group-median"><span class="header-section-number">10.2.4</span> Normalizing each value in a group by the group median</a></li>
-  <li><a href="#dplyrs-output-data-structure" id="toc-dplyrs-output-data-structure" class="nav-link" data-scroll-target="#dplyrs-output-data-structure"><span class="header-section-number">10.2.5</span> <code>dplyr</code>’s output data structure</a></li>
+  <li><a href="#summarizing-by-crop-type" id="toc-summarizing-by-crop-type" class="nav-link" data-scroll-target="#summarizing-by-crop-type"><span class="header-section-number">10.3.1</span> Summarizing by crop type</a></li>
+  <li><a href="#count-the-number-of-records-in-each-group" id="toc-count-the-number-of-records-in-each-group" class="nav-link" data-scroll-target="#count-the-number-of-records-in-each-group"><span class="header-section-number">10.3.2</span> Count the number of records in each group</a></li>
+  <li><a href="#summarize-by-mean-yield-and-year-range" id="toc-summarize-by-mean-yield-and-year-range" class="nav-link" data-scroll-target="#summarize-by-mean-yield-and-year-range"><span class="header-section-number">10.3.3</span> Summarize by mean yield and year range</a></li>
+  <li><a href="#normalizing-each-value-in-a-group-by-the-group-median" id="toc-normalizing-each-value-in-a-group-by-the-group-median" class="nav-link" data-scroll-target="#normalizing-each-value-in-a-group-by-the-group-median"><span class="header-section-number">10.3.4</span> Normalizing each value in a group by the group median</a></li>
+  <li><a href="#dplyrs-output-data-structure" id="toc-dplyrs-output-data-structure" class="nav-link" data-scroll-target="#dplyrs-output-data-structure"><span class="header-section-number">10.3.5</span> <code>dplyr</code>’s output data structure</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -542,16 +543,18 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 
 </div>
 </div>
+<hr>
+<p>In Chapter 9, you were introduced to the <code>summarise()</code> function, which aggregates an entire column using functions like <code>mean()</code> or <code>sum()</code>. This summarization can also be performed within groups allowing calculations to be done separately for each category of a grouping variable.</p>
 <section id="summarizing-data-by-group" class="level2" data-number="10.1">
 <h2 data-number="10.1" class="anchored" data-anchor-id="summarizing-data-by-group"><span class="header-section-number">10.1</span> Summarizing data by group</h2>
 <p>Let’s first create a dataframe listing the average delay time in minutes, by day of the week and by quarter, for Logan airport’s 2014 outbound flights.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Weekday =</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Mon"</span>, <span class="st">"Tues"</span>, <span class="st">"Wed"</span>, <span class="st">"Thurs"</span>, <span class="st">"Fri"</span>), <span class="at">each =</span> <span class="dv">4</span>), </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Weekday =</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Mon"</span>, <span class="st">"Tues"</span>, <span class="st">"Wed"</span>, <span class="st">"Thurs"</span>, <span class="st">"Fri"</span>), <span class="at">times =</span> <span class="dv">4</span>), </span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Mon"</span>, <span class="st">"Tues"</span>, <span class="st">"Wed"</span>, <span class="st">"Thurs"</span>, <span class="st">"Fri"</span>)),</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Quarter =</span> <span class="fu">paste0</span>(<span class="st">"Q"</span>, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">each =</span> <span class="dv">5</span>)), </span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Delay =</span> <span class="fu">c</span>(<span class="fl">9.9</span>, <span class="fl">5.4</span>, <span class="fl">8.8</span>, <span class="fl">6.9</span>, <span class="fl">4.9</span>, <span class="fl">9.7</span>, <span class="fl">7.9</span>, <span class="dv">5</span>, <span class="fl">8.8</span>, <span class="fl">11.1</span>, <span class="fl">10.2</span>, <span class="fl">9.3</span>, <span class="fl">12.2</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>            <span class="fl">10.2</span>, <span class="fl">9.2</span>, <span class="fl">9.7</span>, <span class="fl">12.2</span>, <span class="fl">8.1</span>, <span class="fl">7.9</span>, <span class="fl">5.6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Delay =</span> <span class="fu">c</span>(<span class="fl">9.9</span>, <span class="fl">4.9</span>, <span class="fl">8.8</span>, <span class="fl">12.2</span>, <span class="fl">12.2</span>, <span class="fl">5.4</span>, <span class="fl">9.7</span>, <span class="fl">11.1</span>, <span class="fl">10.2</span>, <span class="fl">8.1</span>, <span class="fl">8.8</span>, <span class="fl">7.9</span>, <span class="fl">10.2</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>            <span class="fl">9.2</span>, <span class="fl">7.9</span>, <span class="fl">6.9</span>, <span class="fl">5.0</span>, <span class="fl">9.3</span>, <span class="fl">9.7</span>, <span class="fl">5.6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The goal will be to summarize the table by <code>Weekday</code> as shown in the following graphic.</p>
 <p><img src="img/Summarize_by_one_variable.png" style="width: 73%; height: auto;"></p>
@@ -612,24 +615,62 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 <p>The following section demonstrates other grouping/summarizing operations on a larger dataset.</p>
 </section>
 </section>
-<section id="a-working-example" class="level2" data-number="10.2">
-<h2 data-number="10.2" class="anchored" data-anchor-id="a-working-example"><span class="header-section-number">10.2</span> A working example</h2>
+<section id="other-ways-to-use-group_by" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="other-ways-to-use-group_by"><span class="header-section-number">10.2</span> Other ways to use <code>group_by</code></h2>
+<p>The grouping operation does not always need to be followed by a summarization function. The <code>group_by()</code> function can also be used in conjunction with <code>mutate()</code> to perform calculations within each group while preserving the original number of rows.</p>
+<p>For example, you might use <code>mutate()</code> after <code>group_by()</code> to create group-relative values, like percentages or rankings within each category, or apply conditional transformations where the operation depends on the group a row belongs to.</p>
+<p>In the following example, the delay times are reported as the difference between delay time and the associate quarter’s mean delay time.</p>
+<p><img src="img/group_by_mutate.png" style="width: 60%; height: auto;"></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Quarter) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Relative_delay =</span> Delay <span class="sc">-</span> <span class="fu">mean</span>(Delay))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 4
+# Groups:   Quarter [4]
+   Weekday Quarter Delay Relative_delay
+   &lt;fct&gt;   &lt;chr&gt;   &lt;dbl&gt;          &lt;dbl&gt;
+ 1 Mon     Q1        9.9          0.300
+ 2 Tues    Q1        4.9         -4.7  
+ 3 Wed     Q1        8.8         -0.800
+ 4 Thurs   Q1       12.2          2.6  
+ 5 Fri     Q1       12.2          2.6  
+ 6 Mon     Q2        5.4         -3.5  
+ 7 Tues    Q2        9.7          0.800
+ 8 Wed     Q2       11.1          2.2  
+ 9 Thurs   Q2       10.2          1.30 
+10 Fri     Q2        8.1         -0.800
+11 Mon     Q3        8.8          0    
+12 Tues    Q3        7.9         -0.9  
+13 Wed     Q3       10.2          1.40 
+14 Thurs   Q3        9.2          0.400
+15 Fri     Q3        7.9         -0.9  
+16 Mon     Q4        6.9         -0.400
+17 Tues    Q4        5           -2.3  
+18 Wed     Q4        9.3          2    
+19 Thurs   Q4        9.7          2.4  
+20 Fri     Q4        5.6         -1.7  </code></pre>
+</div>
+</div>
+</section>
+<section id="a-working-example" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="a-working-example"><span class="header-section-number">10.3</span> A working example</h2>
 <p>The data file <em>FAO_grains_NA.csv</em> will be used in this exercise. This dataset consists of grain yield and harvest year by North American country. The dataset was downloaded from http://faostat3.fao.org/ in June of 2014.</p>
 <p>Run the following line to load the FAO data file into your current R session.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv"</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"http://mgimond.github.io/ES218/Data/FAO_grains_NA.csv"</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Make sure to load the <code>dplyr</code> package before proceeding with the following examples.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="summarizing-by-crop-type" class="level3" data-number="10.2.1">
-<h3 data-number="10.2.1" class="anchored" data-anchor-id="summarizing-by-crop-type"><span class="header-section-number">10.2.1</span> Summarizing by crop type</h3>
+<section id="summarizing-by-crop-type" class="level3" data-number="10.3.1">
+<h3 data-number="10.3.1" class="anchored" data-anchor-id="summarizing-by-crop-type"><span class="header-section-number">10.3.1</span> Summarizing by crop type</h3>
 <p>The <code>group_by</code> function will split any operations applied to the dataframe into groups defined by one or more columns. For example, if we wanted to get the minimum and maximum years from the <code>Year</code> column for which crop data are available <em>by crop type</em>, we would type the following:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> </span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span> </span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yr_min =</span> <span class="fu">min</span>(Year), <span class="at">yr_max=</span><span class="fu">max</span>(Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yr_min =</span> <span class="fu">min</span>(Year), <span class="at">yr_max=</span><span class="fu">max</span>(Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 11 × 3
    Crop         yr_min yr_max
@@ -648,25 +689,25 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 </section>
-<section id="count-the-number-of-records-in-each-group" class="level3" data-number="10.2.2">
-<h3 data-number="10.2.2" class="anchored" data-anchor-id="count-the-number-of-records-in-each-group"><span class="header-section-number">10.2.2</span> Count the number of records in each group</h3>
+<section id="count-the-number-of-records-in-each-group" class="level3" data-number="10.3.2">
+<h3 data-number="10.3.2" class="anchored" data-anchor-id="count-the-number-of-records-in-each-group"><span class="header-section-number">10.3.2</span> Count the number of records in each group</h3>
 <p>In this example, we are identifying the number of records by <code>Crop</code> type. There are two ways this can be accomplished:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Or,</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 2
   Crop      Count
@@ -682,18 +723,18 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 <p>The former uses the <code>count()</code> function and the latter uses the <code>summarise()</code> and <code>n()</code> functions.</p>
 </section>
-<section id="summarize-by-mean-yield-and-year-range" class="level3" data-number="10.2.3">
-<h3 data-number="10.2.3" class="anchored" data-anchor-id="summarize-by-mean-yield-and-year-range"><span class="header-section-number">10.2.3</span> Summarize by mean yield and year range</h3>
+<section id="summarize-by-mean-yield-and-year-range" class="level3" data-number="10.3.3">
+<h3 data-number="10.3.3" class="anchored" data-anchor-id="summarize-by-mean-yield-and-year-range"><span class="header-section-number">10.3.3</span> Summarize by mean yield and year range</h3>
 <p>Here’s another example where <em>two</em> variables are summarized in a single pipe.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat.grp <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>( <span class="at">Yield =</span> <span class="fu">mean</span>(Value), <span class="st">`</span><span class="at">Number of Years</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">max</span>(Year) <span class="sc">-</span> <span class="fu">min</span>(Year)) </span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>dat.grp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dat.grp <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>, </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>         Year <span class="sc">&gt;=</span> <span class="dv">2005</span> <span class="sc">&amp;</span> Year <span class="sc">&lt;=</span><span class="dv">2010</span>, </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>         Country<span class="sc">==</span><span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop) <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>( <span class="at">Yield =</span> <span class="fu">mean</span>(Value), <span class="st">`</span><span class="at">Number of Years</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">max</span>(Year) <span class="sc">-</span> <span class="fu">min</span>(Year)) </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>dat.grp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 3
   Crop       Yield `Number of Years`
@@ -708,45 +749,45 @@ gtag('config', 'G-CJW3PSXZC2', { 'anonymize_ip': true});
 </div>
 </div>
 </section>
-<section id="normalizing-each-value-in-a-group-by-the-group-median" class="level3" data-number="10.2.4">
-<h3 data-number="10.2.4" class="anchored" data-anchor-id="normalizing-each-value-in-a-group-by-the-group-median"><span class="header-section-number">10.2.4</span> Normalizing each value in a group by the group median</h3>
+<section id="normalizing-each-value-in-a-group-by-the-group-median" class="level3" data-number="10.3.4">
+<h3 data-number="10.3.4" class="anchored" data-anchor-id="normalizing-each-value-in-a-group-by-the-group-median"><span class="header-section-number">10.3.4</span> Normalizing each value in a group by the group median</h3>
 <p>In this example, we are subtracting each value in a group by that group’s median. This can be useful in identifying which year yields are higher than or lower than the median yield value within each crop group. We will concern ourselves with US yields only and sort the output by crop type. We’ll save the output dataframe as <code>dat2</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>,</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Crop, Year, Value)                     <span class="sc">%&gt;%</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop)                                <span class="sc">%&gt;%</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">NormYield =</span> Value <span class="sc">-</span> <span class="fu">median</span>(Value))     <span class="sc">%&gt;%</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Information <span class="sc">==</span> <span class="st">"Yield (Hg/Ha)"</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>         Country <span class="sc">==</span> <span class="st">"United States of America"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Crop, Year, Value)                     <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Crop)                                <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">NormYield =</span> Value <span class="sc">-</span> <span class="fu">median</span>(Value))     <span class="sc">%&gt;%</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Crop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s plot the normalized yields by year for <code>Barley</code> and add a <code>0</code> line representing the (normalized) central value.</p>
 <div class="cell" data-small.mar="true">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>( NormYield <span class="sc">~</span> Year, dat2[dat2<span class="sc">$</span>Crop <span class="sc">==</span> <span class="st">"Barley"</span>,] )</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col=</span><span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>( NormYield <span class="sc">~</span> Year, dat2[dat2<span class="sc">$</span>Crop <span class="sc">==</span> <span class="st">"Barley"</span>,] )</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col=</span><span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="group_by_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="480"></p>
+<p><img src="group_by_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="480"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>The relative distribution of points does not change, but the values do (they are re-scaled) allowing us to compare values based on some localized (group) context. This technique will prove very useful later in the course when EDA topics are explored.</p>
 </section>
-<section id="dplyrs-output-data-structure" class="level3" data-number="10.2.5">
-<h3 data-number="10.2.5" class="anchored" data-anchor-id="dplyrs-output-data-structure"><span class="header-section-number">10.2.5</span> <code>dplyr</code>’s output data structure</h3>
+<section id="dplyrs-output-data-structure" class="level3" data-number="10.3.5">
+<h3 data-number="10.3.5" class="anchored" data-anchor-id="dplyrs-output-data-structure"><span class="header-section-number">10.3.5</span> <code>dplyr</code>’s output data structure</h3>
 <p>Some of <code>dplyr</code>’s functions such as <code>group_by</code>/<code>summarise</code> generate a <strong>tibble</strong> data table. For example, the <code>dat.grp</code> object created in the last chunk of code is associated with a <code>tb_df</code> (a tibble).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.grp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.grp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "tbl_df"     "tbl"        "data.frame"</code></pre>
 </div>
 </div>
 <p>A <em>tibble</em> table will behave a little differently than a <em>data frame</em> table when printing to a screen or subsetting its elements. In most cases, a tibble rendering of the table will not pose a problem in a workflow, however, this format may prove problematic with some older functions. To remedy this, you can force the <code>dat.grp</code> object to a standalone <code>dataframe</code> as follows:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dat.df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dat.grp)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>dat.df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dat.grp)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat.df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "data.frame"</code></pre>
 </div>
