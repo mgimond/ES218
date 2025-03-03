@@ -57,12 +57,12 @@ head(dat2c, 3)
 
 ## The `ggplot2` package
 
-The `ggplot2` package is designed around the idea that statistical graphics can be decomposed into a formal system of grammatical rules. The `ggplot2` learning curve is the steepest of all graphing environments encountered thus far, but once mastered it affords the greatest control over graphical design. For an up-to-date list of `ggplot2` functions, you may want to refer to ggplot2's [website](https://ggplot2.tidyverse.org/reference/).
+The `ggplot2` package is designed around the idea that graphics can be decomposed into a formal system of grammatical rules. The `ggplot2` learning curve is the steepest of all graphing environments encountered thus far, but once mastered it affords the greatest control over graphical design. For an up-to-date list of `ggplot2` functions, you may want to refer to ggplot2's [website](https://ggplot2.tidyverse.org/reference/).
 
 A plot in `ggplot2` consists of different *layering* components, with the three primary components being:
 
 + The **dataset** that houses the data to be plotted;
-+ The **aesthetics** which describe how data are to be mapped to the geometric elements (color, shape, size, etc..);
++ The **aesthetics** which describe how data are to be mapped to the geometric elements (coordinates, color, shape, size, etc..);
 + The **geometric** elements to use in the plot (i.e. points, lines, rectangles, etc...).
 
 Additional (optional) layering components include:
@@ -112,6 +112,18 @@ Also, note that the parameters `x=` and `y=` can be omitted from the syntax redu
 ```{r eval = FALSE}
 ggplot(dat1l , aes(Year, Yield, color = Crop)) + geom_line()
 ```
+
+### Common aesthtics for most geoms
+
++ `x`: Position on the x-axis
++ `y`: Position on the y-axis
++ `color`: Line or point color. If the point symbol has a separate border and fill color, the `color` is assigned to the point symbol's border.
++ `fill`: Fill color for tile plots, bar plots, polygons and other filled shapes.
++ `size`: Point size or line thickness.
++ `shape`: Point symbol. See [Chapter 13](./base_plots.html#customizing-point-symbols) for a list of point symbols.
++ `linetype`: Line type.
++ `group`: Grouping variable that isolates lines, boxplots, or barplots. This aesthetic is used if other grouping aesthetics such as `color` or `linetype` are not desired. Can also be used in conjunction with other advanced functions such as `stat_smooth()`.
+
 
 ## Geometries
 
@@ -295,7 +307,7 @@ ggplot(dat2, aes(x = B20004013, y = B20004007)) +
 
 ### Combining datasets
 
-You can plot different datasets on the same ggplot canvas. This approach usually requires that each geom be assigned its own dataset and aesthetics. In the following example, we'll create two separate dataframes of grain data: one for barley and the other for oats. We'll then reference these datasets in separate calls to `geom_line`.
+You can plot multiple datasets on the same ggplot2 canvas by assigning each geom its own dataset and aesthetics. In the following example, we create two separate data frames: one for barley and another for oats. Each dataset is referenced in a separate `geom_line()` call.
 
 ```{r fig.height=3, fig.width=4}
 grain1 <- select(dat1w, Year, Barley)
@@ -306,7 +318,7 @@ ggplot() +
   geom_line(data = grain2, aes(Year, Oats), color = "red", show.legend = TRUE) 
 ```
 
-You'll note that the legend is not automatically created since the aesthetics are not specified in the `ggplot()` function. To add a legend, we must first assign a character string to the `color` argument in `aes()`, then we reference that color aesthetic in the `scale_color_manual` function where we assign color to the aesthetic.
+Notice that a legend is not automatically generated since the aesthetics are not specified within `ggplot()`. To include a legend, we must assign a character string to the color argument inside `aes()`. We then use `scale_color_manual()` to map these values to specific colors.
 
 ```{r fig.height=3, fig.width=4}
 ggplot() +
@@ -315,7 +327,17 @@ ggplot() +
   scale_color_manual(name = "Grain", values = c("Barley" = "blue", "Oats" = "red"))
 ```
 
-Note how we removed the `color="blue"/"red"` arguments from each call to `geom_line` and added the `color` aesthetic in the `aes()` functions.
+Here, we remove the `color="blue"` and `color="red"` arguments from `geom_line()` and instead specify the color aesthetic within `aes()`.
+
+In this example, barley and oats are stored in separate data frames to illustrate how to plot data from multiple sources. However, it's generally best to combine variables into a single data frame whenever possible and use aesthetics like `color` to distinguish categories. This approach simplifies the code and improves readability. The same plot can be generated more efficiently as follows:
+
+```{r fig.height=3, fig.width=4}
+grains <- filter(dat1l, Crop %in% c("Barley", "Oats"))
+
+ggplot(grains, aes(Year, Yield, color = Crop)) +
+  geom_line() +
+  scale_color_manual(name = "Grain", values = c("Barley" = "blue", "Oats" = "red"))
+```
 
 &nbsp; 
 
