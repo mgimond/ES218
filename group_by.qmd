@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Grouping and summarizing
 
 ```{r echo=FALSE}
@@ -141,7 +146,49 @@ df %>%
   mutate(Relative_delay = Delay - mean(Delay))
 ```
 
+## Ungrouping a dataframe in `dplyr`
 
+When using `group_by()` in dplyr, the behavior of `summarise()` depends on the number of grouping variables.
+
+### Grouping by a Single Variable
+
+If you group by one variable, `summarise()` automatically removes the grouping after aggregation. For example:
+
+```{r}
+mtcars %>% group_by(gear) %>% summarise(mpg = mean(mpg))
+```
+
+In this case, the resulting data frame is ungrouped as `summarise()` drops the only grouping variable (gear). This is confirmed by the absence of any group in the table header.
+
+### Grouping by Multiple Variables
+
+If you group by more than one variable, `summarise()` only removes the last grouping variable. For example
+
+```{r}
+mtcars %>% group_by(am, gear) %>% summarise(mpg = mean(mpg))
+```
+
+Here, the result remains grouped by `am` as only `gear` was removed from the grouping structure. You can confirm this by checking the table header or by using `group_vars()` on the dataframe.
+
+### Grouping and `mutate()`
+
+Note that this behavior does not apply to `mutate()`. When using `mutate()` on a grouped data frame, all grouping variables persist in the output. 
+
+```{r}
+mtcars %>% group_by(am, gear) %>% mutate(mpg_scaled = mpg / mean(mpg)) %>% head()
+```
+
+In the output, the first few rows are displayed along with the header information, which confirms that the grouping variables (`am` and `gear`) remain intact.
+
+### Removing al grouping
+
+To ensure that the table is completely free of any grouping elements, use `ungroup`:
+
+```{r}
+mtcars %>% group_by(am, gear) %>% summarise(mpg = mean(mpg)) %>% ungroup()
+```
+
+Now, the resulting data frame has no remaining grouping structure.
 
 ## A working example
 
