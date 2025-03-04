@@ -262,7 +262,7 @@ ggplot(dat2.ct, aes(x = reorder(State, -Counties), y = Counties)) +
        geom_bar(stat = "identity")
 ```
 
-### dot plot
+### Dot plots
 
 The dot plot is an alternative way to visualize counts as a function of a categorical variable. Instead of mapping `State` to the x-axis, we'll map it to the y-axis.
 
@@ -277,6 +277,33 @@ ggplot(dat2.ct , aes(x = Counties, y = reorder(State, Counties))) +
        geom_point()
 ```
 
+### Tile plots (heat maps)
+
+You can create *heat maps* by tiling the data where color represents a third variable's value. This typically requires three variables: two that define a rectangular grid—either categorical or evenly spaced continuous values—and a third, the continuous variable, that determines the color of each tile.
+
+For example, a tile plot can illustrate median income (for all sexes) as a function of education level and region. Here, the `Region` will be mapped to the x-axis, the `Level` to the y-axis and the median `Income` to the **fill** color aesthetic.
+
+![](img/ggplot_3.png){width="70%"}
+
+But first, we summarize the data to generate a three variable dataset.
+
+```{r}
+dat2c.med <- dat2c %>% 
+  filter(Level != "All") %>% 
+  group_by(Level, Region) %>% 
+  summarise(Income = median(All))
+
+head(dat2c.med)
+```
+
+Next, we generate the plot.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_gradient(low = "yellow", high = "red")
+```
+
+The above example adopts a continuous color scheme where `yellow` is assigned to the smaller values and red to the higher values.  Additional color options are presented later in this chapter.
 
 ### Combining geometries
 
@@ -505,107 +532,6 @@ ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
        coord_equal(ratio = 1)
 ```
 
-### Colors
-
-You can customize geom colors using one of two sets of color schemes: one for continuous values, the other for categorical (discrete) values.
-
-+------------------------+----------------------+
-|   Continuous           |   Categorical        |
-+========================+======================+
-|`scale_color_gradient`  | `scale_color_hue`    |
-|`scale_color_gradient2` | `scale_color_grey`   |
-|`scale_color_distiller` | `scale_color_manual` |
-|`scale_fill_gradient2`  | `scale_color_brewer` |
-|`scale_fill_gradient`   |                      |
-|`scale_fill_distiller`  |                      |
-+------------------------+----------------------+
-
-A few examples follow.
-
-#### Continuous color schemes
-
-The following chunk of code summarizes `dat2` by tallying the number of counties in each state and by computing the median county income values.
-
-```{r}
-dat2.ct2 <- dat2 %>% group_by(State) %>% 
-  summarize(Counties = n(), Income = median(B20004001))
-head(dat2.ct2)
-```
-
-The following chunk applies a green to red color gradient fill to each bar based on the median county incomes. Note that we are using the summarized count table (and not the original `dat2` table). Recall that when plotting bars from counts that are already tabulated we must specify `stat="identity"` in the `geom_bar` function.
-
-```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct2, aes(x = fct_reorder(State, Counties), y = Counties, fill = Income)) + 
-       geom_bar(stat = "identity") + 
-       scale_fill_gradient(low = "green", high = "red")
-```
-
-The following chunk applies a divergent color scheme while allowing one to specify the central value of this scheme. Note that the colors are symmetrical about the midpoint which may result in only a partial range of the full possible gradient of colors.
-
-```{r fig.height=2.5, fig.width=8}
-ggplot(dat2.ct2, aes(x = fct_reorder(State, Counties), y = Counties, fill = Income)) + 
-       geom_bar(stat = "identity") + 
-       scale_fill_gradient2(low = "darkred", mid = "white",  high = "darkgreen", 
-                            midpoint = 30892)
-```
-
-In the last two code chunks, we *filled* the bars with colors (note the use of functions with the string `_fill_`). When assigning color to point or line symbols, use the function with the `_color_` string. For example:
-
-```{r fig.height=4.5, fig.width=4}
-ggplot(dat2.ct2, aes(y = fct_reorder(State, Counties), x = Counties, col = Income)) +
-       geom_point() +
-       scale_color_gradient2(low = "darkred", mid = "white",  high = "darkgreen", 
-                              midpoint = 30892)
-```
-
-
-#### Discrete  color schemes
-
-In the following chunk, we assign colors manually to each level in the variable `Yield`. The order of the color names mirror the order of the variable levels.
-
-```{r fig.height=2.5, fig.width=4}
-ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
-       geom_line() +
-       scale_color_manual(values = c("red", "orange", "green", "blue", "yellow"))
-```
-
-The following chunk applies a predefined discrete color scheme using one of Brewer's preset qualitative colors, `Dark2`, to each level.  
-
-```{r fig.height=2.5, fig.width=4}
-ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
-              geom_line() +
-              scale_color_brewer(palette = "Dark2")
-```
-
-You can also apply sequential or divergent Brewer color schemes to variables having an implied order. 
-
-Let's assume that there is an implied order to the crop types. For example, we'll reorder the crop types based on their median yield (this creates an ordered factor from the  `Crop` variable). We can then use one of Brewer's sequential color schemes such as `Reds`. 
-
-```{r fig.height=2.5, fig.width=4}
-ggplot(dat1l, aes(Year, Yield, col = reorder(Crop, Yield, median))) + 
-              geom_line() +
-              guides(color = guide_legend(title = "Crops")) +  
-              scale_color_brewer(palette = "Reds") 
-```
-
-Note that we've added a `guides()` function to rename the legend title. This is not needed to generate the sequential colors.
-
-To reverse the color scheme, set the `direction` argument to `-1`.
-
-```{r fig.height=2.5, fig.width=4}
-ggplot(dat1l, aes(Year, Yield, col = reorder(Crop, Yield, median))) + 
-              geom_line() +
-              guides(color = guide_legend(title = "Crops")) +  
-              scale_color_brewer(palette = "Reds", direction = -1) 
-```
-
-You can view a list of predefined Brewer color schemes by typing the following:
-
-```{r fig.height=8, fig.width =10}
-RColorBrewer::display.brewer.all()
-```
-
-
 
 ### Adding mathematical symbols to a plot
 
@@ -620,6 +546,188 @@ ggplot(dat2, aes(x = B20004013^0.333, y = sqrt(B20004007))) + geom_point(alpha =
 To view the full list of mathematical expressions, type `?plotmath` at a command prompt.
 
 &nbsp;&nbsp;
+
+
+## Colors
+
+You can customize geom colors using two types of color scales: one for continuous values and another for categorical (discrete) values. Pay attention to the slight variation in function names, especially when specifying **fill** colors versus regular **color** aesthetics.
+
+   +  **fill** applies to filled objects like bars (`geom_bar()`), boxplots (`geom_boxplot()`), or tiles (`geom_tile()`).
+   +  **color** controls the outline or stroke color of shapes and the color of points and lines (e.g., `geom_point()`, `geom_line()`).
+
+#### Continuous color scales
+
++ `scale_color_gradient()`: Applies a two-color gradient for mapped **color** aesthetics (e.g., from low to high values).
++ `scale_fill_gradient()`: Applies a two-color gradient for mapped **fill** aesthetics (used for filled objects like bars and tiles).
++ `scale_color_gradient2()`: Applies a divergent color gradient for mapped **color** aesthetics using three colors for low, mid, and high values. The mid-color is associated with a defined midpoint.
++ `scale_fill_gradient2()`: Applies a divergent color gradient for mapped **fill** aesthetics using three colors for low, mid, and high values. The mid-color is associated with a defined midpoint.
++ `scale_color_brewer()`: Applies a sequential or divergent color scale for mapped **color** aesthetics using pre-defined color palettes from the `RColorBrewer` package designed for perceptually uniform color scales.
++ `scale_fill_brewer()`: Applies a sequential or divergent color scale for mapped **fill** aesthetics using pre-defined color palettes from the `RColorBrewer` package designed for perceptually uniform color scales.
+
+#### Categorical color scales
+
++ `scale_color_hue()`: Assigns distinct hues to different categorical groups mapped to **color** aesthetics.
++ `scale_fill_hue()`: Assigns distinct hues to different categorical groups mapped to **fill** aesthetics.
++ `scale_color_manual()`: Allows manual specification of colors to different categorical groups mapped to **color** aesthetics.
++ `scale_fill_manual()`: Allows manual specification of colors to different categorical groups mapped to **fill** aesthetics.
++ `scale_color_brewer()`: Uses `RColorBrewer` categorical palettes, designed for clear and distinct color separation.
++ `scale_color_brewer()`: Uses `RColorBrewer` categorical palettes, designed for clear and distinct color separation. 
+
+
+### Continuous color schemes
+
+Continuous color schemes can be classified as either **sequential** or **divergent**:
+
+ + *Sequential* color schemes transition from a light hue to a darker hue as values increase, typically maintaining the same hue family (e.g., light green to dark green).
+ 
+ + *Divergent* color schemes use two distinct hues that gradually shift from dark to light, converging at a mid-value. This midpoint often represents a meaningful reference, such as zero or an average.
+
+#### Sequential color scheme
+
+The `RColorBrewer` package provides a collection of predefined color palettes that can be used in `ggplot2.` These palettes are directly accessible within `ggplot2`, so you do not need to install `RColorBrewer` separately to use them.
+
+However, if you want to view the list of available palettes, you will need to install the `RColorBrewer` package.
+
+The following code snippet displays the available sequential color palettes:
+
+```{r fig.height=3, echo = 2}
+OP <- par(mar=c(0,3,0,0))
+  RColorBrewer::display.brewer.all(type = "seq")
+par(OP)
+```
+
+Let's assume that there is an implied order to the crop types. For example, we'll reorder the crop types based on their median yield (this creates an ordered factor from the `Crop` variable). We can then assign Brewer's `Reds` palette to the `Crop` aesthetic. 
+
+```{r fig.height=2.5, fig.width=4}
+ggplot(dat1l, aes(Year, Yield, col = reorder(Crop, Yield, median))) + 
+              geom_line() +
+              guides(color = guide_legend(reverse = TRUE)) +  
+              scale_color_brewer(palette = "Reds", name = "Crops") 
+```
+
+Note that we added a `guides()` function to reverse the legend element order. This function is not needed to generate the sequential colors. We also renamed the legend header via the `name = "Crops"` argument in `scale_color_brewer()`.
+
+If you want to reverse the color scheme, set `direction = -1` in the `scale_color_brewer()` function.
+
+When applying a sequential color scheme to points and lines, the palette's lighter hue may blend with the plot's default grey background. One solution is to slightly darken the background color such as `grey87`,
+
+```{r fig.height=2.5, fig.width=4}
+ggplot(dat1l, aes(Year, Yield, col = reorder(Crop, Yield, median))) + 
+              geom_line() +
+              guides(color = guide_legend(reverse = TRUE)) +  
+              scale_color_brewer(palette = "Reds", name = "Crops") +
+              theme(panel.background = element_rect(fill = 'grey87', color = 'white'))
+```
+
+Alternatively, you can go with a black and white themed background.
+
+```{r fig.height=2.5, fig.width=4}
+ggplot(dat1l, aes(Year, Yield, col = reorder(Crop, Yield, median))) + 
+              geom_line() +
+              guides(color = guide_legend(reverse = TRUE)) +  
+              scale_color_brewer(palette = "Reds", name= "Crops") +
+              theme_bw()
+```
+
+
+If a variable is mapped to the `fill` aesthetic, use the corresponding `..._fill_...` function.
+
+For example, to color the boxplots with shades of red based on the median yield for each crop, use:
+
+```{r fig.height=2.5, fig.width=5.5}
+ggplot(dat1l, aes(reorder(Crop, Yield, median), Yield, fill = reorder(Crop, Yield, median))) +
+              geom_boxplot() +
+              guides(fill = guide_legend(reverse = TRUE)) + 
+              scale_fill_brewer(palette = "Reds", name = "Crops") 
+```
+
+NOTE: This example demonstrates the use of the `fill` aesthetic. However, mapping the same variable to the fill aesthetic multiple times is redundant and should generally be avoided for clarity and efficiency.
+
+The `scale_..._brewer()` functions can only be applied to discrete/binned data. If you are applying a color scheme to a continuous (non-binned) variable, you should use one of the `scale_..._gradient()` functions, instead. For example, to apply a `bisque` to `darkred` gradient to the `Income` variable from an earlier tiled plot, type:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_gradient(low = "bisque", high = "darkred")
+```
+
+Note that `scale_..._gradient()` can only be used with continuous variables.
+
+#### Divergent color scheme
+
+One of the `scale_..._gradient2()` functions can be used to define the middle and end colors. For example, to create a divergent color scheme that converges to a middle income value of $35,000, type:
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_gradient2(low = "darkred", mid = "white",  high = "darkgreen",
+                       midpoint = 35000)
+```
+
+In the last two code chunks, we *filled* the bars with colors (note the use of functions with the string `_fill_`). When assigning color to point or line symbols, use the function with the `_color_` string. For example:
+
+### Categorical color schemes
+
+You can apply one of the following `RcolorBrewer` categorical palettes in `ggplot` using one of the `scale_..._brewer()` functions where, here again, `...` is a placeholder for `fill` or `color`.
+
+```{r fig.height=3, echo = 2}
+OP <- par(mar=c(0,3,0,0))
+  RColorBrewer::display.brewer.all(type = "qual")
+par(OP)
+```
+
+For example, to apply the `Dark2` palette to the different crop types, type:
+
+```{r fig.height=2.5, fig.width=4}
+ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
+              geom_line() +
+              guides(color = guide_legend(title = "Crops", reverse = TRUE)) +  
+              scale_color_brewer(palette = "Dark2") 
+```
+
+The colors swatches are assigned to the categories in the order they are presented in variable via its levels (if a factor) or alphabetically.
+
+You can also manually choose your colors via the `scale_..._manual()` functions. For example:
+
+```{r fig.height=2.5, fig.width=4}
+ggplot(dat1l, aes(Year, Yield, col = Crop)) + 
+       geom_line() +
+       scale_color_manual(values = c("red", "orange", "green", "blue", "yellow"))
+```
+
+### Customizing color breaks 
+
+If you want to bin the color swatches using user defined breaks, swap the `scale_fill_gradient` function with the `scale_fill_binned` function. In the examples that follow, we use the `dat2c.med` table that was used to generate a tiled plot earlier in this chapter.
+
+In this example, unequal bin widths are defined for the color map. 
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_binned(low = "yellow", high = "red",
+                    breaks = c(21000, 28000, 32000, 42000, 53000))
+```
+
+Note how the colorbar **does not** reflect the unequal bin widths.
+
+As of `ggplot2` version `3.3`, you can use the `guide_colorsteps` function to control the colorbar's *look*. In the last figure, the breaks are not even, yet the colorbar splits the color swatches into equal length units. Setting the `even.steps` argument to `FALSE` scales the color swatches to match the true interval lengths.
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_binned(low = "yellow", high = "red",
+                    breaks = c(21000, 28000, 32000, 42000, 53000),
+                    guide = guide_colorsteps(even.steps = FALSE))
+```
+
+The `scale_fill_binned` function offers additional control over the legend such as its height (`barheight`), width (`barwidth`) and the display of the minimum and maximum values (`show.limits`).
+
+```{r fig.height=3, fig.width=4}
+ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
+  scale_fill_binned(low = "yellow", high = "red",
+                    breaks = c(21000, 28000, 32000, 42000, 53000),
+                    guide = guide_colorsteps(even.steps = FALSE,
+                                              barheight = unit(2.3, "in"),
+                                              barwidth = unit(0.1, "in"),
+                                              show.limits = TRUE))
+```
+
 
 ## Faceting
 &nbsp;&nbsp;
@@ -764,60 +872,7 @@ ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) 
 
 ## Tile plots (heat maps)
 
-You can create so-called *heat maps* by tiling the data. This typically requires the use of three variables--two of which are either categorical or have equally spaced continuous values that define a rectangular grid layout, and the third that defines the grid cells' color. For example, a tile plot can be created showing the median income (for all sexes) as a function of education level and region.
 
-The example that follows, the Region will be mapped to the x-axis, the Level to the y-axis and the median Income to the fill color aesthetic.
-
-We will first summarize our data to generate a three variable dataset.
-
-```{r}
-dat2c.med <- dat2c %>% 
-  filter(Level != "All") %>% 
-  group_by(Level, Region) %>% 
-  summarise(Income = median(All))
-
-head(dat2c.med)
-```
-
-Next, we will assign the `Region` variable to the x-axis, the `Level` variable to the y-axis and the `Income` values will be used to define the fill colors.
-
-
-```{r fig.height=3, fig.width=4}
-ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
-  scale_fill_gradient(low = "yellow", high = "red")
-```
-
-![](img/ggplot_3.png){width="70%"}
-
-
-The above example adopts a continuous color scheme. If you want to bin the color swatches using user defined breaks, swap the `scale_fill_gradient` function with the `scale_fill_binned` function.
-
-```{r fig.height=3, fig.width=4}
-ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
-  scale_fill_binned(low = "yellow", high = "red",
-                    breaks = c(21000, 28000, 32000, 42000, 53000))
-```
-
-As of `ggplot2` version `3.3`, you can use the `guide_colorsteps` function to control the *look* of your legend. In the last figure, the breaks are not even, yet the legend splits the color swatches into equal length units. Setting the `even.steps` argument to `FALSE` scales the color swatches to match the true interval lengths.
-
-```{r fig.height=3, fig.width=4}
-ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
-  scale_fill_binned(low = "yellow", high = "red",
-                    breaks = c(21000, 28000, 32000, 42000, 53000),
-                    guide = guide_colorsteps(even.steps = FALSE))
-```
-
-The `scale_fill_binned` function offers additional control over the legend such as its height (`barheight`), width (`barwidth`) and the display of the minimum and maximum values (`show.limits`).
-
-```{r fig.height=3, fig.width=4}
-ggplot(dat2c.med, aes(x = Region, y = Level, fill = Income)) + geom_tile() +
-  scale_fill_binned(low = "yellow", high = "red",
-                    breaks = c(21000, 28000, 32000, 42000, 53000),
-                    guide = guide_colorsteps(even.steps = FALSE,
-                                              barheight = unit(2.3, "in"),
-                                              barwidth = unit(0.1, "in"),
-                                              show.limits = TRUE))
-```
 
 ## Exporting to an image
 
