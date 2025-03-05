@@ -154,11 +154,11 @@ This generates point geometries. This is often used in generating scatterplots. 
 ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) 
 ```
 
-We modify the point's transparency by passing the `alpha=0.3` parameter to the `geom_point` function. Other parameters that can be passed to point geoms include `color`, `pch` (point symbol type) and `cex` (point size as a fraction).
+We modify the point's transparency by passing the `alpha=0.3` parameter to the `geom_point` function. Other parameters that can be passed to point geoms include `color`, `shape` (point symbol type) and `size` (point size as a fraction).
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x = B20004013, y = B20004007)) + 
-  geom_point(color = "red", pch=3 , alpha = 0.3, cex=0.6) 
+  geom_point(color = "red", shape=3 , alpha = 0.3, size=0.6) 
 ```
 
 
@@ -274,7 +274,15 @@ Dot plot graphics benefit from sorting--more so then bar plots.
 
 ```{r fig.height=4.5, fig.width=4}
 ggplot(dat2.ct , aes(x = Counties, y = reorder(State, Counties))) + 
-       geom_point()
+       geom_point() + ylab("States")
+```
+
+You can add a horizontal line segment connecting the points to some location along the x-axis using `geom_segment()`. For example, to connect the points to `x=0` type,
+
+```{r fig.height=4.5, fig.width=4}
+ggplot(dat2.ct , aes(x = Counties, y = reorder(State, Counties))) + 
+       geom_point() + ylab("States") +
+       geom_segment(aes(xend = 0, yend = State), col = "grey30")
 ```
 
 ### Tile plots (heat maps)
@@ -290,7 +298,7 @@ But first, we summarize the data to generate a three variable dataset.
 ```{r}
 dat2c.med <- dat2c %>% 
   filter(Level != "All") %>% 
-  group_by(Level, Region) %>% 
+  group_by(Region, Level) %>% 
   summarise(Income = median(All))
 
 head(dat2c.med)
@@ -818,7 +826,7 @@ Note that the order in which the names are passed must match that of the origina
 Now we can facet male vs. female scatter plots by income ranges. We will also throw in a best fit line to the plots.
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
-ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha=0.2, pch=20) +
+ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha=0.2, shape=20) +
        stat_smooth(method = "lm", col = "red") +
        facet_grid( . ~ incrng) 
 ```
@@ -833,7 +841,7 @@ To help highlight differences in income, we will make a few changes to the facet
 
 
 ```{r fig.height=3, fig.width=8, warning=FALSE}
-ggplot(dat2c,  aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) + 
+ggplot(dat2c,  aes(x = F, y = M)) + geom_point(alpha = 0.2, shape = 20, size = 0.8) + 
       ylim(0, 150000) +
       stat_smooth(method = "lm", col = "red") + 
       facet_grid( . ~ incrng) + 
@@ -849,7 +857,7 @@ Now let's look at the same data but this time conditioned on educational attainm
 
 ```{r fig.height=3, fig.width=10, warning=FALSE}
 # Plot M vs F by educational attainment except for Level == All
-ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) +
+ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, shape = 20, size = 0.8) +
        ylim(0, 150000) + 
        stat_smooth(method = "lm", col = "red") +
        facet_grid( . ~ Level) +  
@@ -861,7 +869,7 @@ ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) 
 We can also condition the plots on two variables. For example: educational attainment and region.
 
 ```{r fig.height=8, fig.width=10, warning= FALSE}
-ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, pch = 20, cex = 0.8) +
+ggplot(dat2c, aes(x = F, y = M)) + geom_point(alpha = 0.2, shape = 20, size = 0.8) +
        ylim(0, 150000) + 
        stat_smooth(method = "lm", col = "red") + 
        facet_grid( Region ~ Level) +  
