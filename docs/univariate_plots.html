@@ -897,7 +897,7 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 </div>
 <p>Note that the y-axis can be labeled with <span class="math inline">\(q(f)\)</span> or with the variable name.</p>
-<p>The quantile need not be limited to existing values in a batch. The relationship between the quantile <span class="math inline">\(q(f)\)</span> and the fraction <span class="math inline">\(f\)</span> is a continuous function–we refer to this relationship as the <strong>quantile function</strong>. As such, one can extract a quantile value for any <span class="math inline">\(f\)</span> fraction between 0 and 1. Continuing with the working example, we can find the matching quantile for an <span class="math inline">\(f\)</span> = 0.5 by interpolating between the two nearest points in <code>a</code>. This results in a quantile value of 12.5.</p>
+<p>The quantile need not be limited to existing values in a batch. The relationship between the quantile <span class="math inline">\(q(f)\)</span> and the fraction <span class="math inline">\(f\)</span> is a continuous function–we refer to this relationship as the <strong>quantile function</strong>. As such, one can extract a quantile value for any <span class="math inline">\(f\)</span> fraction between 0 and 1. Continuing with the working example, we can find the matching quantile for an <span class="math inline">\(f\)</span> = 0.5 by linear interpolation between the two nearest points in <code>a</code>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -907,7 +907,31 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 </div>
 </div>
-<p>You can report the quantile for a fraction <span class="math inline">\(f\)</span> as <em>“the <span class="math inline">\(f\)</span>-quantile”</em>. For example, to report the value in <code>a</code> that splits the data between the fraction greater than and less than 0.25, you would state <em>“the 0.25 quantile of <code>a</code> is 9 …”</em> (units of <code>a</code>). In notation form, you would write <span class="math inline">\(Q(0.25) = 9\)</span>.</p>
+<p>Formally, the equation is given by</p>
+<p><span class="math display">\[
+q(f) = a_i + (r - i)  (a_{i+1} - a_i)
+\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(a\)</span> is the sorted vector values.</li>
+<li><span class="math inline">\(f\)</span> is the fraction for which the quantile is to be interpolated.</li>
+<li><span class="math inline">\(r\)</span> is the rank corresponding to the fraction <span class="math inline">\(f\)</span> and is computed from <span class="math inline">\((f \times n) + 0.5\)</span>.</li>
+<li><span class="math inline">\(n\)</span> is The number of elements in the vector <code>a</code>.</li>
+<li><span class="math inline">\(i\)</span> is the floor of the rank <span class="math inline">\(r\)</span> representing the lower index for interpolation.</li>
+<li><span class="math inline">\(i+1\)</span> is the ceiling of the rank <span class="math inline">\(r\)</span> representing the upper index for interpolation.</li>
+<li><span class="math inline">\(a_i\)</span> is the value in the vector <span class="math inline">\(a\)</span> at index <span class="math inline">\(i\)</span>.</li>
+<li><span class="math inline">\(a_{i+i}\)</span> is the value in the vector <span class="math inline">\(a\)</span> at index <span class="math inline">\(i +1\)</span>.</li>
+</ul>
+<p>Continuing with our working example, we are seeking the quantile for <span class="math inline">\(f\)</span> = 0.5. The code used to generate the interpolated quantile becomes:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>a   <span class="ot">&lt;-</span> <span class="fu">sort</span>(a) <span class="co"># Ensure that values are sorted</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>f   <span class="ot">&lt;-</span> <span class="fl">0.5</span>     <span class="co"># The desired f-value</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>r   <span class="ot">&lt;-</span> (f <span class="sc">*</span> <span class="fu">length</span>(a)) <span class="sc">+</span> <span class="fl">0.5</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>i   <span class="ot">&lt;-</span> <span class="fu">floor</span>(r) </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>q_f <span class="ot">&lt;-</span> a[i] <span class="sc">+</span> (r <span class="sc">-</span> i) <span class="sc">*</span> (a[i<span class="sc">+</span><span class="dv">1</span>] <span class="sc">-</span> a[i])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The resulting quantile <span class="math inline">\(q(0.5)\)</span> value is 12.5.</p>
+<p>You can report the quantile for a fraction <span class="math inline">\(f\)</span> as <em>“the <span class="math inline">\(f\)</span>-quantile”</em>. For example, to report the value in <code>a</code> that splits the data between the fraction greater than and less than 0.25, you would state <em>“the 0.25 quantile of <code>a</code> is 9 …”</em> (units of <code>a</code>). In notation form, you would write <span class="math inline">\(q(0.25) = 9\)</span>.</p>
 <section id="the-boxplot-a-special-case-of-a-quantile-plot" class="level3" data-number="16.4.1">
 <h3 data-number="16.4.1" class="anchored" data-anchor-id="the-boxplot-a-special-case-of-a-quantile-plot"><span class="header-section-number">16.4.1</span> The boxplot: a special case of a quantile plot</h3>
 <p>While in itself not a function, the boxplot is a graphical tool that leverages information derived from quantiles in that it returns the 1<sup>st</sup>, 2<sup>nd</sup> (median) and 3<sup>rd</sup> quartiles.</p>
@@ -917,8 +941,8 @@ density = \frac{count}{bin\ width * total\ observations}
 <h3 data-number="16.4.2" class="anchored" data-anchor-id="computing-qf"><span class="header-section-number">16.4.2</span> Computing <span class="math inline">\(q(f)\)</span></h3>
 <p>Computing the quantile first requires the <span class="math inline">\(f\)</span> value for which the quantile is to be computed. The <span class="math inline">\(f\)</span> value is computed by first sorting the batch of values from smallest to largest.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>a.o <span class="ot">&lt;-</span> <span class="fu">sort</span>(a)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>a.o</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>a.o <span class="ot">&lt;-</span> <span class="fu">sort</span>(a)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>a.o</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1]  7  8  9 11 12 13 13 15 15 15</code></pre>
 </div>
@@ -946,9 +970,9 @@ f_i = \frac{i - 1}{n - 1}
 <p>Being consistent with your choice of an <span class="math inline">\(f\)</span> expression is probably more important than which one you choose.</p>
 <p>For each value in <code>a</code>, the <span class="math inline">\(f\)</span> value is thus:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)          <span class="co"># Create indices</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>f.val <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(a)  <span class="co"># Compute the f-value</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val) <span class="co"># Create dataframe of sorted values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>i     <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(a)          <span class="co"># Create indices</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>f.val <span class="ot">&lt;-</span> (i <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">length</span>(a)  <span class="co"># Compute the f-value</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>a.fi  <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a.o, f.val) <span class="co"># Create dataframe of sorted values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that in the last line of code, we are appending the ordered representation of <code>a</code> to <code>f.val</code> given that <code>f.val</code> assumes an ordered dataset. The data frame <code>a.fi</code> should look like this:</p>
 <table class="caption-top table">
@@ -1007,7 +1031,7 @@ f_i = \frac{i - 1}{n - 1}
 </table>
 <p>When seeking a quantile that might not necessarily match an exact value in the batch, use the <code>quantile()</code> function. For example, to find the value associated with a quantile of <span class="math inline">\(0.5\)</span>, type:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 50% 
 12.5 </code></pre>
@@ -1015,7 +1039,7 @@ f_i = \frac{i - 1}{n - 1}
 </div>
 <p>To get quantile values for multiple fractions, simply wrap the fractions with the <code>c()</code> function:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 25%  50%  75% 
  9.5 12.5 14.5 </code></pre>
@@ -1023,7 +1047,7 @@ f_i = \frac{i - 1}{n - 1}
 </div>
 <p>The <code>quantile</code> function is designed to accept different <span class="math inline">\(f\)</span> value expressions. To see the list of algorithm options, type <code>?quantile</code> at a command prompt. By default, R adopts algorithm <code>type = 7</code> which is <span class="math inline">\((i-1)/(n-1)\)</span>. To adopt Cleveland’s algorithm, set <code>type = 5</code>. E.g.:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(a, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>), <span class="at">type =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> 25%  50%  75% 
  9.0 12.5 15.0 </code></pre>
@@ -1032,11 +1056,11 @@ f_i = \frac{i - 1}{n - 1}
 <p>Note the difference in the upper quartile value when compared to the default <code>type = 7</code> option of the <code>quantile()</code> function.</p>
 <p>The <code>a.fi</code> data frame can be inputed into any plotting function to generate the quantile plot. For example, using <code>ggplot</code>’s function, we get:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(a.fi, <span class="fu">aes</span>(<span class="at">x =</span> f.val, <span class="at">y =</span> a.o)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="288"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="288"></p>
 </figure>
 </div>
 </div>
@@ -1045,15 +1069,15 @@ f_i = \frac{i - 1}{n - 1}
 <h4 data-number="16.4.2.1" class="anchored" data-anchor-id="computing-the-f-value-using-eda_fval"><span class="header-section-number">16.4.2.1</span> Computing the <span class="math inline">\(f\)</span>-value using <code>eda_fval</code></h4>
 <p>This course’s <code>tukeyedar</code> package has a function, <code>eda_fval</code>, that will generate <span class="math inline">\(f\)</span> values for a batch of values using different algorithms. By default, it adopts Cleveland’s method. For example,</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_fval</span>(a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_fval</span>(a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] 0.05 0.15 0.25 0.35 0.45 0.55 0.65 0.75 0.85 0.95</code></pre>
 </div>
 </div>
 <p>Other methods can be passed to the function via the <code>q.type</code> argument. The list of methods is available via <code>?eda_fval</code>. For example, to compute the <span class="math inline">\(f\)</span> value as implemented in the <code>quantile</code> function, type:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_fval</span>(a, <span class="at">q.type =</span> <span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_fval</span>(a, <span class="at">q.type =</span> <span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] 0.0000000 0.1111111 0.2222222 0.3333333 0.4444444 0.5555556 0.6666667 0.7777778 0.8888889 1.0000000</code></pre>
 </div>
@@ -1061,13 +1085,13 @@ f_i = \frac{i - 1}{n - 1}
 </section>
 <section id="using-ggplots-qq-geom" class="level4" data-number="16.4.2.2">
 <h4 data-number="16.4.2.2" class="anchored" data-anchor-id="using-ggplots-qq-geom"><span class="header-section-number">16.4.2.2</span> Using ggplot’s <code>qq</code> geom</h4>
-<p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values for a <code>ggplot</code> derived <span class="math inline">\(Q(f)\)</span> plot, you could simply call the function <code>stat_qq()</code> as in:</p>
+<p>If you did not want to go through the trouble of computing the <span class="math inline">\(f\)</span>-values for a <code>ggplot</code> derived <span class="math inline">\(q(f)\)</span> plot, you could simply call the function <code>stat_qq()</code> as in:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="cn">NULL</span>, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="cn">NULL</span>, <span class="fu">aes</span>(<span class="at">sample =</span> a)) <span class="sc">+</span> <span class="fu">stat_qq</span>(<span class="at">distribution =</span> qunif) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"f-value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid figure-img" width="288"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid figure-img" width="288"></p>
 </figure>
 </div>
 </div>
@@ -1084,7 +1108,7 @@ f_i = \frac{i - 1}{n - 1}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="univariate_plots_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid figure-img" width="864"></p>
+<p><img src="univariate_plots_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="864"></p>
 </figure>
 </div>
 </div>
