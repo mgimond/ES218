@@ -65,8 +65,7 @@ In our example, we have three values that fall in the first bin (bin ranging fro
 We can modify the width of each bin. For example, to have each bin cover two units instead of one, type:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(as.data.frame(b), aes(x = b)) + geom_histogram(breaks = seq(9.5,20.5,by = 2), 
-                                                      colour = "white") 
+ggplot(NULL, aes(x = b)) + geom_histogram(breaks = seq(9.5,20.5,by = 2), colour = "white") 
 ```
 
 You'll note that changing bin widths can alter the *look* of the histogram, this is particularly true when plotting large batches of values.
@@ -74,7 +73,7 @@ You'll note that changing bin widths can alter the *look* of the histogram, this
 You can also opt to have the function determine the bin width by simply specifying the *number* of bins using the `bins =` parameter. For example, to display 12 bins, type:
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(as.data.frame(b), aes(x = b)) + geom_histogram(bins = 12, colour = "white")
+ggplot(NULL, aes(x = b)) + geom_histogram(bins = 12, colour = "white")
 ```
 
 Note that if a bin has no values falling in it, an empty space in the plot is used as an *empty bin" placeholder.
@@ -142,7 +141,7 @@ dens.bins <- data.frame(xmin = xi,
 
 ggplot() +
   geom_rect( dens.bins[1,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3) + 
-  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  geom_rug( NULL, mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
   ylim(range(dens.bins[, 3:4])) +
   geom_segment(data=dens.bins[1,], aes(x=(xmin + xmax)/2, xend =(xmin + xmax)/2,
                                   y=0, yend=ymax), lty=2, alpha=0.6) +
@@ -157,7 +156,7 @@ Next, we shift the bin over by one unit, then we calculate the density of observ
 ggplot() +
   geom_rect( dens.bins[1,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.1,col="white") +
   geom_rect( dens.bins[2,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3) +
-  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  geom_rug( NULL, mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
   ylim(range(dens.bins[, 3:4])) +
   geom_segment(data=dens.bins[2,], aes(x=(xmin + xmax)/2, xend =(xmin + xmax)/2,
                                   y=0, yend=ymax), lty=2, alpha=0.6) +
@@ -187,7 +186,7 @@ The process is repeated for each bin until the last bin is reached. (Note that s
 ggplot() +
   geom_rect( dens.bins[1:8,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.1,col="white") +
   geom_rect( dens.bins[9,], mapping=aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.5) + 
-  geom_rug( data.frame(a), mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
+  geom_rug( NULL, mapping=aes(x=a),col="darkred", cex=2, alpha=0.5) +
   ylim(range(dens.bins[, 3:4])) +
   geom_segment(data=dens.bins[9,], aes(x=(xmin + xmax)/2, xend =(xmin + xmax)/2,
                                   y=0, yend=ymax), lty=2, alpha=0.6) +
@@ -247,7 +246,7 @@ The function adopts the `gaussian` weight function and will automatically define
 To adopt a rectangular weight, set the `kernel` parameter to `"rectangular"`.
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(data.frame(a), aes(x = a)) + geom_density(fill = "grey60", kernel = "rectangular", bw = )
+ggplot(NULL, aes(x = a)) + geom_density(fill = "grey60", kernel = "rectangular" )
 ```
 
 Note the raggedness in the plot.
@@ -255,7 +254,7 @@ Note the raggedness in the plot.
 You can modify the *smoothness* of the density plot by adjusting its bandwidth argument `bw`. Here, the bandwidth defines the standard deviation of the Gaussian function.
 
 ```{r fig.height=2, fig.width=4.5}
-ggplot(data.frame(a), aes(x = a)) + geom_density(fill = "grey60", bw = 1)
+ggplot(NULL, aes(x = a)) + geom_density(fill = "grey60", bw = 1)
 ```
 
 ## Boxplots
@@ -265,7 +264,7 @@ A boxplot is another popular plot used to explore distributions. It emphasizes a
 In `ggplot2` we can use the `geom_boxplot()` function. For example,
 
 ```{r fig.height=1.2, fig.width=6.5}
-ggplot(data.frame(a), aes(x = a)) + geom_boxplot() + 
+ggplot(NULL, aes(x = a)) + geom_boxplot() + 
           xlab(NULL) + theme(axis.text.y = element_blank(), 
                              axis.ticks.y = element_blank()) 
 ```
@@ -310,7 +309,7 @@ qtl.bxp <- function(x, type = 5) {
 }
 
 # Plot the boxplot
-ggplot(data.frame(a), aes(x = "", y = a)) + 
+ggplot(NULL, aes(x = "", y = a)) + 
   stat_summary(fun.data = qtl.bxp, fun.args = list(type = 5),
                geom = 'boxplot') +
   xlab(NULL) + theme(axis.text.y = element_blank()) +
@@ -322,7 +321,39 @@ Note the use of `stat_summary` instead of `geom_boxplot`.
 
 ## Quantile plots
 
-A **quantile** is a value that divides a set of data into two parts such that a specified fraction, the $f$-value, of the data falls below that value, and the remaining fraction falls above it. 
+A **quantile** is a value that divides a set of data into two parts such that a specified fraction, the $f$-value, of the data falls below that value, and the remaining fraction falls above it. The fraction $f$ can take on many forms, here, we'll adopt the following definition:
+
+$$
+f_i = \frac{i - 0.5}{n} 
+$$
+
+where $i$ is the n^th^ element of the batch of **sorted** data and $n$ is the total number of elements in that batch.
+
+As noted in the *boxplot* section of this chapter, there are many different ways in which $f$ can be computed. Examples of other forms of the $f$ value expression include:
+
+:::: {.columns}
+
+::: {.column width="33%"}
+$$
+f_i = \frac{i - 1/3}{n + 1/3} 
+$$
+:::
+
+::: {.column width="33%"}
+$$
+f_i = \frac{i}{n+1} 
+$$
+:::
+
+::: {.column width="33%"}
+$$
+f_i = \frac{i - 1}{n - 1} 
+$$
+:::
+
+::::
+
+Being consistent with your choice of  an $f$ expression is probably more important than which one you choose.
 
 The x-axis in a quantile plot shows the **f-values**--the full range of probability *fractions*. The notation $f$ may be used as a shorthand for the $f$-value. In other texts, you may see the fraction symbolized by $p$ for *probability*. The y-axis maps the $f$-quantile, $q(f)$, which gives us the value in the batch that is equal to or less than the associated $f$ fraction. For example, the $f$-value of 0.25 (~the 25^th^ percentile) is associated with the quantile value of 9 meaning that 25% of the values in the dataset have values of 9 or less. 
 
@@ -342,7 +373,11 @@ par(OP)
 
 Note that the y-axis can be labeled with $q(f)$ or with the variable name. 
 
-The quantile need not be limited to existing values in a batch. The relationship between the  quantile $q(f)$ and the fraction $f$ is a continuous function--we refer to this relationship as the **quantile function**. As such, one can extract a quantile value for any $f$ fraction between 0 and 1.  Continuing with the working example, we can find the matching quantile for an $f$ = 0.5 by linear interpolation between the two nearest points in `a`. 
+You can report the quantile for a fraction $f$ as *"the $f$-quantile"*. For example, to report the value in `a` that splits the data between the fraction greater than and less than 0.25, you would state *"the 0.25 quantile of `a` is 9 ..."* (units of `a`).  In notation form, you would write $q(0.25) = 9$.
+
+### Interpolating a quantile
+
+The quantile need not be limited to existing values in a batch. The relationship between the  quantile $q(f)$ and the fraction $f$ is a continuous function--we refer to this relationship as the **quantile function**. As such, one can compute a quantile value for any $f$ fraction between 0 and 1.  Continuing with the working example, we can find the matching quantile for an $f$ = 0.5 by linear interpolation between the two nearest points in `a`. 
 
 ```{r fig.height=3, fig.width = 3, echo=FALSE, results=FALSE}
 eda_lm(dfa, f.val, a, xlab = "f-value", show.par = F, mean.l = F, sd=F, reg=F)
@@ -385,8 +420,6 @@ q_f <- a[i] + (r - i) * (a[i+1] - a[i])
 
 The resulting quantile $q(0.5)$ value is `r q_f`.
 
-You can report the quantile for a fraction $f$ as *"the $f$-quantile"*. For example, to report the value in `a` that splits the data between the fraction greater than and less than 0.25, you would state *"the 0.25 quantile of `a` is 9 ..."* (units of `a`).  In notation form, you would write $q(0.25) = 9$.
-
 ### The boxplot: a special case of a quantile plot
 
 While in itself not a function, the boxplot is a graphical tool that leverages information derived from quantiles in that it returns the 1^st^, 2^nd^ (median) and 3^rd^ quartiles. 
@@ -402,37 +435,7 @@ a.o <- sort(a)
 a.o
 ```
 
-With the numbers sorted, we can proceed with the computation of $f$. As noted in the *boxplot* section of this chapter, there are many different ways in which $f$ can be computed. In this course, we adopt *William Cleveland's* method:
-
-$$
-f_i = \frac{i - 0.5}{n} 
-$$
-
-where $i$ is the n^th^ element of the batch of data and $n$ is the total number of elements in that batch. Examples of other forms of the $f$ value expression include:
-
-:::: {.columns}
-
-::: {.column width="33%"}
-$$
-f_i = \frac{i - 1/3}{n + 1/3} 
-$$
-:::
-
-::: {.column width="33%"}
-$$
-f_i = \frac{i}{n+1} 
-$$
-:::
-
-::: {.column width="33%"}
-$$
-f_i = \frac{i - 1}{n - 1} 
-$$
-:::
-
-::::
-
-Being consistent with your choice of  an $f$ expression is probably more important than which one you choose.
+With the numbers sorted, we can proceed with the computation of $f$. 
 
 For each value in `a`, the $f$ value is thus:
 
