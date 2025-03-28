@@ -47,38 +47,6 @@ It's worth recalling from chapter 16 that the quantile function is, as its name 
 
 It's important to note the difference between a quantile-quantile plot and a [*bivariate* scatter plot](https://en.wikipedia.org/wiki/Scatter_plot). With the latter, the pairing of values between variables is explicitly defined  (for example average male and female income values may be paired by county) whereas in a QQ plot, the pairing is driven by the matching $f$ values.
  
-## The Tukey mean-difference plot
-
-Our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line. It can therefore be helpful to visually "rotate" the QQ plot 45&deg; so as to render what was a diagonal line a horizontal one. To tackle this requires that we subtract the x-value  (`a`) from the y-value (`b`), and compare this difference to the mean of the two values. The resulting $x$ and $y$ values are expressed as:
-
-$$
-Y = y - x 
-$$
-$$
-X = \frac{x + y}{2}
-$$
-
-While the axes values change, the layout of the points relative to the line changes very little. Such a plot was first introduced by John Tukey--hence his surname in the plot name. However, you are more likely to see the plot referenced simply as the *mean-difference* plot.
-
-A comparison of the QQ plot (left) and the mean-difference plot (right) are shown next.
-
-```{r fig.height=3.5, fig.width=7, echo = FALSE, results='hide'}
-library(dplyr)
-library(tukeyedar)
-
-singer <- lattice::singer
-
-a <- sort(singer %>% filter(voice.part %in% c("Tenor 2")) %>% pull(height))
-b <- sort(singer %>% filter(voice.part %in% c("Tenor 1")) %>% pull(height))
-
-OP <- par(mfrow = c(1,2))
-  eda_qq(a,b, md = FALSE, show.par = FALSE, q = FALSE, med = FALSE)
-  eda_qq(a,b, md = TRUE, show.par = FALSE, q = FALSE, med = FALSE)
-par(OP)
-```
-
-The $x=y$ line becomes the $y=0$ line. The deviation between the point  pattern and the line is  measured along the y-axis.
-
 ## What can we learn from a QQ plot?
 
 To understand what a QQ plot can tell us about the relationship between two distributions, we need to first explore key ways in which distributions may differ.  
@@ -188,6 +156,51 @@ par(OP)
 ``` 
 
 The relationship between both batches can thus be mathematically defined by `batch2 = batch1 * 1.5 + 4`.
+
+## The Tukey mean-difference plot
+
+Our eyes are better suited at judging deviations from a horizontal line than from a 45&deg; line. It can therefore be helpful to visually "rotate" the QQ plot 45&deg; so as to render what was a diagonal line a horizontal one. To tackle this requires that we subtract the x-value  (`a`) from the y-value (`b`), and compare this difference to the mean of the two values. The resulting $x$ and $y$ values are expressed as:
+
+$$
+Y = y - x 
+$$
+$$
+X = \frac{x + y}{2}
+$$
+
+While the axes values change, the layout of the points relative to the line changes very little. Such a plot was first introduced by John Tukey--hence his surname in the plot name. However, you are more likely to see the plot referenced simply as the *mean-difference* plot.
+
+A comparison of the QQ plot (left) and the mean-difference plot (right) are shown next.
+
+```{r fig.height=3.5, fig.width=7, echo = FALSE, results='hide'}
+library(dplyr)
+library(tukeyedar)
+
+singer <- lattice::singer
+
+a <- sort(singer %>% filter(voice.part %in% c("Tenor 2")) %>% pull(height))
+b <- sort(singer %>% filter(voice.part %in% c("Tenor 1")) %>% pull(height))
+
+OP <- par(mfrow = c(1,2))
+  eda_qq(a,b, md = FALSE, show.par = FALSE, q = FALSE, med = FALSE)
+  eda_qq(a,b, md = TRUE, show.par = FALSE, q = FALSE, med = FALSE)
+par(OP)
+```
+
+The $x=y$ line in the QQ plot becomes the $y=0$ line. Deviations from this line, measured along the $y$-axis represent the additive offset observed between batches. To account for the multiplicative offset, the slope defined by the point pattern in the mean-difference plot must be transformed before applying it to the QQ plot, as follows:
+
+
+$$
+m = \frac{2 + m'}{2 - m'}
+\quad
+\begin{cases}
+    m' = 0, & m = 1 \\
+    m' = 2, & m = \frac{4}{0} \quad \text{(undefined, vertical line in QQ plot)} \\
+    m' \to \infty, & m \approx -1
+\end{cases}
+$$
+
+where $m'$ is the slope defined by the point pattern in the mean-difference plot and $m$ is the corresponding slope in the QQ plot.
 
 ## Generating a QQ plot with `eda_qq`
 
