@@ -71,12 +71,12 @@ Here, the improvement in $y$ estimates is modest because the uncertainty within 
 
 The **residual-fit spread** (**rfs**) plot, introduced by William Cleveland, is a visualization tool designed to compare the variability explained by a fitted model (e.g., group means in univariate analysis) to the variability in the residuals. The plot is constructed as follows:
 
-+  Fit a model, such as the mean, to the data.
-+  Compute residuals by subtracting the fitted values from the original values.
-+  Center the fitted values (e.g., subtract the overall mean) to align both datasets around zero.
-+  Generate side-by-side quantile plots for the centered fitted values and residuals.
++  Fit a model $\mu_{group}$, such as the mean or median, to each group in the data. 
++  Compute residuals by subtracting the fitted values from the original values ($\epsilon_{group} = y_{group} - \mu_{group}$).
++  Center the fitted values (e.g., subtract the overall mean) to align both datasets around zero($\mu'_{group} = \mu_{group} - \mu_{overall}$).
++  Generate side-by-side quantile plots for the centered fitted values, $\mu'_{group}$, and residuals $\epsilon_{group}$.
 
-An important assumption in creating an rfs plot is that the residual distribution has a consistent shape across groups, ensuring valid comparisons.
+While a residual distribution having consistent shape and spread across groups is not explicitly assumed in creating an rfs, it does ensure valid comparisons.
 
 Using the dataset introduced earlier in this chapter, we first calculate the group means of 10, 11 and 12. The data are then split into two parts: the modeled means and the residuals. For instance, an observation $y = 11.07$ (highlighted in green in the figure below) can be decomposed as follows:
 
@@ -84,17 +84,16 @@ $$
 11.07 = 12 - 0.93
 $$
 
-Here, 12 is the group mean, and -0.93 is the residual value.
+Here, 12 is the group mean, $\mu_{C}$, and -0.93 is the residual value $\epsilon_{i, C}$.
 
-The decomposed values are plotted as side-by-side quantile plots: the fitted means on the left and the residuals on the right. To facilitate a direct comparison of spreads, the fitted values are re-centered around zero by subtracting the overall mean ($\mu_{overall} = 11$) from each values. For the highlighted observation, this yields: 
+The decomposed values are plotted as side-by-side quantile plots: the fitted means on the left and the residuals on the right. To facilitate a direct comparison of spreads, the fitted values are re-centered around zero by subtracting the overall mean ($\mu_{overall} = 11$) from each fitted value ($\mu_{group}$). For the highlighted observation, this yields $\mu'_{C} = \mu_{C} - \mu_{overall} = 12 - 11 = 1$
 
-$$
-Fit\ minus\ mean: 12 - 11 = 1
-$$
 
-![](img/RF_plot_explained.png) 
+![](img/RF_plot_explained.png){width=80%} 
 
-In the rfs plot, both spreads are shown on a shared y-axis, centered at zero. This alignment enables a straightforward comparison of variability between the fitted values and the residuals. In this example, the spreads are approximately equal, suggesting that the grouping variable (voice part) accounts for some of the variability in the data.
+In the rfs plot, both spreads are shown on a shared y-axis, centered at zero. This alignment enables a straightforward comparison of variability between the fitted values and the residuals. In this example, the amount of variability captured by the fitted values (the means) is in the same order of magnitude as the variability that remains unexplained by the model (the residuals).  
+
+Given that the tails of the residual distribution can sometimes be more variable or influenced by a few extreme values, it's best to focus the spread comparison in the rfs plot **on the central bulk of the residuals**, such as the range encompassing the **inner 90% or 95%** of the residuals. This approach provides a more stable comparison of the typical variability unexplained by the model against the variability captured by the fitted values.
 
 ## Exloring extreme scenarios with an rfs plot
 
@@ -102,7 +101,7 @@ To build intuition for interpreting the residual-fit spread (rfs) plot, let’s 
 
 ### Scenario 1: Maximizing group separation
 
-In this scenario, the $y$ values are assigned to groups to maximize separation between them:
+In this scenario, the $y$ values are assigned to groups so as to maximize separation between them:
 
 ```{r fig.height=3.2, fig.width=2.4, echo = FALSE}
 df2 <- eda_trim_df(df, y, prop = 0) # Sort the data
@@ -135,7 +134,11 @@ Here the group means differ by less than 0.3 units whereas the residuals span th
 eda_rfs(df2, y, groups, show.par = FALSE)
 ```
 
-In this scenario, the residuals dominate, and the grouping variable contributes little to improving our estimates of $y$. The small spread in fitted values compared to the residuals indicates that the grouping variable has minimal impact. If we were to abandon the grouping variable and rely solely on the overall mean, the residual spread would remain nearly unchanged.
+In this scenario, the residuals dominate, and the grouping variable contributes little to improving our estimates of $y$. The small spread in fitted values compared to the residuals indicates that the grouping variable has minimal impact. If we were to abandon the grouping variable and rely solely **on the overall mean**, the residual spread would remain nearly unchanged as shown in the following rfs plot.
+
+```{r fig.height=3.5, fig.width=4.8, results='hide', echo=FALSE}
+eda_rfs(df2, y, 0, show.par = FALSE)
+```
 
 
 ## Generating an rfs plot with `eda_rfs`
@@ -152,21 +155,21 @@ The rfs plot for the singer height data follows:
 eda_rfs(df, height, voice.part)
 ```
 
-In addition to generating a plot, the function will output information about the spreads in the console. It extracts the range of values associated with the mid 90% of the residuals.
+In addition to generating a plot, the function will output information about the spreads in the console. It compares the range of values associated with the mid 90% of the residuals to the spread of the fitted values.
 
 ```{r class.source="eda", fig.height=3.5, fig.width=4.8, fig.keep = "none", echo = FALSE}
 eda_rfs(df, height, voice.part)
 ```
 
-The reason the mid 90% of values is chosen is to prevent outliers, or extreme values, in the residuals from disproportionately exaggerating the spread in residuals. For example, you’ll note several extreme residual values above 5 inches.
+The reason the mid 90% of values is chosen is to prevent outliers, or extreme values, in the residuals from disproportionately exaggerating the spread in residuals. For example, you’ll note several extreme residual values above 5 inches in the working example.
 
-To help visualize the inner 90% of values, you can add the `q=TRUE` argument to the function:
+To help visualize the inner 90% of values, you can add the `q=TRUE` argument to the function. This option generates a shaded box highlighting the inner 90% of residual values and its matching range in the *Fit minus mean* plot.
 
 ```{r class.source="eda", fig.height=3.5, fig.width=4.8, results='hide'}
 eda_rfs(df, height, voice.part, q = TRUE)
 ```
 
-The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. The spread in the fitted means spans the same range of the bulk of residual values. 
+The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. The spread in the fitted means spans the same range of the mid 90% of the residual values. 
 
 
 ## Generating an rfs plot with `ggplot`
@@ -190,7 +193,7 @@ rf <- df %>%
   mutate(fval = (row_number() - 0.5) / n()) 
 ```
 
-Next, we'll plot the data.
+Next, we plot the data.
 
 ```{r fig.height=3, fig.width=5.5}
 library(ggplot2)

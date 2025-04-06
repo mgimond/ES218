@@ -673,30 +673,28 @@ y = \mu_{group} + \epsilon
 <h2 data-number="20.2" class="anchored" data-anchor-id="the-residual-fit-spread-plot"><span class="header-section-number">20.2</span> The residual-fit spread plot</h2>
 <p>The <strong>residual-fit spread</strong> (<strong>rfs</strong>) plot, introduced by William Cleveland, is a visualization tool designed to compare the variability explained by a fitted model (e.g., group means in univariate analysis) to the variability in the residuals. The plot is constructed as follows:</p>
 <ul>
-<li>Fit a model, such as the mean, to the data.</li>
-<li>Compute residuals by subtracting the fitted values from the original values.</li>
-<li>Center the fitted values (e.g., subtract the overall mean) to align both datasets around zero.</li>
-<li>Generate side-by-side quantile plots for the centered fitted values and residuals.</li>
+<li>Fit a model <span class="math inline">\(\mu_{group}\)</span>, such as the mean or median, to each group in the data.</li>
+<li>Compute residuals by subtracting the fitted values from the original values (<span class="math inline">\(\epsilon_{group} = y_{group} - \mu_{group}\)</span>).</li>
+<li>Center the fitted values (e.g., subtract the overall mean) to align both datasets around zero(<span class="math inline">\(\mu'_{group} = \mu_{group} - \mu_{overall}\)</span>).</li>
+<li>Generate side-by-side quantile plots for the centered fitted values, <span class="math inline">\(\mu'_{group}\)</span>, and residuals <span class="math inline">\(\epsilon_{group}\)</span>.</li>
 </ul>
-<p>An important assumption in creating an rfs plot is that the residual distribution has a consistent shape across groups, ensuring valid comparisons.</p>
+<p>While a residual distribution having consistent shape and spread across groups is not explicitly assumed in creating an rfs, it does ensure valid comparisons.</p>
 <p>Using the dataset introduced earlier in this chapter, we first calculate the group means of 10, 11 and 12. The data are then split into two parts: the modeled means and the residuals. For instance, an observation <span class="math inline">\(y = 11.07\)</span> (highlighted in green in the figure below) can be decomposed as follows:</p>
 <p><span class="math display">\[
 11.07 = 12 - 0.93
 \]</span></p>
-<p>Here, 12 is the group mean, and -0.93 is the residual value.</p>
-<p>The decomposed values are plotted as side-by-side quantile plots: the fitted means on the left and the residuals on the right. To facilitate a direct comparison of spreads, the fitted values are re-centered around zero by subtracting the overall mean (<span class="math inline">\(\mu_{overall} = 11\)</span>) from each values. For the highlighted observation, this yields:</p>
-<p><span class="math display">\[
-Fit\ minus\ mean: 12 - 11 = 1
-\]</span></p>
-<p><img src="img/RF_plot_explained.png" class="img-fluid"></p>
-<p>In the rfs plot, both spreads are shown on a shared y-axis, centered at zero. This alignment enables a straightforward comparison of variability between the fitted values and the residuals. In this example, the spreads are approximately equal, suggesting that the grouping variable (voice part) accounts for some of the variability in the data.</p>
+<p>Here, 12 is the group mean, <span class="math inline">\(\mu_{C}\)</span>, and -0.93 is the residual value <span class="math inline">\(\epsilon_{i, C}\)</span>.</p>
+<p>The decomposed values are plotted as side-by-side quantile plots: the fitted means on the left and the residuals on the right. To facilitate a direct comparison of spreads, the fitted values are re-centered around zero by subtracting the overall mean (<span class="math inline">\(\mu_{overall} = 11\)</span>) from each fitted value (<span class="math inline">\(\mu_{group}\)</span>). For the highlighted observation, this yields <span class="math inline">\(\mu'_{C} = \mu_{C} - \mu_{overall} = 12 - 11 = 1\)</span></p>
+<p><img src="img/RF_plot_explained.png" class="img-fluid" style="width:80.0%"></p>
+<p>In the rfs plot, both spreads are shown on a shared y-axis, centered at zero. This alignment enables a straightforward comparison of variability between the fitted values and the residuals. In this example, the amount of variability captured by the fitted values (the means) is in the same order of magnitude as the variability that remains unexplained by the model (the residuals).</p>
+<p>Given that the tails of the residual distribution can sometimes be more variable or influenced by a few extreme values, it’s best to focus the spread comparison in the rfs plot <strong>on the central bulk of the residuals</strong>, such as the range encompassing the <strong>inner 90% or 95%</strong> of the residuals. This approach provides a more stable comparison of the typical variability unexplained by the model against the variability captured by the fitted values.</p>
 </section>
 <section id="exloring-extreme-scenarios-with-an-rfs-plot" class="level2" data-number="20.3">
 <h2 data-number="20.3" class="anchored" data-anchor-id="exloring-extreme-scenarios-with-an-rfs-plot"><span class="header-section-number">20.3</span> Exloring extreme scenarios with an rfs plot</h2>
 <p>To build intuition for interpreting the residual-fit spread (rfs) plot, let’s consider two extreme cases.</p>
 <section id="scenario-1-maximizing-group-separation" class="level3" data-number="20.3.1">
 <h3 data-number="20.3.1" class="anchored" data-anchor-id="scenario-1-maximizing-group-separation"><span class="header-section-number">20.3.1</span> Scenario 1: Maximizing group separation</h3>
-<p>In this scenario, the <span class="math inline">\(y\)</span> values are assigned to groups to maximize separation between them:</p>
+<p>In this scenario, the <span class="math inline">\(y\)</span> values are assigned to groups so as to maximize separation between them:</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -740,7 +738,16 @@ Fit\ minus\ mean: 12 - 11 = 1
 </div>
 </div>
 </div>
-<p>In this scenario, the residuals dominate, and the grouping variable contributes little to improving our estimates of <span class="math inline">\(y\)</span>. The small spread in fitted values compared to the residuals indicates that the grouping variable has minimal impact. If we were to abandon the grouping variable and rely solely on the overall mean, the residual spread would remain nearly unchanged.</p>
+<p>In this scenario, the residuals dominate, and the grouping variable contributes little to improving our estimates of <span class="math inline">\(y\)</span>. The small spread in fitted values compared to the residuals indicates that the grouping variable has minimal impact. If we were to abandon the grouping variable and rely solely <strong>on the overall mean</strong>, the residual spread would remain nearly unchanged as shown in the following rfs plot.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="rf_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="460"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 </section>
 <section id="generating-an-rfs-plot-with-eda_rfs" class="level2" data-number="20.4">
@@ -755,31 +762,31 @@ Fit\ minus\ mean: 12 - 11 = 1
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="rf_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="460"></p>
+<p><img src="rf_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="460"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>In addition to generating a plot, the function will output information about the spreads in the console. It extracts the range of values associated with the mid 90% of the residuals.</p>
+<p>In addition to generating a plot, the function will output information about the spreads in the console. It compares the range of values associated with the mid 90% of the residuals to the spread of the fitted values.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>The mid 90.0% of residuals covers about 7.98 units.
 The fitted values cover a range of 7.42 units, or about 93.0% of the mid 90.0% of residuals.</code></pre>
 </div>
 </div>
-<p>The reason the mid 90% of values is chosen is to prevent outliers, or extreme values, in the residuals from disproportionately exaggerating the spread in residuals. For example, you’ll note several extreme residual values above 5 inches.</p>
-<p>To help visualize the inner 90% of values, you can add the <code>q=TRUE</code> argument to the function:</p>
+<p>The reason the mid 90% of values is chosen is to prevent outliers, or extreme values, in the residuals from disproportionately exaggerating the spread in residuals. For example, you’ll note several extreme residual values above 5 inches in the working example.</p>
+<p>To help visualize the inner 90% of values, you can add the <code>q=TRUE</code> argument to the function. This option generates a shaded box highlighting the inner 90% of residual values and its matching range in the <em>Fit minus mean</em> plot.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_rfs</span>(df, height, voice.part, <span class="at">q =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="rf_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="460"></p>
+<p><img src="rf_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="460"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. The spread in the fitted means spans the same range of the bulk of residual values.</p>
+<p>The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. The spread in the fitted means spans the same range of the mid 90% of the residual values.</p>
 </section>
 <section id="generating-an-rfs-plot-with-ggplot" class="level2" data-number="20.5">
 <h2 data-number="20.5" class="anchored" data-anchor-id="generating-an-rfs-plot-with-ggplot"><span class="header-section-number">20.5</span> Generating an rfs plot with <code>ggplot</code></h2>
@@ -800,7 +807,7 @@ The fitted values cover a range of 7.42 units, or about 93.0% of the mid 90.0% o
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(value) <span class="sc">%&gt;%</span> </span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fval =</span> (<span class="fu">row_number</span>() <span class="sc">-</span> <span class="fl">0.5</span>) <span class="sc">/</span> <span class="fu">n</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next, we’ll plot the data.</p>
+<p>Next, we plot the data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rf, <span class="fu">aes</span>(<span class="at">x =</span> fval, <span class="at">y =</span> value)) <span class="sc">+</span> </span>
@@ -811,7 +818,7 @@ The fitted values cover a range of 7.42 units, or about 93.0% of the mid 90.0% o
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="rf_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="528"></p>
+<p><img src="rf_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="528"></p>
 </figure>
 </div>
 </div>
