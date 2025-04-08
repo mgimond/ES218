@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>22&nbsp; Univariate spread-level plot – Exploratory Data Analysis in R</title>
+<title>22&nbsp; Univariate spread-location and spread-level plots – Exploratory Data Analysis in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -158,7 +158,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./sl_plot.html"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./sl_plot.html"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-location and spread-level plots</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -367,7 +367,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-location and spread-level plots</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -505,19 +505,19 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#constructing-the-univariate-s-l-plot" id="toc-constructing-the-univariate-s-l-plot" class="nav-link active" data-scroll-target="#constructing-the-univariate-s-l-plot"><span class="header-section-number">22.1</span> Constructing the (univariate) s-l plot</a></li>
+  <li><a href="#the-spread-location-plot" id="toc-the-spread-location-plot" class="nav-link active" data-scroll-target="#the-spread-location-plot"><span class="header-section-number">22.1</span> The spread-location plot</a></li>
   <li><a href="#creating-an-s-l-plot-using-eda_sl" id="toc-creating-an-s-l-plot-using-eda_sl" class="nav-link" data-scroll-target="#creating-an-s-l-plot-using-eda_sl"><span class="header-section-number">22.2</span> Creating an s-l plot using <code>eda_sl</code></a></li>
   <li><a href="#creating-an-s-l-plot-with-ggplot" id="toc-creating-an-s-l-plot-with-ggplot" class="nav-link" data-scroll-target="#creating-an-s-l-plot-with-ggplot"><span class="header-section-number">22.3</span> Creating an s-l plot with <code>ggplot</code></a></li>
-  <li><a href="#a-variation-of-the-s-l-plot" id="toc-a-variation-of-the-s-l-plot" class="nav-link" data-scroll-target="#a-variation-of-the-s-l-plot"><span class="header-section-number">22.4</span> A variation of the s-l plot</a></li>
+  <li><a href="#the-spread-level-plot" id="toc-the-spread-level-plot" class="nav-link" data-scroll-target="#the-spread-level-plot"><span class="header-section-number">22.4</span> The spread-level plot</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./sl_plot.html"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./univariate_plots.html">Univariate</a></li><li class="breadcrumb-item"><a href="./sl_plot.html"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-location and spread-level plots</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></h1>
+<h1 class="title"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-location and spread-level plots</span></h1>
 </div>
 
 
@@ -592,11 +592,14 @@ window.Quarto = {
 </div>
 </div>
 <hr>
-<p>In Chapter 19, we emphasized the importance of maintaining a homogeneous spread in residuals. One common cause of non-homogeneous spread is when the dataset exhibits a systematic change in variability as a function of location. In other words, the variability within each batch may depend on a location-based statistic, such as the mean or median. This type of dependency is often undesirable—especially in analyses like ANOVA—and should ideally be addressed.</p>
-<p>To visualize this relationship, a <strong>spread-level plot</strong> (s-l)–sometimes referred to as a spread-location plot–is highly effective. This plot helps identify patterns or trends in variability that may need correction before proceeding with further analysis.</p>
-<section id="constructing-the-univariate-s-l-plot" class="level2" data-number="22.1">
-<h2 data-number="22.1" class="anchored" data-anchor-id="constructing-the-univariate-s-l-plot"><span class="header-section-number">22.1</span> Constructing the (univariate) s-l plot</h2>
-<p>The s-l plot visualizes the relationship between the residuals and the location for each batch of data (typically the median, due to its robustness against outliers) . The residuals are expressed as the square root of their absolute value.</p>
+<p>In Chapters 19 and 20, we emphasized the many advantages of maintaining a homogeneous spread in residuals. One common cause of non-homogeneous spread is when the dataset exhibits a systematic change in variability as a function of location. In other words, the variability within each batch may depend on a location-based statistic, such as the mean or median. This type of dependency is often undesirable—especially in analyses like ANOVA—and should ideally be addressed.</p>
+<p>To visualize this relationship, a <strong>spread-location plot</strong> (s-l) is highly effective. This plot helps identify patterns or trends in variability that may need correction before proceeding with further analysis.</p>
+<section id="the-spread-location-plot" class="level2" data-number="22.1">
+<h2 data-number="22.1" class="anchored" data-anchor-id="the-spread-location-plot"><span class="header-section-number">22.1</span> The spread-location plot</h2>
+<p>The s-l plot visualizes the relationship between the residuals and the location for each batch of data (typically the median, due to its robustness against outliers) . The residuals are expressed as:</p>
+<p><span class="math display">\[
+spread_{spread\ location} = \sqrt{|y_i - median(y)|}
+\]</span></p>
 <p>For example, the following is an s-l plot of petal length vs species from the <code>iris</code> dataset.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -609,7 +612,7 @@ window.Quarto = {
 </div>
 <p>The red line in the plot connects the median values of each batch of residuals. It helps identify the type of relationship between spread and location. If the line increases <em>monotonically upward</em>, there is an increasing spread as a function of increasing location; if the line decreases <em>monotonically downward</em>, there is a decreasing spread as a function of increasing location; and if the line is neither increasing nor decreasing monotonically, there is no change in spread as a function of location.</p>
 <p>The s-l plot in the <code>iris</code> dataset suggests that the residuals increase monotonically with an increase in the fitted median value. Note that the x-axis is not categorical, it shows the median values for each species group.</p>
-<p>Though not as effective in highlighting the heterogeneity in spread as in the s-l plot, the increase in spread can be observed in a boxplot of the data.</p>
+<p>Though not as effective in highlighting the heterogeneity in spread as in the s-l plot, the increase in spread can sometimes be observed in a boxplot of the data as shown in the following plot.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -619,8 +622,8 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>Here, the increasing width of the IQRs is also noticeable.</p>
-<p>Increasing or decreasing spreads as a function of fitted value can be corrected by re-expressing the continuous variable. For example, applying a log transformation helps stabilize the residuals as can be seen in the following s-l plot.</p>
+<p>Here, the increasing width of the IQRs is noticeable.</p>
+<p>Increasing or decreasing spreads as a function of fitted value can be corrected by <strong>re-expressing</strong> the continuous variable. For example, applying a log transformation helps stabilize the residuals of the petal length dataset as can be seen in the following s-l plot.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -689,10 +692,16 @@ window.Quarto = {
 <p>Note that if you are to rescale the y-axis when using the <code>stat_summary()</code> function, you should use the <code>coord_cartesian(ylim = c( .. , .. ))</code> function instead of the <code>ylim()</code> function. The latter will mask the values above its maximum range from the <code>stat_summary()</code> function, the former will not.</p>
 </blockquote>
 </section>
-<section id="a-variation-of-the-s-l-plot" class="level2" data-number="22.4">
-<h2 data-number="22.4" class="anchored" data-anchor-id="a-variation-of-the-s-l-plot"><span class="header-section-number">22.4</span> A variation of the s-l plot</h2>
-<p>Another version of the s-l plot pits the <em>log of the inter-quartile spread</em> against the <em>log of the median</em>. This approach only works for positive values (this may require that values be adjusted so that the minimum value be greater than 0).</p>
-<p>This variation of the s-l plot is appealing in that the slope of the best fit line can suggest a power transformation via <span class="math inline">\(power = 1 - slope\)</span>.</p>
+<section id="the-spread-level-plot" class="level2" data-number="22.4">
+<h2 data-number="22.4" class="anchored" data-anchor-id="the-spread-level-plot"><span class="header-section-number">22.4</span> The spread-level plot</h2>
+<p>A variation of the spread-location plot is the <strong>spread-level</strong> plot which pits the <em>log of the inter-quartile spread</em> against the <em>log of the median</em> for each group.</p>
+<p><span class="math display">\[
+spread_{spread\ level} = log(IQR(y))
+\]</span> <span class="math display">\[
+location_{spread\ level} = log(median(y))
+\]</span></p>
+<p>This approach only works for <strong>positive non-zero values</strong> (this may require that values be adjusted so that the minimum value be greater than 0).</p>
+<p>This version of the s-l plot is appealing in that the slope of the best fit line can suggest a power transformation via <span class="math inline">\(power = 1 - slope\)</span>.</p>
 <p>This variant of the s-l plot can be implemented in the <code>eda_sl</code> function by setting the argument <code>type = "level"</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eda_sl</span>(iris, Petal.Length, Species, <span class="at">type =</span> <span class="st">"level"</span>,</span>
@@ -708,8 +717,8 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>Note how this plot differs from our earlier s-l plot in that we are only displaying each batch’s median spread value and we are <em>fitting</em> a straight line to the medians instead of <em>connecting</em> them.</p>
-<p>The function will return the slope of the line in the console window. Here, the slope is 1.05 which suggests a power of <span class="math inline">\(1 - 1.05 = -.05\)</span>. This is a power transformation very close to the log transformation used earlier in this chapter.</p>
+<p>Note how this plot differs from our earlier s-l plot in that we are only displaying each batch’s median spread value, and we are <strong>fitting</strong> a straight line to the medians instead of <em>connecting</em> them.</p>
+<p>The function will return the slope of the line in the console window. Here, the computed slope is 1.05 which suggests a power of <span class="math inline">\(1 - 1.05 = -.05\)</span>. This is a power transformation very close to the log transformation used earlier in this chapter.</p>
 <p>A <code>ggplot</code> implementation of this variant of the s-l plot is shown next:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sl <span class="ot">&lt;-</span> iris <span class="sc">%&gt;%</span></span>

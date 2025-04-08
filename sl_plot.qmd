@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Univariate spread-level plot
+# Univariate spread-location and spread-level plots
 
 
 ```{r echo=FALSE}
@@ -17,13 +17,17 @@ pkg_ver(c("dplyr", "ggplot2", "tukeyedar"))
 
 -----
 
-In Chapter 19, we emphasized the importance of maintaining a homogeneous spread in residuals. One common cause of non-homogeneous spread is when the dataset exhibits a systematic change in variability as a function of location. In other words, the variability within each batch may depend on a location-based statistic, such as the mean or median. This type of dependency is often undesirable—especially in analyses like ANOVA—and should ideally be addressed.
+In Chapters 19 and 20, we emphasized the many advantages of maintaining a homogeneous spread in residuals. One common cause of non-homogeneous spread is when the dataset exhibits a systematic change in variability as a function of location. In other words, the variability within each batch may depend on a location-based statistic, such as the mean or median. This type of dependency is often undesirable—especially in analyses like ANOVA—and should ideally be addressed.
 
-To visualize this relationship, a **spread-level plot** (s-l)--sometimes referred to as a spread-location plot--is highly effective. This plot helps identify patterns or trends in variability that may need correction before proceeding with further analysis.
+To visualize this relationship, a **spread-location plot** (s-l) is highly effective. This plot helps identify patterns or trends in variability that may need correction before proceeding with further analysis.
 
-## Constructing the (univariate) s-l plot
+## The spread-location plot
 
-The s-l plot visualizes the relationship between the residuals and the location for each batch of data (typically the median, due to its robustness against outliers) . The residuals are expressed as the square root of their absolute value. 
+The s-l plot visualizes the relationship between the residuals and the location for each batch of data (typically the median, due to its robustness against outliers) . The residuals are expressed as:
+
+$$
+spread_{spread\ location} = \sqrt{|y_i - median(y)|}
+$$
 
 For example, the following is an s-l plot of petal length vs species from the `iris` dataset.
 
@@ -36,15 +40,15 @@ The red line in the plot connects the median values of each batch of residuals. 
 
 The s-l plot in the `iris` dataset suggests that the residuals increase monotonically with an increase in the fitted median value. Note that the x-axis is not categorical, it shows the median values for each species group. 
 
-Though not as effective in highlighting  the heterogeneity in spread as in the s-l plot, the increase in spread can be observed in a boxplot of the data.
+Though not as effective in highlighting the heterogeneity in spread as in the s-l plot, the increase in spread can sometimes be observed in a boxplot of the data as shown in the following plot.
 
 ```{r, fig.height=3,fig.width=4, echo = FALSE}
 eda_boxls(iris, Petal.Length, Species, show.par = FALSE)
 ```
 
-Here, the increasing width of the IQRs is also noticeable.
+Here, the increasing width of the IQRs is noticeable.
 
-Increasing or decreasing spreads as a function of fitted value can be corrected by re-expressing the continuous variable. For example, applying a log transformation helps stabilize the residuals as can be seen in the following s-l plot. 
+Increasing or decreasing spreads as a function of fitted value can be corrected by **re-expressing** the continuous variable. For example, applying a log transformation helps stabilize the residuals of the petal length dataset as can be seen in the following s-l plot. 
 
 ```{r, fig.height=3,fig.width=4, echo = FALSE}
 eda_sl(iris, Petal.Length, Species, p = 0, show.par = FALSE)
@@ -94,11 +98,22 @@ ggplot(res.sq, aes(x=Median, y=Residual)) +
 
 > Note that if you are to rescale the y-axis when using the `stat_summary()` function, you should use the `coord_cartesian(ylim = c( .. , .. ))` function instead of the `ylim()` function. The latter will mask the values above its maximum range from the `stat_summary()` function, the former will not.
 
-## A variation of the s-l plot
+## The spread-level plot
 
-Another version of the s-l plot pits the *log of the inter-quartile spread* against the *log of the median*. This approach only works for positive values (this may require that values be adjusted so that the minimum value be greater than 0).  
+A variation of the spread-location plot is the **spread-level** plot which pits the *log of the inter-quartile spread* against the *log of the median* for each group.
 
-This variation of the s-l plot is appealing in that the slope of the best fit line can suggest a power transformation via $power = 1 - slope$.
+
+$$
+spread_{spread\ level} = log(IQR(y))
+$$
+$$
+location_{spread\ level} = log(median(y))
+$$
+
+
+This approach only works for **positive non-zero values** (this may require that values be adjusted so that the minimum value be greater than 0).  
+
+This version of the s-l plot is appealing in that the slope of the best fit line can suggest a power transformation via $power = 1 - slope$.
 
 This variant of the s-l plot can be implemented in the `eda_sl` function by setting the argument `type = "level"`.
 
@@ -107,9 +122,9 @@ eda_sl(iris, Petal.Length, Species, type = "level",
        loess.d = list(degree = 1, span = 1.5))
 ```
 
-Note how this plot differs from our earlier s-l plot in that we are only displaying each batch's median spread value and we are *fitting* a straight line to the medians instead of *connecting* them.
+Note how this plot differs from our earlier s-l plot in that we are only displaying each batch's median spread value, and we are **fitting** a straight line to the medians instead of *connecting* them.
 
-The function will return the slope of the line in the console window. Here, the slope is 1.05 which suggests a power of $1 - 1.05 = -.05$. This is a power transformation very close to the log transformation used earlier in this chapter.
+The function will return the slope of the line in the console window. Here, the computed slope is 1.05 which suggests a power of $1 - 1.05 = -.05$. This is a power transformation very close to the log transformation used earlier in this chapter.
 
 A `ggplot` implementation of this variant of the s-l plot is shown next:
 
