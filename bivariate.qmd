@@ -15,43 +15,45 @@ pkg_ver(c("ggplot2"))
 
 ---------------------------------
 
-Bivariate data consist of datasets where *two* variables are measured for each observation. For instance, both wind speed *and* temperature might be recorded at specific locations. This contrasts with univariate data, where only a *single* variable—such as temperature—is measured for each observation at *two* different locations.
+Bivariate data typically consists of measurements or observations on **two** continuous variables. For instance, both wind speed *and* temperature might be recorded at specific locations. This contrasts with univariate data, where only a *single* continuous variable—such as temperature—is measured for each observation at *two* different locations.
 
 Understanding how to model and analyze bivariate data is critical for uncovering relationships and trends between the variables. In this chapter, we will delve into common fitting strategies that are specifically tailored for bivariate datasets.
 
 ## Scatter plot
 
-A scatter plot is a widely used visualization tool for comparing values between two variables. In some cases, one variable is considered *dependent* on the other, which is then referred to as the *independent* variable. The dependent variable, also known as the *response* variable, is typically plotted on the y-axis, while the independent variable, also called the *factor* (not to be confused with the factor data type in R, used as a grouping variable), is plotted on the x-axis.
+A scatter plot is a widely used visualization tool for comparing values between two variables. In some cases, one variable is considered *dependent* on the other which is then referred to as the *independent* variable. The dependent variable, also known as the *response* variable, is typically plotted on the y-axis, while the independent variable, also called the *factor* (not to be confused with the factor data type in R, used as a grouping variable), is plotted on the x-axis.
 
-In other situations, the focus may not be on a dependent-independent relationship. Instead, the goal might simply be to explore and understand the overall relationship between the two variables, without assigning a hierarchical dependency.
+In other situations, the focus may not be on a dependent-independent relationship. Instead, the goal might simply be to explore and understand the overall relationship between the two variables without assigning a hierarchical dependency.
 
-The following figure shows a scatter plot of a vehicle's miles-per-gallon (mpg) consumption as a function of horsepower (hp). In this exercise, we'll seek to understand how a car's miles-per-gallon (the dependent variable) can be related to its horsepower (the independent variable).
+The following figure shows a scatter plot of a vehicle's miles-per-gallon (`mpg`) consumption as a function of horsepower (`hp`). In this exercise, we'll seek to understand how a car's miles-per-gallon (the dependent variable) can be related to its horsepower (the independent variable).
 
 ```{r class.source="eda", fig.height = 3, fig.width = 3, echo = FALSE, results='hide'}
 library(tukeyedar)
-eda_lm(mtcars, hp, mpg, lm = FALSE, sd= FALSE, show.par = FALSE, mean.l = FALSE)
+eda_lm(mtcars, hp, mpg, reg  = FALSE, sd= FALSE, show.par = FALSE, mean.l = FALSE)
 ```
 
 ## Fitting a model to the data
 
-In univariate data analysis, we aim to reduce the data to manageable parameters, providing a clearer "handle" on the dataset. Similarly, when working with bivariate data, we can start by fitting the simplest possible model. For the variable `mpg`, a straightforward approach is to use a measure of location, such as the mean.
+In univariate data analysis, we aim to reduce the data to manageable parameters providing a clearer "handle" on the dataset. Similarly, when working with bivariate data, we can start by fitting the simplest possible model. For the variable `mpg`, a straightforward approach is to use a measure of location, such as the mean.
 
-```{r class.source="eda", fig.height = 3, fig.width = 3, echo = FALSE}
+```{r class.source="eda", fig.height = 3, fig.width = 3, echo = FALSE, results='hide'}
 eda_lm(mtcars, hp, mpg, poly=0, sd= FALSE, show.par = FALSE, mean.l = FALSE)
 ```
 
 The red line represents the fitted model.  Mathematically, this model can be expressed as:
 
 $$
-mpg = a + b(hp)^0 = a + b(1) + \epsilon = 20.09 + \epsilon
+\hat{mpg} = \hat{a} + \hat{b}(hp)^0 = \hat{a} + \hat{b}(1) + \epsilon = 20.09 + \epsilon
 $$
-The equation is a 0^th^ order polynomial model, The polynomial order is determined by the highest power to which the independent variable is raised (0 in this case). For now, note that regardless of `hp`'s observed value, its contribution to `mpg` remains constant. The terms $a$ and $b$ are defined as the model's **intercept** and **slope**. We will delve into the meanings of $a$ and $b$ later in this section. $\epsilon$ is the residual or the difference between each observation and the fitted model. 
+The equation is a 0^th^ order polynomial model. The polynomial order is determined by the highest power to which the independent variable is raised (0 in this case). For now, note that regardless of `hp`'s observed value, its contribution to `mpg` remains constant. 
+
+The terms $\hat{a}$ and $\hat{b}$  are defined as the model's estimated **intercept** and **slope**. The "hat" notation ( $\hat{\ }$ ) in statistics typically indicates that a value is an estimate or a prediction derived from data or a statistical model. We will delve into the meanings of the coefficients $a$ and $b$ later in this section. $\epsilon$ is the residual or the difference between each observation and the fitted model--it's the part of the data not explained by the model. 
 
 If this were a univariate dataset, modeling the data using the mean would be a reasonable choice. But, given that this is a bivariate dataset, this approach fails to utilize the variation in `hp` to explain `mpg`.
 
 The pattern observed in the scatter plot suggests that as `hp` increases, `mpg` decreases. We can model this by fitting the line in such a way so as to capture the pattern generated by the points. The fitting strategy can be as simple as "eyeballing" the fit, or adopting more involved statistical methods like the least-squares method.
 
-The following plot is an example of a line fitted to the data using the least-square method.
+The following plot is an example of a line fitted to the data using the least-squares method.
 
 ```{r class.source="eda", fig.height = 3, fig.width = 3, echo = FALSE, results='hide'}
 eda_lm(mtcars, hp, mpg, poly=1, sd= FALSE, show.par = FALSE, mean.l = FALSE)
@@ -60,7 +62,7 @@ eda_lm(mtcars, hp, mpg, poly=1, sd= FALSE, show.par = FALSE, mean.l = FALSE)
 The modeled line can be expressed mathematically as:
 
 $$
-mpg = a + b(hp)^1 + \epsilon = 30.1 - 0.068(hp) + \epsilon
+\hat{mpg} = \hat{a} + \hat{b}(hp)^1 + \epsilon = 30.1 - 0.068(hp) + \epsilon
 $$
 
 This is a 1^st^ order polynomial where `hp` is raised to the power of 1. Here, the intercept $a$ is the value `mpg` would take if `hp` were zero. The term $b$ is the slope of the line and is interpreted as the change in $y$ for every unit change in $x$. In our example, for every one horsepower increase, the miles-per-gallon decreases by 0.068 miles-per-gallon.
@@ -68,7 +70,7 @@ This is a 1^st^ order polynomial where `hp` is raised to the power of 1. Here, t
 Not all relationships will necessarily follow a perfectly straight line. Relationships can be curvilinear. Polynomial functions can take on many different non-linear shapes. The power to which the $x$ variable is raised to will define the nature of that shape. For example, to fit a quadratic line to the data, one can define the following model:
 
 $$
-mpg = a + b(hp) + c(hp)^2 + \epsilon 
+\hat{mpg} = \hat{a} + \hat{b}(hp) + \hat{c}(hp)^2 + \epsilon 
 $$
 
 The model retains the *slope* term, $b$, and adds the *curvature coefficient*, $c$.
@@ -76,7 +78,7 @@ The model retains the *slope* term, $b$, and adds the *curvature coefficient*, $
 Fitting the model to the data using least squares method results in the following coefficients:
 
 $$
-mpg = 40.4 -0.2(hp) + 0.0004(hp)^2 + \epsilon 
+\hat{mpg} = 40.4 -0.2(hp) + 0.0004(hp)^2 + \epsilon 
 $$
 
 The modeled line looks like:
@@ -122,14 +124,14 @@ To fit a second-order polynomial (quadratic) model, extend the formula by adding
 M2 <- lm(mpg ~ hp + I(hp^2), mtcars)
 ```
 
-When raising an independent variable $x$ to a power using the caret (`^`) operator, you must wrap the term with `I()`. Without it, `lm()` may misinterpret the formula, leading to unintended behavior. 
+When raising an independent variable $x$ to a power using the hat (`^`) operator, you must wrap the term with `I()`. Without it, `lm()` may misinterpret the formula leading to unintended behavior. 
 
 Adding the quadratic regression line (or any higher-order polynomial model) to the plot requires generating predicted values using the `predict()` function. These predictions are then plotted using the `lines()` function:
 
 ```{r fig.width=2.5, fig.height=2.5, small.mar=TRUE}
 plot(mpg ~ hp, mtcars)
 
-# Create sequence of hp values to 
+# Create sequence of hp values to use in predicting mpg
 x.pred <- data.frame( hp = seq(min(mtcars$hp), max(mtcars$hp), length.out = 50))
 
 # Predict mpg values based on the quadratic model
@@ -155,9 +157,9 @@ library(ggplot2)
 ggplot(mtcars, aes(x = hp, y = mpg)) + geom_point()
 ```
 
-In this code, `ggplot()` initializes the plot and specifies the dataset (`mtcars`) and aesthetics (`aes()`), where x = hp and y = mpg. `geom_point()` adds points to create the scatter plot.
+In this code, `ggplot()` initializes the plot and specifies the dataset (`mtcars`) and aesthetics (`aes()`), where `x = hp` and `y = mpg`. `geom_point()` adds points to create the scatter plot.
 
-o add a linear regression line to the scatter plot, use the `stat_smooth()` function:
+To add a linear regression line to the scatter plot, use the `stat_smooth()` function:
 
 ```{r fig.width=2.5, fig.height=2.5}
 ggplot(mtcars, aes(x = hp, y = mpg)) + geom_point() + 
@@ -173,9 +175,18 @@ ggplot(mtcars, aes(x = hp, y = mpg)) + geom_point() +
              stat_smooth(method ="lm", se = FALSE,  formula = y ~  x + I(x^2) )
 ```
 
-In this case, the formula argument defines the model as $y=x+x^2$, where $x$ and $y$ refer to the x- and y-axes, respectively. The `I()` function ensures that the quadratic term (`x^2`) is treated correctly in the formula.
+In this case, the formula argument defines the model as $y= a + bx + cx^2$, where $x$ and $y$ refer to the x- and y-axes, respectively. The `I()` function ensures that the quadratic term (`x^2`) is treated correctly in the formula.
 
 It’s worth noting that the formula directly references `x` and `y` instead of specific column names. This generality allows the formula to adapt to the axis mappings defined in the `aes()` function.
+
+Examples of other formulae that can be defined in `stat_smooth` are shown next:
+
+ | Model Formula | Equation                       |
+ |---------------|--------------------------------|
+ | `y ~ 1`       | $y = a$                        |
+ | `y ~ x`       | $y = a + bx$ (default model)   |
+ | `y ~ x + I(x^2)` | $y = a + bx + cx^2$          |
+ | `y ~ x + I(x^2) + I(x^3)` | $y = a + bx + cx^2 + dx^3$ |
 
 ## Non-parametric fit
 
