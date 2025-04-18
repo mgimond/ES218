@@ -35,32 +35,33 @@ You may also see the following notation used in statistical texts:
 $$
 \epsilon = y - \hat{y} 
 $$
+where $y$ is the observed values and $\hat{y}$ is the predicted or estimated value.
 
-In the miles-per-gallon vs. horsepower dataset exlored in the previous chapter, a few models were explored including the first order polynomial model.
+In the miles-per-gallon vs. horsepower dataset explored in the previous chapter, a few models were explored including the first order polynomial model.
 
 $$
 \hat{mpg} = \hat{a} + \hat{b}(hp) + \epsilon
 $$
 
-The `lm` function is used to define the model. 
+The `lm` function is used to fit the model to the data.
 
 ```{r}
 M1 <- lm(mpg ~ hp, mtcars)
 ```
 
-The `M1` model is a list that stores many model components including the residuals which can be extracted from the model using the `residuals()` function. The output is a numeric vector that can be added to the dataframe as follows:
+The `M1` model is a list that stores many model components including the residuals which can be extracted from the model using the `residuals()` function. 
 
 ```{r}
-mtcars$residuals1 <- residuals(M1)
+mtcars$res1 <- residuals(M1)
 ```
 
-The residuals can be explored in a **residual-dependence plot** (R-D plot) where the residuals are mapped to the y-axis and the dependent variable is mapped to the x-axis. An example of the plot is  generated using `ggplot`. To help identify a pattern (in any), a loess is fitted to the residuals
+The residuals can be explored in a **residual-dependence plot** (R-D plot) where the residuals are mapped to the y-axis and the dependent variable, $y$, is mapped to the x-axis. An example of the plot is  generated using `ggplot`. To help identify a pattern (in any), a loess is fitted to the residuals
 
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 library(ggplot2)
 
-ggplot(mtcars, aes(x = hp, y = residuals1)) + geom_point() +
+ggplot(mtcars, aes(x = hp, y = res1)) + geom_point() +
              stat_smooth(method = "loess", se = FALSE, span = 1, 
                          method.args = list(degree = 1) )
 
@@ -68,16 +69,16 @@ ggplot(mtcars, aes(x = hp, y = residuals1)) + geom_point() +
 
 A well defined model will result in a residuals point pattern that should appear uniformly distributed across the range of dependent values. The fitted loess should show no prominent trends in the residuals. 
 
-The first-order polynomial residuals follow a parabolic suggesting that the linear model did not capture the true . We say that the residuals show *dependence* on the x values. 
+The first-order polynomial residuals follow a parabolic suggesting that the linear model did not capture the true shape of the point pattern. We say that the residuals show *dependence* on the x values. 
 
-Next, we'll look at the residuals from the second order polynomial model `M2`.
+Next, we'll look at the residuals from a second order polynomial model, `M2`, that we will fit to the data.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 M2 <- lm(mpg ~ hp + I(hp^2), mtcars)
 
-mtcars$residuals2 <- residuals(M2)
+mtcars$res2 <- residuals(M2)
 
-ggplot(mtcars, aes(x = hp, y = residuals2)) + geom_point() +
+ggplot(mtcars, aes(x = hp, y = res2)) + geom_point() +
                stat_smooth(method = "loess", se = FALSE, span = 1, 
                            method.args = list(degree = 1) )
 
@@ -88,7 +89,7 @@ The parabolic pattern observed in the first-order model residuals is no longer p
 
 ## Residual-fit plot
 
-A  **residual-fit plot** (R-F plot) is a type of residual plot where the modeled (or *fitted*) values, $y_{predicted}$, are plotted on the x-axis, and the residuals, $\epsilon$,  are plotted on the y-axis. Similar to the residual-dependence plot, the R-F plot visually conveys how closely the observed points align with the modeled relationship.
+A  **residual-fit plot** (R-F plot) is another type of residual plot where the **modeled** (or **fitted**) values, $y_{predicted}$, are plotted on the x-axis, and the residuals, $\epsilon$,  are plotted on the y-axis. Similar to the residual-dependence plot, the R-F plot visually conveys how closely the observed points align with the modeled relationship.
 
 ```{r fig.height=2.5, fig.width=2.5, small.mar=TRUE}
 mtcars$fit2 <- fitted(M2)
@@ -193,12 +194,16 @@ One notable difference is the clearer visibility of heteroskedasticity in the R-
 
 ## Where are the residuals, exactly?
 
-You might wonder, “How can we determine the spread along the fitted line when, for any given value of $X$, there may be at most a single observation?”
-To address this, it’s important to recognize that most datasets represent a finite set of observations. However, when fitting a model to bivariate data, we implicitly assume that the relationship between $X$ and $Y$ is continuous within the range of observed values. This assumption allows us to generalize beyond the specific data points collected.
+You might wonder, **“How can we determine the residuals along the fitted line when, for any given value of $X$, there may be at most a single observation?”**
 
-For example, when modeling the relationship between miles-per-gallon and horsepower, our analysis isn’t restricted to just the vehicles in the dataset. Instead, we aim to capture a broader relationship that applies to all vehicles. The expectation is that if a new vehicle were engineered to produce a given horsepower, the fitted model could estimate its expected fuel efficiency, even though this specific vehicle wasn’t part of the original dataset.
-This concept of spread reflects the variability we would observe if multiple values of $Y$  were recorded for the same $X$. While the model provides an expected value for $Y$, real-world observations rarely align perfectly with this expectation. For instance, if 10 vehicles were designed to produce the same horsepower, their observed fuel efficiency would likely vary due to factors like manufacturing differences or environmental conditions. This variability means Y is treated as a “random variable,” subject to influences beyond the fitted model.
+To answer this, it’s important to recognize that most datasets represent a finite set of observations. However, when fitting a model to bivariate data, we implicitly assume that the relationship between $X$ and $Y$ is continuous within the range of observed values. This assumption allows us to generalize beyond the specific data points collected.
 
-In practice, we rarely have the luxury of observing multiple $Y$-values for the same $X$, let alone for many $X$-values across the range. Instead, we rely on the distribution of residuals to approximate this variability. The spread of residuals across the range of $X$ serves as a key indicator of the overall error in the model and helps us assess the consistency of the relationship it describes.  
+For instance, when modeling the relationship between miles-per-gallon and horsepower, our goal isn't to explain only the cars in our dataset. Instead, we're trying to understand a general trend that applies to all cars. The fitted model should be able to predict fuel efficiency for a new vehicle with a given horsepower — even if that specific combination wasn't represented in the original data.
 
-This is why the assumption of uniform variability (or homoscedasticity) is so important: it allows us to use all residuals to estimate a single measure of dispersion. By pooling information from the entire range of $X$, we increase the reliability of this estimate, enhancing our ability to draw meaningful conclusions about the model’s performance.
+This brings us to the concept of residual spread, which reflects the variability we’d expect if we could observe multiple values of $Y$ for the same value of $X$. The model gives us an expected (mean) value of  $Y$, but real-world observations rarely fall exactly on that line. Imagine observing 10 different vehicles, all with the same horsepower: due to factors like design differences or driving conditions, their fuel efficiencies would vary. This variability turns $Y$ into a *random variable*, influenced by factors beyond horsepower alone.
+
+However, in most real-world datasets, we don’t have repeated observations for the same value of $X$, let alone across the full range. So how do we estimate the residual spread? We rely on the **distribution of residuals across all observed data points**. If we were to view the regression line from its end, all the individual residuals would appear to collapse into a **single bundle of deviations from the line**. This aggregate pattern is what we use to estimate the model’s variability
+
+![](./img/view_along_lm_line.png){width=600}
+
+This is why the assumption of **uniform spread** is so important: it allows us to use all residuals to estimate a single measure of dispersion. By **pooling** information from the entire range of $X$, we increase the reliability of this estimate, enhancing our ability to draw meaningful conclusions about the model’s performance.

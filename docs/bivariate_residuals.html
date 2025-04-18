@@ -575,24 +575,24 @@ window.Quarto = {
 \]</span> You may also see the following notation used in statistical texts:</p>
 <p><span class="math display">\[
 \epsilon = y - \hat{y}
-\]</span></p>
-<p>In the miles-per-gallon vs.&nbsp;horsepower dataset exlored in the previous chapter, a few models were explored including the first order polynomial model.</p>
+\]</span> where <span class="math inline">\(y\)</span> is the observed values and <span class="math inline">\(\hat{y}\)</span> is the predicted or estimated value.</p>
+<p>In the miles-per-gallon vs.&nbsp;horsepower dataset explored in the previous chapter, a few models were explored including the first order polynomial model.</p>
 <p><span class="math display">\[
 \hat{mpg} = \hat{a} + \hat{b}(hp) + \epsilon
 \]</span></p>
-<p>The <code>lm</code> function is used to define the model.</p>
+<p>The <code>lm</code> function is used to fit the model to the data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>M1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(mpg <span class="sc">~</span> hp, mtcars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The <code>M1</code> model is a list that stores many model components including the residuals which can be extracted from the model using the <code>residuals()</code> function. The output is a numeric vector that can be added to the dataframe as follows:</p>
+<p>The <code>M1</code> model is a list that stores many model components including the residuals which can be extracted from the model using the <code>residuals()</code> function.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="sc">$</span>residuals1 <span class="ot">&lt;-</span> <span class="fu">residuals</span>(M1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="sc">$</span>res1 <span class="ot">&lt;-</span> <span class="fu">residuals</span>(M1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The residuals can be explored in a <strong>residual-dependence plot</strong> (R-D plot) where the residuals are mapped to the y-axis and the dependent variable is mapped to the x-axis. An example of the plot is generated using <code>ggplot</code>. To help identify a pattern (in any), a loess is fitted to the residuals</p>
+<p>The residuals can be explored in a <strong>residual-dependence plot</strong> (R-D plot) where the residuals are mapped to the y-axis and the dependent variable, <span class="math inline">\(y\)</span>, is mapped to the x-axis. An example of the plot is generated using <code>ggplot</code>. To help identify a pattern (in any), a loess is fitted to the residuals</p>
 <div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mtcars, <span class="fu">aes</span>(<span class="at">x =</span> hp, <span class="at">y =</span> residuals1)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mtcars, <span class="fu">aes</span>(<span class="at">x =</span> hp, <span class="at">y =</span> res1)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>             <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="dv">1</span>, </span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                         <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -604,14 +604,14 @@ window.Quarto = {
 </div>
 </div>
 <p>A well defined model will result in a residuals point pattern that should appear uniformly distributed across the range of dependent values. The fitted loess should show no prominent trends in the residuals.</p>
-<p>The first-order polynomial residuals follow a parabolic suggesting that the linear model did not capture the true . We say that the residuals show <em>dependence</em> on the x values.</p>
-<p>Next, we’ll look at the residuals from the second order polynomial model <code>M2</code>.</p>
+<p>The first-order polynomial residuals follow a parabolic suggesting that the linear model did not capture the true shape of the point pattern. We say that the residuals show <em>dependence</em> on the x values.</p>
+<p>Next, we’ll look at the residuals from a second order polynomial model, <code>M2</code>, that we will fit to the data.</p>
 <div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>M2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(mpg <span class="sc">~</span> hp <span class="sc">+</span> <span class="fu">I</span>(hp<span class="sc">^</span><span class="dv">2</span>), mtcars)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mtcars<span class="sc">$</span>residuals2 <span class="ot">&lt;-</span> <span class="fu">residuals</span>(M2)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mtcars<span class="sc">$</span>res2 <span class="ot">&lt;-</span> <span class="fu">residuals</span>(M2)</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mtcars, <span class="fu">aes</span>(<span class="at">x =</span> hp, <span class="at">y =</span> residuals2)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mtcars, <span class="fu">aes</span>(<span class="at">x =</span> hp, <span class="at">y =</span> res2)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>               <span class="fu">stat_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">span =</span> <span class="dv">1</span>, </span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                           <span class="at">method.args =</span> <span class="fu">list</span>(<span class="at">degree =</span> <span class="dv">1</span>) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -626,7 +626,7 @@ window.Quarto = {
 </section>
 <section id="residual-fit-plot" class="level2" data-number="26.2">
 <h2 data-number="26.2" class="anchored" data-anchor-id="residual-fit-plot"><span class="header-section-number">26.2</span> Residual-fit plot</h2>
-<p>A <strong>residual-fit plot</strong> (R-F plot) is a type of residual plot where the modeled (or <em>fitted</em>) values, <span class="math inline">\(y_{predicted}\)</span>, are plotted on the x-axis, and the residuals, <span class="math inline">\(\epsilon\)</span>, are plotted on the y-axis. Similar to the residual-dependence plot, the R-F plot visually conveys how closely the observed points align with the modeled relationship.</p>
+<p>A <strong>residual-fit plot</strong> (R-F plot) is another type of residual plot where the <strong>modeled</strong> (or <strong>fitted</strong>) values, <span class="math inline">\(y_{predicted}\)</span>, are plotted on the x-axis, and the residuals, <span class="math inline">\(\epsilon\)</span>, are plotted on the y-axis. Similar to the residual-dependence plot, the R-F plot visually conveys how closely the observed points align with the modeled relationship.</p>
 <div class="cell" data-small.mar="true">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mtcars<span class="sc">$</span>fit2 <span class="ot">&lt;-</span> <span class="fu">fitted</span>(M2)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -679,10 +679,13 @@ window.Quarto = {
 </section>
 <section id="where-are-the-residuals-exactly" class="level2" data-number="26.3">
 <h2 data-number="26.3" class="anchored" data-anchor-id="where-are-the-residuals-exactly"><span class="header-section-number">26.3</span> Where are the residuals, exactly?</h2>
-<p>You might wonder, “How can we determine the spread along the fitted line when, for any given value of <span class="math inline">\(X\)</span>, there may be at most a single observation?” To address this, it’s important to recognize that most datasets represent a finite set of observations. However, when fitting a model to bivariate data, we implicitly assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is continuous within the range of observed values. This assumption allows us to generalize beyond the specific data points collected.</p>
-<p>For example, when modeling the relationship between miles-per-gallon and horsepower, our analysis isn’t restricted to just the vehicles in the dataset. Instead, we aim to capture a broader relationship that applies to all vehicles. The expectation is that if a new vehicle were engineered to produce a given horsepower, the fitted model could estimate its expected fuel efficiency, even though this specific vehicle wasn’t part of the original dataset. This concept of spread reflects the variability we would observe if multiple values of <span class="math inline">\(Y\)</span> were recorded for the same <span class="math inline">\(X\)</span>. While the model provides an expected value for <span class="math inline">\(Y\)</span>, real-world observations rarely align perfectly with this expectation. For instance, if 10 vehicles were designed to produce the same horsepower, their observed fuel efficiency would likely vary due to factors like manufacturing differences or environmental conditions. This variability means Y is treated as a “random variable,” subject to influences beyond the fitted model.</p>
-<p>In practice, we rarely have the luxury of observing multiple <span class="math inline">\(Y\)</span>-values for the same <span class="math inline">\(X\)</span>, let alone for many <span class="math inline">\(X\)</span>-values across the range. Instead, we rely on the distribution of residuals to approximate this variability. The spread of residuals across the range of <span class="math inline">\(X\)</span> serves as a key indicator of the overall error in the model and helps us assess the consistency of the relationship it describes.</p>
-<p>This is why the assumption of uniform variability (or homoscedasticity) is so important: it allows us to use all residuals to estimate a single measure of dispersion. By pooling information from the entire range of <span class="math inline">\(X\)</span>, we increase the reliability of this estimate, enhancing our ability to draw meaningful conclusions about the model’s performance.</p>
+<p>You might wonder, <strong>“How can we determine the residuals along the fitted line when, for any given value of <span class="math inline">\(X\)</span>, there may be at most a single observation?”</strong></p>
+<p>To answer this, it’s important to recognize that most datasets represent a finite set of observations. However, when fitting a model to bivariate data, we implicitly assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is continuous within the range of observed values. This assumption allows us to generalize beyond the specific data points collected.</p>
+<p>For instance, when modeling the relationship between miles-per-gallon and horsepower, our goal isn’t to explain only the cars in our dataset. Instead, we’re trying to understand a general trend that applies to all cars. The fitted model should be able to predict fuel efficiency for a new vehicle with a given horsepower — even if that specific combination wasn’t represented in the original data.</p>
+<p>This brings us to the concept of residual spread, which reflects the variability we’d expect if we could observe multiple values of <span class="math inline">\(Y\)</span> for the same value of <span class="math inline">\(X\)</span>. The model gives us an expected (mean) value of <span class="math inline">\(Y\)</span>, but real-world observations rarely fall exactly on that line. Imagine observing 10 different vehicles, all with the same horsepower: due to factors like design differences or driving conditions, their fuel efficiencies would vary. This variability turns <span class="math inline">\(Y\)</span> into a <em>random variable</em>, influenced by factors beyond horsepower alone.</p>
+<p>However, in most real-world datasets, we don’t have repeated observations for the same value of <span class="math inline">\(X\)</span>, let alone across the full range. So how do we estimate the residual spread? We rely on the <strong>distribution of residuals across all observed data points</strong>. If we were to view the regression line from its end, all the individual residuals would appear to collapse into a <strong>single bundle of deviations from the line</strong>. This aggregate pattern is what we use to estimate the model’s variability</p>
+<p><img src="./img/view_along_lm_line.png" class="img-fluid" width="600"></p>
+<p>This is why the assumption of <strong>uniform spread</strong> is so important: it allows us to use all residuals to estimate a single measure of dispersion. By <strong>pooling</strong> information from the entire range of <span class="math inline">\(X\)</span>, we increase the reliability of this estimate, enhancing our ability to draw meaningful conclusions about the model’s performance.</p>
 
 
 </section>
