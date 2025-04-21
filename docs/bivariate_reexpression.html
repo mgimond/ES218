@@ -367,7 +367,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./sl_plot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-level plot</span></span></a>
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Univariate spread-location and spread-level plots</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -506,6 +506,7 @@ window.Quarto = {
    
   <ul>
   <li><a href="#re-expressing-the-data" id="toc-re-expressing-the-data" class="nav-link active" data-scroll-target="#re-expressing-the-data"><span class="header-section-number">30.1</span> Re-expressing the data</a></li>
+  <li><a href="#addendum" id="toc-addendum" class="nav-link" data-scroll-target="#addendum"><span class="header-section-number">30.2</span> Addendum</a></li>
   </ul>
 </nav>
     </div>
@@ -579,13 +580,13 @@ window.Quarto = {
 <p>In this chapter, we will explore the relationship between median rent and median household income for the State of Florida. The data are pulled from the <code>tukeyedar</code> package as follows.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r eda code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> tukeyedar<span class="sc">::</span>incrent22 <span class="sc">%&gt;%</span> </span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(State <span class="sc">==</span> <span class="st">"Florida"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tukeyedar)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> incrent22 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(State <span class="sc">==</span> <span class="st">"Florida"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>A demonstration of the workflow follows with a focus on the analysis rather than the code. The functions and code chunks required to generate these plots have been covered in previous chapters, including re-expression which was covered in <a href="re_express.html">chapter 21</a>.</p>
 <section id="re-expressing-the-data" class="level2" data-number="30.1">
 <h2 data-number="30.1" class="anchored" data-anchor-id="re-expressing-the-data"><span class="header-section-number">30.1</span> Re-expressing the data</h2>
-<p>A demonstration of the workflow will follow, with a focus on the analysis rather than the code. The functions and code chunks required to generate these plots have been covered in previous chapters.</p>
 <p>To begin, we will fit a first-order polynomial to the data and examine its diagnostic plots.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -597,8 +598,8 @@ window.Quarto = {
 </div>
 </div>
 <p>The data indicates a clear increase in rent as a function of income, suggesting that a straight-line fit could serve as a reasonable initial estimate.</p>
-<p>However, the residuals-dependence (R-D) plot reveals a non-random pattern, indicating that the model may not fully capture all aspects of the data. While the pattern hints at potential curvature, its precise nature remains unclear. The lack of a definitive direction from the R-D plot makes it challenging to determine specific modifications to the fitted model.</p>
-<p>The spread-location (S-L) plot, however, provides stronger evidence of heteroscedasticity. The fitted LOESS curve exhibits a nearly linear, monotonically increasing trend, suggesting that the variance of residuals grows with the fitted values.</p>
+<p>However, the residuals-dependence plot (2<sup>nd</sup> plot) reveals a non-random pattern indicating that the model may not fully capture all aspects of the data. While the pattern hints at potential curvature, its precise nature remains unclear. The lack of a definitive direction from the residuals-dependence (R-D) plot makes it challenging to determine specific modifications to the fitted model.</p>
+<p>The spread-location (S-L) plot (3<sup>rd</sup> plot), however, provides strong evidence of heteroscedasticity. The fitted LOESS curve exhibits a nearly linear, monotonically increasing trend suggesting that the variance of residuals grows with the fitted values.</p>
 <p>The diagnostic plots point to two potential issues: (1) the model may not adequately capture the pattern in the data, and (2) the presence of heteroscedasticity. It is generally advisable to address one issue at a time, as resolving a dominant problem can sometimes mitigate others. Given that heteroscedasticity is the more prominent issue here, we will tackle it first.</p>
 <p>Heteroscedasticity can often be corrected by re-expressing the <span class="math inline">\(Y\)</span> variable. In this analysis, we will explore power transformations to achieve a more desirable S-L plot. The following three S-L plots represent first-order polynomial fits applied to the data after re-expressing the rent variable using the logarithm, the inverse power (-1), and the inverse squared power (-2). To preserve the nature of the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> (i.e.&nbsp;avoiding sign reversal caused by negative powers), we can apply a Box-Cox transformation or multiply rent by minus one.</p>
 <div class="cell">
@@ -631,23 +632,13 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>The nearly flat Loess curve in the R-D plot suggests that the second-order polynomial effectively captures the data’s pattern. However, this improvement comes at a cost. The S-L plot indicates a monotonically decreasing variance with increasing fitted values. Recall from the chapter on S-L plots that when a model exhibits curvature, it can be helpful to generate a spread-dependence (S-D) plot with the independent variable (<span class="math inline">\(X\)</span>) on the x-axis instead of the fitted values. The resulting S-D plot is shown below:</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="bivariate_reexpression_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="268"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>The S-D plot confirms the presence of heteroscedasticity.</p>
+<p>The nearly flat Loess curve in the R-D plot suggests that the second-order polynomial effectively captures the data’s pattern. However, this improvement comes at a cost. The S-L plot indicates a monotonically decreasing variance with increasing fitted values.</p>
 <p>To address the heteroscedasticity without altering the second-order polynomial fit, we revisit the choice of transformations. Experimenting with several power transformations, we find that a log transformation stabilizes the variance while preserving the curvilinear relationship.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="bivariate_reexpression_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="bivariate_reexpression_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -658,13 +649,17 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="bivariate_reexpression_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="268"></p>
+<p><img src="bivariate_reexpression_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="268"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>The Q-Q plot reveals symmetry in the residuals, with no evidence of skew. Within the +/- 1 standard deviation range, the points stay close to the line, though the slight “S” shape at the tails indicates shorter than expected tails.</p>
-<p>This example highlights the iterative nature of exploratory analysis. It also demonstrates that there is no single “correct” workflow nor a single “correct” answer.</p>
+</section>
+<section id="addendum" class="level2" data-number="30.2">
+<h2 data-number="30.2" class="anchored" data-anchor-id="addendum"><span class="header-section-number">30.2</span> Addendum</h2>
+<p>This example effectively highlights the inherently <strong>iterative nature of EDA</strong>. As demonstrated by the process of trying different re-expressions and polynomial models, EDA is not a linear process but rather a cycle of exploration, fitting, and refinement, where the results of one step inform the next.</p>
+<p>The iterative nature of EDA, combined with <strong>the lack of a single “correct” path or answer</strong>, allows for a more nuanced and insightful understanding of the data, driven by exploration and the analyst’s judgment.</p>
 
 
 </section>
