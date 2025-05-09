@@ -268,7 +268,7 @@ The examination of the table suggests that the infant mortality rate is greatest
 
 It’s also important to look at the distribution of the residuals across the two-way table. One should identify unusually high or low residuals in the table. Such residuals may warrant further investigation (e.g. the high southern region residual value of 10.97 may need further exploration).
 
-### Test for non-additivity
+### Test for non-additivity (interactive terms)
 
 Thus far, we have assumed an additive relationship between the effects (factors). But this additive model may not be the best fit for our data. A good way to test this is by generating a **Tukey Additivity Plot** where we plot residuals vs. the **comparison value**, $cv_{ij}$, defined as $\alpha_i \beta_j / \mu$. If the plot is devoid of any obvious trend or pattern we can conclude that our dataset is consistent with an additive model. Such seems to be the case with our working example as shown in the following plot.
 
@@ -277,12 +277,26 @@ Thus far, we have assumed an additive relationship between the effects (factors)
 plot(eda_pol(df.l, Region, Edu, Deaths, plot = FALSE), type = "diagnostic")
 ```
 
-If the diagnostic plot revealed a trend, its shape--or more specifically, its slope--could be used in helping define an appropriate transformation for the data.  A rule of thumb is to apply a $(1 – slope)$ power transformation to the original data. If the resulting power is not appropriate for the dataset then the $cv_{ij}$ can be added to the additive model as follows:
+If the diagnostic plot revealed a trend, its shape--or more specifically, its slope--could be used in helping define an appropriate transformation for the data.  A rule of thumb is to apply a $(1 – slope)$ power transformation to the original data. 
+
+If a power transformation is not appropriate for the dataset, then a non-additive (i.e. interactive) term can be added to the model. This term is often of the form $k \cdot \alpha_i \beta_j / \mu)$ where $\alpha_i \beta_j / \mu$ is the comparison values. The constant $k$ is the slope estimated from the linear pattern in the diagnostic plot (i.e. the *Tukey Additivity* plot). The extended model thus takes the form:
 
 $$
 y_{ij} = \mu + \alpha_i + \beta_j + k(\alpha_i \beta_j / \mu)  + \epsilon_{ij}
 $$
-where the constant $k$ is the slope estimated from the *Tukey Additivity* plot.
+The term $\alpha_i \beta_j$ introduces a **multiplicative** interaction between the row effect $\alpha_i$  and the column effect $\beta_j$. While $\alpha_i$ and $\beta_j$ are constant effects for their respective row and column, the presence of the  interactive term means their contributions to the cell value $y_{ij}$ are not purely independent. With some algebraic manipulation, the contribution of the row effect $\alpha_i$ can be seen as modified by the column effect $\beta_j$:
+
+
+$$
+y_{ij} = \mu + \alpha_i(i + k\beta_j/\mu) + \beta_j  + \epsilon_{ij}
+$$
+
+or vice versa:
+
+$$
+y_{ij} = \mu + \alpha_i + \beta_j(1 + k\alpha_j/\mu) + \epsilon_{ij}
+$$
+These rearrangements demonstrate how the effect associated with one factor depends on the level of the other factor, which is the hallmark of interaction.
 
 ## Implementing the median polish in R
 
