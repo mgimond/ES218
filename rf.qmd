@@ -4,7 +4,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Fits and residuals
+# Visualizing Explained and Unexplained Variation
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -16,9 +16,15 @@ pkg_ver(c("dplyr", "tidyr", "ggplot2", "lattice", "tukeyedar"))
 
 ----------------------
 
-In the last chapter, we learned of the many benefits that homogeneity in the residuals can offer. Homogeneity in the residuals can also facilitate our assessment in the importance a grouping variable may contribute to an estimation of a variable in a dataset. For example, can educational attainment help determine a person's income level, or can the implementation of a specific soil treatment improve yield of crops. 
+In the previous chapter, we introduced the idea of modeling univariate data by fitting a group-specific mean and analyzing the residuals—the variation not explained by the model.
 
-This chapter has for objective to evaluate whether *conditioning* the mean on a grouping variable explains a substantial portion of the *variability* by comparing its influence to that of the residuals using a *residual-fit spread* plot.
+In this chapter, we take the next step: we assess how much of the total variability in the data is explained by the fitted model versus how much remains in the residuals.
+
+This approach helps answer questions like:
++  Does a grouping variable meaningfully reduce uncertainty in our estimates?
++  Is the model capturing a substantial portion of the variation?
+
+We’ll explore these questions through examples and simulations.
 
 ## Introduction
 
@@ -47,7 +53,8 @@ To refine our estimate of $y$, we can incorporate additional information, such a
 
 $$
 y = \mu_{group} + \epsilon
-$$
+$$ 
+
 For example, dividing the measurements into three groups provides separate estimates of, $\mu_{group}$ for each group.
 
 ```{r fig.height=3, fig.width=2.8, echo = FALSE}
@@ -61,15 +68,101 @@ A grouping variable’s usefulness in improving our estimate of $y$ depends not 
 
 ```{r fig.height=3, fig.width=2.8, echo = FALSE}
 set.seed(1775)
-df2 <- data.frame(y = rnorm(60,11,0.93), groups = rep(c("a","b","c"), times = 20) )
+df2 <- data.frame(y = rnorm(60,11,0.93), groups = rep(c("d","e","f"), times = 20) )
 eda_jitter(df2, y, groups, show.par = FALSE, xlab = "unhelpful groups", reorder = FALSE)
 ```
 
 Here, the improvement in $y$ estimates is modest because the uncertainty within each group ($\epsilon$) remains substantial. Each group exhibits a range of approximately four units, comparable to the range of uncertainty in the overall mean model.
 
-## The residual-fit spread plot
+## Visualizing Model Fit: The Variability Decomposition Plot
 
-The **residual-fit spread** (**rfs**) plot, introduced by William Cleveland, is a visualization tool designed to compare the variability explained by a fitted model (e.g., group means in univariate analysis) to the variability in the residuals. The plot is constructed as follows:
+Before diving into the more detailed residual-fit spread (rfs) plot, we begin with a simpler and more intuitive visualization: the **variability decomposition (vd) plot**.
+
+The vd plot visually decomposes the model:
+
+$$
+y = \mu_{group} + \epsilon
+$$
+
+into its two components: the fitted group means ($\mu_{\text{group}}$) and the residuals ($\epsilon$).
+
+The vd plot provides a high-level summary of how much of the total variation in a response variable is explained by a grouping variable. It visually separates the data into:
+
++  **Fitted values** (e.g., group means), representing between-group variation
++  **Residuals**, representing within-group variation
++ Optionally, the **original response distribution**, for reference
+
+- A dot plot or a boxplot of the fitted values centered around the overall mean or median
+- A boxplot of the residuals
+
+
+
+### Scenario 1: Strong group effect
+
+Let’s revisit the dataset with three well-separated groups (`a`, `b`, and `c`):
+
+```{r fig.height=3, fig.width=3.3, echo = FALSE}
+eda_vd(df, y, groups, label = TRUE, overlap = "stack", title = NULL,
+       show.resp = TRUE)
+```
+
+
++  The gray points represent the fitted group means, centered around the overall median.
++  The light gray boxplot shows the residuals.
++  The bisque-colored boxplot shows the spread of the original response variable centered around the batch median.
+
+In this example, the fitted values span a wide range (about 2 units), while the residuals are relatively narrow. This suggests that the grouping variable explains a substantial portion of the variation in the data.
+
+### Scenario 2: Weak group effect
+
+Now consider the dataset where the grouping variable (`d`, `e`, and `f`) has little explanatory power:
+
+```{r fig.height=3, fig.width=3.3, echo = FALSE}
+eda_vd(df2, y, groups, label = TRUE, overlap = "stack", title = NULL,
+       show.resp = TRUE)
+```
+
+Here, the fitted values are tightly clustered, while the residuals span nearly the full range of the original data. This indicates that the grouping variable contributes little to explaining the variation in the response.
+
+### Interpreting vd plots
+
+There is no strict cutoff for what constitutes a “good” or “poor” decomposition. Instead, interpretation lies on a continuum:
+
++  A **wide spread** in fitted values relative to residuals suggests a strong group effect.
++  A **narrow spread** in fitted values and wide residuals suggests a weak or negligible group effect.
+
+The VD plot is especially useful as a first diagnostic before moving to more detailed tools like the RFS plot.
+
+
+### Generating a vd plot with `eda_vd`
+
+The vd plot can be generated with the `eda_vd` function from the `tukeyedar` package. But first, we'll generate the singer height data used in the previous chapters.
+
+```{r}
+singer <- lattice::singer
+```
+
+To generate the vd plot, type:
+
+```{r class.source="eda", fig.height=3.5, fig.width=4.8, results='hide'}
+eda_vd(singer, height, voice.part, label = TRUE, title = NULL)
+```
+
+The `label` argument is optional and is used to label the points with group names. 
+
+You can add the boxplot of the original height distribution to the plot with the `show.resp = TRUE` argument.
+
+```{r class.source="eda", fig.height=3.5, fig.width=4.8, results='hide'}
+eda_vd(singer, height, voice.part, label = TRUE, title = NULL, show.resp = TRUE)
+```
+
+In the singer height data, the fitted group means span about 7–8 inches, while the residuals are much narrower. This indicates that voice part explains a meaningful portion of the variation in height.
+
+## Quantifying Fit: The Residual-Fit Spread Plot
+
+While the variability decomposition plot provides a clear summary of explained vs. unexplained variation, the **residual-fit spread (rfs) plot** offers a more detailed, quantile-based comparison. This plot aligns the quantiles of the fitted values and residuals on a shared axis, allowing for a more nuanced assessment of model fit.
+
+The rfs plot, introduced by William Cleveland, is constructed as follows:
 
 +  Fit a model $\mu_{group}$, such as the mean or median, to each group in the data. 
 +  Compute residuals by subtracting the fitted values from the original values ($\epsilon_{group} = y_{group} - \mu_{group}$).
@@ -95,40 +188,22 @@ In the rfs plot, both spreads are shown on a shared y-axis, centered at zero. Th
 
 Given that the tails of the residual distribution can sometimes be more variable or influenced by a few extreme values, it's best to focus the spread comparison in the rfs plot **on the central bulk of the residuals**, such as the range encompassing the **inner 90% or 95%** of the residuals. This approach provides a more stable comparison of the typical variability unexplained by the model against the variability captured by the fitted values.
 
-## Exloring extreme scenarios with an rfs plot
+### Interpreting rfs plots: Two extremes
 
-To build intuition for interpreting the residual-fit spread (rfs) plot, let’s consider two extreme cases.
+To build intuition for interpreting the residual-fit spread (rfs) plot, let’s revisit the two extreme cases presented earlier in this chapter.
 
-### Scenario 1: Maximizing group separation
+#### Scenario 1: Strong group effect
 
-In this scenario, the $y$ values are assigned to groups so as to maximize separation between them:
-
-```{r fig.height=3.2, fig.width=2.4, echo = FALSE}
-df2 <- eda_trim_df(df, y, prop = 0) # Sort the data
-df2$groups <- rep(c("a","b","c"), each = nrow(df2) / 3 )
-
-eda_jitter(df2, y, groups, show.par = FALSE)
-```
-
-The variability within each group is reduced to around 1.25 units--significantly less than the overall variability of 4 units. This dataset generates the following rfs plot:
 
 ```{r fig.height=3.5, fig.width=4.8, echo = FALSE, results='hide'}
-eda_rfs(df2, y, groups, show.par = FALSE)
+eda_rfs(df, y, groups, show.par = FALSE)
 ```
 
 Here, the group means explain a substantial portion of the variability in $y$. The spread in fitted group means covers 2 units, while approximately 95% of the residuals fall within a range of 1 unit--a much smaller spread. This indicates that the grouping variable can play a key role in explaining $y$.
 
-### Scenario 2: Minimizing group separation
+#### Scenario 2: Weak group effect
 
-Now consider the opposite extreme, where the grouping variable is minimally effective at explaining $y$. The original $y$ values remain unchanged, but the grouping assignments are restructured to minimize differences between group means:
-
-```{r fig.height=3.2, fig.width=2.4, echo = FALSE}
-set.seed(423)
-df2$y <- sample(df$y, replace = FALSE)
-eda_jitter(df2, y, groups, show.par = FALSE, reorder = FALSE)
-```
-
-Here the group means differ by less than 0.3 units whereas the residuals span three to four units. The resulting rfs is as follows:
+Now consider the opposite extreme, where the grouping variable is minimally effective at explaining $y$. 
 
 ```{r fig.height=3.5, fig.width=4.8, results='hide', echo=FALSE}
 eda_rfs(df2, y, groups, show.par = FALSE)
@@ -140,8 +215,7 @@ In this scenario, the residuals dominate, and the grouping variable contributes 
 eda_rfs(df2, y, 0, show.par = FALSE)
 ```
 
-
-## Generating an rfs plot with `eda_rfs`
+### Generating an rfs plot with `eda_rfs`
 
 The rfs plot can be generated with the `eda_rfs` function from the `tukeyedar` package. But first, we'll generate the singer height data used in the previous chapters.
 
@@ -166,13 +240,13 @@ The reason the mid 90% of values is chosen is to prevent outliers, or extreme va
 To help visualize the inner 90% of values, you can add the `q=TRUE` argument to the function. This option generates a shaded box highlighting the inner 90% of residual values and its matching range in the *Fit minus mean* plot.
 
 ```{r class.source="eda", fig.height=3.5, fig.width=4.8, results='hide'}
-eda_rfs(df, height, voice.part, q = TRUE)
+eda_rfs(singer, height, voice.part, q = TRUE)
 ```
 
 The spread of the fitted heights (across each voice part) is not insignificant compared to the spread of the combined residuals. The spread in the fitted means spans the same range of the mid 90% of the residual values. 
 
 
-## Generating an rfs plot with `ggplot`
+### Generating an rfs plot manually with `ggplot`
 
 To generate the R-F plot using `ggplot2`, we must first split the data into its fitted and residual components. We'll make use of `dplyr` and `tidyr` functions to tackle this task.
 
@@ -180,7 +254,7 @@ To generate the R-F plot using `ggplot2`, we must first split the data into its 
 library(dplyr)
 library(tidyr)
 
-rf <- df %>%
+rf <- singer %>%
   mutate(norm = height - mean(height)) %>%   # Normalize values to global mean
   group_by(voice.part) %>% 
   mutate( Residuals  = norm - mean(norm),    # Extract group residuals
@@ -204,3 +278,6 @@ ggplot(rf, aes(x = fval, y = value)) +
   ylab("Height (inches)") 
 ```
 
+## A Note on residual homogeneity
+
+When comparing the spread of fitted values to the spread of residuals, we implicitly assume that the residuals have a similar distribution across all groups. The assumption of residual homogeneity ensures that the residuals represent a common source of unexplained variation. If residuals differ substantially in spread or shape across groups, it becomes difficult to interpret the comparison fairly. We explored the idea of residual homogeneity in the previous chapter, and it remains an important consideration when using both the vd and rfs plots.

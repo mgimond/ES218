@@ -4,7 +4,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Residuals
+# Fitting and Residuals
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -16,11 +16,13 @@ pkg_ver(c("dplyr", "ggplot2","lattice", "tukeyedar"))
 
 ------
 
-In the last two chapters, we explored plots that help characterize a variable's distribution. In this section, we take a step further by *fitting* a simple model (the mean) to the data.  Our focus then shifts to analyzing the residuals—variations in the data not explained by the fitted model.
+In previous chapters, we explored how to visualize and compare distributions using plots like histograms, boxplots, and Q-Q plots. In this chapter, we take a step further by introducing a simple **modeling framework** for univariate data.
+
+We begin by **fitting** a measure of central tendency—typically the **mean**—to each group. Our focus then shifts to analyzing the residuals-variations in the data not explained by the fitted model.
 
 This exercise has for objective to seek a simple *mathematical* model to characterize both the mean and residual of the data.
 
-## Fitting the data
+## Modeling Univariate Data
 
 Univariate data can be described by their location (a measure of centrality) and their spread. For instance, the singer height groups examined in previous chapters differ primarily in their location. To analyze this further, we will *fit* the group means for each voice part and examine the *residuals* within and between groups. This approach can be expressed mathematically as:
 
@@ -28,7 +30,9 @@ $$
 Singer\ height = \mu_{voice\ part} + \epsilon
 $$
 
-Here, $\mu_{voice\ part}$ represents a measure of location (e.g. the mean) for each singer voice part group and $\epsilon$ denotes the residual remaining after fitting $\mu$. Notably, $\epsilon$ is not conditioned on voice part in the expression. The assumption that the residuals follow a similar distribution across all groups facilitates our comparison of the modeled location and is a fundamental premise of many common statistical procedures.
+Here, $\mu_{voice\ part}$ represents a measure of location (e.g. the mean) for each singer voice part group and $\epsilon$ denotes the residual remaining after fitting $\mu$. 
+
+> In this context, **structure** refers to the part of the data that can be systematically explained by the model—such as differences in group means. Residuals represent what remains after this structure has been accounted for. Ideally, residuals contain no further structure and reflect only **unsystematic** variation.
 
 The following is a jitter plot of the singer height values conditioned on voice parts with their respective $\mu$ values  symbolized using large bisque colored point symbols
 
@@ -40,28 +44,24 @@ df$voice <- as.character(df$voice.part)
 eda_jitter(df, height, voice, reorder = FALSE, show.par = FALSE)
 ```
 
-The means clearly differ across the groups, but you’ll also notice that the range of singer heights tends to cluster around their respective group means. In other words, the range in height values is not consistent across all groups. For instance, `Alto 2` singers have heights ranging from `63` to `70` inches, while the `Bass 1` group spans from `66` to `75` inches. This range of around 10 inches seems consistent across all voice parts.
-
-The variability in height values spanning each voice part mean height is the residual, $\epsilon$, portion of the model.  
+The means clearly differ across the groups, but you’ll also notice that the range of singer heights tends to cluster around their respective group means. In other words, the range in height values is not consistent across all groups. For instance, `Alto 2` singers have heights ranging from `63` to `70` inches, while the `Bass 1` group spans from `66` to `75` inches--a range of around `10` inches. 
 
 This suggests that knowing a singer's voice part can help us estimate their height with greater certainty. It represents an improvement over estimating height *without* accounting for voice part. In other words, if our model of singer height were limited to $Singer\ height = \mu + \epsilon$ where $\mu$ is no longer conditioned on voice part, our height estimates would include a wider range of uncertainty as can be seen in the following jitter plot where the voice part grouping variable has been removed.
 
-```{r echo = FALSE, fig.width = 2, fig.height=3}
-eda_jitter(df, height,  show.par = FALSE, xlab = "All singers")
+```{r echo = FALSE, fig.width = 3, fig.height=2.8}
+eda_jitter(df, height,  show.par = FALSE, xlab = "All singers", stat.size = 1.5, size = 0.7)
 ```
 
-Without knowing the singer's voice part, our uncertainty in estimating a singer's height value is much greater with a range covering `16` inches. The range of uncertainty in the height values when *including* the voice part information reduces our uncertainty by about four inches.
+Without knowing the singer's voice part, our uncertainty in estimating a singer's height value is much greater with a range covering `16` inches. The range of uncertainty in the height values when *including* the voice part information reduces our uncertainty by about `4` inches.
 
-## Comparing the residuals with QQ plots
+## Understanding residuals
 
-Ensuring a consistent distribution of residuals across groups is critical. When residuals vary with the grouping variable, it complicates the mathematical characterization of the data. Thus, it is good practice to check that residual distributions are similar across all groups. 
-
-Residuals are computed by subtracting the group mean from each value within the group. For the singer height data, the residuals are expressed as:
+Residuals represent the deviation of each observation from its group mean. Residuals are computed by subtracting the group mean from each value within the group. For the singer height data, the residuals are expressed as:
 
 $$
 \epsilon_{voice\ part}  = Singer\ height - \mu_{voice\ part} 
 $$
-Here, the subscript $_{voice\ part}$ indicates that the residuals are calculated separately for each group.
+Here, the subscript $_{voice\ part}$ indicates that the residuals are calculated separately for each group. We have yet to confirm that the residuals are the same across voice part groups.
 
 You can compute the residuals using the following `dplyr` operation however, instead of creating a new dataframe, we will add a `residuals` column to the existing dataframe. This can be accomplished by terminating the `dplyr` piping operation with the `pull` function.
 
@@ -75,6 +75,12 @@ df$residuals <- df %>%
                 pull(resid)
 ```
 
+Next, we'll determine if the residuals' distributions are similar across groups. 
+
+## Comparing the residuals using QQ plots
+
+Ensuring a consistent distribution of residuals across groups is critical. When residuals vary with the grouping variable, it complicates the mathematical characterization of the data. Thus, it is good practice to check that residual distributions are similar across all groups. 
+
 A useful tool for comparing the residuals is the empirical QQ plot introduced in Chapter 17. Given that we are comparing multiple pairs of residuals, we'll generate a QQ plot matrix of $\epsilon_{voice\ part}$.
 
 ```{r class.source="eda", fig.width=7, fig.height=7}
@@ -83,7 +89,7 @@ library(tukeyedar)
 eda_qqmat(df, residuals, voice.part, text.size = 0.8, size = 0.8)
 ```
 
-This QQ plot matrix looks similar to that generated for the singer height values in chapter 17 with the notable difference that each group's location has been removed from its respective set of height values. This centers the height values on 0. In other words, the additive offset observed between singer groups in chapter 17 has been removed in the above plot.
+This QQ plot matrix looks similar to that generated for the singer height values in chapter 17 with the notable difference that each group's location has been removed from its respective set of height values. This centers the height values on 0. In other words, the additive offset observed between singer groups in chapter 17 has been removed in the above plot. This faciliates the comparison of spreads by placing the points on or near the $x=y$ line.
 
 The residuals, for the most part, appear similar across all voice parts. Recall that the stair-step patterns observed in the QQ plots are a result of the rounding of height values to the nearest inch and should not be conflated with a systematic deviation from the $x=y$ line.
 
@@ -189,7 +195,7 @@ The *tightness* of points around the one-to-one line suggests nearly identical d
 
 This simulation illustrates how an *anomalous* set of groups can sometimes be identified in a pooled residuals QQ plot. However, this may not always be the case. The behavior of pooled residuals QQ plots in the presence of anomalous residuals is not well documented. Therefore, this technique should be applied with caution. Simulations like the one demonstrated here can provide valuable insights into how pooled residuals QQ plots behave under various distributional scenarios.
 
-## What do we gain with homogeneous residuals?
+## Why Homogeneous Residuals Matter
 
 As mentioned at the outset of this chapter, homogeneity in the residuals offers several benefits. For one, it simplifies the mathematical characterization of the data by reducing $\epsilon_{group}$ to a single constant $\epsilon$ for all groups. 
 
@@ -203,16 +209,16 @@ df %>%
   summarize(iqr = IQR(residuals))
 ```
 
-Since the residuals appear homogeneous across groups, we can pool them to calculate a single IQR for all singers, thereby reducing variability:
+Since we determined that the residuals appeared homogeneous across groups, we can pool them to calculate a single IQR for all singers, thereby reducing variability:
 
 ```{r}
 df %>% 
   summarize(iqr = IQR(residuals))
 ```
 
-## Comparing residuals to a unit Normal distribution
+## Comparing residuals to a Normal distribution
 
-We learned in chapter 18 that the distribution of singer heights across voice parts closely resembles a Normal distribution.  Given that residuals differ from the original data by a shift in location only, we expect them to follow a similar pattern. This can be verified by generating a Normal QQ plot using the pooled residuals:
+We observed in chapter 18 that the distribution of singer heights across voice parts closely resembles a Normal distribution.  Given that residuals differ from the original data by a shift in location only, we expect them to follow a similar pattern. This can be verified by generating a Normal QQ plot using the pooled residuals:
 
 ```{r class.source="eda", fig.height=3, fig.width=3}
 eda_theo(df$residuals, ylab = "residuals")
