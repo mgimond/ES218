@@ -1,0 +1,84 @@
+---
+title: "Sample R script"
+---
+
+```{r, echo=FALSE, message=FALSE}
+library(lubridate)
+library(dplyr)
+```
+
+# Buoy Report
+
+```{r, echo=FALSE}
+# Get data
+dat <-  read.table("http://mgimond.github.io/ES218/Data/buoy_44005_2012.dat", 
+                   sep="", header=TRUE, comment.char="")
+```
+
+```{r echo=FALSE}
+# Initialize a few variables
+buoy <- 41009
+year <- 2010
+
+# Subset columns
+dat1 <- dat %>%
+        mutate_each(funs(ifelse( . == 99,NA,.)), WSPD, GST, WVHT, DPD, APD) %>% 
+        mutate_each(funs(ifelse( . == 999,NA,.)), WDIR,  DEWP, ATMP, WTMP) %>% 
+        mutate_each(funs(ifelse( . == 9999,NA,.)), PRES) %>% 
+        mutate( Date  = ymd_hm(paste(YY, MM, DD, hh, mm), tz = "UTC"),
+                Date  = with_tz(Date , tzone = "EST"),  # Force to EST 
+                Month = month(Date, label=TRUE)) %>%
+        select(-MWD, -VIS, -TIDE, -YY, -MM, -DD, -hh, -mm)
+```
+
+This report is generated from data downloaded from NOAA's NDBC buoy data center. It consists of hourly air and ocean physical measurements such as temperature, wind speed and wave height for the year `r as.character(year)`.
+
+## Report for buoy ID `r as.character(buoy)`
+
+### Summary of physical parameters
+
+The mean sea surface water temperature was `r round(mean(dat1$WTMP, na.rm=TRUE),2)` with a minimum and maximum of `r min(dat1$WTMP, na.rm=TRUE)` and `r max(dat1$WTMP, na.rm=TRUE)`. A summary of all physical parameters are listed in the following table:
+ 
+ 
+```{r ,results='as is', echo=FALSE} 
+knitr::kable(summary(dat1[,c(1,2,8,9)]))
+```
+
+### Air Temperature summary by month
+
+In the following figure, boxplots of air temperature are shown by month. Each *box* encompasses 50% of the values for each month. The seasonal trend is obvious.
+
+```{r, fig.height=3, fig.width=6, message=FALSE, echo=FALSE, fig.cap="Figure 1.  Air temperature summarized by month."}
+OP <- par(mar=c(3,3,1,1))
+boxplot(ATMP ~ Month, dat1, ylab="Air temperature (?C)", pch=20)
+par(OP)
+```
+
+### Wind summary by month
+
+Surface wind speed and direction data were aggregated then averaged (using the statistical mean) for each month. 
+
+```{r fig.height=4, fig.width=8, message=FALSE, echo=FALSE, fig.cap="Figure 2. Wind speed and direction summarized by month.", dpi=200}
+
+brks <- c(0,  45,  90, 135, 180, 225, 270, 315, 360)
+lbs  <- c("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+library(ggplot2)
+wind <- dat1 %>%
+  filter( is.na(WDIR) == FALSE, is.na(WSPD) == FALSE) %>%  
+  mutate(WDIR2 = (WDIR + 360/8/2)%%360 , 
+         dirbin = cut(WDIR2, breaks=brks, labels=lbs) )  %>%
+  group_by(dirbin, Month) %>%
+  summarise(dircnt =  n(), medspd = median(WSPD) )
+
+# Plot histogram
+ggplot(aes(x=dirbin, y=dircnt, fill=medspd), data=wind) + 
+  geom_bar(width=1, stat = "identity") + 
+  scale_fill_distiller(palette="Reds") + coord_polar(start = -(22.5 * pi/180)) +
+  facet_wrap( ~ Month, nrow=2) + 
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank()) 
+
+```
+
+### References
+NOAA National Data Buoy  Center, [http://www.ndbc.noaa.gov/](http://www.ndbc.noaa.gov/)
+
