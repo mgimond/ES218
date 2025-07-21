@@ -1,1 +1,0 @@
-The data were pulled from the Bureau of Labor Statistics  (BLS) at http://download.bls.gov/pub/time.series/cx/ then converted to a long form. The data consist of dollars spent per consumer unit per year on a wide range of products ranging from eggs to college education. 
