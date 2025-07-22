@@ -18,57 +18,15 @@ pkg_ver(c("dplyr", "tidyr", "ggplot2", "tukeyedar"))
 
 William Cleveland's *residual-fit spread* (RFS) plot was introduced earlier in this course in the univariate context. The plot provides a visual means of comparing the variability explained by a fitted model—such as group means—to the variability of the residuals. The RFS plot can also be applied to bivariate models offering insight into the relationship between a model's effects and its residual variability.
 
-In bivariate analysis, an important objective is to identify a model that maximizes our ability to explain the variability in $Y$. The greater the variability in $Y$ explained by the model, the smaller the uncertainty in estimating $Y$ for each value of $X$. This objective translates into minimizing the spread of residuals relative to the variability captured by the model.
-
-For example, in the figure below, the plot on the left illustrates a model that effectively explains the variability in $Y$. Notice the relatively small residuals, represented as vertical dashed lines connecting the fitted (predicted) values (red points) to the observed values (grey points), compared to the variability explained by the model. The model accounts for a range in $Y$ of approximately 11 units, while the residual magnitudes average about 1 unit, indicating minimal unexplained variability.
-
-In contrast, the plot on the right shows a model with limited explanatory power. Here, the model accounts for only about 2 units of variability in $Y$, while the residual magnitudes average approximately 4 units. This suggests that a significant portion of the variability in $Y$ remains unexplained by $X$.
-
-```{r echo = FALSE, results='hide', fig.width=8, fig.height=3}
-library(tukeyedar)
-
-n <- 20
-set.seed(123)
-x <- sort(runif(n, 1, 10))
-y <- 1 + 1.5 * x + rnorm(n)
-#y[20] <- 28
-df <- data.frame(x,y)
-
-
-OP <- par(mfrow = c(1,2))
-M1 <- eda_lm(df, x, y, show.par = FALSE, mean.l = FALSE, sd = FALSE)
-error_segs <- lapply(1:nrow(df),
-       FUN = \(i) data.frame(x = df$x[i], y = c(M1$fitted.values[i], df$y[i]),
-                             row.names = NULL))
-OP2 <- par(mar = c(0,0,0,0))
-  lapply(error_segs, \(x) lines(x, col = "grey", lty = 2))
-  points(x = df$x, y = M1$fitted.values, pch = 16, col = "darkred")
-par(OP2)
-
-set.seed(17)
-y<- 10 + runif(n, -6, 6)
-df <- data.frame(x,y)
-
-M2 <-eda_lm(df,x,y, robust = TRUE, show.par = FALSE, mean.l = FALSE, sd = FALSE)
-error_segs <- lapply(1:nrow(df),
-       FUN = \(i) data.frame(x = df$x[i], y = c(M2$fitted.values[i], df$y[i]),
-                             row.names = NULL))
-OP2 <- par(mar = c(0,0,0,0))
-  lapply(error_segs, \(x) lines(x, col = "grey", lty = 2))
-  points(x = df$x, y = M2$fitted.values, pch = 16, col = "darkred")
-par(OP2)
-
-par(OP)
-```
-
-While a scatter plot can provide insights into the model's ability to explain variability in extreme cases, it is not well-suited for assessing performance across a broader range of scenarios. In contrast, an RFS plot is specifically designed to evaluate this aspect making it a more effective tool for such assessments.
+[ Need to flow from the VD plot chapter]
 
 ## Constructing a residual-fit spread plot
 
 Consider the 1^st^ order polynomial fitted to the miles-per-gallon (`mpg`) vs. horsepower (`hp`) scatter plot from the `mtcars` dataset:
 
 ```{r echo=FALSE, fig.height=3, fig.width=3, results='hide'}
-M <- eda_lm(mtcars, hp, mpg, show.par = FALSE, mean.l = FALSE, sd = FALSE)
+# M <- eda_lm(mtcars, hp, mpg, show.par = FALSE, mean.l = FALSE, sd = FALSE)
+M <- eda_lm(mtcars, hp, mpg, show.par = FALSE, mean.l = FALSE, sd = FALSE,  poly=2)
 
 error_segs <- lapply(1:nrow(mtcars),
        FUN = \(i) data.frame(x = mtcars$hp[i], y = c(M$fitted.values[i], mtcars$mpg[i]),

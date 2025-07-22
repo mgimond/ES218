@@ -1,0 +1,333 @@
+---
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+# Non-parametric Bivariate Modeling with Loess
+
+```{r echo=FALSE}
+source("libs/Common.R")
+```
+
+```{r echo = FALSE}
+pkg_ver(c("ggplot2"))
+```
+
+---------------------------------
+
+In the previous chapter, we explored parametric models such as linear and polynomial regression. These models require specifying a functional form—like a straight line or a quadratic curve-before fitting the data. While parametric models are powerful and interpretable, they can be limiting when the true relationship between variables is complex or unknown.
+
+Non-parametric models offer a flexible alternative. They do not assume a specific functional form and instead allow the data to guide the shape of the model. One such method is **loess** (locally weighted regression), which fits simple models to localized subsets of the data to build a smooth curve.
+
+In this chapter, we will explore how loess works and how it is constructed.
+
+## Non-parametric fit
+
+Polynomial models used to fit lines to data are classified as **parametric models**. These models require defining a specific functional form (e.g., linear, quadratic) *a priori*, which is then fitted to the data. By imposing this predefined structure, parametric models make strong assumptions about the underlying relationship between variables.
+
+In contrast, **non-parametric models** belong to a class of fitting strategies that do not assume a specific structure for the data. Instead, these models are designed to adapt flexibly, allowing the data to reveal its inherent patterns and relationships. One such method used in this course is the **loess** fit, a locally weighted regression approach.
+
+## Loess
+
+A flexible curve-fitting method is the **loess**  curve (short for **lo**cal regr**ess**ion, also known as *local weighted regression*). This technique fits small segments of a regression line across the range of x-values and links the midpoints of these segments to generate a *smooth* curve. The range of x-values contributing to each localized regression lines is controlled by the **span** parameter,  $\alpha$,  which typically ranges from 0.2 to 1 (though it can exceed 1 for smaller datasets). Another key parameter, $\lambda$, specifies the **polynomial order** of the localized regression lines and is typically 1 or 2.
+
+
+```{r echo=FALSE}
+library(dplyr)
+library(purrr)
+
+df <- mtcars
+alpha <-  0.5  
+strip.x <- nrow(df) * alpha # Number of points within band
+
+f.plot <- function(start , line = FALSE, point = FALSE, bnds =FALSE,
+                   w = FALSE, plot = TRUE, pts = FALSE, title = NULL){
+  # Find points closest to starting point
+  subset <-  df %>% 
+  #  mutate(dst = abs(area - start)) %>% 
+    mutate(dst = abs(hp - start)) %>%
+    arrange(dst) %>% 
+    mutate(j = row_number()) %>% 
+    filter(j <= strip.x ) %>% 
+    mutate(wt = dst / max(dst) * 3)
+  
+  # Assign weights
+  wts <- dnorm(subset$wt)/ 0.3989423
+  
+  # Regress with weights
+#  M <- lm(cp.ratio ~ area, subset, weights = wts)
+  M <- lm(mpg ~ hp, subset, weights = wts)
+  x.l <- coef(M)[1] + coef(M)[2] * start
+  
+  # Plot by option
+  if(plot == TRUE){
+ #   plot(cp.ratio ~ area, df,  yaxt='n', main = title,
+    plot(mpg ~ hp, df,  yaxt='n', main = title,
+         axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+  #  axis(side=1, at=c(seq(10,150,30)))
+    axis(side=1, at=c(seq(10,350,30)))
+    abline(v = start, lty = 2)
+    if(bnds == TRUE){
+   #   abline(v = c(min(subset$area),max(subset$area)), lty = 3, col = "grey")
+   #   rect(min(subset$area), 0, max(subset$area), 20, col = rgb(0,0,1,0.1),
+       abline(v = c(min(subset$hp),max(subset$hp)), lty = 3, col = "grey")
+   #    rect(min(subset$hp), 0, max(subset$hp), 20, col = rgb(0,0,1,0.1),
+       rect(min(subset$hp), 0, max(subset$hp), 35, col = rgb(0,0,1,0.1),      
+           border = rgb(0,0,1,0.1))
+    }
+    
+    if(w == TRUE){
+    #  points(x = subset$area, y = subset$cp.ratio, col = rgb(0,0,1, wts), 
+       points(x = subset$hp, y = subset$mpg, col = rgb(0,0,1, wts),
+             pch = 16,  cex=1.6)
+    }
+    if(line == TRUE){
+      # clip(min(subset$area),max(subset$area),
+      #      min(df$cp.ratio),max(df$cp.ratio))
+      clip(min(subset$hp),max(subset$hp),
+           min(df$mpg),max(df$mpg))
+      abline(M, col = "orange", lwd = 1.8)
+    }
+    if(point == TRUE){
+      points(x = start, y = x.l, pch = 16, col = "red", cex=1.8) 
+    }
+  }
+  
+  if(pts == TRUE){
+    return(c(start, x.l))
+  }  
+  
+}
+
+```
+
+## How a loess is constructed
+
+Behind the scenes, each point ($x_i$, $y_i$) that defines the loess curve is constructed as follows: 
+ 
+ a) A subset of data points closest to point $x_i$ are identified ($x_{130}$ is used as an example in the figure below). The number of points in the subset is identified by multiplying the bandwidth $\alpha$ by the total number of observations. In the `mtcars`' `mpg` vs. `hp` dataset, $\alpha$ is set to `r alpha`. The number of points defining the subset is thus 0.5 * 32 = 16. The region encompassing these points is displayed in a light blue color.
+ 
+ b) The points in the subset are assigned weights. Greater weight is assigned to points closest to $x_i$. The weights define the points' influence on the fitted line. Different weighting techniques can be implemented in a loess with the `gaussian` weight being the most common. Another weighting strategy we will also explore later in this course is the `symmetric` weight.
+ 
+ c) A regression line is fit to the subset of points. Points with smaller weights will have less leverage on the fitted line than points with larger weights. The fitted line can be either a first order polynomial fit or a second order polynomial fit.
+ 
+ d) Next, the value $y_i$ from the regression line is computed (red point in panel (d)). This is one of the points that will define the shape of the loess.
+   
+
+```{r fig.height = 2.7, fig.width = 10, echo = FALSE}
+# OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+# f.plot(start = 50, bnds = TRUE, title = "(a) Subset points") 
+# f.plot(start = 50, bnds = TRUE, w = TRUE, title = "(b) Assign weights")
+# f.plot(start = 50, bnds = TRUE, w = TRUE, line = TRUE, title = "(c) Fit line") 
+# f.plot(start = 50,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+#        title = "(d) Draw point")
+# par(OP)
+
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+f.plot(start = 130, bnds = TRUE, title = "(a) Subset points") 
+f.plot(start = 130, bnds = TRUE, w = TRUE, title = "(b) Assign weights")
+f.plot(start = 130, bnds = TRUE, w = TRUE, line = TRUE, title = "(c) Fit line") 
+f.plot(start = 130,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+       title = "(d) Draw point")
+par(OP)
+```
+
+The above steps are repeated for as many $x_i$ values practically possible. Note that when $x_i$ approaches an upper or lower limit, the subset of points is no longer centered on $x_i$. For example, when estimating $x_{52}$, the sixteen closest points to the right of $x_{52}$ are selected. Likewise, for the upper bound $x_{335}$, the sixteen closest points to the left of  $x_{335}$ are selected.
+
+```{r fig.height = 2.5, fig.width = 10, echo = FALSE}
+# OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+# f.plot(start = 10,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+#        title = expression(Left-most ~~  x[i] )) 
+# f.plot(start = 140,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+#        title = expression(Right-most ~~  x[i]) ) 
+# par(OP)
+
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+f.plot(start = 52,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+       title = expression(Left-most ~~  x[i] )) 
+f.plot(start = 335,  bnds = TRUE, w = TRUE, line = TRUE, point = TRUE, 
+       title = expression(Right-most ~~  x[i]) ) 
+par(OP)
+```
+
+
+In the following example, just under 30 loess points are computed at equal intervals. This defines the shape of the loess.
+
+```{r fig.height = 2.3, fig.width = 10, echo = FALSE}
+# OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+# l.pts <- seq(10,140,(110-20)/20) %>% map(function(x) f.plot(start = x, plot = FALSE, pts = TRUE)) %>% 
+#   do.call(rbind, .) %>% as.data.frame()
+# plot(cp.ratio ~ area, df,  yaxt='n', main = NULL,
+#          axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+#     axis(side=1, at=c(seq(10,150,30)))
+# points(l.pts$V1, l.pts$`(Intercept)`, pch = 16, col = "red",
+#        cex=1)
+# par(OP)
+
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+l.pts <- seq(50,330,(330-50)/20) %>% map(function(x) f.plot(start = x, plot = FALSE, pts = TRUE)) %>% 
+  do.call(rbind, .) %>% as.data.frame()
+plot(mpg ~ hp, df,  yaxt='n', main = NULL,
+         axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+    axis(side=1, at=c(seq(50,335,30)))
+points(l.pts$V1, l.pts$`(Intercept)`, pch = 16, col = "red",
+       cex=1)
+par(OP)
+```
+
+It's more conventional to plot the line segments than it is to plot the points.
+
+```{r fig.height = 2.3, fig.width = 10, echo = FALSE}
+# OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+# l.pts <- seq(10,140,(110-20)/20) %>% map(function(x) f.plot(start = x, plot = FALSE, pts = TRUE)) %>% 
+#   do.call(rbind, .) %>% as.data.frame()
+# plot(cp.ratio ~ area, df,  yaxt='n', main = NULL,
+#          axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+#     axis(side=1, at=c(seq(10,150,30)))
+# lines(l.pts$V1, l.pts$`(Intercept)`, col = "red")
+# par(OP)
+
+OP <- par(mfrow = c(1, 4), mar=c(2,1,1,0), pty = "s")
+l.pts <- seq(50,335,(335-50)/20) %>% map(function(x) f.plot(start = x, plot = FALSE, pts = TRUE)) %>% 
+  do.call(rbind, .) %>% as.data.frame()
+plot(mpg ~ hp, df,  yaxt='n', main = NULL,
+         axes = FALSE, pch=16, col = "grey90", cex = 1.6)
+    axis(side=1, at=c(seq(50,335,30)))
+lines(l.pts$V1, l.pts$`(Intercept)`, col = "red")
+par(OP)
+
+```
+
+<br>
+
+## Span Sensitivity
+
+The span parameter in a loess model controls the width of the neighborhood used to fit each local regression. Smaller span values result in more localized fits, which can capture fine-grained patterns but may also lead to overfitting. Larger span values produce smoother curves by averaging over broader neighborhoods, which can help reveal general trends but may miss subtle local features.
+
+Below is a comparison of loess fits applied to the mtcars dataset (miles-per-gallon vs. horsepower) using four different span values and a polynomial degree of 1:
+
+```{r fig.width = 6, fig.height = 6, echo = FALSE}
+library(tukeyedar)
+OP <- par(mfrow = c(2,2), oma = c(0,0,0,0))
+eda_lm(mtcars, hp, mpg, show.par = FALSE, sd = FALSE, mean.l = FALSE,loe.col = "red",
+       reg = FALSE, loe = TRUE, loess.d = list(span = 0.2, degree =1), loe.lty = 1)
+title("span = 0.2", col.main = "grey40")
+eda_lm(mtcars, hp, mpg, show.par = FALSE, sd = FALSE, mean.l = FALSE,loe.col = "red",
+       reg = FALSE, loe = TRUE, loess.d = list(span = 0.4, degree =1), loe.lty = 1)
+title("span = 0.4", col.main = "grey40")
+eda_lm(mtcars, hp, mpg, show.par = FALSE, sd = FALSE, mean.l = FALSE,loe.col = "red",
+       reg = FALSE, loe = TRUE, loess.d = list(span = 0.8, degree =1), loe.lty = 1)
+title("span = 0.8", col.main = "grey40")
+eda_lm(mtcars, hp, mpg, show.par = FALSE, sd = FALSE, mean.l = FALSE,loe.col = "red",
+       reg = FALSE, loe = TRUE, loess.d = list(span = 1, degree =1), loe.lty = 1)
+title("span = 1", col.main = "grey40")
+par(OP)
+```
+
++ **Span = 0.2**: The curve closely follows the data points, capturing small fluctuations. This can be useful for detecting local structure but risks overfitting noise.
++ **Span = 0.4**: A balanced fit that captures the overall trend while still being responsive to local changes.
++ **Span = 0.8 and 1.0**: These produce smoother curves that emphasize the broader trend, potentially overlooking finer details.
+
+**Avoiding overfitting**
+
+Using a very small span (e.g., < 0.3) can lead to a curve that reacts to random variation rather than meaningful structure. This is especially problematic with small datasets or noisy measurements. To avoid overfitting:
+
+  + Start with a **moderate span** (e.g., 0.5) and adjust based on visual inspection.
+  + Use **residual plots** to check whether the loess fit removes structure effectively.
+  + Consider the **goal of the analysis**: if you're exploring broad trends, a larger span may be more appropriate.
+
+## Polynomial degree in loess
+
+In addition to the span parameter, loess models also allow you to specify the degree of the local polynomial used to fit each neighborhood. The two most common choices are:
+
+ + **Degree = 1**: Fits a local linear regression to each neighborhood.
+ + **Degree = 2**: Fits a local quadratic regression, allowing for curvature within each neighborhood.
+ 
+ 
+```{r fig.width = 6, fig.height = 3, echo = FALSE}
+OP <- par(mfrow = c(1,2), oma = c(0,0,0,0))
+eda_lm(mtcars, hp, mpg, show.par = FALSE, sd = FALSE, mean.l = FALSE, loe.col = "red",
+       reg = FALSE, loe = TRUE, loess.d = list(span = 0.5, degree =1), loe.lty = 1)
+title("degree = 1", col.main = "grey40")
+eda_lm(mtcars, hp, mpg, show.par = FALSE, sd = FALSE, mean.l = FALSE,loe.col = "red",
+       reg = FALSE, loe = TRUE, loess.d = list(span = 0.5, degree =2), loe.lty = 1)
+title("degree = 2", col.main = "grey40")
+par(OP)
+``` 
+ 
+**When to Use Degree 1**
+A first-order polynomial (linear) is often sufficient when the underlying relationship is smooth and monotonic. It tends to be more stable and less sensitive to noise, especially when combined with a small span. 
+
+**When to Use Degree 2**
+A second-order polynomial (quadratic) can capture local curvature, making it useful when the data shows bends or inflection points. However, it is more sensitive to outliers and can introduce wiggles in the fitted curve if the span is too small. This is the default choice in many R loess implementations.
+
+**Practical Tip**
+If you're using a small span, it's generally safer to stick with **degree = 1** to avoid overfitting. If you're using a larger span, **degree = 2** may help reveal subtle curvature without introducing instability.
+
+## Choosing between polynomial and loess Models
+
+While loess offers a flexible data-driven approach to modeling, there are still good reasons to consider parametric polynomial models in certain situations.
+
+### When to Use a Polynomial Model
+
+  + Interpretability: Polynomial models provide explicit equations that are easy to interpret and communicate.
+  + Simplicity: A low-order polynomial (e.g., linear or quadratic) may be sufficient to capture the main trend in the data.
+  + Statistical inference: If your goal is to test hypotheses (e.g., is the slope significantly different from zero?), parametric models are more appropriate.
+
+### When to use loess
+
+  + Exploration: Loess is ideal for uncovering structure in the data without assuming a specific form.
+  + Nonlinearity: When the relationship between variables is complex or unknown, loess can adapt to local patterns.
+  + Visualization: Loess provides smooth, intuitive curves that help reveal trends in scatter plots.
+  
+In practice, loess is often used during the exploratory phase to guide model selection, while polynomial models may be used for confirmatory analysis or reporting.
+
+## Generating a loess model in base R
+
+The loess fit can be computed in R using the `loess()` function. It takes as arguments  `span` ($\alpha$), and `degree` ($\lambda$).
+
+```{r}
+# Fit loess function
+lo <- loess(mpg ~ hp, mtcars, span = 0.5, degree = 1)
+
+# Predict loess values for a range of x-values
+lo.x <- seq(min(mtcars$hp), max(mtcars$hp), length.out = 50)
+lo.y <- predict(lo, lo.x)
+```
+
+The modeled loess curve can be added to the scatter plot using the `lines` function.
+
+```{r fig.width=2.5, fig.height=2.5, small.mar=TRUE}
+plot(mpg ~ hp, mtcars)
+lines(lo.x, lo.y, col = "red")
+```
+
+## Generating a loess model in `ggplot`
+
+In `ggplot2` simply pass the `method="loess"` parameter to the `stat_smooth` function.
+
+```{r eval=FALSE}
+library(ggplot2)
+
+ggplot(mtcars, aes(x = hp, y = mpg)) + geom_point() + 
+             stat_smooth(method = "loess", se = FALSE, span = 0.5)
+```
+
+`ggplot` defaults to a second degree loess (i.e. the small regression line elements that define the loess are modeled using a 2^nd^ order polynomial and not a 1^st^ order polynomial). If a first order polynomial is desired, you need to include an argument list in the form of `method.args=list(degree=1)` to the `stat_smooth` function.
+
+```{r fig.width=2.5, fig.height=2.5}
+library(ggplot2)
+
+ggplot(mtcars, aes(x = hp, y = mpg)) + geom_point() + 
+             stat_smooth(method = "loess", se = FALSE, span = 0.5, 
+                         method.args = list(degree = 1) )
+```
+
+## Summary
+
+Loess offers a flexible, non-parametric approach to modeling bivariate relationships without assuming a fixed functional form. By fitting localized regressions across the range of the independent variable, loess can reveal subtle patterns and trends that parametric models might miss. Two key parameters—span and degree—control the behavior of the fit:
+
+ + **Span** determines the width of the neighborhood used for each local fit. Smaller spans capture fine detail but risk overfitting, while larger spans smooth out noise and emphasize broader trends.
+ + **Degree** defines the polynomial order of the local regression. A linear fit (degree = 1) is more stable and less sensitive to outliers, while a quadratic fit (degree = 2) can capture curvature but may introduce instability if the span is too small.
+ 
+Understanding how these parameters influence the loess curve is essential for balancing flexibility with interpretability. Loess is especially useful in exploratory data analysis, where the goal is to uncover structure rather than impose it.

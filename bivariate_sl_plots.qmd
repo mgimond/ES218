@@ -15,11 +15,11 @@ pkg_ver(c("ggplot2", "tukeyedar"))
 
 -----------------------------------
 
-So far, we’ve focused on modeling the typical value of $y$ as a function of $x$. The fitted model represents a measure of location (e.g., the mean) of $y$ for infinitesimally thin slices of $x$. In the previous chapter, we used residual-dependence plots and residual-fit plots to refine the model’s fit and evaluate its accuracy.
+So far, we’ve focused on modeling the typical value of $y$ as a function of $x$. The fitted model represents a measure of location (e.g., the mean) of $y$ for infinitesimally thin slices of $x$. In the previous chapter, we used residual-dependence (R-D) plots and residual-fit (R-F) plots to refine the model’s fit and evaluate its accuracy.
 
 In the univariate analysis portion of this course, we emphasized the importance of maintaining a consistent spread of residuals across groups. A uniform residual spread simplified comparisons between groups by reducing the analysis to a comparison of their means.
 
-Similarly, ensuring a *consistent* spread of residuals across the full range of the independent variable in bivariate analysis is crucial. This consistency not only offers explanatory clarity but is also critical for many statistical procedures that assume *homoscedasticity* (constant variance) in the residuals. Violations of this assumption can compromise the validity of these methods, emphasizing the importance of carefully evaluating residual behavior during model assessment.
+Similarly, ensuring a *consistent* spread of residuals (i.e. variability of residuals) across the full range of the independent variable in bivariate analysis is crucial. This consistency not only offers explanatory clarity but is also critical for many statistical procedures that assume *homoscedasticity* (constant variance) in the residuals. Violations of this assumption can compromise the validity of these methods. Uneven spread can affect confidence intervals, hypothesis tests, and predictions-especially in parametric models. 
 
 ## The spread-location plot
 
@@ -37,11 +37,13 @@ x <- runif(n,1,10)
 y <- x*2 +rnorm(n,0,0.2)
 df <- data.frame(x,y)
 OP<-par(mfrow=c(1,2))
- M <- eda_lm(df, x, y, show.par = FALSE, sd=FALSE, mean = FALSE)
+ M <- eda_lm(df, x, y, show.par = FALSE, sd=FALSE, mean.l = FALSE)
  eda_sl(M)
  #eda_sl(M, ylab = expression(sqrt(abs(residuals))))
 par(OP)
 ```
+
+In an S-L plot, a flat loess line indicates constant spread. A rising or falling trend suggests increasing or decreasing variability, which may violate model assumptions.
 
 Here, the residuals are constant across the full range of fitted values. This is confirmed by the loess fit which shows no significant deviation from a horizontal line.
 
@@ -52,7 +54,7 @@ set.seed(787)
 y <- x*2 +rnorm(n,0,abs(x)/3)
 df <- data.frame(x,y)
 OP<-par(mfrow=c(1,2))
- M <- eda_lm(df, x, y, show.par = FALSE, sd=FALSE, mean = FALSE)
+ M <- eda_lm(df, x, y, show.par = FALSE, sd=FALSE, mean.l = FALSE)
  eda_sl(M, ylab = expression(sqrt(abs(residuals))))
 par(OP)
 ```
@@ -61,7 +63,9 @@ The increasing spread as a function of increasing fitted value is apparent in th
 
 ## The spread-dependence plot
 
-For bivariate models, an alternative to the S-L plot is the **spread-dependence** (S-D) plot where the independent variable, $X$, is plotted on the x-axis instead of the fitted values. This alternate form of the S-L plot is better suited for models that take on a quadratic form. For example, the following fitted model shows a monotonic increase in spread with increasing x-value. However, the S-L plot does a poor job in picking the heteroscedasticity in the residuals.
+For bivariate models, an alternative to the S-L plot is the **spread-dependence** (S-D) plot where the independent variable, $X$, is plotted on the x-axis instead of the fitted values. This alternate form of the S-L plot is better suited for models that take on a quadratic form. S-L plots use fitted values on the x-axis, which can obscure patterns when the model is nonlinear. S-D plots use the original independent variable, making it easier to detect spread patterns tied directly to $X$.
+
+For example, the following fitted model shows a monotonic increase in spread with increasing x-value. However, the S-L plot does a poor job in picking the heteroscedasticity in the residuals.
 
 ```{r fig.width = 7, fig.height = 3, echo = FALSE, results='hide'}
 set.seed(787)
@@ -69,14 +73,19 @@ n <- 500
 x <- runif(n,-5,5) 
 y <- 11 + 0.2*x + 0.4 * x^2 + rnorm(n,0,abs(x+5)/5)
 df <- data.frame(X=x,Y=y)
-OP<-par(mfrow=c(1,2));M <- eda_lm(df, X, Y, poly=2);eda_sl(M);par(OP)
+OP<-par(mfrow=c(1,2))
+M <- eda_lm(df, X, Y, poly=2,show.par = FALSE, sd=FALSE, mean.l = FALSE)
+eda_sl(M)
+par(OP)
 ```
 
-The heteroscedasticity in the residuals is far more pronounced when plotting  the spread as a function of the independent variable.
+The heteroscedasticity in the residuals is far more pronounced when plotting the spread as a function of the independent variable.
 
 ```{r fig.width = 7, fig.height = 3, echo = FALSE, results='hide'}
-OP<-par(mfrow=c(1,2));M <- eda_lm(df, X, Y, poly=2)
-eda_sl(M, type = "dependence");par(OP)
+OP<-par(mfrow=c(1,2))
+M <- eda_lm(df, X, Y, poly=2,show.par = FALSE, sd=FALSE, mean.l = FALSE)
+eda_sl(M, type = "dependence")
+par(OP)
 ```
 
 ## Generating an S-L plot with `eda_sl`
@@ -117,3 +126,10 @@ ggplot(sl2, aes(x = fit, y  =std.res)) + geom_point() +
 
 The function `predict()` extracts the fitted y-values from the model `M` and is plotted along the x-axis. 
 
+## Summary
+
+In this chapter, we explored how to assess the **spread of residuals**-a key component of model diagnostics. Using **spread-location (S-L)** and **spread-dependence (S-D)** plots, we visualized how residual variability changes across the range of the independent variable.
+
+A consistent spread, or **homoscedasticity**, supports the validity of many statistical procedures. In contrast, **heteroscedasticity**-where spread increases or decreases with $X$-can indicate model inadequacy or the need for transformation.
+
+By examining spread graphically, we gain deeper insight into model behavior and improve our ability to refine fits, validate assumptions, and ensure robust analysis.
