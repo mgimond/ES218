@@ -17,7 +17,7 @@ The figure below illustrates this concept using three scenarios of increasing mo
 + **Right plot**: A **better-fitting linear model** (also a 1^st^-order polynomial) explains a larger portion of the variability in Y. The predicted values span a wider range (about 11 units), and the residuals are relatively small—averaging about 1 unit—indicating that most of the variability in Y is now accounted for by the model.
 
 
-```{r echo = FALSE, results='hide', fig.width=9, fig.height=3}
+```{r echo = FALSE, results='hide', fig.width=8, fig.height=3}
 library(tukeyedar)
 
 n <- 20
@@ -45,26 +45,28 @@ int1 <- 6.5
 slp1 <- .5
 fitted_manual <- int1 + slp1 * x
 residuals_manual <- y - fitted_manual
-data.frame(x, y, fitted_manual, residuals_manual)
-eda_lm(df, x, y, show.par = FALSE, mean.l = FALSE, sd = FALSE, reg = FALSE)
+df2 <- data.frame(x, y, fitted_manual, residuals_manual)
+M1 <- eda_lm(df, x, y, show.par = FALSE, mean.l = FALSE, sd = FALSE, reg = FALSE)
+OP3 <- par(mar = M1$parxy)
 abline(a=int1, b=slp1, col = "red")
-error_segs <- lapply(1:nrow(df),
-       FUN = \(i) data.frame(x = df$x[i], y = c(fitted_manual[i], df$y[i]),
+par(OP3)
+error_segs <- lapply(1:nrow(df2),
+       FUN = \(i) data.frame(x = df2$x[i], y = c(fitted_manual[i], df2$y[i]),
                              row.names = NULL))
 OP2 <- par(mar = c(0,0,0,0))
   lapply(error_segs, \(x) lines(x, col = "grey", lty = 2))
-  points(x = df$x, y = fitted_manual, pch = 16, col = "darkred")
+  points(x = df2$x, y = fitted_manual, pch = 16, col = "darkred")
 par(OP2)
 
 
 # Scenario 3
-M1 <- eda_lm(df, x, y, show.par = FALSE, mean.l = FALSE, sd = FALSE)
+M2 <- eda_lm(df, x, y, show.par = FALSE, mean.l = FALSE, sd = FALSE)
 error_segs <- lapply(1:nrow(df),
-       FUN = \(i) data.frame(x = df$x[i], y = c(M1$fitted.values[i], df$y[i]),
+       FUN = \(i) data.frame(x = df$x[i], y = c(M2$fitted.values[i], df$y[i]),
                              row.names = NULL))
 OP2 <- par(mar = c(0,0,0,0))
   lapply(error_segs, \(x) lines(x, col = "grey", lty = 2))
-  points(x = df$x, y = M1$fitted.values, pch = 16, col = "darkred")
+  points(x = df$x, y = M2$fitted.values, pch = 16, col = "darkred")
 par(OP2)
 
 par(OP)
@@ -80,64 +82,104 @@ In the next section, we’ll use the variability decomposition plot to formalize
 The variability decomposition plot visually partitions the total spread of the response variable into:
 
 + **Fitted values**: representing the portion of variability explained by the model.
-+ **Residuals**: representing the portion of variability not explained by the model.
++ **Residuals**: representing the portion of variability **not** explained by the model.
 
 This decomposition is analogous to the concept behind $R^2$, but it is presented graphically to support exploratory analysis and intuitive understanding.
 
 
-## Model Progression Examples
+## Exploring VD for different scenarios
 
 To illustrate how a model *fit* affects variability decomposition, we use synthetic data where the relationship between $X$ and $Y$ is controlled. This allows us to showcase three scenarios:
 
-### Scenario 1: 0th-Order Polynomial (Mean-Only Model)
+### Scenario 1: Mean-Only Model
 
 In this case, the model fits only the mean of \( Y \), ignoring any relationship with \( X \). All variability in \( Y \) is captured by the residuals.
 
-```{r fig.width=9, fig.height=3, echo = FALSE}
-set.seed(321)
-n <- 100
-x <- sort(runif(n, 1, 10))
-y <- 1 + 1.5 * x + 0.5 * x^2 +rnorm(n)
-df <- data.frame(x,y)
-
-OP <- par(mfrow = c(1,3), cex = 1)
-M0 <- eda_lm(df, x, y, mean.l = FALSE, sd = FALSE, poly = 0, show.par = FALSE)
-plot(M1, ylim = c(-20,40), asp = FALSE )
-eda_vd(M0, type = "box")
+```{r fig.width=8, fig.height=3, echo = FALSE}
+OP <- par(mfrow = c(1,3), cex = 1, cex.main = .9)
+M0 <- eda_lm(df, x, y, show.par = FALSE, mean.l = FALSE, sd = FALSE, poly = 0)
+plot(M0, ylim = c(-10,10), asp = FALSE, loe = FALSE )
+eda_vd(M0, type = "box", lim = c(-8,8),  cex.txt = 1)
 par(OP)
 
 ```
 
 
-### Scenario 2: 1st-Order Polynomial (Mean-Only Model)
+### Scenario 2: A linear model
 
 Here, a linear relationship between $X$ and $Y$ is introduced. The model captures quite a bit of the variability, and the residuals account for the rest.
 
-```{r fig.width=9, fig.height=3, echo = FALSE}
-OP <- par(mfrow = c(1,3))
-M1 <- eda_lm(df, x, y, mean.l = FALSE, sd = FALSE, poly = 1)
-plot(M1, ylim = c(-20,40), asp = FALSE )
-eda_vd(M1, type = "box")
+```{r fig.width=8, fig.height=3, echo = FALSE}
+OP <- par(mfrow = c(1,3), cex = 1, cex.main = .9)
+eda_lm(df, x, y,show.par = FALSE, mean.l = FALSE, sd = FALSE, reg = FALSE)
+M1 <- M0
+M1$residuals <- residuals_manual
+M1$data$residuals <- residuals_manual
+M1$a <- int1
+M1$b <- slp1
+M1$fitted.values <- fitted_manual
+OP3 <- par(mar = M1$parxy)
+abline(a=int1, b=slp1, col = rgb(1, 0.5, 0.5, 0.8), lw = 1.7)
+par(OP3)
+plot(M1, ylim = c(-10,10), asp = FALSE, loe = FALSE )
+eda_vd(M1, type = "box", lim = c(-8,8))
 par(OP)
 ```
 
-### Scenario 3: 2nd-Order Polynomial (Mean-Only Model)
+### Scenario 3:  A better-fitting linear model
 
-In this case, the model fits only the mean of $Y$, ignoring any relationship with \( X \). All variability in \( Y \) is captured by the residuals.
+In this case, the model fits only the mean of $Y$, ignoring any relationship with \( X \). All variability in $Y$ is captured by the residuals.
 
-```{r fig.width=6, fig.height=3, echo = FALSE}
-OP <- par(mfrow = c(1,2))
+```{r fig.width=8, fig.height=3, echo = FALSE}
+OP <- par(mfrow = c(1,3), cex = 1, cex.main = .9)
 M2 <- eda_lm(df, x, y, mean.l = FALSE, sd = FALSE, poly = 2)
-eda_vd(M2, type = "box")
+plot(M2, ylim = c(-10,10), asp = FALSE, loe = FALSE )
+eda_vd(M2, type = "box", lim = c(-8,8))
 par(OP)
 ```
 
-```{r fig.width=7, fig.height=3, echo = FALSE}
-OP <- par(mfrow = c(1,3))
-eda_vd(M0, type = "box", lim = c(-30,40))
-eda_vd(M1, type = "box", lim = c(-30,40))
-eda_vd(M2, type = "box", lim = c(-30,40))
+### Comparing the VD plots
+
+The figure that follows shows the VD plots for the above scenarios side-by-side. Note the increasing amount of variability being explained by the fit vis-a-vis the residuals with improving model.
+
+```{r fig.width=8, fig.height=3, echo = FALSE}
+OP <- par(mfrow = c(1,3), cex = 1, cex.main = .9)
+eda_vd(M0, type = "box", lim = c(-8,8), title = "Mean-Only Model")
+eda_vd(M1, type = "box", lim = c(-8,8), title = "Initial fit")
+eda_vd(M2, type = "box", lim = c(-8,8), title = "Better fit")
 par(OP)
+```
+
+## Interpreting VD plots in terms of predictive power
+
+As the model explains more of the variability in $Y$, our ability to make precise predictions or estimates of $Y$ for a given value of $X$ improves. This is because the residual spread (the part of the data not captured by the model) shrinks leaving less uncertainty in the predicted values.
+
+In the VD plots above:
+
++  The **mean-only** model shows that all variability remains in the residuals. This means that knowing  $X$ tells us nothing about $Y$; predictions are no better than guessing the average.
+
++  The **initial linear model** captures some structure, reducing the residual spread. Predictions improve, but there’s still considerable uncertainty.
+
++  The **better-fitting model** explains most of the variability in Y, leaving only a narrow band of residuals. This means that for any given X, the predicted Y is much more reliable.
+
+This relationship between **explained variability** and **predictive precision** is central to model evaluation. The more variability the model accounts for, the more confidently we can use it to estimate outcomes.
+
+To illustrate this, the following plot shows the predicted values for a fixed value of $x = 9$ across the three models. The red points represent the model’s estimate of $y$, while the gray points represent the uncertainty derived from the residuals. As model fit improves, the spread of residuals narrows highlighting the increasing precision in estimating $y$. 
+
+
+```{r echo = FALSE, fig.width=3, fig.height=3 }
+df_pred <- data.frame(id = 1:nrow(df),
+                      mean = M0$residuals + M0$fitted.values[16], 
+                      "initial fit" = M1$residuals + M1$fitted.values[16], 
+                      "better fit" = M2$residuals + M2$fitted.values[16], 
+                      check.names = FALSE )
+df_pred <- reshape(df_pred, direction = "long", 
+                   varying = c("mean", "initial fit", "better fit"),
+                   v.names = "Predicted",
+                   times =  c("mean", "initial fit", "better fit"),
+                   idvar = c("Group") )
+eda_jitter(df_pred, Predicted , time, xlab = "", ylab = "Predicted value for x = 9", 
+           show.par = FALSE, stat = mean, stat.size = 1.5)
 ```
 
 ## Generating a variability decomposition plot
