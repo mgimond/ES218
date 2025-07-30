@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Parameterizing the residuals
+# Parameterizing the Residuals
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -15,33 +15,50 @@ pkg_ver(c("ggplot2", "tukeyedar"))
 
 -----------------------------------
 
-In the univariate section of this course, we learned that parameterizing residuals offers many benefits, including the ability to succinctly characterize spread using a single parameter, such as the standard deviation. While the standard deviation is broadly applicable, it is often strongly associated with the *Normal* distribution. This association arises because, in many statistical methods and contexts (e.g., hypothesis testing and confidence intervals), the assumption of Normality in the residuals simplifies analysis. In this context, it is assumed that 
-$\epsilon_i \sim N(0, \sigma^2)$ where $\epsilon_i$ is independently and identically distributed according to a *Normal* distribution with a mean of 0 and a constant variance $\sigma^2$.
+In the univariate section of this course, we learned that parameterizing residuals offers many benefits, including the ability to succinctly characterize spread using a single parameter, such as the standard deviation. While the standard deviation is broadly applicable, it is most commonly associated with the *Normal* distribution. This association arises because, in many statistical methods and contexts (e.g., hypothesis testing and confidence intervals), the assumption of Normality in the residuals simplifies analysis. In this context, we assume that 
+$\epsilon_i \sim N(0, \sigma^2)$ meaning that each residual $\epsilon_i$ is independently and identically distributed according to a *Normal* distribution with a mean of 0 and a constant variance $\sigma^2$.
 
 
 ### Checking residuals for normality
 
-If you are interested in conducting a hypothesis test (i.e. addressing the question *"is the slope significantly different from 0"*) you will likely want to check the residuals for normality since this is an assumption made when computing a confidence interval and a p-value. 
+If you plan to conduct a hypothesis test (e.g., testing whether the slope is significantly different from 0), it is important to check whether the residuals are approximately Normal since this is an assumption made when computing a confidence interval and a p-value. 
 
-We learned that a Normal quantile-quantile plot was well suited for this comparison. For example, using the `eda_theo` function, we can compare the model's residuals to a unit Normal distribution.
+We learned that a **Normal quantile-quantile plot** was well suited for this comparison. For example, using the `eda_theo` function, we can compare the model's residuals to a unit Normal distribution.
 
 ```{r class.source="eda", fig.height=3, fig.width=2.5}
 library(tukeyedar)
 
-M <- lm(mpg ~ hp, mtcars)
+M <- lm(mpg ~ hp + I(hp^2), mtcars)
 residuals <- M$residuals
 eda_theo(residuals)
 ```
 
-The same theoretical Q-Q plot can be generated with `ggplot2` using the `stat_qq` and `stat_qq_line` functions.
+You can also generate the same theoretical QQ plot using `ggplot2` with the `stat_qq()` and `stat_qq_line()` functions.
 
 ```{r fig.height=2.5, fig.width=2.5}
 library(ggplot2)
-
+  
 ggplot() + aes(sample = residuals) + 
-  stat_qq(distribution = qnorm) +
-  stat_qq_line(distribution = qnorm, col = "blue") +
-  xlab("Normal") + ylab("Residuals")
+   stat_qq(distribution = qnorm) +
+   stat_qq_line(distribution = qnorm, col = "blue") +
+   xlab("Normal") + ylab("Residuals")
 ```
+
+## Interpreting the Q-Q plot
+
+In a Normal Q-Q plot, residuals that follow a Normal distribution will fall approximately along the reference line. Systematic deviations from this line can indicate:
+
+- **Curvature**: Suggests skewness in the residuals.
+- **Heavy tails**: Points at the ends deviate sharply, indicating outliers or excess kurtosis.
+- **S-shaped patterns**: May indicate a need for transformation.
+
+### What to do if residuals aren't Normal
+
+If residuals show strong departures from Normality, consider the following options:
+
+- **Transform the response variable**: Common transformations include logarithmic, square root, or Box-Cox.
+- **Use robust regression methods**: These methods are less sensitive to non-Normal residuals.
+- **Apply nonparametric techniques**: These do not rely on distributional assumptions and can provide valid inference under broader conditions.
+
 
 

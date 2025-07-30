@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Analyzing two-way tables: The median polish
+# Analyzing Two-Way Tables: The Median Polish
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -16,11 +16,13 @@ pkg_ver(c("dplyr", "tidyr", "tukeyedar"))
 
 -------
 
-The median polish is an exploratory data analysis technique designed to extract the effects of row and column factors from a two-way table. It serves as a robust alternative to two-way ANOVA, with the goal of characterizing the contribution of each factor to the expected values in the table.
+In previous chapters, we explored univariate and bivariate datasets--structures where each observation typically corresponds to a single value or a pair of values. In this chapter, we shift focus to a different data structure: the **two-way table**, where each cell contains a single value representing the intersection of two categorical factors. Unlike the datasets covered earlier, which often consist of many observations per group or variable, two-way tables typically summarize data with **one value per cell**, such as a mean, count, or rate. This structure requires a different analytical approach.
 
-Unlike traditional methods that rely on means, the median polish uses medians to iteratively adjust for row and column effects. This reliance on medians makes the technique less sensitive to outliers, providing a more robust summary of the data's structure. Median polish is particularly useful in situations where data contains extreme values.
+The **median polish** is an exploratory data analysis technique designed to extract the effects of row and column factors from such tables. It serves as a robust alternative to two-way ANOVA, with the goal of characterizing the contribution of each factor to the expected values in the table. Unlike traditional methods that rely on means, the median polish uses medians to iteratively adjust for row and column effects. This reliance on medians makes the technique less sensitive to outliers, providing a more robust summary of the data's structure. Median polish is particularly useful in situations where data contains extreme values.
 
-## Introduction
+-----
+
+## Introduction to Two-Way Tables
 
 Before tackling two-way tables, let's explore a simpler one-way table. The following dataset shows mean annual income by occupation for the year 2014 (*src: [Bureau of Labor Statistics](http://www.bls.gov/oes/#tables)*)
 
@@ -81,17 +83,18 @@ A two-way table is composed of three variables:
   * a **column factor** which has **five levels** in our working example: under 8, 9-11, 12, 13-15 and 16 and greater years of education,
   * **response variables** of which we have 4 (rows) x 5 (columns) = 20 all together.
 
-A two-way table is an extension to the one-way table described in the introduction where, instead of grouping a continuous variable by a single factor category, we explore the variable across **two** factor categories.
+Each cell in the table contains a single summary value-such as a rate, mean, or count-rather than a collection of individual observations.
 
-We can represent the relationship between the response variable, $y$, and the *two* factors as:
+We can model the response variable, $y_{ij}$, as the sum of a common value, a row effect, a column effect, and a residual:
+
 
 $$
 y_{ij} = \mu + \alpha_i + \beta_j + \epsilon_{ij}
 $$
 
-where $y_{ij}$  is the **response variable** for row $i$ and column $j$, $\mu$ is the overall typical value (hereafter referred to as the *common value*), $\alpha_i$ is the **row effect**, $\beta_j$ is the **column effect** and  $\epsilon_{ij}$ is the **residual** or value left over after *all* effects are taken into account. 
+where $y_{ij}$  is the **response variable** for row $i$ and column $j$, $\mu$ is the overall typical value (hereafter referred to as the *common value*), $\alpha_i$ is the **row effect**, $\beta_j$ is the **column effect** and  $\epsilon_{ij}$ is the **residual** or value left over after *all* effects are taken into account. This additive model forms the foundation of the median polish technique.
 
-The goal of this analysis is to decompose the response variable into its respective effects--i.e. the two contributing factors: *education of father* and *region*--via an iterative process where row medians and column medians are removed from the response variables repeatedly until the row and column medians approach zero.  
+The goal of this analysis is to decompose the response variable into its respective effects--*education* and *region*--by iteratively removing row and column medians until the remaining residuals are minimized.  
 
 ## Analysis workflow
 
@@ -107,7 +110,7 @@ df <- data.frame(row.names = c("NE","NC","S","W"),
                  )
 ```
 
-### Visualizing the data
+### Visualizing patterns in two-way tables
 
 It's often easier to look at a graphical representation of the data than a tabular one. Even a table as small as this can benefit from a plot. 
 
@@ -119,7 +122,7 @@ dotchart( as.matrix(df), cex=0.7)
 
 The plot helps visualize any differences in mortality rates across different father educational attainment levels. There seems to be a gradual decrease in child mortality with increasing father educational attainment. 
 
-But the plot does not help spot differences across regions (except for the `ed12` group). We can generate another plot where region becomes the main grouping factor. We do this by wrapping the matrix with the transpose function `t()`.
+However, the plot does not help spot differences across regions (except for the `ed12` group). We can generate another plot where region becomes the main grouping factor.  We transpose the matrix so that regions become the primary grouping variable on the y-axis, allowing us to compare mortality rates across regions for each education level..
 
 ```{r small.mar=TRUE, fig.width=3, fig.height=3.8}
 dotchart( t(as.matrix(df)), cex=0.7)
@@ -144,7 +147,7 @@ plot(Deaths ~ Region + Edu, df.l)
 par(OP)
 ```
 
-The plots suggest that there may be a father's educational attainment effect as well as a regional effect on infant mortality with the former effect being possibly more important. 
+Together, these plots suggest that both education and region may influence infant mortality, with education appearing to have a stronger effect.
 
 Next we will attempt to quantify these effects using Tukey's **median polish**.
 
@@ -208,7 +211,9 @@ To wrap-up the second iteration, we compute the column median values from the re
 
 #### When do we stop iterating?
 
-The goal is to iterate through the row and column smoothing operations until the row and column effect medians are close to 0. However, Hoaglin *et al.* (1983) warn against “using unrestrained iteration” and suggest that a few steps should be more than adequate in most instances. In our working example, a third iteration may be warranted. The complete workflow for this third iteration follows. 
+The goal is to iterate through the row and column smoothing operations until the row and column effect medians are close to 0. However, Hoaglin *et al.* (1983) warn against *“using unrestrained iteration”* and suggest that a few steps should be more than adequate in most instances. 
+
+In our working example, a third iteration may be warranted. The complete workflow for this third iteration follows. 
 
 ![](img/twoway_08.jpg)
 
@@ -244,9 +249,9 @@ par(OP)
 
 A few takeway observations from the analysis follow:
 
- * The *common factor* of 20.6 ends up contributing the largest effect. 
- * Between `Region` and `Education` effects, the latter explains more of the variability in deaths with a range of 7.58 - (-3.45) = 11.03 deaths per 1000 births. The `Region` effect explains about 2.55 - (-1.5) = 4.05 deaths per 1000 births of the variability in the data.
- * One abnormally high residual--10.97 deaths above the overall median deaths--is associated with the southern region and an 8^th^ grade education.
+ * The *common effect* of 20.6 contributes the largest portion of the overall variation in the table. 
+ * Between `Region` and `Education` effects, `Education` explains a greater share of the variability in infant mortality rates. Specifically, the range of the `Education` effect is 7.58 - (-3.45) = 11.03 deaths per 1000 births compared to 2.55 - (-1.5) = 4.05 deaths per 1000 births for the `Region` effect.
+ * One notably high residual--**10.97 deaths above the overall median deaths**--is observed in the **Southern region** and for fathers with only an **8^th^ grade education**, indicating a potential outlier or area for further investigation.
 
 ### Interpreting the median polish
 
@@ -264,7 +269,7 @@ So the mortality rate in the upper left-hand cell from the original table can be
 
 ![](img/twoway_10.jpg)
 
-The examination of the table suggests that the infant mortality rate is greatest for fathers who did not attain more than 8 years of school (i.e. who has not completed high school) as noted by the high column effect value of 7.6. This is the rate of infant mortality **relative to the overall median** (i.e. on average, 20.6 infants per thousand die every year and the rate goes up to 7.6 + 20.6 = 28.2 for infants whose father has not passed the 8^th^ grade).  Infants whose father has completed more than 16 years of school (i.e. who has completed college) have a lower rate of mortality as indicated by the low effect value of -3.5 (i.e. 3.5 fewer depths than average). The effects from regions also show higher infant mortality rates for North Central and Western regions (with effect values of 2.6 and 0.4 respectively) and lower rates for the northeastern and southern regions; however the regional effect does not  appear to be as dominant as that of the father’s educational attainment. 
+An examination of the table suggests that the infant mortality rate is greatest for fathers who did not attain more than 8 years of school (i.e. who has not completed high school) as noted by the high column effect value of 7.6. This is the rate of infant mortality **relative to the overall median** (i.e. on average, 20.6 infants per thousand die every year and the rate goes up to 7.6 + 20.6 = 28.2 for infants whose father has not passed the 8^th^ grade).  Infants whose father has completed more than 16 years of school (i.e. who has completed college) have a lower rate of mortality as indicated by the low effect value of -3.5 (i.e. 3.5 fewer depths than average). The effects from regions also show higher infant mortality rates for North Central and Western regions (with effect values of 2.6 and 0.4 respectively) and lower rates for the northeastern and southern regions; however the regional effect does not  appear to be as dominant as that of the father’s educational attainment. 
 
 It’s also important to look at the distribution of the residuals across the two-way table. One should identify unusually high or low residuals in the table. Such residuals may warrant further investigation (e.g. the high southern region residual value of 10.97 may need further exploration).
 
@@ -274,7 +279,7 @@ Thus far, we have assumed an additive relationship between the effects (factors)
 
 ```{r fig.width=3, fig.height=3, echo=FALSE, small.mar=TRUE, message=FALSE, results='hide'}
 # plot( medpolish(df,maxiter=3), pch=20)
-plot(eda_pol(df.l, Region, Edu, Deaths, plot = FALSE), type = "diagnostic")
+plot(eda_pol(df.l, Region, Edu, Deaths, plot = FALSE), plot = "diagnostic", row.size=0.7, col.size = 0.7, res.size =0.8)
 ```
 
 If the diagnostic plot revealed a trend, its shape--or more specifically, its slope--could be used in helping define an appropriate transformation for the data.  A rule of thumb is to apply a $(1 – slope)$ power transformation to the original data. 
@@ -380,8 +385,12 @@ df.pol$col
 
 The `eda_pol` will also output a diagnostic plot.
 
-```{r class.source="eda", fig.width = 3, fig.height=3}
-plot(df.pol, type = "diagnostic")
+```{r class.source="eda", fig.width = 3, fig.height=3, eval = FALSE}
+plot(df.pol, plot = "diagnostic")
+```
+
+```{r class.source="eda", fig.width = 3.8, fig.height=3.1, echo = FALSE}
+plot(df.pol, plot = "diagnostic", res.size = 0.8, row.size = 0.8, col.size = 0.8)
 ```
 
 In addition to generating the plot, the function returns the slope of the fitted line in the console.
@@ -451,6 +460,20 @@ df.ano <- eda_pol(dfl, row = Region, col = Education, val = Deaths, stat = mean)
 df.ano <- eda_pol(dfl, row = Region, col = Education , val = Deaths, stat = mean,
                    res.size = 0.8, row.size = 0.8, col.size = 0.8 )
 ```
+
+## Summary
+
+The median polish is a powerful exploratory tool for analyzing two-way tables, data structures where each cell represents a single value at the intersection of two categorical factors. Unlike traditional methods such as two-way ANOVA, which rely on means and are sensitive to outliers, the median polish uses medians to iteratively extract row and column effects offering a robust decomposition of the data.
+
+In this chapter, we:
+
++ Introduced the structure of two-way tables and how they differ from univariate and bivariate datasets.
++ Demonstrated how to separate a one-way table into a central value and residuals.
++ Extended this idea to two-way tables using the median polish algorithm.
++ Visualized the iterative process of smoothing row and column effects.
++ Interpreted the resulting decomposition in terms of common, row, column, and residual effects.
++ Compared the median polish to its mean-based counterpart and linked it to two-way ANOVA.
++ Explored diagnostic tools for assessing additivity and identifying potential interactions.
 
 
 ## References

@@ -4,7 +4,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Re-expressing values
+# Refining Bivariate Models Through Re-expression
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -27,11 +27,9 @@ library(tukeyedar)
 dat <- incrent22 %>% filter(State == "Florida")
 ```
 
-A demonstration of the workflow follows with a focus on the analysis rather than the code. The functions and code chunks required to generate these plots have been covered in previous chapters, including re-expression which was covered in [chapter 21](re_express.html).
+A demonstration of the workflow follows with a focus on the analysis rather than the code. The functions and code chunks required to generate these plots have been covered in previous chapters, including re-expression which was covered in [chapter 22](re_express.html).
 
 ## Re-expressing the data
-
-
 
 To begin, we will fit a first-order polynomial to the data and examine its diagnostic plots.
 
@@ -49,13 +47,13 @@ par(OP)
 
 The data indicates a clear increase in rent as a function of income, suggesting that a straight-line fit could serve as a reasonable initial estimate.
 
-However, the residuals-dependence plot (2^nd^ plot)  reveals a non-random pattern indicating that the model may not fully capture all aspects of the data. While the pattern hints at potential curvature, its precise nature remains unclear. The lack of a definitive direction from the residuals-dependence (R-D) plot makes it challenging to determine specific modifications to the fitted model.
+However, the residuals-dependence plot (2^nd^ plot)  reveals a non-random pattern indicating that the model may not fully capture all aspects of the data structure. While the pattern hints at potential curvature, its precise nature remains unclear. The lack of a definitive direction from the residuals-dependence (R-D) plot makes it challenging to determine specific modifications to the fitted model.
 
 The spread-location (S-L) plot (3^rd^ plot), however, provides strong evidence of heteroscedasticity. The fitted LOESS curve exhibits a nearly linear, monotonically increasing trend suggesting that the variance of residuals grows with the fitted values. 
 
 The diagnostic plots point to two potential issues: (1) the model may not adequately capture the pattern in the data, and (2) the presence of heteroscedasticity. It is generally advisable to address one issue at a time, as resolving a dominant problem can sometimes mitigate others. Given that heteroscedasticity is the more prominent issue here, we will tackle it first. 
 
-Heteroscedasticity can often be corrected by re-expressing the $Y$ variable. In this analysis, we will explore power transformations to achieve a more desirable S-L plot. The following three S-L plots represent first-order polynomial fits applied to the data after re-expressing the rent variable using the logarithm, the inverse power (-1), and the inverse squared power (-2). To preserve the nature of the relationship between $X$ and $Y$ (i.e. avoiding sign reversal caused by negative powers), we can apply a Box-Cox transformation or multiply rent by minus one.
+Heteroscedasticity can often be corrected by re-expressing one, or both, variables. In this analysis, we will explore power transformations of the rent variable to achieve a more desirable S-L plot. The following three S-L plots represent first-order polynomial fits applied to the data after re-expressing the rent variable using the logarithm, the inverse power (-1), and the inverse squared power (-2). To preserve the nature of the relationship between $X$ and $Y$ (i.e. avoiding sign reversal caused by negative powers) we apply a Box-Cox transformation, but note that we could also multiply rent by minus one to preserve the nature of the relationship.
 
 ```{r fig.height=3, fig.width=10, results='hide', echo = FALSE}
 
@@ -71,7 +69,7 @@ sapply(c(0,-1,-2), FUN = function(x) f1(x))
 par(OP)
 ```
 
-A power transformation of -2 seems to do good job in stabilizing variance.
+A power transformation of -2 appears to do a good job of stabilizing the variance.
 
 Next, we'll plot the fitted model and diagnostic plots with the transformed rent values.
 
@@ -87,7 +85,7 @@ OP <- par(mfrow = c(1,3), cex = 1)
 par(OP)
 ```
 
-The power transformation altered the pattern in the scatter plot, making the curvature hinted at in the earlier diagnostic plots more pronounced with the transformed rent variable. This provides a strong case for considering a curvilinear model. The next set of plots illustrates the results of fitting a second-order polynomial to the data.
+The power transformation alters the pattern in the scatter plot, making the curvature—previously only hinted at—more pronounced when using the transformed rent variable. This provides a strong case for considering a curvilinear model. The next set of plots illustrates the results of fitting a second-order polynomial to the data.
 
 ```{r fig.height=3, fig.width=10, results='hide', echo = FALSE}
 options(scipen = 1, digits = 3)
@@ -100,7 +98,7 @@ OP <- par(mfrow = c(1,3), cex = 1)
 par(OP)
 ```
 
-The nearly flat Loess curve in the R-D plot suggests that the second-order polynomial effectively captures the data's pattern. However, this improvement comes at a cost. The S-L plot indicates a monotonically decreasing variance with increasing fitted values. 
+The nearly flat Loess curve in the R-D plot suggests that the second-order polynomial effectively captures the underlying pattern in the data. However, this improvement comes at a cost. The S-L plot indicates a monotonically decreasing variance with increasing fitted values. 
 
 To address the heteroscedasticity without altering the second-order polynomial fit, we revisit the choice of transformations. Experimenting with several power transformations, we find that a log transformation stabilizes the variance while preserving the curvilinear relationship.
 
@@ -114,9 +112,9 @@ OP <- par(mfrow = c(1,3), cex = 1)
 par(OP)
 ```
 
-Combining the log transformation with the second-order polynomial fit strikes a reasonable balance between model fit and assumption adherence. The scatter plot shows that a "perfect" model is unlikely, as a few points deviate substantially from the modeled relationship. These outliers may represent counties where the relationship between rent and income differs from the majority, potentially wielding disproportionate influence on the model.
+Combining the log transformation with the second-order polynomial fit strikes a reasonable balance between model fit and assumption adherence. The scatter plot shows that a "perfect" model is unlikely, as a few points deviate substantially from the modeled relationship. These outliers may represent counties where the rent-income relationship deviates from the broader trend, potentially exerting disproportionate influence on the model.
 
-Another diagnostic plot yet to be explored is the Normal Q-Q plot of the residuals. This plot is shown below:
+With a log-transformed response and a second-order polynomial fit, we now assess whether the residuals meet the assumption of Normality. A Normal QQ plot is shown next:
 
 ```{r fig.height=2.8, fig.width=2.8, results='hide', echo = FALSE}
 eda_theo(M1$residuals, ylab = "Residuals", show.par = FALSE)
@@ -130,3 +128,9 @@ This example effectively highlights the inherently **iterative nature of EDA**. 
 
 The iterative nature of EDA, combined with **the lack of a single "correct" path or answer**, allows for a more nuanced and insightful understanding of the data, driven by exploration and the analyst's judgment.
  
+## Summary
+ 
+This chapter demonstrates how re-expressing variables can help address violations of model assumptions in bivariate analysis. Using Florida county-level data on median rent and income, the chapter walks through a sequence of model diagnostics, identifying heteroscedasticity and potential curvature in the residuals. Through iterative application of power transformations and polynomial fits, the analysis shows how re-expression can stabilize variance and reveal underlying structure.
+
+While logarithmic transformations are commonly used, re-expression is not limited to logs. Rounded or interpretable powers (e.g., square roots, inverse squares) can often yield better model behavior while preserving interpretability. Theoretical considerations, such as the nature of the measurement scale or expected functional relationships, should also guide the choice of transformation.
+

@@ -3,85 +3,73 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# Resistant lines
+# Robust Regression: Resistant Lines and Beyond
 
 ```{r echo=FALSE}
 source("libs/Common.R")
 ```
 
-
 ```{r echo = FALSE}
-pkg_ver(c("dplyr", "ggplot2", "MASS"))
+pkg_ver(c("MASS", "ggplot2"))
 ```
 
-## Introduction
+------------------------
 
 Ordinary least squares regression lines (those created using the `lm()` function) are known to be highly sensitive to outliers. This sensitivity arises because OLS regression minimizes the sum of squared residuals, which gives disproportionate weight to data points with large deviations from the predicted line. Consequently, even a single outlier can significantly distort the slope and intercept of the best-fit line.
 
 This vulnerability is tied to the use of the mean, a central measure that is not robust to outliers. Specifically, the breakdown point of OLS regression is $1/n$, meaning that the presence of just one outlier in a dataset with $n$ points can greatly influence the regression results.
 
-To illustrate this, consider a simple dataset where all points are perfectly aligned along a line. By fitting this dataset with an OLS regression line, we can observe its behavior in an ideal scenario. Then, by introducing an outlier, we can see how drastically the line changes. This demonstrates the need for regression techniques that are more resistant to outliers.
+To illustrate this, consider a simple dataset where all points are perfectly aligned along a line. 
 
-```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
+```{r fig.height=2.5, fig.width=3, small.mar=TRUE, echo = FALSE}
 x <- seq(1:11)
 y <- 5 + 2 * x
 plot(y ~ x, pch = 20)
 M <- lm(y ~ x)
 abline( M , col = "red")
+Mcoef <- coef(M)
 ```
 
-As expected, we have a perfect fit. And the regression model's coefficients match those used to create the data.
+By fitting this dataset with an OLS regression line we have a perfect fit, as expected.
 
-```{r}
-coef(M)
-```
+Next, we introduce an outlier. Note what happens to the OLS fitted line when a single point deviates significantly from the linear pattern.
 
-Note what happens to the fitted line when a single point deviates significantly from the linear pattern.
-
-```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
+```{r fig.height=2.5, fig.width=3, small.mar=TRUE, echo = FALSE}
 y[11] <- 2
 plot(y ~ x, pch = 20)
 M <- lm(y ~ x)
 abline( M , col = "red")
 ```
 
-The model's intercept and slope are now:
-
-```{r}
-coef(M)
-```
-
-The slope dropped from 2 to 0.86 because of a single point!
-
-When our goal is to understand the trend of the data and what the majority of points reveal about the phenomenon under investigation, we cannot afford to let a few "maverick" values dominate the analysis. Outliers, while sometimes interesting, can distort results in ways that obscure the broader patterns. To address this, we need fitting tools that reduce or eliminate the undue influence of such outliers.
+When our goal is to understand the trend of the data and what the bulk of the data reveal about the phenomenon under investigation, we cannot afford to let a few "extreme" values dominate the analysis. Outliers, while sometimes interesting, can distort results in ways that obscure the broader patterns. To address this, we need fitting tools that reduce or eliminate the undue influence of such outliers.
 
 Fortunately, several methods are available for this purpose. Among them, **Tukey's resistant line** and the **bisquare robust estimation** are alternatives to traditional regression techniques. These methods will be explored here to demonstrate their effectiveness in focusing on the "bulk" of the data while handling outliers gracefully.
 
-&nbsp;&nbsp;
+&nbsp;
 
 ## Robust lines
-&nbsp;&nbsp;
+&nbsp;
 
-### Tukey's resistant line
+### Robust regression using Tukey's resistant line
 
-The idea is simple in concept. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. The batches’ median values are then used to compute the slope and intercept. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables. 
-Let's look at an example of its implementation. We'll continue with the example used in the previous section. First, we divide the plot into three approximately equal batches.
+The idea is simple in concept. It involves dividing the dataset into three approximately equal groups of values and summarizing these groups by computing their respective medians. The median values of each batch are then used to compute the slope and intercept. The motivation behind this plot is to use the three-point summary to provide a robust assessment of the type of relationship between both variables.
 
+Let's look at an example of its implementation. We'll continue with the example used in the previous section. First, we divide the plot into three approximately equal batches delineated by vertical dashed lines in the following plot.
 
 ```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
 library(tukeyedar)
 df <- data.frame(x,y)
 Mr <- eda_rline(df, x, y, maxiter=1)
-plot(Mr, model=F, pt3=F, fit = F)
+plot(Mr, model=FALSE, pt3=FALSE, fit = FALSE, show.par = FALSE)
 ```
 
 Next, we compute the median x and y values for each batch. The medians are presented as red points in the following plot.
 
 ```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
-plot(Mr, model=F, pt3=T, fit = F)
+plot(Mr, model=FALSE, pt3=TRUE, fit = FALSE, show.par = FALSE)
 ```
 
-The x median values are `r Mr$xmed` and the y median values are `r Mr$ymed` respectively.
+The $X$ median values are `r Mr$xmed` and the $Y$ median values are `r Mr$ymed` respectively.
 
 The two end medians are used to compute the slope as:
 
@@ -96,23 +84,24 @@ $$
 median(y_{l,m,r} - b * x_{l,m,r})
 $$
 
-where $(x,y)_{l,m,r}$ are the median x and y values for each batch.
+where $(x,y)_{l,m,r}$ are the median $X$ and $Y$ values for each batch.
 
 
 ```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
-plot(Mr, model=F, pt3=T, fit = F)
+plot(Mr, model=FALSE, pt3=TRUE, fit = FALSE, show.par = FALSE)
 rl1 <- line(x,y,iter=1)
 abline(rl1, col="red")
 ```
 
 
-This is not bad for a first iteration. But the outlier's influence is still present given that the line is not passing through all nine points. Recall that the goal is to perevent a lone observation from influencing a fitted line.
+This provides a reasonable first approximation. But the outlier's influence is still present given that the line is not passing through all nine points. Recall that the goal is to prevent a lone observation from influencing a fitted line.
 
 From this first iteration, we can extract the residuals. A line is then fitted to the residuals following the same procedure outlined above.
 
 ```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
 df$r1 <- residuals(rl1)
-plot(eda_rline(df, x, r1), model=F, pt3=T, fit = F, ylab = "Residuals")
+plot(eda_rline(df, x, r1), model=FALSE, pt3=TRUE, fit = FALSE, 
+                           ylab = "Residuals", show.par = FALSE)
 rl1r <- line(x,df$r1,iter=1)
 abline(rl1r,col="red")
 ```
@@ -122,12 +111,12 @@ The residual slope is  added to the first computed slope giving us an updated sl
 
 ```{r fig.height=3, fig.width=6,  small.mar=TRUE,echo=FALSE}
 OP <- par(mfrow = c(1, 2))
-plot(Mr, model=F, pt3=T, fit = F)
+plot(Mr, model=F, pt3=T, fit = F, show.par = FALSE)
 rl2 <- line(x,y,iter=2)
 abline(rl2, col="red")
 
 df$r2 <- residuals(rl2)
-plot(eda_rline(df, x, r2), model=F, pt3=T, fit = F, ylab = "Residuals")
+plot(eda_rline(df, x, r2), model=F, pt3=T, fit = F, ylab = "Residuals", show.par = FALSE)
 rl2r <- line(x,df$r2,iter=1)
 abline(rl2r,col="red")
 par(OP)
@@ -137,13 +126,17 @@ The second set of residuals is added to the previously computed slope giving us 
 
 ```{r fig.height=3, fig.width=3,  small.mar=TRUE,echo=FALSE}
 df$r1 <- residuals(rl1)
-plot(eda_rline(df, x, y), model=F, pt3=T, fit = F)
+plot(eda_rline(df, x, y), model=F, pt3=T, fit = F, show.par = FALSE)
 abline(line(x,y,iter=1),col="#FFCCCC")
 abline(line(x,y,iter=2),col="#FF8888")
 abline(line(x,y,iter=3),col="#FF0000")
 ```
 
-Three iterations were required to stabilize the residuals giving us the final fitted line whose intercept and slope are `r round(line(x,y,iter=3)$coefficients[1],2)` and `r round(line(x,y,iter=3)$coefficients[2],2)` respectively--very close to the actual relationship between the two variables.
+Each iteration refines the slope by fitting a resistant line to the residuals of the previous fit. This process continues until the residuals stabilize, yielding a final line that is minimally influenced by outliers.
+
+Three iterations were required to stabilize the residuals, giving us the final fitted line whose intercept and slope are `r round(line(x,y,iter=3)$coefficients[1],2)` and `r round(line(x,y,iter=3)$coefficients[2],2)` respectively--very close to the actual relationship between the two variables.
+
+#### R implementation of Tukey's resistant line
 
 Tukey's resistant line can be computed using the R built-in `line()` function. The maximum number of iterations is set with the `iter` argument. Usually, five iterations will be enough. 
 
@@ -171,13 +164,13 @@ ggplot(df, aes(x,y)) + geom_point() +
 ```
 
 
-### Bisquare
+### Robust regression using bisquare weights 
 
-The **bisquare** fitting strategy employs a robust regression technique that assigns weights to observations based on their residuals relative to the center of the data distribution. Observations closer to the center are given higher weights, while those farther away receive progressively smaller weights, reducing their influence on the model. 
+The **bisquare** fitting strategy employs a robust regression technique that assigns weights to observations based on their residuals. Observations closer to the fitted model are given higher weights, while those farther away receive progressively smaller weights, reducing their influence on the model. 
 
 The process begins with an initial linear regression model fitted to the data. Residuals from this model are then computed, and a weighting scheme is applied: observations with smaller residuals are assigned larger weights, while those with larger residuals (indicating potential outliers) are assigned smaller weights. A new regression is then performed using these weights, effectively minimizing the influence of outliers on the fitted line.
 
-This iterative process is repeated, with weights recalculated after each regression until the residuals stabilize and no further significant changes are observed. The figure below illustrates three iterations of the bisquare function, showing how weights (displayed as grey text next to each point) evolve. Initially, all weights are set to 1, but they are progressively adjusted in response to the residuals derived from the most recent regression model.
+This iterative process is repeated, with weights recalculated after each regression, until the residuals stabilize and no further significant changes are observed. The figure below illustrates three iterations of the bisquare function, showing how weights (displayed as grey text next to each point) evolve. Initially, all weights are set to 1, but they are progressively adjusted in response to the residuals derived from the most recent regression model.
 
 ```{r fig.height=2.5, fig.width=8, small.mar=TRUE, echo = FALSE}
 wt.bisquare <- function(u, c = 6) {
@@ -211,34 +204,43 @@ OP <- par(mfrow = c(1,3))
  par(OP)
 ```
 
-There are different weighing strategies that can be implemented. One such implementation is presented next.
+#### Computing bisquare weights from residuals
 
-```{r fig.height=2.5, fig.width=3, small.mar=TRUE}
-# Create the bisquare function
-wt.bisquare <- function(u, c = 6) {
-   ifelse( abs(u/c) < 1, (1-(u/c)^2)^2, 0)
-}
+Robust regression methods reduce the influence of outliers by assigning weights to observations based on the size of their residuals. One commonly used weighting scheme is the bisquare weight function, which smoothly downweights large residuals and completely excludes extreme ones.
 
-# Assign an equal weight to all points
-wt <- rep(1, length(x))
+The bisquare weight for a residual $u$ is defined as:
 
-# Compute the regression, then assign weights based on residual values
-for(i in 1:10){
-  dat.lm <- lm(y ~ x ,weights=wt)
-  wt <- wt.bisquare( dat.lm$res/ median(abs(dat.lm$res)), c = 6 )
-}
+$$
+w(u) = 
+\begin{cases}
+\left(1 - \left(\frac{u}{c}\right)^2\right)^2 & \text{if } |u| < c \\\\
+0 & \text{otherwise}
+\end{cases}
+$$
+Here:
 
-# Plot the data and the resulting line
-plot(x, y, pch = 20)
-abline(dat.lm, col = rgb(1,0,0,0.3))
-```
++ $u$ is the residual (often standardized);
++ $c$ is a tuning constant (commonly set to 6). Smaller values of 
+$c$ increase robustness by downweighting more observations, but may reduce efficiency when the data are approximately Normal. Larger values of $c$ approach the behavior of OLS.
++ $w(u)$ is the weight assigned to the observation.
 
+This function gives:
 
-#### Built-in implementation of the bisquare
++ **High weights** to residuals near 0,
++ **Low weights** to residuals near $\pm{c}$
++ **Zero weight** to residuals beyond, effectively removing them from the fit.
 
-The `MASS` package has a robust linear modeling function,`rlm`, that implements a variation of the  bisquare estimation technique described in this chapter. Its results may differ slightly from those presented above, but the difference will be insignificant for the most part. 
+#### Bisquare weights and M-estimators
 
-Note that if you make use of `dplyr` in a workflow, loading `MASS` after `dplyr` will mask dplyr's `select` function. This can be problematic. You either want to load `MASS` before `dplyr`, or you can call the function via `MASS::rlm`. The latter option is adopted in the following code chunk.
+The bisquare fitting procedure used in robust regression is a specific example of an **M-estimator**. M-estimators generalize maximum likelihood estimation by minimizing a function of the residuals rather than the sum of squared residuals (as in ordinary least squares).
+
+In the case of bisquare regression, we minimize a weighted sum of squared residuals, where the weights are determined by the bisquare function
+
+#### R implementation of the bisquare
+
+The `MASS` package has a robust linear modeling function,`rlm`, that utilizes M-estimators including the bisquare technique described in this chapter. To implement the bisquare technique set the function's `psi` argument to `"psi.bisquare"`. The following code chunk implements the bisquare fitting technique. It also adds the OLS fitted model as a dashed line to the plot.
+
+> Note that if you make use of `dplyr` in an R session, loading `MASS` after `dplyr` will mask dplyr's `select` function. This can be problematic. You either want to load `MASS` before `dplyr`, or you can call the function via `MASS::rlm`. The latter option is adopted in the following code chunk.
 
 ```{r fig.height=2.5, fig.width=3,  small.mar=TRUE, fig.show='hold'}
 dat <- data.frame(x,y)
@@ -249,11 +251,9 @@ plot(y ~ x,dat, pch=16, col=rgb(0,0,0,0.2))
 # Add the robust line
 abline( Mr, col="red")
 
-# Add the default regression line for reference
+# Add the OLS  regression line for reference
 abline( M , col="grey50", lty=2)
 ```
-
-The default regression model is added as a dashed line for reference.
 
 The function `rlm` can also be called directly from within `ggplot`.
 
@@ -268,7 +268,7 @@ ggplot(dat, aes(x=x, y=y)) + geom_point() +
 
 ## Robust loess
 
-The loess fit can also be sensitive to outliers. The bisquare estimation method can be implemented in the loess smoothing function by passing the `"symmetric"` option to the `family` argument.
+Like linear regression, loess smoothing can also be sensitive to outliers. The bisquare estimation method can be implemented in the loess smoothing function by passing the `"symmetric"` option to the `family` argument.
 
 
 ```{r fig.height=2.5, fig.width=3,  small.mar=TRUE,  fig.show='hold'}
@@ -301,3 +301,17 @@ ggplot(dat, aes(x=x, y=y)) + geom_point() +
 ```
 
 The loess parameters are passed to the `loess` function via the `method.args` argument.
+
+## When to use robust fitting techniques
+
+Use robust regression when:
+
++  You suspect outliers or influential points,
++  The residuals from OLS show non-constant variance or non-normality,
++  You want a model that reflects the central trend of the data. 
+
+## Summary
+
+This chapter introduced robust regression techniques that mitigate the influence of outliers. Tukey's resistant line provides a simple, iterative approach based on medians, while bisquare regression uses a smooth weighting function to downweight extreme residuals. Both methods offer more reliable estimates when the data contain anomalies. Robust loess extends these ideas to nonlinear smoothing. Together, these tools help analysts focus on the central trend of the data without being misled by a few extreme values.
+
+

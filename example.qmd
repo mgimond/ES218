@@ -3,7 +3,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-# A deeper exploration of residuals
+# A Deeper Exploration of Residuals: Revealing Hidden Structure
 
 ```{r echo=FALSE}
 source("libs/Common.R")
@@ -16,13 +16,13 @@ pkg_ver(c("dplyr", "ggplot2", "lubridate"))
 
 -------
 
-So far, we've used residuals to diagnose model fits in both univariate and bivariate analyses. We've also explored how to leverage re-expression and robust methods—known as the two other R's of Exploratory Data Analysis (EDA)—to improve model fits.
+In previous chapters, we introduced the **three R’s of Exploratory Data Analysis (EDA): Residuals, Re-expression, and Robustness**. In this chapter, we focus on the first R: **Residuals**. But rather than using them solely as diagnostics, we explore how residuals can serve as tools for discovery. By iteratively modeling and analyzing residuals, we can peel back layers of structure in the data, revealing patterns that may be masked by dominant trends.
 
-In this chapter, we delve deeper into the use of residuals, emphasizing their role in revealing hidden layers within the data. By thoroughly examining residuals, we can often uncover additional models or patterns that may coexist with or underlie the initial fit. These insights enable us to build a more comprehensive understanding of the relationships within the data—showing that one model's residuals can serve as the foundation for discovering another.
+This layered approach exemplifies the EDA mindset: flexible, iterative, and guided by the data itself. To illustrate this, we’ll work through a real-world example involving atmospheric CO2 concentrations, uncovering long-term trends, seasonal cycles, and subtler fluctuations through successive rounds of residual analysis.
 
-## An EDA example: CO2 analysis
+## Uncovering Layers with Residuals: A CO2 Case Study
 
-Let's start off by plotting the atmospheric CO2 concentrations (in ppm) over time. The original dataset was pulled from [NOAA's website](http://www.esrl.noaa.gov/gmd/ccgg/trends/).
+Let’s begin by plotting atmospheric CO2 concentrations (in parts per million) over time. The original dataset was obtained from [NOAA’s Global Monitoring Laboratory](https://gml.noaa.gov/ccgg/trends/), and it provides monthly CO2 measurements spanning several decades. .
 
 ```{r message=FALSE, echo = FALSE}
 library(lubridate)
@@ -51,8 +51,7 @@ dat2 <- dat %>%
       mutate( Date = ymd(paste(Year,"/", Month,"/15")),
               Year = decimal_date(Date),
               CO2 = Average)    %>%
-     select(Year, Date, CO2)
-
+      select(Year, Date, CO2)
 ```
 
 
@@ -62,13 +61,13 @@ Next, let's look at the data:
 ggplot(dat2, aes(x = Year , y = CO2)) + geom_point(size = 0.6)
 ```
 
-Let's see if plotting the data using lines instead of points helps identify any underlying patterns.
+To better visualize potential patterns, we replot the data using lines instead of points.
       
 ```{r fig.height=2, fig.width=6, message=FALSE}
 ggplot(dat2, aes(x = Year , y = CO2)) + geom_line()
 ```
 
-We note two patterns of interest: an overall upward trend, and a cyclical trend. We will first *smooth* out the overall trend by finding a model that best explains the overall variability, then we'll remove that trend from the data to explore the cyclical component.
+Two patterns emerge: a long-term upward trend and a seasonal oscillation. We’ll begin by modeling the overall trend to isolate and remove it, allowing us to focus on the cyclical component in the residuals.
 
 ## Exploring the overall trend
 
@@ -81,7 +80,7 @@ ggplot(dat2, aes(x = Year, y = CO2)) + geom_line() +
              stat_smooth(method = "lm", se = FALSE, col = "red") 
 ```
 
-Next, we subtract the modeled line from the CO2 data and plot the result--this gives us the **residuals** and can be thought of as representing what the linear model does *not* explain about the data. But first, we will need to create a regression model object since it will provide us with the residuals needed to generate the residual plot.
+We then subtract the fitted trend from the original CO2 values to obtain the **residuals**--the portion of the data not explained by the model. But first, we will need to create a regression model object since it will provide us with the residuals needed to generate the residual plot.
 
 ```{r fig.height=2, fig.width=6}
 # Generate a model object from the regression fit
@@ -92,7 +91,7 @@ dat2$res1 <- M1$residuals
 ggplot(dat2, aes(x = Year, y = res1)) + geom_point()
 ```
 
-An convex trend is present in the residual. This suggests that we should augment the model to a 2^nd^ order polynomial of the form:
+A convex pattern appears in the residuals. This suggests that we should augment the model to a 2^nd^ order polynomial of the form:
 
 $$
 CO2_{trend} = a + b(Year) + c(Year^2) 
@@ -116,7 +115,7 @@ ggplot(dat2 , aes(x = Year, y = res2)) + geom_point() +
            stat_smooth(method = "loess", se = FALSE)
 ```
 
-This is an improvement over the simple line model.  So, what we have learned so far is that the overall trend is not perfectly linear but instead follows a curved pattern with a small "bump" around 1990. We can still make out a "W" shaped trend in the residuals which can hamper our analysis of the oscillatory patterns in the data in the subsequent section. We can try a 3^rd^ order polynomial and see if it can capture the 1980 to 1995 bump.
+This model improves upon the linear fit, capturing a subtle curvature and a small “bump” around 1990. However, a “W”-shaped pattern remains in the residuals, which may obscure the seasonal oscillations we aim to analyze next.  We can try a 3^rd^ order polynomial and see if it can capture the 1980 to 1995 bump.
 
 
 ```{r fig.height=2, fig.width=6, message=FALSE, warning=FALSE}
@@ -135,7 +134,9 @@ ggplot(dat2 , aes(x = Year, y = res2)) + geom_point() +
            stat_smooth(method = "loess", se = FALSE)
 ```
 
-This does not appear to provide an improvement over the 2^nd^ order polynomial fit. At this point, we could experiment with higher-order polynomials to better capture the trend, or we might consider shifting to a non-parametric approach.
+This does not appear to provide an improvement over the 2^nd^ order polynomial fit. 
+
+Rather than continuing with higher-order polynomials, we now consider a non-parametric approach, which offers greater flexibility and fewer assumptions.
 
 When our goal is to *peel away* one pattern to reveal any underlying structure, it's important not to restrict ourselves to parametric fits, which impose rigid mathematical models on the data. Instead, non-parametric smoothing techniques offer a flexible alternative, as they make minimal assumptions and do not impose a predefined structure on the data.
 
@@ -146,7 +147,7 @@ ggplot(dat2, aes(x = Year, y = CO2)) + geom_line() +
              stat_smooth(method = "loess", span = 1/4, se = FALSE, col = "red")
 ```
 
-At first glance, this may not look any different from our 2^nd^ or 3^rd^ order polynomial models. But the resulting residuals suggest that the loess smooth did a better job in removing any decadal patterns in our batch of CO2 values.
+While the loess fit may resemble the polynomial models visually, its residuals indicate a more effective removal of decadal patterns.
 
 ```{r fig.height=2, fig.width=6}
 lo <- loess(CO2 ~ Year, dat2, span=1/4)
@@ -156,11 +157,13 @@ ggplot(dat2,  aes(x = Year, y = res3)) + geom_point() +
            stat_smooth(method = "loess", se = FALSE)
 ```
 
-## Exploring the seasonal component
+## Isolating seasonality: uncovering cyclical patterns
 
-Let's now explore the cyclical pattern in the residuals. Note the residuals' y-axis values: they are an order of magnitude less than the overall range of CO2 values. This indicates that the oscillating component of the data is relatively small (the CO2 values have a range of [`r range(dat2$CO2)`] ppm whereas the residuals have a range of [`r round(range(residuals(lo)),2)`] ppm).
+We now turn our attention to the cyclical patterns in the residuals. Notice that the residuals' y-axis values are an order of magnitude smaller than the original CO2 measurements. This suggests that the seasonal component contributes modestly to the overall variability (CO2 values have a range of [`r range(dat2$CO2)`] ppm whereas the residuals have a range of [`r round(range(residuals(lo)),2)`] ppm).
 
-Now, we may be tempted to fit a *smooth* to the residuals but that may not prove fruitful. Instead, let's see if the oscillation follows a 12 month cycle. We'll group all the residual values by month of the year. In other words, we will remove the year *tag* associated with each value and explore those values as a function of month. Each month's batch of values is distilled into a boxplot.
+While we might consider fitting a smooth curve to the residuals, this approach may not effectively capture the cyclical nature of the data. Instead, let's see if the oscillation follows a 12 month cycle. 
+
+We group the residuals by month, removing the year component to focus on intra-annual variation. This allows us to examine how CO2 concentrations vary across months, independent of long-term trends. We summarize each month’s residuals using boxplots to visualize their distribution.
 
 ```{r fig.height=3, fig.width=6}
 # Aggregate residuals by year
@@ -169,13 +172,15 @@ dat2$Month <- month(dat2$Date, label=TRUE)
 ggplot(dat2, aes(x = Month, y = res3)) + geom_boxplot()         
 ```
 
-The plot reveals a clear oscillation that follows a yearly cycle, characterized by a peak in spring and a dip in fall. This pattern can be partially attributed to the uneven distribution of land mass between the northern and southern hemispheres.
+The resulting plot reveals a clear annual cycle, with CO2 concentrations peaking in spring and dipping in fall. This pattern is partly explained by the uneven distribution of land mass between the northern and southern hemispheres.
 
 In the northern hemisphere, plants—and the process of photosynthesis—become dormant during the winter months, reducing the natural uptake of atmospheric CO2. While photosynthesis in the southern hemisphere reaches its peak between October and March, the smaller land mass of the southern hemisphere limits its overall impact.
 
 Additional factors, such as increased CO2 emissions during the winter months, may also contribute to the seasonal fluctuations in atmospheric CO2 concentrations.
 
-Thus far, we have uncovered three patterns of interest: an overall trend, a "bump" around the 1980-1995 time period, and a cyclical component. Note that to effectively explore the cyclical pattern we had to **de-trend** (i.e. **smooth**) the data. Next, we should *smooth* the seasonal component of the data to see if another pattern emerges. We may, for example, smooth the data by subtracting the monthly median from each residual batch leaving us with the next batch of residual values to explore:
+So far, we’ve uncovered three distinct patterns: a long-term upward trend, a localized “bump” around 1980-1995, and a seasonal cycle. Note that to effectively explore the cyclical pattern we had to **de-trend** (i.e. **smooth**) the data. 
+
+Next, we remove the seasonal component to see if additional structure remains in the data. To do this, we subtract the monthly median from each residual, producing a new set of residuals that are centered around zero for each month.
 
 ```{r fig.height=3, fig.width=8}
 d3 <- dat2 %>% 
@@ -210,9 +215,9 @@ ggplot(d3, aes(x = Year, y = Resid.lev)) + geom_point(col = "grey", cex = .6)  +
 
 The trends are clearly not monotonic suggesting that the processes driving the cyclical concentrations of CO2 are not systematic. However, despite the curved nature of the fits, the overall trends observed with the straight lines still remain.
 
-## Exploring what remains
+## Beyond trend and seasonality: What remains
 
-Now that we've fitted the monthly medians to the seasonal component of the data, let's plot the residuals across the years. We'll make use of the robust version of the loess given that the data may be quite noisy.
+Having removed both the long-term trend and seasonal component, we now examine the remaining residuals over time. To account for potential noise in the data, we apply a robust loess smoother to highlight any remaining structure.
 
 ```{r fig.height=3, fig.width=8}
 ggplot(d3, aes(x = Year, y = Resid.lev)) +  geom_line(col = "grey") + 
@@ -220,6 +225,18 @@ ggplot(d3, aes(x = Year, y = Resid.lev)) +  geom_line(col = "grey") +
                  method.args = list(family = "symmetric", degree = 2))    
 ```
 
-Recall that at this points, we have accounted for the overall trend which has, by far, the greatest effect with a range of over 110 ppm, and the seasonal component (which has a smaller effect with a range of about 7 ppm). The 3^rd^ set of residuals account for about 2 ppm of the total variability in the dataset. Note that we can make out broad patterns of interest not consistent with random noise and not explained by seasonal variability. Some of the patterns could be explained by the southern oscillation index (SOI), for example,  which is a measure of the difference in atmospheric pressure across the pacific basin. When the index is positive the resulting winds drive upwelling currents that release additional CO2 into the atmosphere. 
+Recall that we’ve already accounted for the overall trend--by far the dominant component, spanning over 110 ppm--and the seasonal cycle, which contributes about 7 ppm of variability. The remaining residuals represent approximately 2 ppm of variability--small, but potentially meaningful. Interestingly, these residuals still exhibit broad patterns that are not consistent with random noise and are not explained by seasonality. One possible explanation for these patterns is the Southern Oscillation Index (SOI), which measures atmospheric pressure differences across the Pacific basin. Positive SOI values are associated with wind-driven upwelling, which can release additional CO2 into the atmosphere. 
 
-It's important to realize that this is one of many ways in which we could have proceeded with the analysis. For example, we could have started off the analysis by removing the seasonal component from the data, then analyzed the long term trend. 
+It’s important to recognize that this is just one of many valid paths through the data. For instance, we might have begun by removing the seasonal component first, followed by modeling the long-term trend. 
+
+## Summary
+
+Residuals are not just diagnostic—they are powerful exploratory tools that help uncover hidden structure in data.
+
+By iteratively modeling and removing dominant patterns (e.g., overall trend, seasonality), we can isolate subtler signals that may be of scientific interest. 
+
+In the CO2 dataset, we identified three layers of variability: a long-term upward trend, a seasonal cycle, and a residual component potentially linked to climate oscillations.
+
+This layered approach exemplifies the EDA mindset: flexible, iterative, and guided by the data itself. It also highlights the importance of combining EDA techniques with domain knowledge to interpret complex patterns meaningfully.
+
+
