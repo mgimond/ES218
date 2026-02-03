@@ -1,5 +1,5 @@
 ---
-title: "R markdown Document"
+title: "R Markdown"
 execute:
   echo: fenced
   eval: false
@@ -32,6 +32,24 @@ source("libs/Common.R")
 max-width: 50% ;
 }
 
+
+pre,
+pre code,
+code {
+  white-space: pre-wrap !important;   /* allow wrapping */
+  word-wrap: break-word;              /* break long tokens */
+  overflow-x: visible !important;     /* remove scrollbar */
+}
+
+/* Optional: only apply to your styled blocks */
+.output_example pre,
+.output_example code {
+  white-space: pre-wrap !important;
+  word-wrap: break-word;
+  overflow-x: visible !important;
+}
+
+
 .ignore-css{table-layout : auto;}
 
 </style>
@@ -54,6 +72,7 @@ rmarkdown::render("HW16.Rmd")
 
 The YAML header controls the look and feel of your document. At the very least, your R markdown document should contain the following YAML header sandwiched between two sets of `---`:
 
+::: {.output_example}
 ```
  ---
  title: "Your document title"
@@ -62,9 +81,11 @@ The YAML header controls the look and feel of your document. At the very least, 
    html_document: default
  ---
 ```
+:::
 
 Make sure that the `html_document: default` line is indented at least two spaces. If you intend on creating a Word document, substitute `html_document` with `word_document`.
 
+::: {.output_example}
 ```
  ---
  title: "Your document title"
@@ -73,26 +94,32 @@ Make sure that the `html_document: default` line is indented at least two spaces
    word_document: default
  ---
 ```
+:::
 
 The YAML header can take on several parameters. For example, to add the current date, add:
 
+::: {.output_example}
 ```
 date: '`r knitr::inline_expr('format(Sys.time(), "%d %B, %Y")') `'
 ```
+:::
 
 The above chunk makes use of an inline code chunk that will be discussed later in this tutorial. Note the mix of single quotes and back ticks that wrap the inline code. The `%d`, `%B` and `%y` parameters specify the date format. You can read more on date formats [here](https://mgimond.github.io/ES218/date_objects.html#formatting-date-objects).
 
 To have the document automatically generate a table of contents add `toc: true` to the `html_document` or `word_document` header. Make sure that the `toc` parameter is indented at least two spaces from the `xxx_document` header:
 
+::: {.output_example}
 ```
 ...
 output:
   html_document: 
     toc: true
 ```
+:::
 
 The above generates a static TOC. If you want to generate a floating TOC, add  `toc_float: true`.
 
+::: {.output_example}
 ```
 ...
 output:
@@ -100,11 +127,13 @@ output:
     toc: true
     toc_float: true
 ```
+:::
 
 ## Code folding
 
 Rmarkdown offers the option to interactively collapse the code chunks in a knitted document. This may not be an option to have in a final report, but it may prove useful for a technical document where both code and output are to be shared. Code folding option is set with `code_folding: ...`. The options are `hide` to collapse the code chunks by default and `show` to reveal the code chunks by default.
 
+::: {.output_example}
 ```
 ...
 output:
@@ -113,6 +142,7 @@ output:
     toc_float: true
     code_folding: hide
 ```
+:::
 
 ## Section headers
 
@@ -120,6 +150,7 @@ You can add section headers to your document by preceding the header with one or
 
 The top header hashtag is usually avoided because its default font size tends to be too big. It's not uncommon to see R markdown files assign the top level to `##`. 
 
+::: {.output_example}
 ```
 ## Use this as a top section level 
 
@@ -133,11 +164,10 @@ Some text
 
 etc...
 ```
+:::
 
-```{r}
-#| classes: .output_out
-#| echo: false
-#| eval: true
+::: {.output_out}
+```
 ## Use this as a top section level {.unnumbered}
 
 Some text
@@ -150,6 +180,7 @@ Some text
 
 etc...
 ```
+:::
 
 ## Text formats
 
@@ -160,20 +191,21 @@ The markdown language has several built-in text formatting options. A brief summ
 * Web links: To create web links wrap the text with `[ ]` followed by the web link wrapped with `( )` as in `[ES 218 website](https://mgimond.github.io/ES218)`. Make sure that there are no spaces between `[]` and `()`.
 * Lists: To create lists in your document, precede  each list item with an asterisk followed by a space. For example:
 
+::: {.output_example}
 ```
 * First list element
 * Second list element
 * Third list element
 ```
+:::
 
-```{r}
-#| classes: .output_out
-#| echo: false
-#| eval: true
+::: {.output_out}
+```
 * First list element
 * Second list element
 * Third list element
 ```
+:::
 
 * Block equations: You can embed [Latex](https://www.sharelatex.com/learn/Mathematical_expressions) block equations using double dollar signs,
 
@@ -229,16 +261,17 @@ An example of a code chunk with a few of the aforementioned parameter follows:
 plot(hp ~ mpg, mtcars)
 ```
 
-Here's the output (note that `echo` was set to `TRUE` in this example):
+Here's the output:
 
 ```{r}
 #| classes: .output_out
 #| echo: false
 #| eval: true
-#| message=FALSE
-#| warning=FALSE
-#| fig.width=3
-#| fig.height=2
+#| message: FALSE
+#| warning: FALSE
+#| fig.width: 3
+#| fig.height: 2
+#| 
 OP <- par(mar=c(3,3,0,0), bg=NA)
 plot(hp ~ mpg, mtcars)
 par(OP)
@@ -269,7 +302,7 @@ The mean miles per gallon is 20.1 mpg.
 ```
 :::
 
-An automated way to do this is to embed the code chunk directly into your text by wrapping it between `r sprintf("\x60r")` (backtic followed by the letter r) and another backtick.
+An automated way to do this is to embed the code chunk directly into your text by wrapping it between `r sprintf("\x60r")`  (backtick followed by the letter r) and another backtick.
 
 ::: {.output_example}
 ```
@@ -307,7 +340,7 @@ If the code chunk becomes too long and unwieldy to embed in your text, you can c
 ````
 :::
 
-```{r include=FALSE}
+```{r echo=FALSE, eval = TRUE}
  M <- lm(mpg ~ hp, mtcars)
  r.sq <- round(summary(M)$r.square, 3)
 ```
@@ -315,14 +348,16 @@ If the code chunk becomes too long and unwieldy to embed in your text, you can c
 You can then reference the object inline as follows:
 
 ::: {.output_example}
+```
 The modeled r-square between miles-per-gallon and engine horsepower is `r knitr::inline_expr('r.sq')`.
+```
 :::
 
 The code chunk is hidden from the output, but the object `r.sq` is created nonetheless and converted to its value in the inline code chunk. The output thus looks like:
 
-<p class="output_out">
+::: {.output_out}
 The modeled r-square between miles-per-gallon and engine horsepower is `r r.sq`.
-</p>
+:::
 
 ## Tables
 
@@ -333,23 +368,23 @@ You can create two types of tables: **static tables** where you manually populat
 
 Here's an example of a static table syntax:
 
-<pre class="output_example">
-column 1        Column 2    column3 
+::: {.output_example}
+```
+column 1        Column 2  column3 
 -----------  -----------  ------------
 val1                 2.3  apple
 val2                   5  orange
 val3                0.34  kiwi
-</pre>
+```
+:::
 
-<div class="output_out">
-
-column 1        Column 2  column3 
------------  -----------  ------------
-val1                 2.3  apple
-val2                 5.0  orange
-val3                0.34  kiwi
-
-</div>
+::: {.output_out}
+column 1     Column 2  column3 
+--------  -----------  --------
+val1              2.3  apple
+val2              5.0  orange
+val3             0.34  kiwi
+:::
 
 Note how the left and right adjusted columns in the output reflect the left and right adjusted columns in the above syntax. It's important that the column elements not extend beyond the dashed line extents.
 
@@ -357,23 +392,25 @@ Note how the left and right adjusted columns in the output reflect the left and 
 
 There are many R packages that specialize in table output formats such as `xtable` and `stargazer`. However, decent tables can be created with `knitr`'s `kable` function in conjunction with `kableExtra`. Note that this requires the `magrittr` package (if the pipe `%>% ` is used). However, if `dplyr` is used elsewhere in the Rmd document, the `magrittr` package can be omitted.  Here's an example:
 
-<pre class="output_example">
+::: {.output_example}
+```
 library(magrittr)
-knitr::kable( head(mtcars), format="html" ) %>% 
-  kableExtra::kable_styling(bootstrap_options = "striped", 
-                            full_width = FALSE, position = "left")
-</pre>
-
-<div class="output_out">
-  <div class="ignore-css">
-```{r echo=FALSE, class.source='base'}
-library(magrittr)
-knitr::kable( head(mtcars[ , 1:4 ]), format="html" ) %>% 
+knitr::kable( head(mtcars) ) %>% 
   kableExtra::kable_styling(bootstrap_options = "striped", 
                             full_width = FALSE, position = "left")
 ```
-</div>
-</div>
+:::
+
+```{r}
+#| classes: .output_out
+#| echo: false
+#| eval: true
+#| warning: FALSE
+library(magrittr)
+knitr::kable( head(mtcars[ , 1:4 ]) ) %>% 
+  kableExtra::kable_styling(bootstrap_options = "striped", 
+                            full_width = FALSE, position = "left")
+```
 
 If the output file format is a Word document, substitute `format = "html"` with `format = "pandoc"`.
 
@@ -383,47 +420,46 @@ For more `kableExtra` options, visit its [website](https://haozhu233.github.io/k
 
 Here's what a complete Rmd file might look like:
 
-<pre class="output_example">
+::: {.output_example}
+```
  ---
  title: "A simple example"
  author: "ES 218"
  output:
    html_document: 
      toc: true
- editor_options: 
-   chunk_output_type: console
  ---
 
 
-```{r include=FALSE}`r ''`
+​```{r include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
-```
+​```
 
 ## A basic plot
 
-```{r fig.width = 3, fig.height = 2.5}`r ''` 
+​```{r fig.width = 3, fig.height = 2.5}
 library(ggplot2)
 
 ggplot(mtcars, aes(mpg, hp)) + geom_point() + 
   geom_smooth(method = lm, se = FALSE)
-```
+​```
 
 ## Here's a glimpse of the data table
 
-```{r echo = FALSE}`r ''`
-knitr::kable(head((mtcars), format = "html"))
-```
+​```{r echo = FALSE}
+​knitr::kable(head((mtcars)))
+​```
 
 ## A basic analysis
 
-```{r include = FALSE}`r ''`
+​```{r include = FALSE}
 M <- lm(mpg ~ hp, mtcars)
 r.sq <- round(summary(M)$r.square, 2)
-```
+​```
 
 The modeled r-square between miles-per-gallon and engine horsepower is `r knitr::inline_expr('r.sq')`.
-
-</pre>
+```
+:::
 
 ## Additional resources
 
