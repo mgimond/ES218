@@ -1,0 +1,111 @@
+# Supporting Functions
+
+```{r echo=FALSE}
+source("libs/Common.R")
+```
+
+```{r echo = FALSE, eval=knitr::is_html_output()}
+pkg_ver(c("tukeyedar"))
+```
+
+--------------
+
+This chapter introduces a collection of general-purpose utility functions that are used throughout the course. These functions are not tied to a single topic; instead, they support common tasks that arise across many areas of data analysis. Students are encouraged to become familiar with these tools, as they will be useful in practical assignments. These tools are available in the course's `tukeyedar` package.
+
+## Shuffle values across groups
+
+The `eda_shuffle` function randomly permutes the values in a specified column of a data frame across all groups, while preserving the group structure. 
+
+For example, to shuffle the `weight` values in the `PlantGrowth` dataset across the `group` variable, type:
+
+```{r}
+library(tukeyedar)
+
+plant_shuffle <- eda_shuffle(PlantGrowth, weight, group)
+```
+
+The jitter plots below show the original dataset (left), and the shuffled dataset (right).
+
+```{r echo = FALSE, fig.height= 3, fig.width=6}
+set.seed(2322)
+plant_shuffle <- eda_shuffle(PlantGrowth, weight, group)
+OP <- par(mfrow = c(1,2))
+eda_jitter(PlantGrowth, weight, group, reorder = FALSE)
+eda_jitter(plant_shuffle, weight, group, reorder = FALSE)
+par(OP)
+```
+
+## Simulate data 
+
+The `eda_sim()` function generates random data with the specified **skewness** and **excess kurtosis** using the Fleishman transformation method.
+
+An example of a simulated *Normal* distribution:
+
+```{r, eval = FALSE}
+x <- eda_sim(10000, skew = 0, kurt = 0)
+```
+
+```{r echo =FALSE, fig.height=3, fig.width=3, message=FALSE}
+set.seed(3421)
+x <- eda_sim(10000, skew = 0, kurt = 0)
+eda_dens(x,x, show.par = FALSE, legend = FALSE)
+```
+
+An example of a simulated *peaked* distribution:
+
+```{r, eval = FALSE}
+x <- eda_sim(10000, skew = 0, kurt = 3)
+```
+
+```{r echo =FALSE, fig.height=3, fig.width=3, message=FALSE}
+set.seed(3421)
+x <- eda_sim(10000, skew = 0, kurt = 3)
+eda_dens(x,x, show.par = FALSE, legend = FALSE)
+```
+
+
+An example of a simulated *right-skewed* distribution:
+
+```{r, eval = FALSE}
+x <- eda_sim(10000,  skew = 1.15, kurt = 2)
+```
+
+```{r echo =FALSE, fig.height=3, fig.width=3, message=FALSE}
+set.seed(3421)
+x <- eda_sim(10000,  skew = 1.15, kurt = 2)
+eda_dens(x,x, show.par = FALSE, legend = FALSE)
+```
+
+An example of a simulated *left-skewed* distribution:
+
+```{r, eval = FALSE}
+x <- eda_sim(10000,  skew = -1.15, kurt = 2)
+```
+
+```{r echo =FALSE, fig.height=3, fig.width=3, message=FALSE}
+set.seed(3421)
+x <- eda_sim(10000,  skew = -1.15, kurt = 2)
+eda_dens(x,x, show.par = FALSE, legend = FALSE)
+```
+
+NOTE: The allowable range of skewness is restricted to −3 to 3. The minimum permissible value of excess kurtosis depends on the skewness and is constrained by `-1.13168 + 0.9 + 1.58837 * skew ^ 2`
+
+## Trim vector
+
+The `eda_trim()` function trims a vector by either a specified number of observations or a specified proportion from both tails.
+
+For example, to remove the bottom and top 10% of values in `x`, type:
+
+```{r}
+x <- 1:20 
+eda_trim(x, prop = 0.1)
+```
+## Trim dataframe
+
+The `eda_trim_df()` function trims a dataframe by number or by proportion based on the values of a specified column.
+
+For example, to remove the bottom 25% and highest 25% of observations in `mtcars` based on `mpg` (i.e., to extract the interquartile range), type:
+
+```{r}
+eda_trim_df(mtcars, mpg, prop=0.25)
+```
