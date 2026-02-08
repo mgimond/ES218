@@ -51,9 +51,11 @@ For different month/day/year arrangements, other `lubridate` functions need to b
 
 Functions  |  Date Format
 -----------|--------------
-`dmy()`    | day/month/year
-`ymd()`    | year/month/day
-`ydm()`    | year/day/month
+`dmy()`    | day-month-year
+`ymd()`    | year-month-day
+`ydm()`    | year-day-month
+`ym()`     | year-month
+`my()`     | month-year
 
 If your data contains both date *and* time in a "month/day/year hour:minutes:seconds" format use the `mdy_hms` function.
 
@@ -125,34 +127,38 @@ dat1 <- read.csv("http://mgimond.github.io/ES218/Data/CO2.csv")
 head(dat1)
 ```
 
-The CO2 dataset has the date split across two columns: `Year` and `Month` (both stored as integers). You can combine the columns into a character string using the `paste` function. For example, if we want to create a "Year-Month" string as in `1959-10`, we could type:
+The CO2 dataset has the date split across two columns: `Year` and `Month` (both stored as integers). You can combine the columns into a character string using the `paste` function. For example, if we want to create a "Year-Month" string as in `1959 10`, we can type:
 
 ```{r eval=FALSE}
-paste(dat1$Year,dat1$Month, sep="-")
+paste(dat1$Year, dat1$Month)
 ```
 
-The above example uses three arguments: the two objects that are pasted together (i.e. `Year` and `Month`) and the `sep="-"` parameter which fills the gap between both objects with a dash `-` (by default, `paste` would have added spaces thus creating strings in the form of `1959 10`).
+The above example uses as arguments the values that are to be pasted together (`Year` and `Month` in this example). Note that the function can paste more than two values.
 
-`lubridate` does not have a function along the lines of `ym` to convert just the year-month strings, this requires that we add an artificial day of the month to the string. We'll choose to add the 15^th^ day of the month as in 
+By default, the `paste` function adds a space between the two values. If a different separator is desired, then the `sep` argument can be added to the function. For example, to separate the values using a dash `-`, type:
 
 ```{r eval=FALSE}
-paste(dat1$Year, dat1$Month, "15", sep="-")
+paste(dat1$Year, dat1$Month, sep = "-")
 ```
 
-We are now ready to add a new column called `Date` to the `dat` object and fill that column with a *real* date object:
+The `lubridate` parsing functions will accept different non-numeric delimiters, including spaces.
+
+For the CO2 dataset, we will use `lubridate`'s `ym` parsing function.
+
+```{r eval=FALSE}
+ym(paste(dat1$Year, dat1$Month))
+```
+
+We are now ready to add a new column called `Date` to the `dat` object and fill that column with a formal *Date* object:
 
 ```{r}
-dat1$Date <- ymd( paste(dat1$Year, dat1$Month, "15", sep="-") )
+dat1$Date <- ym(paste(dat1$Year, dat1$Month))
 head(dat1)
 ```
 
-The `sep="-"` option is not needed with the `lubridate` function since `lubridate` will recognize a space as a valid delimiter, so the last piece of code could have been written as:
+Note that the date object is formatted as *Year-Day-Month* in the output--this is R's default date format.
 
-```{r}
-dat1$Date <- ymd( paste(dat1$Year, dat1$Month, "15") )
-```
-
-To confirm that the `Date` column is indeed formatted as a date object type:
+To confirm that the `Date` column is indeed formatted as a date object, type:
 
 ```{r}
 str(dat1)
@@ -164,7 +170,13 @@ or you could type,
 class(dat1$Date)
 ```
 
-Since we did not add a timezone or a time component to the date object the `Date` column was assigned a `Date` class as opposed to the `POSIX...` class. 
+You'll note that since a day was not specified, the function defaulted to the first day of each month. If you prefer to center the date on each month, you can add a constant to the parsing function. For example, to center each month on the 15th day of that month, type:
+
+```{r val = FALSE}
+dat1$Date <- ymd( paste(dat1$Year, dat1$Month, "15") )
+```
+
+Note that because we did not add a *timezone* or a *time* component to the date object, the `Date` column was assigned a `Date` class as opposed to the `POSIX...` class. 
 
 ### Padding time values
 
