@@ -406,26 +406,26 @@ ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
                          labels = c("$10,000", "$30,000", "$50,000"))
 ```
 
-If you want to change the label formats whereby the numbers are truncated to a thousandth of their original value, you can make use of `unit_format()` from the `scales` package:
+If you want to change the label formats whereby the numbers are truncated to a thousandth of their original value, you can make use of `label_number()` from the `scales` package:
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x=B20004013, y=B20004007)) + geom_point(alpha=0.3) +
        xlab("Female income ($)") + ylab("Male income ($)") +
-       scale_x_continuous(labels=scales::unit_format(suffix="k", 
-                                                     scale=0.001, 
-                                                     sep="")) +
-       scale_y_continuous(labels=scales::unit_format(suffix="k", 
-                                                     scale=0.001, 
-                                                     sep=""))
+       scale_x_continuous(labels=scales::label_number(suffix="k", 
+                                                      scale=0.001)) +
+       scale_y_continuous(labels=scales::label_number(suffix="k", 
+                                                      scale=0.001))
 ```
 
-The `scales` package also has a `comma_format()` function that will add commas to large numbers:
+The `suffix` argument adds `"k"` to the end of the number and the `scale` argument rescales the values by `0.001`.
+
+The `scales` package also has a `label_comma()` function that will add commas to large numbers:
 
 ```{r fig.height=3, fig.width=4}
 ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
         xlab("Female income ($)") + ylab("Male income ($)") +
-        scale_x_continuous(labels = scales::comma_format()) +
-        scale_y_continuous(labels = scales::comma_format())
+        scale_x_continuous(labels = scales::label_comma()) +
+        scale_y_continuous(labels = scales::label_comma())
 ```
 
 You can rotate axes labels using the `theme` function.
@@ -463,9 +463,9 @@ However, if you are calling the `scale_x_continuous()` and `scale_y_continuous()
 ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
        xlab("Female income ($)") + ylab("Male income ($)") +
        scale_x_continuous(limit  = c(10000, 75000),
-                          labels = scales::comma_format()) +
+                          labels = scales::label_comma()) +
        scale_y_continuous(limit  = c(10000, 75000),
-                          labels = scales::comma_format())
+                          labels = scales::label_comma())
 ```
 
 ### Axes breaks
@@ -476,10 +476,10 @@ You can explicitly define the breaks with the `breaks` argument. Continuing with
 ggplot(dat2, aes(x = B20004013, y = B20004007)) + geom_point(alpha = 0.3) +
        xlab("Female income ($)") + ylab("Male income ($)") +
        scale_x_continuous(limit  = c(10000, 75000),
-                          labels = scales::comma_format(),
+                          labels = scales::label_comma(),
                           breaks = c(10000, 30000, 50000, 70000)) +
        scale_y_continuous(limit  = c(10000, 75000),
-                          labels = scales::comma_format(),
+                          labels = scales::label_comma(),
                           breaks = c(10000, 30000, 50000, 70000))
 ```
 
@@ -914,7 +914,7 @@ You can export a ggplot figure to an image using the `ggsave` function. For exam
 ```{r}
 p1 <- ggplot(dat1l2, aes(x = Year, y = Yield, color = Crop)) + geom_line() + 
   facet_wrap( ~ Country, nrow = 1) +
-  scale_y_continuous(labels = scales::comma_format())
+  scale_y_continuous(labels = scales::label_comma())
 
 ggsave("fig0.png", plot = p1, width = 6, height = 2, units = "in", device = "png")
 ```
@@ -928,7 +928,7 @@ For greater control of the font sizes, you need to make use of the `theme` funct
 ```{r}
 p1 <- ggplot(dat1l2, aes(x = Year, y = Yield, color = Crop)) + geom_line() + 
   facet_wrap( ~ Country, nrow = 1) +
-  scale_y_continuous(labels = scales::comma_format()) +
+  scale_y_continuous(labels = scales::label_comma()) +
   theme(axis.text    = element_text(size = 8, family = "mono"),
         axis.title   = element_text(size = 11, face = "bold"),
         strip.text   = element_text(size = 11, face="italic", family = "serif"),
