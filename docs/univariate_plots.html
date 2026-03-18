@@ -747,7 +747,11 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 </div>
 <p>The second histogram suggests a possibly skewed shape to the distribution while the one on the left suggests a more uniform shape.</p>
-<p>One workaround to the histogram’s limitations is to compute density values on <em>overlapping</em> bins. For example, let’s take the first bin and have it count the number of values between 5 and 9 (exclusive) in <code>a</code>, then divide that number by the total number of values times the bin width–this gives us two observations falling in the bin and thus a density value of <code>2 / (10 * 4) = 0.05</code>. The following plot shows the bin. An orange dot is also added to represent the bin’s midpoint.</p>
+<p>One way to address the limitations of histograms is to compute density values using <em>overlapping</em> bins. For example, consider the first bin spanning the interval from 5 to 9 (exclusive) in the vector <code>a</code>. We refer to the width of this interval as the <strong>bandwidth</strong>. Suppose there are two observations falling within this range.</p>
+<p>To obtain the corresponding density value, we divide the number of observations in the bin by the product of the total number of observations (<code>10</code>) and the bandwidth (<code>4</code>). This yields a density of:</p>
+<p><span class="math display">\[
+\frac{2}{10 \times 4} = 0.05
+\]</span> The following plot shows the bandwidth. An orange dot is also added to represent the bin’s midpoint.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -757,7 +761,7 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 </div>
 </div>
-<p>Next, we shift the bin over by one unit, then we calculate the density of observations in the same way it was computed for the first bin. The density value is plotted as an orange dot. Note how the bin overlaps partially with the first bin.</p>
+<p>Next, we shift the bin by one unit and compute the density of the observations in the same way as for the first bin. This density value is then plotted as an orange dot. Note that this bin partially overlaps with the first bin.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -777,7 +781,7 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 </div>
 </div>
-<p>The process is repeated for each bin until the last bin is reached. (Note that some of the <code>a</code> values are duplicates such as <code>13</code> and <code>15</code>–hence the high density values for the upper range).</p>
+<p>This process is repeated for each successive bin until the final bin is reached. Note that some values in <code>a</code> are duplicated (for example, <code>13</code> and <code>15</code>), which explains the relatively high density values in the upper range.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -787,7 +791,7 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 </div>
 </div>
-<p>If we remove the bins and connect the dots, we end up with a <strong>density trace</strong>.</p>
+<p>If we remove the bins and connect the dots, we obtain a <strong>density trace</strong>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -799,7 +803,7 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 <p>A property associated with the density trace is that the area under the curve sums to one since each density value represents the <em>local</em> density at <code>x</code>.</p>
 <p>In the above example, we assigned an equal (rectangular) weight to each point within its assigned bin–regardless how far the point is to the bin’s midpoint. This resulted in some <em>raggedness</em> to the plot.</p>
-<p>To smooth out the plot, we can apply different weights to each point such that points closest to the bin’s midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate such weights. The following figure depicts the difference in weights assigned to a point based on its distance to the bin center of <code>12</code>. A bin width of <code>2</code> units is used in this example.</p>
+<p>To smooth out the plot, we can apply different weights to each point such that points closest to the bin’s midpoint are assigned greater weight than the ones furthest from the midpoint. A Gaussian function can be used to generate such weights. The following figure depicts the difference in weights assigned to a point based on its distance to the bin center of <code>12</code>. A bandwidth of <code>2</code> units is used in this example.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -810,7 +814,7 @@ density = \frac{count}{bin\ width * total\ observations}
 </div>
 </div>
 <p>With the rectangular weight (blue line), <em>all</em> points within the bin width are assigned an <em>equal</em> weight value of <code>1</code>. Note that only those points within the 2 unit bin width take part in the density calculation.</p>
-<p>With the Gaussian weight (orange line), points closest to the bin center are assigned greater weight than those furthest from the center. Note that points beyond the <code>2</code> unit bin width can still take part in the calculation of the density value at x=<code>12</code>.</p>
+<p>With the Gaussian weight (orange line), points closest to the bin center are assigned greater weight than those furthest from the center. Note that points beyond the <code>2</code> unit bandwidth can still take part in the calculation of the density value at x=<code>12</code>.</p>
 <p><code>ggplot</code>’s density function defaults to the Gaussian weighting strategy. You can generate a density plot of the data using the <code>geom_density</code> function.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">23</span>)</span>
