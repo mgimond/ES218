@@ -86,12 +86,8 @@ into its two components: the fitted group means ($\mu_{\text{group}}$) and the r
 The vd plot provides a high-level summary of how much of the total variation in a response variable is explained by a grouping variable. It visually separates the data into:
 
 +  **Fitted values** (e.g., group means), representing between-group variation
-+  **Residuals**, representing within-group variation
-+ Optionally, the **original response distribution**, for reference
-
-- A dot plot or a boxplot of the fitted values centered around the overall mean or median
-- A boxplot of the residuals
-
++  **Residuals**, representing within-group variation (shown as a boxplot or jitter plot)
++  Optionally, the **original response distribution**, for reference
 
 
 ### Scenario 1: Strong group effect
@@ -104,11 +100,11 @@ eda_vd(df, y, groups, label = TRUE, overlap = "stack", title = NULL,
 ```
 
 
-+  The gray points represent the fitted group means, centered around the overall median.
-+  The light gray boxplot shows the residuals.
-+  The bisque-colored boxplot shows the spread of the original response variable centered around the batch median.
++  The gray points in the right-hand side of the plot represent the **fitted group means**, *centered around the overall median*.
++  The light gray boxplot at the center of the plot shows the **residuals**.
++  The bisque-colored boxplot shows the spread of the **original response variable** *centered around the batch median*.
 
-In this example, the fitted values span a wide range (about 2 units), while the residuals are relatively narrow. This suggests that the grouping variable explains a substantial portion of the variation in the data.
+In this example, the fitted values span a wide range (about 2 units), while the residuals span about the same amount with 50% of its values covering a range less than 1 unit. This suggests that the grouping variable explains a non-negligible portion of the variation in the data.
 
 ### Scenario 2: Weak group effect
 
@@ -141,15 +137,15 @@ singer <- lattice::singer
 
 To generate the vd plot, type:
 
-```{r class.source="eda", fig.height=3.5, fig.width=4.8, results='hide'}
+```{r class.source="eda", fig.height=3.1, fig.width=4.1, results='hide'}
 eda_vd(singer, height, voice.part, label = TRUE, title = NULL)
 ```
 
-The `label` argument is optional and is used to label the points with group names. 
+The `label` argument is optional and is used to label each point using its group name. 
 
 You can add the boxplot of the original height distribution to the plot with the `show.resp = TRUE` argument.
 
-```{r class.source="eda", fig.height=3.5, fig.width=4.8, results='hide'}
+```{r class.source="eda", fig.height=3.1, fig.width=4.1, results='hide'}
 eda_vd(singer, height, voice.part, label = TRUE, title = NULL, show.resp = TRUE)
 ```
 
@@ -168,13 +164,13 @@ The rfs plot, introduced by William Cleveland, is constructed as follows:
 
 While a residual distribution having consistent shape and spread across groups is not explicitly assumed in creating an rfs, it does ensure valid comparisons.
 
-Using the dataset introduced earlier in this chapter, we first calculate the group means of 10, 11 and 12. The data are then split into two parts: the modeled means and the residuals. For instance, an observation $y = 11.07$ (highlighted in green in the figure below) can be decomposed as follows:
+Using the dataset introduced earlier in this chapter, we first calculate their group means of $\mu_a=10$, $\mu_b=11$ and $\mu_c=12$. Each observation is then split into two parts: the modeled mean and the residual. For instance, an observation in group `c`, $y_c = 11.07$ (highlighted in green in the figure below), can be decomposed as follows:
 
 $$
 11.07 = 12 - 0.93
 $$
 
-Here, 12 is the group mean, $\mu_{C}$, and -0.93 is the residual value $\epsilon_{i, C}$.
+Here, 12 is the group mean, $\mu_{C}$, and -0.93 is the residual value $\epsilon_{i, c}$.
 
 The decomposed values are plotted as side-by-side quantile plots: the fitted means on the left and the residuals on the right. To facilitate a direct comparison of spreads, the fitted values are re-centered around zero by subtracting the overall mean ($\mu_{overall} = 11$) from each fitted value ($\mu_{group}$). For the highlighted observation, this yields $\mu'_{C} = \mu_{C} - \mu_{overall} = 12 - 11 = 1$
 
@@ -196,11 +192,11 @@ To build intuition for interpreting the residual-fit spread (rfs) plot, let’s 
 eda_rfs(df, y, groups, show.par = FALSE)
 ```
 
-Here, the group means explain a substantial portion of the variability in $y$. The spread in fitted group means covers 2 units, while approximately 95% of the residuals fall within a range of about 1.5 units--a much smaller spread. This indicates that the grouping variable can play a key role in explaining $y$.
+Here, the group means explain a meaningful portion of the variability in $y$. The spread in fitted group means covers 2 units, while approximately 90% of the residuals (f-values between 0.05 and 0.95) fall within a range of about 1.5 units--a much smaller spread. This indicates that the grouping variable can play a key role in explaining $y$.
 
 #### Scenario 2: Weak group effect
 
-Now consider the opposite extreme, where the grouping variable is minimally effective at explaining $y$. 
+Now consider the opposite extreme, where the grouping variable is minimally effective at explaining the variability in $y$. 
 
 ```{r fig.height=3.5, fig.width=4.8, results='hide', echo=FALSE}
 eda_rfs(df2, y, groups, show.par = FALSE)
@@ -214,28 +210,22 @@ To better illustrate this, we can compare the above plot to one from a "null" mo
 eda_rfs(df2, y, 0, show.par = FALSE)
 ```
 
-This second plot shows the baseline case. The Fit minus mean component has zero spread because the only fitted value is the overall mean, which becomes zero after centering. The Residuals component represents the total variation in the data around that overall mean.
+This above plot shows the **baseline case**. The *Fit minus mean* component has zero spread because the only fitted value is the overall mean, which becomes zero after centering. The *Residuals* component represents the total variation in the data around that overall mean.
 
-Visually comparing the two plots reveals they are almost identical. The spread of residuals is the same in both, and the negligible spread in the *Fit minus mean* of the group model confirms that the groups offer no real explanatory power. Therefore, the grouping variable is not useful in this case.
+Visually comparing the two plots reveals they are almost identical. The spread of residuals is the same in both, and the negligible spread in the *Fit minus mean* of the group model confirms that the groups offer no real explanatory power. 
 
 ### Generating an rfs plot with `eda_rfs`
 
-The rfs plot can be generated with the `eda_rfs` function from the `tukeyedar` package. But first, we'll generate the singer height data used in the previous chapters.
-
-```{r}
-df <- lattice::singer
-```
-
-The rfs plot for the singer height data follows:
+The rfs plot can be generated with the `eda_rfs` function from the `tukeyedar` package. The rfs plot for the singer height data follows:
 
 ```{r class.source="eda", fig.height=3.5, fig.width=4.8, results='hide'}
-eda_rfs(df, height, voice.part)
+eda_rfs(singer, height, voice.part)
 ```
 
-In addition to generating a plot, the function will output information about the spreads in the console. It compares the range of values associated with the mid 90% of the residuals to the spread of the fitted values.
+In addition to generating the plot, the function will output information about the spreads in the console. It compares the range of values associated with the mid 90% of the residuals to the spread of the fitted values.
 
 ```{r class.source="eda", fig.height=3.5, fig.width=4.8, fig.keep = "none", echo = FALSE}
-eda_rfs(df, height, voice.part)
+eda_rfs(singer, height, voice.part)
 ```
 
 The reason the mid 90% of values is chosen is to prevent outliers, or extreme values, in the residuals from disproportionately exaggerating the spread in residuals. For example, you’ll note several extreme residual values above 5 inches in the working example.
@@ -287,4 +277,4 @@ When comparing the spread of fitted values to the spread of residuals, we implic
 
 ## Summary
 
-This chapter introduced two powerful visual tools-the variability decomposition (vd) plot and the residual-fit spread (rfs) plot-for assessing how much of the total variation in a dataset is explained by a fitted model. You learned how to interpret these plots to evaluate model performance and residual behavior. These tools provide a bridge between exploratory visualization and formal modeling, helping to quantify what the model captures and what it misses.
+This chapter introduced two powerful visual tools, the variability decomposition (vd) plot and the residual-fit spread (rfs) plot, for assessing how much of the total variation in a dataset is explained by a fitted model. You learned how to interpret these plots to evaluate model performance and residual behavior. These tools provide a bridge between exploratory visualization and formal modeling helping to quantify what the model captures and what it misses.
